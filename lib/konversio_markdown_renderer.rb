@@ -1,4 +1,4 @@
-class PilotMarkdownRenderer
+class KonversioMarkdownRenderer
   def initialize(content)
     @content = content
   end

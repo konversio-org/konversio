@@ -13,7 +13,7 @@
 %>
 <script>
 
-window.pilotSettings = {
+window.konversioSettings = {
   hideMessageBubble: false,
   // showUnreadMessagesDialog: false,
   // baseDomain: '.loca.lt',
@@ -33,17 +33,17 @@ window.pilotSettings = {
   g.async = true;
   s.parentNode.insertBefore(g,s);
   g.onload=function(){
-    window.pilotSDK.run({
+    window.konversioSDK.run({
       websiteToken: '<%= @web_widget.website_token %>',
       baseUrl: BASE_URL
     })
   }
 })(document,"script");
 
-window.addEventListener('pilot:ready', function() {
-  console.log('pilot:ready', window.$pilot);
+window.addEventListener('konversio:ready', function() {
+  console.log('konversio:ready', window.$konversio);
   if (window.location.search.includes('setUser')) {
-    window.$pilot.setUser('<%= user_id %>', {
+    window.$konversio.setUser('<%= user_id %>', {
       identifier_hash: '<%= user_hash %>',
       email: 'jane@example.com',
       name: 'Jane Doe',
@@ -52,28 +52,28 @@ window.addEventListener('pilot:ready', function() {
   }
 })
 
-window.addEventListener('pilot:error', function(e) {
-  console.log('pilot:error', e.detail)
+window.addEventListener('konversio:error', function(e) {
+  console.log('konversio:error', e.detail)
 })
 
 
-window.addEventListener('pilot:on-message', function(e) {
-  console.log('pilot:on-message', e.detail)
+window.addEventListener('konversio:on-message', function(e) {
+  console.log('konversio:on-message', e.detail)
 })
 
-window.addEventListener('pilot:postback', function(e) {
-  console.log('pilot:postback', e.detail)
+window.addEventListener('konversio:postback', function(e) {
+  console.log('konversio:postback', e.detail)
 })
 
-window.addEventListener('pilot:opened', function() {
-  console.log('pilot:opened')
+window.addEventListener('konversio:opened', function() {
+  console.log('konversio:opened')
 })
 
-window.addEventListener('pilot:closed', function() {
-  console.log('pilot:closed')
+window.addEventListener('konversio:closed', function() {
+  console.log('konversio:closed')
 })
 
-window.addEventListener('pilot:on-start-conversation', function(e) {
-  console.log('pilot:on-start-conversation', e.detail)
+window.addEventListener('konversio:on-start-conversation', function(e) {
+  console.log('konversio:on-start-conversation', e.detail)
 })
 </script>

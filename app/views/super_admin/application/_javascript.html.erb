@@ -21,7 +21,7 @@ by providing a `content_for(:javascript)` block.
 <% end %>
 
 <script>
-window.pilotSettings = {
+window.konversioSettings = {
   hideMessageBubble: true,
 };
 
@@ -32,16 +32,16 @@ window.pilotSettings = {
   g.async = true;
   s.parentNode.insertBefore(g,s);
   g.onload=function(){
-    window.pilotSDK.run({
-      websiteToken: '<%= PilotHub.support_config[:support_website_token] %>',
-      baseUrl: '<%= PilotHub.support_config[:support_script_url] %>'
+    window.konversioSDK.run({
+      websiteToken: '<%= KonversioHub.support_config[:support_website_token] %>',
+      baseUrl: '<%= KonversioHub.support_config[:support_script_url] %>'
     })
   }
 })(document,"script");
 
-window.addEventListener('pilot:ready', function() {
-  window.$pilot.setUser('<%= PilotHub.installation_identifier %>', {
-    identifier_hash: '<%= PilotHub.support_config[:support_identifier_hash] %>',
+window.addEventListener('konversio:ready', function() {
+  window.$konversio.setUser('<%= KonversioHub.installation_identifier %>', {
+    identifier_hash: '<%= KonversioHub.support_config[:support_identifier_hash] %>',
     email: '<%= SuperAdmin.first.email %>',
     name: '<%= SuperAdmin.first.name %>'
   });

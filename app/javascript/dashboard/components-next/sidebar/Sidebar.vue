@@ -38,7 +38,7 @@ const emit = defineEmits([
   'closeMobileSidebar',
 ]);
 
-const { accountScopedRoute, isOnPilotCloud } = useAccount();
+const { accountScopedRoute, isOnKonversioCloud } = useAccount();
 const store = useStore();
 const searchShortcut = useKbd([`$mod`, 'k']);
 const { t } = useI18n();
@@ -844,12 +844,16 @@ const menuItems = computed(() => {
       />
       <SidebarChangelogCard
         v-if="
-          isOnPilotCloud && !isACustomBrandedInstance && !isEffectivelyCollapsed
+          isOnKonversioCloud &&
+          !isACustomBrandedInstance &&
+          !isEffectivelyCollapsed
         "
       />
       <SidebarChangelogButton
         v-if="
-          isOnPilotCloud && !isACustomBrandedInstance && isEffectivelyCollapsed
+          isOnKonversioCloud &&
+          !isACustomBrandedInstance &&
+          isEffectivelyCollapsed
         "
       />
       <div

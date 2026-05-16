@@ -21,16 +21,16 @@ describe ReportingEventListener do
     context 'when rollup creation fails' do
       let(:event) { Events::Base.new('conversation.resolved', Time.zone.now, conversation: conversation) }
       let(:error) { StandardError.new('rollup failed') }
-      let(:exception_tracker) { instance_double(PilotExceptionTracker, capture_exception: true) }
+      let(:exception_tracker) { instance_double(KonversioExceptionTracker, capture_exception: true) }
 
       before do
         allow(ReportingEvents::RollupService).to receive(:perform).and_raise(error)
-        allow(PilotExceptionTracker).to receive(:new).and_return(exception_tracker)
+        allow(KonversioExceptionTracker).to receive(:new).and_return(exception_tracker)
       end
 
       it 'captures the error without interrupting raw event creation' do
         expect { listener.conversation_resolved(event) }.not_to raise_error
-        expect(PilotExceptionTracker).to have_received(:new).with(error, account: account)
+        expect(KonversioExceptionTracker).to have_received(:new).with(error, account: account)
         expect(account.reporting_events.where(name: 'conversation_resolved').count).to be 1
       end
     end

@@ -39,7 +39,7 @@ class Instagram::CallbacksController < ApplicationController
   # https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login#sample-rejected-response
   def handle_error(error)
     Rails.logger.error("Instagram Channel creation Error: #{error.message}")
-    PilotExceptionTracker.new(error).capture_exception
+    KonversioExceptionTracker.new(error).capture_exception
 
     error_info = extract_error_info(error)
     redirect_to_error_page(error_info)

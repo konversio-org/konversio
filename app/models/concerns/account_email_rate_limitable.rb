@@ -17,7 +17,7 @@ module AccountEmailRateLimitable
   end
 
   def within_email_rate_limit?
-    return true unless PilotApp.chatwoot_cloud?
+    return true unless KonversioApp.chatwoot_cloud?
     return true if emails_sent_today < email_rate_limit
 
     Rails.logger.warn("Account #{id} reached daily email rate limit of #{email_rate_limit}. Sent: #{emails_sent_today}")
@@ -49,6 +49,6 @@ module AccountEmailRateLimitable
   end
 
   def default_limit
-    PilotApp.max_limit.to_i
+    KonversioApp.max_limit.to_i
   end
 end

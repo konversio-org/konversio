@@ -2,7 +2,7 @@ require 'rails_helper'
 # explicitly requiring since we are loading apms conditionally in application.rb
 require 'sentry-ruby'
 
-describe PilotExceptionTracker do
+describe KonversioExceptionTracker do
   it 'use rails logger if no tracker is configured' do
     expect(Rails.logger).to receive(:error).with('random')
     described_class.new('random').capture_exception

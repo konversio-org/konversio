@@ -18,8 +18,8 @@ describe('useAttachments', () => {
   let mockGetters;
 
   beforeEach(() => {
-    // Reset window.pilotWebChannel
-    delete window.pilotWebChannel;
+    // Reset window.konversioWebChannel
+    delete window.konversioWebChannel;
 
     // Create mock store
     mockGetters = {};
@@ -56,7 +56,7 @@ describe('useAttachments', () => {
 
   describe('hasAttachmentsEnabled', () => {
     it('returns true when attachments are enabled in channel config', () => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments', 'emoji'],
       };
 
@@ -66,7 +66,7 @@ describe('useAttachments', () => {
     });
 
     it('returns false when attachments are not enabled in channel config', () => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['emoji'],
       };
 
@@ -76,7 +76,7 @@ describe('useAttachments', () => {
     });
 
     it('returns false when channel config has no enabled features', () => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: [],
       };
 
@@ -86,7 +86,7 @@ describe('useAttachments', () => {
     });
 
     it('returns false when channel config is missing', () => {
-      window.pilotWebChannel = undefined;
+      window.konversioWebChannel = undefined;
 
       const { hasAttachmentsEnabled } = useAttachments();
 
@@ -94,7 +94,7 @@ describe('useAttachments', () => {
     });
 
     it('returns false when enabledFeatures is missing', () => {
-      window.pilotWebChannel = {};
+      window.konversioWebChannel = {};
 
       const { hasAttachmentsEnabled } = useAttachments();
 
@@ -105,7 +105,7 @@ describe('useAttachments', () => {
   describe('canHandleAttachments', () => {
     beforeEach(() => {
       // Set up a default channel config
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments'],
       };
     });
@@ -128,7 +128,7 @@ describe('useAttachments', () => {
 
     it('falls back to inbox settings when SDK flag is undefined', () => {
       mockGetters['appConfig/getShouldShowFilePicker'] = undefined;
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments'],
       };
 
@@ -139,7 +139,7 @@ describe('useAttachments', () => {
 
     it('falls back to inbox settings when SDK flag is undefined and attachments disabled', () => {
       mockGetters['appConfig/getShouldShowFilePicker'] = undefined;
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['emoji'],
       };
 
@@ -150,7 +150,7 @@ describe('useAttachments', () => {
 
     it('prioritizes SDK false over inbox settings true', () => {
       mockGetters['appConfig/getShouldShowFilePicker'] = false;
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments'],
       };
 
@@ -161,7 +161,7 @@ describe('useAttachments', () => {
 
     it('prioritizes SDK true over inbox settings false', () => {
       mockGetters['appConfig/getShouldShowFilePicker'] = true;
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['emoji'], // no attachments
       };
 
@@ -173,7 +173,7 @@ describe('useAttachments', () => {
 
   describe('hasEmojiPickerEnabled', () => {
     it('returns true when emoji picker is enabled in channel config', () => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['emoji_picker', 'attachments'],
       };
 
@@ -183,7 +183,7 @@ describe('useAttachments', () => {
     });
 
     it('returns false when emoji picker is not enabled in channel config', () => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments'],
       };
 
@@ -207,7 +207,7 @@ describe('useAttachments', () => {
     it('returns all expected properties', () => {
       mockGetters['appConfig/getShouldShowFilePicker'] = undefined;
       mockGetters['appConfig/getShouldShowEmojiPicker'] = true;
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         enabledFeatures: ['attachments', 'emoji_picker'],
       };
 

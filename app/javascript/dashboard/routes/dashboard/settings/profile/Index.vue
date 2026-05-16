@@ -101,7 +101,7 @@ export default {
       globalConfig: 'globalConfig/get',
     }),
     isMfaEnabled() {
-      return parseBoolean(window.pilotConfig?.isMfaEnabled);
+      return parseBoolean(window.konversioConfig?.isMfaEnabled);
     },
   },
   mounted() {

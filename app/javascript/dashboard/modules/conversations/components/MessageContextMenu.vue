@@ -85,7 +85,7 @@ export default {
   methods: {
     async copyLinkToMessage() {
       const fullConversationURL =
-        window.pilotConfig.hostURL +
+        window.konversioConfig.hostURL +
         frontendURL(
           conversationUrl({
             id: this.conversationId,

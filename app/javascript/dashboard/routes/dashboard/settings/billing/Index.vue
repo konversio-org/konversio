@@ -16,7 +16,7 @@ import SettingsLayout from '../SettingsLayout.vue';
 import ButtonV4 from 'next/button/Button.vue';
 
 const router = useRouter();
-const { currentAccount, isOnPilotCloud } = useAccount();
+const { currentAccount, isOnKonversioCloud } = useAccount();
 
 const uiFlags = useMapGetter('accounts/getUIFlags');
 const store = useStore();
@@ -75,7 +75,7 @@ const fetchAccountDetails = async () => {
 
 const handleBillingPageLogic = async () => {
   // If self-hosted, redirect to dashboard
-  if (!isOnPilotCloud.value) {
+  if (!isOnKonversioCloud.value) {
     router.push({ name: 'home' });
     return;
   }

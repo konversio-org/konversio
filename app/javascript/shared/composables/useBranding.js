@@ -7,9 +7,9 @@ import { useMapGetter } from 'dashboard/composables/store.js';
 export function useBranding() {
   const globalConfig = useMapGetter('globalConfig/get');
   /**
-   * Replaces "Pilot" in text with the installation name from global config
+   * Replaces "Konversio" in text with the installation name from global config
    * @param {string} text - The text to process
-   * @returns {string} - Text with "Pilot" replaced by installation name
+   * @returns {string} - Text with "Konversio" replaced by installation name
    */
   const replaceInstallationName = text => {
     if (!text) return text;

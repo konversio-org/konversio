@@ -16,10 +16,10 @@ class Telegram::IncomingMessageService
     set_conversation
     # TODO: Since the recent Telegram Business update, we need to explicitly mark messages as read using an additional request.
     # Otherwise, the client will see their messages as unread.
-    # Pilot defines a 'read' status in its enum but does not currently update this status for Telegram conversations.
+    # Konversio defines a 'read' status in its enum but does not currently update this status for Telegram conversations.
     # We have two options:
     # 1. Send the read request to Telegram here, immediately when the message is created.
-    # 2. Properly update the read status in the Pilot UI and trigger the Telegram request when the agent actually reads the message.
+    # 2. Properly update the read status in the Konversio UI and trigger the Telegram request when the agent actually reads the message.
     # See: https://core.telegram.org/bots/api#readbusinessmessage
     @message = @conversation.messages.build(
       content: telegram_params_message_content,

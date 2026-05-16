@@ -65,7 +65,7 @@ RSpec.describe ApplicationRecord do
 
   context 'when backfilling legacy plaintext' do
     before do
-      skip('encryption keys missing; see run_mfa_spec workflow') unless Pilot.encryption_configured?
+      skip('encryption keys missing; see run_mfa_spec workflow') unless Konversio.encryption_configured?
     end
 
     it 'reads existing plaintext and encrypts on update' do
@@ -93,7 +93,7 @@ RSpec.describe ApplicationRecord do
 
   context 'when looking up telegram legacy records' do
     before do
-      skip('encryption keys missing; see run_mfa_spec workflow') unless Pilot.encryption_configured?
+      skip('encryption keys missing; see run_mfa_spec workflow') unless Konversio.encryption_configured?
     end
 
     it 'finds plaintext records via fallback lookup' do
