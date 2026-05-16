@@ -15,7 +15,7 @@ vi.mock('dashboard/composables/useTransformKeys', () => ({
 }));
 
 describe('useAvailability', () => {
-  const originalWindow = window.pilotWebChannel;
+  const originalWindow = window.konversioWebChannel;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -25,7 +25,7 @@ describe('useAvailability', () => {
     mockIsInWorkingHours.mockReturnValue(true);
     mockUseCamelCase.mockImplementation(obj => obj);
 
-    window.pilotWebChannel = {
+    window.konversioWebChannel = {
       workingHours: [],
       workingHoursEnabled: false,
       timezone: 'UTC',
@@ -35,7 +35,7 @@ describe('useAvailability', () => {
   });
 
   afterEach(() => {
-    window.pilotWebChannel = originalWindow;
+    window.konversioWebChannel = originalWindow;
   });
 
   describe('initial state', () => {
@@ -74,7 +74,7 @@ describe('useAvailability', () => {
     const workingHours = [{ dayOfWeek: 1, openHour: 9, closeHour: 17 }];
 
     beforeEach(() => {
-      window.pilotWebChannel = {
+      window.konversioWebChannel = {
         workingHours,
         workingHoursEnabled: true,
         utcOffset: '+05:30',
@@ -111,11 +111,11 @@ describe('useAvailability', () => {
   });
 
   describe('config changes', () => {
-    it('should react to window.pilotWebChannel changes', () => {
+    it('should react to window.konversioWebChannel changes', () => {
       const { inboxConfig } = useAvailability();
 
-      window.pilotWebChannel = {
-        ...window.pilotWebChannel,
+      window.konversioWebChannel = {
+        ...window.konversioWebChannel,
         replyTime: 'in_a_day',
       };
 

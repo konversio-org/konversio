@@ -8,7 +8,7 @@ module Integrations::LlmInstrumentation
   include Integrations::LlmInstrumentationSpans
 
   def instrument_llm_call(params)
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     result = nil
     executed = false
@@ -20,12 +20,12 @@ module Integrations::LlmInstrumentation
       result
     end
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: resolve_account(params)).capture_exception
+    KonversioExceptionTracker.new(e, account: resolve_account(params)).capture_exception
     executed ? result : yield
   end
 
   def instrument_agent_session(params)
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     result = nil
     executed = false
@@ -41,14 +41,14 @@ module Integrations::LlmInstrumentation
       result
     end
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: resolve_account(params)).capture_exception
+    KonversioExceptionTracker.new(e, account: resolve_account(params)).capture_exception
     executed ? result : yield
   end
 
   def instrument_tool_call(tool_name, arguments)
     # There is no error handling because tools can fail and LLMs should be
     # aware of those failures and factor them into their response.
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     tracer.in_span(format(TOOL_SPAN_NAME, tool_name)) do |span|
       span.set_attribute(ATTR_LANGFUSE_OBSERVATION_TYPE, 'tool')
@@ -61,7 +61,7 @@ module Integrations::LlmInstrumentation
   end
 
   def instrument_embedding_call(params)
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     instrument_with_span(params[:span_name] || 'llm.embedding', params) do |span, track_result|
       set_embedding_span_attributes(span, params)
@@ -73,7 +73,7 @@ module Integrations::LlmInstrumentation
   end
 
   def instrument_audio_transcription(params)
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     instrument_with_span(params[:span_name] || 'llm.audio.transcription', params) do |span, track_result|
       set_audio_transcription_span_attributes(span, params)
@@ -85,7 +85,7 @@ module Integrations::LlmInstrumentation
   end
 
   def instrument_moderation_call(params)
-    return yield unless PilotApp.otel_enabled?
+    return yield unless KonversioApp.otel_enabled?
 
     instrument_with_span(params[:span_name] || 'llm.moderation', params) do |span, track_result|
       set_moderation_span_attributes(span, params)
@@ -107,7 +107,7 @@ module Integrations::LlmInstrumentation
       yield(span, track_result)
     end
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: resolve_account(params)).capture_exception
+    KonversioExceptionTracker.new(e, account: resolve_account(params)).capture_exception
     raise unless executed
 
     result

@@ -29,7 +29,7 @@ class Tiktok::CallbacksController < ApplicationController
 
   def handle_error(error)
     Rails.logger.error("TikTok Channel creation Error: #{error.message}")
-    PilotExceptionTracker.new(error).capture_exception
+    KonversioExceptionTracker.new(error).capture_exception
 
     redirect_to_error_page(error_type: error.class.name, code: 500, error_message: error.message)
   end

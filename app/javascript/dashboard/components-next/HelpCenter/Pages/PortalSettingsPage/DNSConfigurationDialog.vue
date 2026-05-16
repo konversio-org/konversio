@@ -33,7 +33,7 @@ const validationRules = {
 const v$ = useVuelidate(validationRules, state);
 
 const domain = computed(() => {
-  const { hostURL, helpCenterURL } = window?.pilotConfig || {};
+  const { hostURL, helpCenterURL } = window?.konversioConfig || {};
   return getHostNameFromURL(helpCenterURL) || getHostNameFromURL(hostURL) || '';
 });
 

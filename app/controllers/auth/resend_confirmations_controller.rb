@@ -6,7 +6,7 @@
 # Rate-limited by Rack::Attack (IP + email) and gated by hCaptcha.
 class Auth::ResendConfirmationsController < ActionController::API
   def create
-    return head(:ok) unless PilotCaptcha.new(params[:h_captcha_client_response]).valid?
+    return head(:ok) unless KonversioCaptcha.new(params[:h_captcha_client_response]).valid?
 
     email = params[:email]
     return head(:ok) unless email.is_a?(String)

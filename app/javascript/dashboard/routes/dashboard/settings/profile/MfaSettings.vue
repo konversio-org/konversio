@@ -30,7 +30,7 @@ const managementActionsRef = ref(null);
 // Load MFA status on mount
 onMounted(async () => {
   // Check if MFA is enabled globally
-  if (!parseBoolean(window.pilotConfig?.isMfaEnabled)) {
+  if (!parseBoolean(window.konversioConfig?.isMfaEnabled)) {
     // Redirect to profile settings if MFA is disabled
     router.push({
       name: 'profile_settings_index',

@@ -158,7 +158,7 @@ const onCardClick = e => {
   if (e.metaKey || e.ctrlKey) {
     e.preventDefault();
     window.open(
-      `${window.pilotConfig.hostURL}${path}`,
+      `${window.konversioConfig.hostURL}${path}`,
       '_blank',
       'noopener,noreferrer'
     );

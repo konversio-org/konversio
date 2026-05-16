@@ -6,14 +6,14 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-  isOnPilotCloud: {
+  isOnKonversioCloud: {
     type: Boolean,
     default: false,
   },
 });
 
 const emit = defineEmits(['upgrade']);
-const i18nKey = props.isOnPilotCloud ? 'PAYWALL' : 'ENTERPRISE_PAYWALL';
+const i18nKey = props.isOnKonversioCloud ? 'PAYWALL' : 'ENTERPRISE_PAYWALL';
 </script>
 
 <template>
@@ -21,7 +21,7 @@ const i18nKey = props.isOnPilotCloud ? 'PAYWALL' : 'ENTERPRISE_PAYWALL';
     <BasePaywallModal
       feature-prefix="SLA"
       :i18n-key="i18nKey"
-      :is-on-chatwoot-cloud="isOnPilotCloud"
+      :is-on-chatwoot-cloud="isOnKonversioCloud"
       :is-super-admin="isSuperAdmin"
       @upgrade="emit('upgrade')"
     />

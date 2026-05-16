@@ -5,7 +5,7 @@
 saml:
   name: 'SAML SSO'
   description: 'Configuration for controlling SAML Single Sign-On availability'
-  enabled: <%= PilotApp.enterprise? %>
+  enabled: <%= KonversioApp.enterprise? %>
   icon: 'icon-lock-line'
   config_key: 'saml'
   enterprise: true

@@ -12,7 +12,7 @@ services:
         RAILS_SERVE_STATIC_FILES: 'false'
     tty: true
     stdin_open: true
-    image: pilot:development
+    image: konversio:development
     env_file: .env
 
   rails:
@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/dockerfiles/rails.Dockerfile
-    image: pilot-rails:development
+    image: konversio-rails:development
     volumes:
       - ./:/app:delegated
       - node_modules:/app/node_modules
@@ -45,7 +45,7 @@ services:
 
   sidekiq:
     <<: *base
-    image: pilot-rails:development
+    image: konversio-rails:development
     volumes:
       - ./:/app:delegated
       - node_modules:/app/node_modules
@@ -66,7 +66,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/dockerfiles/vite.Dockerfile
-    image: pilot-vite:development
+    image: konversio-vite:development
     volumes:
       - ./:/app:delegated
       - node_modules:/app/node_modules
@@ -90,7 +90,7 @@ services:
     volumes:
       - postgres:/data/postgres
     environment:
-      - POSTGRES_DB=pilot
+      - POSTGRES_DB=konversio
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=
 

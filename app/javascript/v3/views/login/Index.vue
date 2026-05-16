@@ -85,16 +85,16 @@ export default {
   computed: {
     ...mapGetters({ globalConfig: 'globalConfig/get' }),
     allowedLoginMethods() {
-      return window.pilotConfig.allowedLoginMethods || ['email'];
+      return window.konversioConfig.allowedLoginMethods || ['email'];
     },
     showGoogleOAuth() {
       return (
         this.allowedLoginMethods.includes('google_oauth') &&
-        Boolean(window.pilotConfig.googleOAuthClientId)
+        Boolean(window.konversioConfig.googleOAuthClientId)
       );
     },
     showSignupLink() {
-      return window.pilotConfig.signupEnabled === 'true';
+      return window.konversioConfig.signupEnabled === 'true';
     },
     showSamlLogin() {
       return this.allowedLoginMethods.includes('saml');

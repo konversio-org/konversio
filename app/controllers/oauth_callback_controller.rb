@@ -7,7 +7,7 @@ class OauthCallbackController < ApplicationController
 
     handle_response
   rescue StandardError => e
-    PilotExceptionTracker.new(e).capture_exception
+    KonversioExceptionTracker.new(e).capture_exception
     redirect_to '/'
   end
 

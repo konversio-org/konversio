@@ -16,7 +16,7 @@ class Inboxes::FetchImapEmailInboxesJob < ApplicationJob
     return false unless inbox.channel.imap_enabled
     return false if inbox.channel.reauthorization_required?
 
-    return true unless PilotApp.chatwoot_cloud?
+    return true unless KonversioApp.chatwoot_cloud?
     return false if default_plan?(inbox.account)
 
     true

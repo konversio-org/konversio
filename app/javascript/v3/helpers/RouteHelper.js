@@ -11,7 +11,7 @@ const validateSSOLoginParams = to => {
   return isLoginRoute && hasValidSSOParams;
 };
 
-export const validateRouteAccess = (to, next, pilotConfig = {}) => {
+export const validateRouteAccess = (to, next, konversioConfig = {}) => {
   // Pages with ignoreSession:true would be rendered
   // even if there is an active session
   // Used for confirmation or password reset pages
@@ -37,14 +37,16 @@ export const validateRouteAccess = (to, next, pilotConfig = {}) => {
   // Disable navigation to signup page if signups are disabled
   // Signup route has an attribute (requireSignupEnabled) in it's definition
   const isAnInalidSignupNavigation =
-    pilotConfig.signupEnabled !== 'true' &&
+    konversioConfig.signupEnabled !== 'true' &&
     to.meta &&
     to.meta.requireSignupEnabled;
 
   // Disable navigation to SAML login if enterprise is not enabled
   // SAML route has an attribute (requireEnterprise) in it's definition
   const isEnterpriseOnlyPath =
-    pilotConfig.isEnterprise !== 'true' && to.meta && to.meta.requireEnterprise;
+    konversioConfig.isEnterprise !== 'true' &&
+    to.meta &&
+    to.meta.requireEnterprise;
 
   if (!to.name || isAnInalidSignupNavigation || isEnterpriseOnlyPath) {
     next(frontendURL('login'));

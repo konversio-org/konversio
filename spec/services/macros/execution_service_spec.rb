@@ -33,10 +33,10 @@ RSpec.describe Macros::ExecutionService, type: :service do
       end
 
       context 'when an action raises an error' do
-        let(:exception_tracker) { instance_spy(PilotExceptionTracker) }
+        let(:exception_tracker) { instance_spy(KonversioExceptionTracker) }
 
         before do
-          allow(PilotExceptionTracker).to receive(:new).and_return(exception_tracker)
+          allow(KonversioExceptionTracker).to receive(:new).and_return(exception_tracker)
         end
 
         it 'captures the exception' do

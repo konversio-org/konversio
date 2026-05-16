@@ -1,6 +1,6 @@
 class AddFeatureCitationToAssistantConfig < ActiveRecord::Migration[7.1]
   def up
-    return unless PilotApp.enterprise?
+    return unless KonversioApp.enterprise?
 
     Captain::Assistant.find_each do |assistant|
       assistant.update!(
@@ -10,7 +10,7 @@ class AddFeatureCitationToAssistantConfig < ActiveRecord::Migration[7.1]
   end
 
   def down
-    return unless PilotApp.enterprise?
+    return unless KonversioApp.enterprise?
 
     Captain::Assistant.find_each do |assistant|
       config = assistant.config.dup

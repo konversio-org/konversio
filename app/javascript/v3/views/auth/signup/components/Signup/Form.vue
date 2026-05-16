@@ -62,13 +62,13 @@ const termsLink = computed(() =>
 );
 
 const allowedLoginMethods = computed(
-  () => window.pilotConfig.allowedLoginMethods || ['email']
+  () => window.konversioConfig.allowedLoginMethods || ['email']
 );
 
 const showGoogleOAuth = computed(
   () =>
     allowedLoginMethods.value.includes('google_oauth') &&
-    Boolean(window.pilotConfig.googleOAuthClientId)
+    Boolean(window.konversioConfig.googleOAuthClientId)
 );
 
 const isFormValid = computed(() => !v$.value.$invalid);

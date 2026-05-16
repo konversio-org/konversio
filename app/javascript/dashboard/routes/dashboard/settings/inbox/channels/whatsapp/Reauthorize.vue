@@ -27,9 +27,9 @@ const { t } = useI18n();
 const isRequestingAuthorization = ref(false);
 const isLoadingFacebook = ref(true);
 
-const whatsappAppId = computed(() => window.pilotConfig.whatsappAppId);
+const whatsappAppId = computed(() => window.konversioConfig.whatsappAppId);
 const whatsappConfigurationId = computed(
-  () => window.pilotConfig.whatsappConfigurationId
+  () => window.konversioConfig.whatsappConfigurationId
 );
 
 const actionLabel = computed(() => {
@@ -184,7 +184,7 @@ onMounted(async () => {
     // Load Facebook SDK and initialize
     await setupFacebookSdk(
       whatsappAppId.value,
-      window.pilotConfig?.whatsappApiVersion
+      window.konversioConfig?.whatsappApiVersion
     );
   } catch (error) {
     useAlert(t('INBOX.REAUTHORIZE.FACEBOOK_LOAD_ERROR'));

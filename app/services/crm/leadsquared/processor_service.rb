@@ -70,10 +70,10 @@ class Crm::Leadsquared::ProcessorService < Crm::BaseProcessorService
       store_external_id(contact, new_lead_id)
     end
   rescue Crm::Leadsquared::Api::BaseClient::ApiError => e
-    PilotExceptionTracker.new(e, account: @account).capture_exception
+    KonversioExceptionTracker.new(e, account: @account).capture_exception
     Rails.logger.error "LeadSquared API error processing contact: #{e.message}"
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: @account).capture_exception
+    KonversioExceptionTracker.new(e, account: @account).capture_exception
     Rails.logger.error "Error processing contact in LeadSquared: #{e.message}"
   end
 
@@ -89,10 +89,10 @@ class Crm::Leadsquared::ProcessorService < Crm::BaseProcessorService
     metadata[metadata_key] = activity_id
     store_conversation_metadata(conversation, metadata)
   rescue Crm::Leadsquared::Api::BaseClient::ApiError => e
-    PilotExceptionTracker.new(e, account: @account).capture_exception
+    KonversioExceptionTracker.new(e, account: @account).capture_exception
     Rails.logger.error "LeadSquared API error in #{activity_type} activity: #{e.message}"
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: @account).capture_exception
+    KonversioExceptionTracker.new(e, account: @account).capture_exception
     Rails.logger.error "Error creating #{activity_type} activity in LeadSquared: #{e.message}"
   end
 

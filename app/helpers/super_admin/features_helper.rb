@@ -4,8 +4,8 @@ module SuperAdmin::FeaturesHelper
   end
 
   def self.plan_details
-    plan = PilotHub.pricing_plan
-    quantity = PilotHub.pricing_plan_quantity
+    plan = KonversioHub.pricing_plan
+    quantity = KonversioHub.pricing_plan_quantity
 
     if plan == 'premium'
       "You are currently on the <span class='font-semibold'>#{plan}</span> plan with <span class='font-semibold'>#{quantity} agents</span>."

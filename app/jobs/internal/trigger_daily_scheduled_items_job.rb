@@ -20,6 +20,6 @@ class Internal::TriggerDailyScheduledItemsJob < ApplicationJob
   end
 
   def designated_minute
-    @designated_minute ||= Digest::MD5.hexdigest(PilotHub.installation_identifier).hex % 1440
+    @designated_minute ||= Digest::MD5.hexdigest(KonversioHub.installation_identifier).hex % 1440
   end
 end

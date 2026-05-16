@@ -70,9 +70,9 @@ RSpec.describe Crm::SetupJob do
           error = StandardError.new('Test error')
           allow(setup_service).to receive(:setup).and_raise(error)
           allow(Rails.logger).to receive(:error)
-          allow(PilotExceptionTracker).to receive(:new)
+          allow(KonversioExceptionTracker).to receive(:new)
             .with(error, account: hook.account)
-            .and_return(instance_double(PilotExceptionTracker, capture_exception: true))
+            .and_return(instance_double(KonversioExceptionTracker, capture_exception: true))
 
           described_class.new.perform(hook.id)
 

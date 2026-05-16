@@ -405,7 +405,7 @@
         "DESCRIPTION": "Gestisce risposte automatizzate, riassunti delle conversazioni e suggerimenti di risposta intelligenti per le interazioni con i clienti."
       },
       "COPILOT": {
-        "TITLE": "Co-pilot",
+        "TITLE": "Co-konversio",
         "DESCRIPTION": "Fornisce suggerimenti contestuali in tempo reale, consigli sulla knowledge base e insight proattivi durante le conversazioni."
       }
     },

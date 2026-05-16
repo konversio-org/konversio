@@ -14,7 +14,7 @@ const router = useRouter();
 const i18n = useI18n();
 const { prefersDarkMode } = useDarkMode();
 
-const portal = computed(() => window.pilotWebChannel.portal);
+const portal = computed(() => window.konversioWebChannel.portal);
 
 const popularArticles = useMapGetter('article/popularArticles');
 const articleUiFlags = useMapGetter('article/uiFlags');
@@ -52,7 +52,7 @@ const openArticleInArticleViewer = link => {
 const viewAllArticles = () => {
   const {
     portal: { slug },
-  } = window.pilotWebChannel;
+  } = window.konversioWebChannel;
   openArticleInArticleViewer(`/hc/${slug}/${locale.value}`);
 };
 

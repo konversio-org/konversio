@@ -1,26 +1,28 @@
-# Pilot — AI Customer Concierge
+# Konversio — Open Customer Support, BYO-key AI
 
-Open-source (MIT). BYO-key. Forked from Chatwoot.
+Open-source (MIT). Forked from Chatwoot. Built for self-hosters who want
+the full Chatwoot toolset plus AI features without the Enterprise license.
+
+## Naming model (strict — used throughout this codebase)
+
+| Layer | Name | Notes |
+|---|---|---|
+| **Platform / product** | **Konversio** | The fork. Replaces "Chatwoot" everywhere in code. |
+| **AI module (future)** | **Pilot** | Replacement for Chatwoot's Enterprise "Captain". Not built yet — Phase 2. |
+| **Human support staff** | Agents | Unchanged from Chatwoot terminology. |
+| **Chatwoot's AI brand** | Captain | Referenced only for context; the code was stripped. |
 
 ## What This Is
 
-**Pilot** is an open-source (MIT) AI customer support platform forked from
+Konversio is an open-source (MIT) customer support platform forked from
 Chatwoot v4.13.0 (April 17, 2026). We dropped every line of proprietary
-enterprise code and built our own fully open BYO-key AI concierge.
+enterprise code, leaving a clean MIT base. The AI layer that Chatwoot
+sells as "Captain" (Enterprise-only, $200/month for 10,000 responses,
+vendor-locked) will be replaced by **Pilot** — a fully open, BYO-key,
+multi-provider AI module that lives in `custom/app/services/custom/pilot/`.
 
-Naming convention: **Agents are humans** (the support staff, inherited from
-Chatwoot terminology). **Pilot is the AI** — drafting replies, summarizing
-threads, handling first-line customer messages when configured.
-
-Chatwoot ships two editions: Community (MIT) and Enterprise (proprietary,
-in the `enterprise/` directory). Their "Captain" AI agent is enterprise-only
-— $200/month for 10,000 responses, vendor-locked.
-
-Pilot keeps everything MIT, strips the enterprise lock-in, and replaces
-Captain: you bring your own API key from any provider (OpenAI, Scaleway,
-Mistral, Groq, Ollama — anything OpenAI-compatible).
-
-Tagline: **Pilot. AI customer concierge. Open-source. BYO-key.**
+**Pilot is not built yet.** Today Konversio is "Chatwoot CE, stripped and
+rebranded." Pilot lands in Phase 2.
 
 ## Fork Lineage
 
@@ -29,12 +31,12 @@ Chatwoot v4.13.0 (MIT core + proprietary enterprise/)
     │
     ├── Removed: enterprise/ (all proprietary code)
     ├── Removed: Captain AI UI + API (dead without enterprise backend)
-    ├── Stubbed: Copilot/AI reply composables (rebuilding as Pilot)
-    ├── Renamed: Chatwoot → Pilot (upcoming)
+    ├── Stubbed: Copilot/AI reply composables (will be rebuilt as Pilot)
+    ├── Renamed: Chatwoot → Konversio
     │
-    └── Pilot v0.1.0 (100% MIT)
+    └── Konversio v0.1.0 (100% MIT, no AI yet)
             │
-            └── Build: Pilot AI concierge (BYO-key)
+            └── Phase 2: Build the Pilot AI module (BYO-key)
 ```
 
 ## What Was Stripped

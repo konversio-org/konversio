@@ -1,3 +1,3 @@
 json.partial! 'api/v1/models/account', formats: [:json], resource: @account
 json.latest_chatwoot_version @latest_chatwoot_version
-json.partial! 'enterprise/api/v1/accounts/partials/account', account: @account if PilotApp.enterprise?
+json.partial! 'enterprise/api/v1/accounts/partials/account', account: @account if KonversioApp.enterprise?

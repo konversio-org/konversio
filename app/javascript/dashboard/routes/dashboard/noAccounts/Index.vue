@@ -7,10 +7,10 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import Auth from 'dashboard/api/auth';
 
 const { t } = useI18n();
-const isOnPilotCloud = useMapGetter('globalConfig/isOnPilotCloud');
+const isOnKonversioCloud = useMapGetter('globalConfig/isOnKonversioCloud');
 
 const message = computed(() => {
-  if (isOnPilotCloud.value) {
+  if (isOnKonversioCloud.value) {
     return t('APP_GLOBAL.NO_ACCOUNTS.MESSAGE_CLOUD');
   }
   return t('APP_GLOBAL.NO_ACCOUNTS.MESSAGE_SELF_HOSTED');

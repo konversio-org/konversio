@@ -182,6 +182,6 @@ class ReportingEventListener < BaseListener
     # event is preserved and rollup data can be rebuilt or re-applied later.
     ReportingEvents::RollupService.perform(reporting_event)
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: reporting_event.account).capture_exception
+    KonversioExceptionTracker.new(e, account: reporting_event.account).capture_exception
   end
 end

@@ -161,7 +161,7 @@ describe SearchService do
         end
 
         it 'filters messages by time range with LIKE search' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(false)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -174,7 +174,7 @@ describe SearchService do
         end
 
         it 'filters messages by time range with GIN search' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(true)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -187,7 +187,7 @@ describe SearchService do
         end
 
         it 'filters messages by sender (contact)' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(false)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -200,7 +200,7 @@ describe SearchService do
         end
 
         it 'filters messages by sender (agent)' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(false)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -213,7 +213,7 @@ describe SearchService do
         end
 
         it 'filters messages by inbox' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(false)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -226,7 +226,7 @@ describe SearchService do
         end
 
         it 'combines multiple filters' do
-          allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+          allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
           allow(account).to receive(:feature_enabled?).and_call_original
           allow(account).to receive(:feature_enabled?).with('search_with_gin').and_return(false)
           allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
@@ -457,7 +457,7 @@ describe SearchService do
     let(:search_type) { 'Message' }
 
     before do
-      allow(PilotApp).to receive(:advanced_search_allowed?).and_return(true)
+      allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(true)
       allow(account).to receive(:feature_enabled?).and_call_original
       allow(account).to receive(:feature_enabled?).with('advanced_search').and_return(true)
       allow(Message).to receive(:search).and_return([])
@@ -465,7 +465,7 @@ describe SearchService do
 
     context 'when advanced_search feature flag is disabled' do
       it 'ignores filters and falls back to standard search' do
-        allow(PilotApp).to receive(:advanced_search_allowed?).and_return(false)
+        allow(KonversioApp).to receive(:advanced_search_allowed?).and_return(false)
         contact = create(:contact, account: account)
         inbox2 = create(:inbox, account: account)
 

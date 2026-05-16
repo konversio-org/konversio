@@ -20,7 +20,7 @@ class Channel::Instagram < ApplicationRecord
   self.table_name = 'channel_instagram'
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  encrypts :access_token if Pilot.encryption_configured?
+  encrypts :access_token if Konversio.encryption_configured?
 
   AUTHORIZATION_ERROR_THRESHOLD = 1
 

@@ -24,7 +24,7 @@ module ReferencesHeaderBuilder
     fold_references_header(references)
   rescue StandardError => e
     Rails.logger.error("Error building references header for ##{conversation.id}: #{e.message}")
-    PilotExceptionTracker.new(e, account: conversation.account).capture_exception
+    KonversioExceptionTracker.new(e, account: conversation.account).capture_exception
     ''
   end
 

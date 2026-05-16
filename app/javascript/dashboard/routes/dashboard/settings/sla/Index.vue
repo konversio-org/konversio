@@ -41,7 +41,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isOnPilotCloud: 'globalConfig/isOnPilotCloud',
+      isOnKonversioCloud: 'globalConfig/isOnKonversioCloud',
       isFeatureEnabledonAccount: 'accounts/isFeatureEnabledonAccount',
       records: 'sla/getSLA',
       currentUser: 'getCurrentUser',
@@ -170,7 +170,7 @@ export default {
       <SLAPaywallEnterprise
         v-if="isBehindAPaywall"
         :is-super-admin="isSuperAdmin"
-        :is-on-chatwoot-cloud="isOnPilotCloud"
+        :is-on-chatwoot-cloud="isOnKonversioCloud"
         @upgrade="onClickCTA"
       />
       <BaseTable

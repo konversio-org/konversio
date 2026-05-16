@@ -7,7 +7,7 @@ module EmailHelper
   def render_email_html(content)
     return '' if content.blank?
 
-    PilotMarkdownRenderer.new(content).render_message.to_s
+    KonversioMarkdownRenderer.new(content).render_message.to_s
   end
 
   # Raise a standard error if any email address is invalid

@@ -57,7 +57,7 @@ const SSL_STATUS = {
 };
 
 const { t } = useI18n();
-const { isOnPilotCloud } = useAccount();
+const { isOnKonversioCloud } = useAccount();
 
 const addCustomDomainDialogRef = ref(null);
 const dnsConfigurationDialogRef = ref(null);
@@ -170,7 +170,7 @@ const onClickSend = email => {
             </span>
           </div>
           <span
-            v-if="!isLive && isOnPilotCloud"
+            v-if="!isLive && isOnKonversioCloud"
             class="text-sm text-n-slate-11"
           >
             {{
@@ -183,7 +183,7 @@ const onClickSend = email => {
         <div class="flex items-center">
           <div v-if="customDomainAddress" class="flex items-center gap-3">
             <div
-              v-if="statusText && isOnPilotCloud"
+              v-if="statusText && isOnKonversioCloud"
               v-tooltip="verificationErrors"
               class="flex items-center gap-3 flex-shrink-0"
             >
@@ -199,7 +199,7 @@ const onClickSend = email => {
               </span>
             </div>
             <div
-              v-if="statusText && isOnPilotCloud"
+              v-if="statusText && isOnKonversioCloud"
               class="w-px h-3 bg-n-weak"
             />
             <Button
@@ -214,9 +214,9 @@ const onClickSend = email => {
               class="hover:!no-underline flex-shrink-0"
               @click="addCustomDomainDialogRef.dialogRef.open()"
             />
-            <div v-if="isOnPilotCloud" class="w-px h-3 bg-n-weak" />
+            <div v-if="isOnKonversioCloud" class="w-px h-3 bg-n-weak" />
             <Button
-              v-if="isOnPilotCloud"
+              v-if="isOnKonversioCloud"
               slate
               sm
               link
