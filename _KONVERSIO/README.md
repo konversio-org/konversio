@@ -1,18 +1,23 @@
-# Konvers.io — Open Customer Conversations. BYO-key AI Operators.
+# Konvers.io — Open Customer Conversations. BYO-key AI Pilot.
 
 ## What This Is
 
 Konversio is an open-source (MIT) customer support platform forked from
 Chatwoot v4.13.0 (April 17, 2026). We dropped every line of proprietary
 enterprise code and are building our own fully open BYO-key AI layer called
-**Operator**.
+**Pilot**.
+
+Naming convention: in Konversio, **Agents are humans** (the support staff,
+inherited from Chatwoot terminology). **Pilot is the AI** that assists those
+agents — drafting replies, summarizing threads, handling first-line
+customer messages when configured.
 
 Chatwoot ships two editions: Community (MIT) and Enterprise (proprietary,
 in the `enterprise/` directory). Their "Captain" AI agent is enterprise-only
 — $200/month for 10,000 responses, vendor-locked.
 
 Konversio keeps everything MIT, strips the enterprise lock-in, and replaces
-Captain with Operator: you bring your own API key from any provider (OpenAI,
+Captain with Pilot: you bring your own API key from any provider (OpenAI,
 Scaleway, Mistral, Groq, Ollama — anything OpenAI-compatible).
 
 ## Fork Lineage
@@ -22,12 +27,12 @@ Chatwoot v4.13.0 (MIT core + proprietary enterprise/)
     │
     ├── Removed: enterprise/ (all proprietary code)
     ├── Removed: Captain AI UI + API (dead without enterprise backend)
-    ├── Stubbed: Copilot/AI reply composables (rebuilding as Operator)
+    ├── Stubbed: Copilot/AI reply composables (rebuilding as Pilot)
     ├── Renamed: Chatwoot → Konversio (upcoming)
     │
     └── Konversio v0.1.0 (100% MIT)
             │
-            └── Phase 2: Build Operator (BYO-key AI)
+            └── Phase 2: Build Pilot (BYO-key AI)
 ```
 
 ## What Was Stripped
@@ -98,7 +103,7 @@ Everything from Chatwoot Community Edition:
 - **Security**: MFA/2FA, SAML SSO, audit logs (CE version)
 - **i18n**: 30+ languages via Crowdin
 
-## Architecture for Operator (Phase 2)
+## Architecture for Pilot (Phase 2)
 
 Chatwoot's enterprise module uses a `prepend` hook pattern:
 
@@ -113,7 +118,7 @@ class Inbox < ApplicationRecord
 end
 ```
 
-Operator will use the same `prepend_mod_with` mechanism via the `custom/`
+Pilot will use the same `prepend_mod_with` mechanism via the `custom/`
 directory (already supported by `ChatwootApp.extensions`):
 
 ```
@@ -123,20 +128,39 @@ custom/
 │   │   ├── conversation.rb       # preprends AI reply logic
 │   │   └── message.rb            # preprends AI summarization
 │   ├── controllers/custom/
-│   │   └── operator_controller.rb
+│   │   └── pilot_controller.rb
 │   └── services/custom/
-│       ├── operator/
+│       ├── pilot/
 │       │   ├── reply_service.rb
 │       │   ├── summarize_service.rb
 │       │   └── label_service.rb
-│       └── operator_service.rb
+│       └── pilot_service.rb
 ├── config/
 │   └── initializers/
 └── lib/
-    └── operator/
+    └── pilot/
 ```
 
-### Operator Features (planned)
+### Config naming
+
+Pilot config uses **`PILOT_*`** env vars / `InstallationConfig` keys, never
+`CAPTAIN_*`. This is a deliberate break from upstream Chatwoot:
+
+| Chatwoot | Konversio |
+|---|---|
+| `CAPTAIN_OPEN_AI_API_KEY` | `PILOT_OPEN_AI_API_KEY` |
+| `CAPTAIN_OPEN_AI_ENDPOINT` | `PILOT_OPEN_AI_ENDPOINT` |
+| `CAPTAIN_OPEN_AI_MODEL` | `PILOT_OPEN_AI_MODEL` |
+| `CAPTAIN_OPEN_AI_API_PROVIDER` | `PILOT_OPEN_AI_API_PROVIDER` |
+| `CAPTAIN_EMBEDDING_MODEL` | `PILOT_EMBEDDING_MODEL` |
+| `CAPTAIN_EMBEDDING_DIMENSIONS` | `PILOT_EMBEDDING_DIMENSIONS` |
+| `CAPTAIN_OPEN_AI_TRANSLATION_MODEL` | `PILOT_OPEN_AI_TRANSLATION_MODEL` |
+| `CAPTAIN_FIRECRAWL_API_KEY` | `PILOT_FIRECRAWL_API_KEY` |
+
+Migrating Chatwoot users have to rename their env vars once. The
+brand-consistent naming wins long-term over the one-time migration cost.
+
+### Pilot Features (planned)
 
 1. **BYO-key**: User configures provider (OpenAI, Scaleway, Mistral, etc.) + API key + endpoint URL
 2. **Smart reply suggestions**: AI-generated reply drafts for agents
