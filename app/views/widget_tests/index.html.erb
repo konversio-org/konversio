@@ -13,7 +13,7 @@
 %>
 <script>
 
-window.chatwootSettings = {
+window.pilotSettings = {
   hideMessageBubble: false,
   // showUnreadMessagesDialog: false,
   // baseDomain: '.loca.lt',
@@ -33,17 +33,17 @@ window.chatwootSettings = {
   g.async = true;
   s.parentNode.insertBefore(g,s);
   g.onload=function(){
-    window.chatwootSDK.run({
+    window.pilotSDK.run({
       websiteToken: '<%= @web_widget.website_token %>',
       baseUrl: BASE_URL
     })
   }
 })(document,"script");
 
-window.addEventListener('chatwoot:ready', function() {
-  console.log('chatwoot:ready', window.$chatwoot);
+window.addEventListener('pilot:ready', function() {
+  console.log('pilot:ready', window.$pilot);
   if (window.location.search.includes('setUser')) {
-    window.$chatwoot.setUser('<%= user_id %>', {
+    window.$pilot.setUser('<%= user_id %>', {
       identifier_hash: '<%= user_hash %>',
       email: 'jane@example.com',
       name: 'Jane Doe',
@@ -52,28 +52,28 @@ window.addEventListener('chatwoot:ready', function() {
   }
 })
 
-window.addEventListener('chatwoot:error', function(e) {
-  console.log('chatwoot:error', e.detail)
+window.addEventListener('pilot:error', function(e) {
+  console.log('pilot:error', e.detail)
 })
 
 
-window.addEventListener('chatwoot:on-message', function(e) {
-  console.log('chatwoot:on-message', e.detail)
+window.addEventListener('pilot:on-message', function(e) {
+  console.log('pilot:on-message', e.detail)
 })
 
-window.addEventListener('chatwoot:postback', function(e) {
-  console.log('chatwoot:postback', e.detail)
+window.addEventListener('pilot:postback', function(e) {
+  console.log('pilot:postback', e.detail)
 })
 
-window.addEventListener('chatwoot:opened', function() {
-  console.log('chatwoot:opened')
+window.addEventListener('pilot:opened', function() {
+  console.log('pilot:opened')
 })
 
-window.addEventListener('chatwoot:closed', function() {
-  console.log('chatwoot:closed')
+window.addEventListener('pilot:closed', function() {
+  console.log('pilot:closed')
 })
 
-window.addEventListener('chatwoot:on-start-conversation', function(e) {
-  console.log('chatwoot:on-start-conversation', e.detail)
+window.addEventListener('pilot:on-start-conversation', function(e) {
+  console.log('pilot:on-start-conversation', e.detail)
 })
 </script>

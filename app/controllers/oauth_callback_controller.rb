@@ -7,7 +7,7 @@ class OauthCallbackController < ApplicationController
 
     handle_response
   rescue StandardError => e
-    ChatwootExceptionTracker.new(e).capture_exception
+    PilotExceptionTracker.new(e).capture_exception
     redirect_to '/'
   end
 

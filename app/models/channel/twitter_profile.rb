@@ -20,7 +20,7 @@ class Channel::TwitterProfile < ApplicationRecord
   include Channelable
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  if Chatwoot.encryption_configured?
+  if Pilot.encryption_configured?
     encrypts :twitter_access_token
     encrypts :twitter_access_token_secret
   end

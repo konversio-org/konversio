@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isOnChatwootCloud: 'globalConfig/isOnChatwootCloud',
+      isOnPilotCloud: 'globalConfig/isOnPilotCloud',
       getAccount: 'accounts/getAccount',
     }),
     bannerMessage() {
@@ -33,7 +33,7 @@ export default {
       return this.$t('GENERAL_SETTINGS.OPEN_BILLING');
     },
     shouldShowBanner() {
-      if (!this.isOnChatwootCloud) {
+      if (!this.isOnPilotCloud) {
         return false;
       }
 

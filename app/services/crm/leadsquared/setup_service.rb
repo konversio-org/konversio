@@ -14,10 +14,10 @@ class Crm::Leadsquared::SetupService
     setup_endpoint
     setup_activity
   rescue Crm::Leadsquared::Api::BaseClient::ApiError => e
-    ChatwootExceptionTracker.new(e, account: @hook.account).capture_exception
+    PilotExceptionTracker.new(e, account: @hook.account).capture_exception
     Rails.logger.error "LeadSquared API error in setup: #{e.message}"
   rescue StandardError => e
-    ChatwootExceptionTracker.new(e, account: @hook.account).capture_exception
+    PilotExceptionTracker.new(e, account: @hook.account).capture_exception
     Rails.logger.error "Error during LeadSquared setup: #{e.message}"
   end
 
@@ -104,6 +104,6 @@ class Crm::Leadsquared::SetupService
   end
 
   def brand_name
-    ::GlobalConfig.get('BRAND_NAME')['BRAND_NAME'].presence || 'Chatwoot'
+    ::GlobalConfig.get('BRAND_NAME')['BRAND_NAME'].presence || 'Pilot'
   end
 end

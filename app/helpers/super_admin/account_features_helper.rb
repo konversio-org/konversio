@@ -15,7 +15,7 @@ module SuperAdmin::AccountFeaturesHelper
   end
 
   def self.filter_internal_features(features)
-    return features if ChatwootApp.chatwoot_cloud?
+    return features if PilotApp.chatwoot_cloud?
 
     internal_features = account_features.select { |f| f['chatwoot_internal'] }.pluck('name')
     features.except(*internal_features)

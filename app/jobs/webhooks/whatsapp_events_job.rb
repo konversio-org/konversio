@@ -18,7 +18,7 @@ class Webhooks::WhatsappEventsJob < ApplicationJob
 
   # Detects if the webhook is an SMB message echo event (message sent from WhatsApp Business app)
   # This is part of WhatsApp coexistence feature where businesses can respond from both
-  # Chatwoot and the WhatsApp Business app, with messages synced to Chatwoot.
+  # Pilot and the WhatsApp Business app, with messages synced to Pilot.
   #
   # Regular message payload (field: "messages"):
   # {

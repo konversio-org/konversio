@@ -16,7 +16,7 @@ import SettingsLayout from '../SettingsLayout.vue';
 import ButtonV4 from 'next/button/Button.vue';
 
 const router = useRouter();
-const { currentAccount, isOnChatwootCloud } = useAccount();
+const { currentAccount, isOnPilotCloud } = useAccount();
 
 const uiFlags = useMapGetter('accounts/getUIFlags');
 const store = useStore();
@@ -75,7 +75,7 @@ const fetchAccountDetails = async () => {
 
 const handleBillingPageLogic = async () => {
   // If self-hosted, redirect to dashboard
-  if (!isOnChatwootCloud.value) {
+  if (!isOnPilotCloud.value) {
     router.push({ name: 'home' });
     return;
   }
