@@ -4,7 +4,6 @@ import { useI18n } from 'vue-i18n';
 import { useAlert } from 'dashboard/composables';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useInbox } from 'dashboard/composables/useInbox';
-import { useCaptain } from 'dashboard/composables/useCaptain';
 import { CSAT_DISPLAY_TYPES } from 'shared/constants/messages';
 
 import Icon from 'dashboard/components-next/icon/Icon.vue';
@@ -27,7 +26,6 @@ const props = defineProps({
 const { t } = useI18n();
 const store = useStore();
 const labels = useMapGetter('labels/getLabels');
-const { captainEnabled } = useCaptain();
 
 const { isAWhatsAppChannel, isATwilioWhatsAppChannel } = useInbox(
   props.inbox?.id
@@ -93,9 +91,7 @@ const messagePreviewData = computed(() => ({
 const shouldShowTemplateStatus = computed(
   () => templateStatus.value && !templateLoading.value
 );
-const showUtilityAnalyzer = computed(
-  () => isAnyWhatsAppChannel.value && captainEnabled.value
-);
+const showUtilityAnalyzer = computed(() => false);
 
 const templateApprovalStatus = computed(() => {
   const statusMap = {

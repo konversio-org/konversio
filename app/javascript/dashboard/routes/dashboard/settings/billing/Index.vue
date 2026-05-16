@@ -3,7 +3,6 @@ import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMapGetter, useStore } from 'dashboard/composables/store.js';
 import { useAccount } from 'dashboard/composables/useAccount';
-import { useCaptain } from 'dashboard/composables/useCaptain';
 import { format } from 'date-fns';
 import sessionStorage from 'shared/helpers/sessionStorage';
 
@@ -18,14 +17,6 @@ import ButtonV4 from 'next/button/Button.vue';
 
 const router = useRouter();
 const { currentAccount, isOnChatwootCloud } = useAccount();
-const {
-  captainEnabled,
-  captainLimits,
-  documentLimits,
-  responseLimits,
-  fetchLimits,
-  isFetchingLimits,
-} = useCaptain();
 
 const uiFlags = useMapGetter('accounts/getUIFlags');
 const store = useStore();
@@ -80,8 +71,6 @@ const fetchAccountDetails = async () => {
   if (!hasABillingPlan.value) {
     await store.dispatch('accounts/subscription');
   }
-  // Always fetch limits for billing page to show credit usage
-  fetchLimits();
 };
 
 const handleBillingPageLogic = async () => {
@@ -133,8 +122,7 @@ const openPurchaseCreditsModal = () => {
 };
 
 const handleTopupSuccess = () => {
-  // Refresh limits to show updated credit balance
-  fetchLimits();
+  // No-op: limits feature removed in Konversio
 };
 
 onMounted(handleBillingPageLogic);
