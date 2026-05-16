@@ -5,9 +5,8 @@ import { useAlert } from 'dashboard/composables';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import CreditPackageCard from './CreditPackageCard.vue';
-import EnterpriseAccountAPI from 'dashboard/api/enterprise/account';
 
-const emit = defineEmits(['close', 'success']);
+const emit = defineEmits(['close']);
 
 const { t } = useI18n();
 
@@ -96,17 +95,9 @@ const handlePurchase = async () => {
 
   isLoading.value = true;
   try {
-    const response = await EnterpriseAccountAPI.createTopupCheckout(
-      selectedOption.value.credits
-    );
-
+    // eslint-disable-next-line no-console
+    console.warn('Credit top-up is not available in this edition.');
     close();
-    emit('success', response.data);
-    useAlert(
-      t('BILLING_SETTINGS.TOPUP.PURCHASE_SUCCESS', {
-        credits: response.data.credits,
-      })
-    );
   } catch (error) {
     const errorMessage =
       error.response?.data?.error || t('BILLING_SETTINGS.TOPUP.PURCHASE_ERROR');
