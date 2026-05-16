@@ -5,6 +5,6 @@
 # concurrent label writes on the same tag row and deadlocks under
 # parallel multi-label updates (refer INF-68)
 #
-# Safe because Chatwoot does not read `tags.taggings_count` anywhere;
+# Safe because Pilot does not read `tags.taggings_count` anywhere;
 # label reports compute counts directly via GROUP BY on taggings.
 ActsAsTaggableOn.tags_counter = false

@@ -182,6 +182,6 @@ class ReportingEventListener < BaseListener
     # event is preserved and rollup data can be rebuilt or re-applied later.
     ReportingEvents::RollupService.perform(reporting_event)
   rescue StandardError => e
-    ChatwootExceptionTracker.new(e, account: reporting_event.account).capture_exception
+    PilotExceptionTracker.new(e, account: reporting_event.account).capture_exception
   end
 end

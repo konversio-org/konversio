@@ -15,7 +15,7 @@ vi.mock('dashboard/composables/useTransformKeys', () => ({
 }));
 
 describe('useAvailability', () => {
-  const originalWindow = window.chatwootWebChannel;
+  const originalWindow = window.pilotWebChannel;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -25,7 +25,7 @@ describe('useAvailability', () => {
     mockIsInWorkingHours.mockReturnValue(true);
     mockUseCamelCase.mockImplementation(obj => obj);
 
-    window.chatwootWebChannel = {
+    window.pilotWebChannel = {
       workingHours: [],
       workingHoursEnabled: false,
       timezone: 'UTC',
@@ -35,7 +35,7 @@ describe('useAvailability', () => {
   });
 
   afterEach(() => {
-    window.chatwootWebChannel = originalWindow;
+    window.pilotWebChannel = originalWindow;
   });
 
   describe('initial state', () => {
@@ -74,7 +74,7 @@ describe('useAvailability', () => {
     const workingHours = [{ dayOfWeek: 1, openHour: 9, closeHour: 17 }];
 
     beforeEach(() => {
-      window.chatwootWebChannel = {
+      window.pilotWebChannel = {
         workingHours,
         workingHoursEnabled: true,
         utcOffset: '+05:30',
@@ -111,11 +111,11 @@ describe('useAvailability', () => {
   });
 
   describe('config changes', () => {
-    it('should react to window.chatwootWebChannel changes', () => {
+    it('should react to window.pilotWebChannel changes', () => {
       const { inboxConfig } = useAvailability();
 
-      window.chatwootWebChannel = {
-        ...window.chatwootWebChannel,
+      window.pilotWebChannel = {
+        ...window.pilotWebChannel,
         replyTime: 'in_a_day',
       };
 

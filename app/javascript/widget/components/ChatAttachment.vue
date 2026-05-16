@@ -80,7 +80,7 @@ export default {
       this.isUploading = true;
       try {
         if (checkFileSizeLimit(file, this.fileUploadSizeLimit)) {
-          const { websiteToken } = window.chatwootWebChannel;
+          const { websiteToken } = window.pilotWebChannel;
           const upload = new DirectUpload(
             file.file,
             `/api/v1/widget/direct_uploads?website_token=${websiteToken}`,

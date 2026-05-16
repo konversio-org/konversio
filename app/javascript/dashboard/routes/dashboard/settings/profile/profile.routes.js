@@ -32,7 +32,7 @@ export default {
           },
           beforeEnter: (to, from, next) => {
             // Check if MFA is enabled globally
-            if (!parseBoolean(window.chatwootConfig?.isMfaEnabled)) {
+            if (!parseBoolean(window.pilotConfig?.isMfaEnabled)) {
               // Redirect to profile settings if MFA is disabled
               next({ name: 'profile_settings_index' });
             } else {

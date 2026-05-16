@@ -19,7 +19,7 @@ class Channel::Line < ApplicationRecord
   include Channelable
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  if Chatwoot.encryption_configured?
+  if Pilot.encryption_configured?
     encrypts :line_channel_secret
     encrypts :line_channel_token
   end

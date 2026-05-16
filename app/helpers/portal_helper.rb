@@ -87,7 +87,7 @@ module PortalHelper
   end
 
   def render_category_content(content)
-    ChatwootMarkdownRenderer.new(content).render_markdown_to_plain_text
+    PilotMarkdownRenderer.new(content).render_markdown_to_plain_text
   end
 
   def thumbnail_bg_color(username)

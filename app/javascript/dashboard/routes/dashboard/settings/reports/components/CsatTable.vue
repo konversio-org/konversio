@@ -31,14 +31,14 @@ const { pageIndex } = defineProps({
 
 const emit = defineEmits(['pageChange']);
 const { t } = useI18n();
-const { isCloudFeatureEnabled, isOnChatwootCloud } = useAccount();
+const { isCloudFeatureEnabled, isOnPilotCloud } = useAccount();
 const csatResponses = useMapGetter('csat/getCSATResponses');
 
 const isFeatureEnabled = computed(() =>
   isCloudFeatureEnabled('csat_review_notes')
 );
 const showExpandableRows = computed(
-  () => isFeatureEnabled.value || isOnChatwootCloud.value
+  () => isFeatureEnabled.value || isOnPilotCloud.value
 );
 const metrics = useMapGetter('csat/getMetrics');
 const uiFlags = useMapGetter('csat/getUIFlags');

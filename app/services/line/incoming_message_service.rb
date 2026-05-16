@@ -56,7 +56,7 @@ class Line::IncomingMessageService
     end
   end
 
-  # Currently, Chatwoot doesn't support stickers. As a temporary solution,
+  # Currently, Pilot doesn't support stickers. As a temporary solution,
   # we're displaying stickers as images using the sticker ID in markdown format.
   # This is subject to change in the future. We've chosen not to download and display the sticker as an image because the sticker's information
   # and images are the property of the creator or legal owner. We aim to avoid storing it on our server without their consent.
