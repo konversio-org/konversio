@@ -54,7 +54,7 @@ export default {
       return this.inbox.provider_config?.source === 'embedded_signup';
     },
     whatsappAppId() {
-      return window.chatwootConfig?.whatsappAppId;
+      return window.pilotConfig?.whatsappAppId;
     },
     isForwardingEnabled() {
       return !!this.inbox.forwarding_enabled;

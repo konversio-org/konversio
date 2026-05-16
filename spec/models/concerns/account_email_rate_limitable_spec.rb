@@ -23,7 +23,7 @@ RSpec.describe AccountEmailRateLimitable do
 
   describe '#within_email_rate_limit?' do
     before do
-      allow(ChatwootApp).to receive(:chatwoot_cloud?).and_return(true)
+      allow(PilotApp).to receive(:chatwoot_cloud?).and_return(true)
       account.update!(limits: { 'emails' => 2 })
     end
 
@@ -38,7 +38,7 @@ RSpec.describe AccountEmailRateLimitable do
 
     context 'when self-hosted' do
       before do
-        allow(ChatwootApp).to receive(:chatwoot_cloud?).and_return(false)
+        allow(PilotApp).to receive(:chatwoot_cloud?).and_return(false)
         2.times { account.increment_email_sent_count }
       end
 
@@ -49,7 +49,7 @@ RSpec.describe AccountEmailRateLimitable do
 
     context 'when chatwoot cloud' do
       before do
-        allow(ChatwootApp).to receive(:chatwoot_cloud?).and_return(true)
+        allow(PilotApp).to receive(:chatwoot_cloud?).and_return(true)
         2.times { account.increment_email_sent_count }
       end
 

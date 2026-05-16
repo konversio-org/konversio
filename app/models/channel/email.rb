@@ -41,7 +41,7 @@ class Channel::Email < ApplicationRecord
   AUTHORIZATION_ERROR_THRESHOLD = 10
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  if Chatwoot.encryption_configured?
+  if Pilot.encryption_configured?
     encrypts :imap_password
     encrypts :smtp_password
   end

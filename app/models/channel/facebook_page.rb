@@ -22,7 +22,7 @@ class Channel::FacebookPage < ApplicationRecord
   include Reauthorizable
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  if Chatwoot.encryption_configured?
+  if Pilot.encryption_configured?
     encrypts :page_access_token
     encrypts :user_access_token
   end

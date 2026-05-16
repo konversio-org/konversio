@@ -20,7 +20,7 @@ export const mockCurrentChat = {
       availability_status: 'offline',
       email: null,
       id: 212,
-      name: 'Chatwoot',
+      name: 'Pilot',
       phone_number: null,
       identifier: null,
       thumbnail: '',

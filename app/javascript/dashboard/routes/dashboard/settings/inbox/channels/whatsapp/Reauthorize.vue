@@ -27,9 +27,9 @@ const { t } = useI18n();
 const isRequestingAuthorization = ref(false);
 const isLoadingFacebook = ref(true);
 
-const whatsappAppId = computed(() => window.chatwootConfig.whatsappAppId);
+const whatsappAppId = computed(() => window.pilotConfig.whatsappAppId);
 const whatsappConfigurationId = computed(
-  () => window.chatwootConfig.whatsappConfigurationId
+  () => window.pilotConfig.whatsappConfigurationId
 );
 
 const actionLabel = computed(() => {
@@ -184,7 +184,7 @@ onMounted(async () => {
     // Load Facebook SDK and initialize
     await setupFacebookSdk(
       whatsappAppId.value,
-      window.chatwootConfig?.whatsappApiVersion
+      window.pilotConfig?.whatsappApiVersion
     );
   } catch (error) {
     useAlert(t('INBOX.REAUTHORIZE.FACEBOOK_LOAD_ERROR'));

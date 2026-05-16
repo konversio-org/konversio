@@ -13,7 +13,7 @@ const store = createStore({
         getCurrentAccountId: () => 1,
         getCurrentUser: () => ({
           accounts: [
-            { id: 1, name: 'Chatwoot', role: 'administrator' },
+            { id: 1, name: 'Pilot', role: 'administrator' },
             { id: 2, name: 'GitX', role: 'agent' },
           ],
         }),
@@ -22,7 +22,7 @@ const store = createStore({
     accounts: {
       namespaced: true,
       getters: {
-        getAccount: () => id => ({ id, name: 'Chatwoot' }),
+        getAccount: () => id => ({ id, name: 'Pilot' }),
       },
     },
   },
@@ -85,7 +85,7 @@ describe('useAccount', () => {
   it('returns current account based on accountId', () => {
     const wrapper = mount(createComponent(), mountParams);
     const { currentAccount } = wrapper.vm;
-    expect(currentAccount).toEqual({ id: 123, name: 'Chatwoot' });
+    expect(currentAccount).toEqual({ id: 123, name: 'Pilot' });
   });
 
   it('returns an account-scoped route', () => {

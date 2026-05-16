@@ -81,7 +81,7 @@ export default {
     this.listenToThemeChanges();
     // If user locale is set, use it; otherwise use account locale
     this.setLocale(
-      this.uiSettings?.locale || window.chatwootConfig.selectedLocale
+      this.uiSettings?.locale || window.pilotConfig.selectedLocale
     );
   },
   unmounted() {

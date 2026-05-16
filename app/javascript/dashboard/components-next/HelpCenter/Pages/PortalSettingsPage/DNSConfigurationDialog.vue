@@ -33,7 +33,7 @@ const validationRules = {
 const v$ = useVuelidate(validationRules, state);
 
 const domain = computed(() => {
-  const { hostURL, helpCenterURL } = window?.chatwootConfig || {};
+  const { hostURL, helpCenterURL } = window?.pilotConfig || {};
   return getHostNameFromURL(helpCenterURL) || getHostNameFromURL(hostURL) || '';
 });
 

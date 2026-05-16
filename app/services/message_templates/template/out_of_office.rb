@@ -14,7 +14,7 @@ class MessageTemplates::Template::OutOfOffice
       conversation.messages.create!(out_of_office_message_params)
     end
   rescue StandardError => e
-    ChatwootExceptionTracker.new(e, account: conversation.account).capture_exception
+    PilotExceptionTracker.new(e, account: conversation.account).capture_exception
     true
   end
 

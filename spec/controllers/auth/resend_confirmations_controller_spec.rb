@@ -39,11 +39,11 @@ RSpec.describe 'Resend Confirmations API', type: :request do
     context 'when hCaptcha is configured' do
       before do
         create(:user, email: email, skip_confirmation: false)
-        allow(ChatwootCaptcha).to receive(:new).and_return(captcha)
+        allow(PilotCaptcha).to receive(:new).and_return(captcha)
       end
 
       context 'with a valid captcha response' do
-        let(:captcha) { instance_double(ChatwootCaptcha, valid?: true) }
+        let(:captcha) { instance_double(PilotCaptcha, valid?: true) }
 
         it 'sends confirmation instructions' do
           expect do
@@ -57,7 +57,7 @@ RSpec.describe 'Resend Confirmations API', type: :request do
       end
 
       context 'with an invalid captcha response' do
-        let(:captcha) { instance_double(ChatwootCaptcha, valid?: false) }
+        let(:captcha) { instance_double(PilotCaptcha, valid?: false) }
 
         it 'returns 200 without sending confirmation' do
           expect do
