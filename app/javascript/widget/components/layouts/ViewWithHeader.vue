@@ -20,7 +20,7 @@ export default {
       showPopoutButton: false,
       scrollPosition: 0,
       ticking: true,
-      disableBranding: window.pilotWebChannel.disableBranding || false,
+      disableBranding: window.konversioWebChannel.disableBranding || false,
       requestID: null,
     };
   },
@@ -30,7 +30,7 @@ export default {
       availableAgents: 'agent/availableAgents',
     }),
     portal() {
-      return window.pilotWebChannel.portal;
+      return window.konversioWebChannel.portal;
     },
     isHeaderCollapsed() {
       if (!this.hasIntroText) {

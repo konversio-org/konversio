@@ -21,7 +21,7 @@ const preChatFields = [
   },
 ];
 
-global.pilotWebChannel = {
+global.konversioWebChannel = {
   avatarUrl: 'https://test.url',
   hasAConnectedAgentBot: 'AgentBot',
   enabledFeatures: [
@@ -40,7 +40,7 @@ describe('configMixin', () => {
       mixins: [configMixin],
       data() {
         return {
-          channelConfig: reactive(global.pilotWebChannel),
+          channelConfig: reactive(global.konversioWebChannel),
         };
       },
       template: '<div />', // Render a simple div as the template

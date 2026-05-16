@@ -1,5 +1,5 @@
 # ref: https://github.com/jgorset/facebook-messenger#make-a-configuration-provider
-class PilotFbProvider < Facebook::Messenger::Configuration::Providers::Base
+class KonversioFbProvider < Facebook::Messenger::Configuration::Providers::Base
   def valid_verify_token?(_verify_token)
     GlobalConfigService.load('FB_VERIFY_TOKEN', '')
   end
@@ -15,13 +15,13 @@ class PilotFbProvider < Facebook::Messenger::Configuration::Providers::Base
   private
 
   def bot
-    Pilot::Bot
+    Konversio::Bot
   end
 end
 
 Rails.application.reloader.to_prepare do
   Facebook::Messenger.configure do |config|
-    config.provider = PilotFbProvider.new
+    config.provider = KonversioFbProvider.new
   end
 
   Facebook::Messenger::Bot.on :message do |message|

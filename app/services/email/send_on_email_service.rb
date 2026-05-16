@@ -12,7 +12,7 @@ class Email::SendOnEmailService < Base::SendOnChannelService
     Rails.logger.info("Email message #{message.id} sent with source_id: #{reply_mail.message_id}")
     message.update(source_id: reply_mail.message_id)
   rescue StandardError => e
-    PilotExceptionTracker.new(e, account: message.account).capture_exception
+    KonversioExceptionTracker.new(e, account: message.account).capture_exception
     Messages::StatusUpdateService.new(message, 'failed', e.message).perform
   end
 end

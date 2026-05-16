@@ -122,9 +122,9 @@ export default {
 
     runFBInit() {
       FB.init({
-        appId: window.pilotConfig.fbAppId,
+        appId: window.konversioConfig.fbAppId,
         xfbml: true,
-        version: window.pilotConfig.fbApiVersion,
+        version: window.konversioConfig.fbApiVersion,
         status: true,
       });
       window.fbSDKLoaded = true;

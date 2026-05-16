@@ -5,7 +5,7 @@ module Integrations::Slack::SlackMessageHelper
     handle_conversation
     success_response
   rescue Slack::Web::Api::Errors::MissingScope => e
-    PilotExceptionTracker.new(e, account: conversation.account).capture_exception
+    KonversioExceptionTracker.new(e, account: conversation.account).capture_exception
     disable_and_reauthorize
   end
 

@@ -1,10 +1,10 @@
 import { useConfig } from '../useConfig';
 
 describe('useConfig', () => {
-  const originalChatwootConfig = window.pilotConfig;
+  const originalChatwootConfig = window.konversioConfig;
 
   beforeEach(() => {
-    window.pilotConfig = {
+    window.konversioConfig = {
       hostURL: 'https://example.com',
       vapidPublicKey: 'vapid-key',
       enabledLanguages: ['en', 'fr'],
@@ -14,7 +14,7 @@ describe('useConfig', () => {
   });
 
   afterEach(() => {
-    window.pilotConfig = originalChatwootConfig;
+    window.konversioConfig = originalChatwootConfig;
   });
 
   it('returns the correct configuration values', () => {
@@ -28,7 +28,7 @@ describe('useConfig', () => {
   });
 
   it('handles missing configuration values', () => {
-    window.pilotConfig = {};
+    window.konversioConfig = {};
     const config = useConfig();
 
     expect(config.hostURL).toBeUndefined();
@@ -38,8 +38,8 @@ describe('useConfig', () => {
     expect(config.enterprisePlanName).toBeUndefined();
   });
 
-  it('handles undefined window.pilotConfig', () => {
-    window.pilotConfig = undefined;
+  it('handles undefined window.konversioConfig', () => {
+    window.konversioConfig = undefined;
     const config = useConfig();
 
     expect(config.hostURL).toBeUndefined();

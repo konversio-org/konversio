@@ -23,8 +23,8 @@ const PROVIDER_TYPES = {
 
 const hasWhatsappAppId = computed(() => {
   return (
-    window.pilotConfig?.whatsappAppId &&
-    window.pilotConfig.whatsappAppId !== 'none'
+    window.konversioConfig?.whatsappAppId &&
+    window.konversioConfig.whatsappAppId !== 'none'
   );
 });
 

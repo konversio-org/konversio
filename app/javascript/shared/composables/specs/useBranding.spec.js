@@ -24,14 +24,14 @@ describe('useBranding', () => {
   });
 
   describe('replaceInstallationName', () => {
-    it('should replace "Pilot" with installation name when both text and installation name are provided', () => {
+    it('should replace "Konversio" with installation name when both text and installation name are provided', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName('Welcome to Chatwoot');
 
       expect(result).toBe('Welcome to MyCompany');
     });
 
-    it('should replace multiple occurrences of "Pilot"', () => {
+    it('should replace multiple occurrences of "Konversio"', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName(
         'Chatwoot is great! Use Chatwoot today.'
@@ -66,14 +66,14 @@ describe('useBranding', () => {
       expect(replaceInstallationName(undefined)).toBe(undefined);
     });
 
-    it('should handle text without "Pilot" gracefully', () => {
+    it('should handle text without "Konversio" gracefully', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName('Welcome to our platform');
 
       expect(result).toBe('Welcome to our platform');
     });
 
-    it('should be case-sensitive for "Pilot"', () => {
+    it('should be case-sensitive for "Konversio"', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName(
         'Welcome to chatwoot and CHATWOOT'

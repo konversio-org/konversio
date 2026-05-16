@@ -54,14 +54,14 @@ export const sendRegistrationToServer = subscription => {
 };
 
 export const registerSubscription = (onSuccess = () => {}) => {
-  if (!window.pilotConfig.vapidPublicKey) {
+  if (!window.konversioConfig.vapidPublicKey) {
     return;
   }
   navigator.serviceWorker.ready
     .then(serviceWorkerRegistration =>
       serviceWorkerRegistration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: window.pilotConfig.vapidPublicKey,
+        applicationServerKey: window.konversioConfig.vapidPublicKey,
       })
     )
     .then(sendRegistrationToServer)

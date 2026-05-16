@@ -11,7 +11,7 @@ const store = useStore();
 const isLoading = ref(false);
 const globalConfig = computed(() => store.getters['globalConfig/get']);
 const isAChatwootInstance = computed(
-  () => globalConfig.value.installationName === 'Pilot'
+  () => globalConfig.value.installationName === 'Konversio'
 );
 
 onBeforeMount(() => {

@@ -2,7 +2,7 @@ class BackfillFeatureContactAttributesForAssistants < ActiveRecord::Migration[7.
   # Only backfill assistants on accounts with captain_integration_v2 enabled.
   # V1 assistants never had contact attributes, so limit to v2.
   def up
-    return unless PilotApp.enterprise?
+    return unless KonversioApp.enterprise?
 
     Account.feature_captain_integration_v2.find_each do |account|
       account.captain_assistants.each do |assistant|
@@ -14,7 +14,7 @@ class BackfillFeatureContactAttributesForAssistants < ActiveRecord::Migration[7.
   end
 
   def down
-    return unless PilotApp.enterprise?
+    return unless KonversioApp.enterprise?
 
     Account.feature_captain_integration_v2.find_each do |account|
       account.captain_assistants.each do |assistant|

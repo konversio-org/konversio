@@ -95,7 +95,7 @@ RSpec.describe Inboxes::FetchImapEmailsJob do
 
       before do
         allow(Imap::ImapMailbox).to receive(:new).and_return(mailbox)
-        allow(PilotExceptionTracker).to receive(:new).and_return(exception_tracker)
+        allow(KonversioExceptionTracker).to receive(:new).and_return(exception_tracker)
 
         allow(Imap::FetchEmailService).to receive(:new).with(channel: imap_email_channel, interval: 1).and_return(fetch_service)
         allow(fetch_service).to receive(:perform).and_return([inbound_mail])

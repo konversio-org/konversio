@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'MFA API', type: :request do
   before do
-    skip('Skipping since MFA is not configured in this environment') unless Pilot.encryption_configured?
+    skip('Skipping since MFA is not configured in this environment') unless Konversio.encryption_configured?
     allow(Chatwoot).to receive(:mfa_enabled?).and_return(true)
   end
 

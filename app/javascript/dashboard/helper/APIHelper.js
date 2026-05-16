@@ -3,7 +3,7 @@ import Auth from '../api/auth';
 const parseErrorCode = error => Promise.reject(error);
 
 export default axios => {
-  const { apiHost = '' } = window.pilotConfig || {};
+  const { apiHost = '' } = window.konversioConfig || {};
   const wootApi = axios.create({ baseURL: `${apiHost}/` });
   // Add Auth Headers to requests if logged in
   if (Auth.hasAuthCookie()) {

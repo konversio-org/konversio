@@ -9,14 +9,14 @@ function getWrapper() {
 
 describe('GoogleOAuthButton.vue', () => {
   beforeEach(() => {
-    window.pilotConfig = {
+    window.konversioConfig = {
       googleOAuthClientId: 'clientId',
       googleOAuthCallbackUrl: 'http://localhost:3000/test-callback',
     };
   });
 
   afterEach(() => {
-    window.pilotConfig = {};
+    window.konversioConfig = {};
   });
 
   it('generates the correct Google Auth URL', () => {

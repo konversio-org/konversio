@@ -9,7 +9,7 @@ export default {
   mounted() {
     this.setColorTheme();
     this.listenToThemeChanges();
-    this.setLocale(window.pilotConfig.selectedLocale);
+    this.setLocale(window.konversioConfig.selectedLocale);
   },
   methods: {
     setColorTheme() {

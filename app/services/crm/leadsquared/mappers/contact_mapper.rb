@@ -44,7 +44,7 @@ class Crm::Leadsquared::Mappers::ContactMapper
   end
 
   def brand_name
-    ::GlobalConfig.get('BRAND_NAME')['BRAND_NAME'] || 'Pilot'
+    ::GlobalConfig.get('BRAND_NAME')['BRAND_NAME'] || 'Konversio'
   end
 
   def brand_name_without_spaces

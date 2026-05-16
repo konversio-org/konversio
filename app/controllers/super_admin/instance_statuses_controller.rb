@@ -10,9 +10,9 @@ class SuperAdmin::InstanceStatusesController < SuperAdmin::ApplicationController
   end
 
   def chatwoot_edition
-    @metrics['Pilot edition'] = if PilotApp.enterprise?
+    @metrics['Konversio edition'] = if KonversioApp.enterprise?
                                      'Enterprise'
-                                   elsif PilotApp.custom?
+                                   elsif KonversioApp.custom?
                                      'Custom'
                                    else
                                      'Community'
@@ -24,7 +24,7 @@ class SuperAdmin::InstanceStatusesController < SuperAdmin::ApplicationController
   end
 
   def chatwoot_version
-    @metrics['Pilot version'] = Pilot.config[:version]
+    @metrics['Konversio version'] = Konversio.config[:version]
   end
 
   def sha

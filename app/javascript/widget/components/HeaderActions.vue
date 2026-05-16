@@ -53,7 +53,7 @@ export default {
       this.closeWindow();
       const {
         location: { origin },
-        pilotWebChannel: { websiteToken },
+        konversioWebChannel: { websiteToken },
         authToken,
       } = window;
       popoutChatWindow(

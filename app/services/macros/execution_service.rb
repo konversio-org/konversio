@@ -13,7 +13,7 @@ class Macros::ExecutionService < ActionService
       begin
         send(action[:action_name], action[:action_params])
       rescue StandardError => e
-        PilotExceptionTracker.new(e, account: @account).capture_exception
+        KonversioExceptionTracker.new(e, account: @account).capture_exception
       end
     end
   ensure

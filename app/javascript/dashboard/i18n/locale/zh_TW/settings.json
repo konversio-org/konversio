@@ -405,7 +405,7 @@
         "DESCRIPTION": "處理自動回覆、對話摘要，以及客戶互動的智慧回覆建議。"
       },
       "COPILOT": {
-        "TITLE": "Co-pilot",
+        "TITLE": "Co-konversio",
         "DESCRIPTION": "在對話過程中提供即時情境建議、知識庫推薦及主動洞察。"
       }
     },
@@ -453,7 +453,7 @@
       "BUTTON_TXT": "購買更多點數",
       "DOCUMENTS": "文件",
       "RESPONSES": "點數",
-      "UPGRADE": "Captain 在免費方案中不可用，立即升級以使用助理、Co-pilot 等功能。",
+      "UPGRADE": "Captain 在免費方案中不可用，立即升級以使用助理、Co-konversio 等功能。",
       "REFRESH_CREDITS": "重新整理"
     },
     "CHAT_WITH_US": {

@@ -86,12 +86,12 @@ RSpec.describe Integrations::LlmInstrumentation do
         allow(instance).to receive(:tracer).and_return(mock_tracer)
         allow(mock_tracer).to receive(:in_span).and_yield(mock_span)
         allow(mock_span).to receive(:set_attribute).and_raise(StandardError.new('Span error'))
-        allow(PilotExceptionTracker).to receive(:new).and_call_original
+        allow(KonversioExceptionTracker).to receive(:new).and_call_original
 
         result = instance.instrument_llm_call(params) { 'my_result' }
 
         expect(result).to eq('my_result')
-        expect(PilotExceptionTracker).to have_received(:new)
+        expect(KonversioExceptionTracker).to have_received(:new)
       end
 
       it 'sets correct request attributes on the span' do
