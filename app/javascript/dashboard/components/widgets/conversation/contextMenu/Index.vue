@@ -242,14 +242,14 @@ export default {
     openInNewTab() {
       if (!this.conversationUrl) return;
 
-      const url = `${window.chatwootConfig.hostURL}${this.conversationUrl}`;
+      const url = `${window.pilotConfig.hostURL}${this.conversationUrl}`;
       window.open(url, '_blank', 'noopener,noreferrer');
       this.$emit('close');
     },
     async copyConversationLink() {
       if (!this.conversationUrl) return;
       try {
-        const url = `${window.chatwootConfig.hostURL}${this.conversationUrl}`;
+        const url = `${window.pilotConfig.hostURL}${this.conversationUrl}`;
         await copyTextToClipboard(url);
         useAlert(this.$t('CONVERSATION.CARD_CONTEXT_MENU.COPY_LINK_SUCCESS'));
         this.$emit('close');

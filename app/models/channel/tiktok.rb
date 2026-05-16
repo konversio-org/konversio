@@ -22,7 +22,7 @@ class Channel::Tiktok < ApplicationRecord
   self.table_name = 'channel_tiktok'
 
   # TODO: Remove guard once encryption keys become mandatory (target 3-4 releases out).
-  if Chatwoot.encryption_configured?
+  if Pilot.encryption_configured?
     encrypts :access_token
     encrypts :refresh_token
   end

@@ -77,7 +77,7 @@ class Api::V1::AccountsController < Api::BaseController
     Redis::Alfred.set(format(Redis::Alfred::ACCOUNT_ONBOARDING_ENRICHMENT, account_id: @account.id), '1', ex: 30)
   rescue StandardError => e
     # Enrichment is optional — never let queue/Redis failures abort signup
-    ChatwootExceptionTracker.new(e).capture_exception
+    PilotExceptionTracker.new(e).capture_exception
   end
 
   def ensure_account_name
@@ -134,7 +134,7 @@ class Api::V1::AccountsController < Api::BaseController
   end
 
   def validate_captcha
-    raise ActionController::InvalidAuthenticityToken, 'Invalid Captcha' unless ChatwootCaptcha.new(params[:h_captcha_client_response]).valid?
+    raise ActionController::InvalidAuthenticityToken, 'Invalid Captcha' unless PilotCaptcha.new(params[:h_captcha_client_response]).valid?
   end
 
   def pundit_user

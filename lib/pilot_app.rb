@@ -2,7 +2,7 @@
 
 require 'pathname'
 
-module ChatwootApp
+module PilotApp
   def self.root
     Pathname.new(File.expand_path('..', __dir__))
   end

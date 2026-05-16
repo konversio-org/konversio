@@ -17,7 +17,7 @@ export const initalizeRouter = () => {
       });
     }
 
-    return validateRouteAccess(to, next, window.chatwootConfig);
+    return validateRouteAccess(to, next, window.pilotConfig);
   });
 };
 

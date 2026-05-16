@@ -232,11 +232,11 @@ describe Webhooks::Trigger do
     end
 
     context 'with delivery_id' do
-      it 'adds X-Chatwoot-Delivery header' do
+      it 'adds X-Pilot-Delivery header' do
         expect(RestClient::Request).to receive(:execute) do |args|
-          expect(args[:headers]['X-Chatwoot-Delivery']).to eq('test-uuid')
-          expect(args[:headers]).not_to have_key('X-Chatwoot-Signature')
-          expect(args[:headers]).not_to have_key('X-Chatwoot-Timestamp')
+          expect(args[:headers]['X-Pilot-Delivery']).to eq('test-uuid')
+          expect(args[:headers]).not_to have_key('X-Pilot-Signature')
+          expect(args[:headers]).not_to have_key('X-Pilot-Timestamp')
         end
         trigger.execute(url, payload, webhook_type, delivery_id: 'test-uuid')
       end
@@ -245,27 +245,27 @@ describe Webhooks::Trigger do
     context 'with secret' do
       let(:secret) { 'test-secret' }
 
-      it 'adds X-Chatwoot-Timestamp header' do
+      it 'adds X-Pilot-Timestamp header' do
         expect(RestClient::Request).to receive(:execute) do |args|
-          expect(args[:headers]['X-Chatwoot-Timestamp']).to match(/\A\d+\z/)
+          expect(args[:headers]['X-Pilot-Timestamp']).to match(/\A\d+\z/)
         end
         trigger.execute(url, payload, webhook_type, secret: secret)
       end
 
-      it 'adds X-Chatwoot-Signature header with correct HMAC' do
+      it 'adds X-Pilot-Signature header with correct HMAC' do
         expect(RestClient::Request).to receive(:execute) do |args|
-          ts = args[:headers]['X-Chatwoot-Timestamp']
+          ts = args[:headers]['X-Pilot-Timestamp']
           expected_sig = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', secret, "#{ts}.#{body}")}"
-          expect(args[:headers]['X-Chatwoot-Signature']).to eq(expected_sig)
+          expect(args[:headers]['X-Pilot-Signature']).to eq(expected_sig)
         end
         trigger.execute(url, payload, webhook_type, secret: secret)
       end
 
       it 'signs timestamp.body not just body' do
         expect(RestClient::Request).to receive(:execute) do |args|
-          args[:headers]['X-Chatwoot-Timestamp']
+          args[:headers]['X-Pilot-Timestamp']
           wrong_sig = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', secret, body)}"
-          expect(args[:headers]['X-Chatwoot-Signature']).not_to eq(wrong_sig)
+          expect(args[:headers]['X-Pilot-Signature']).not_to eq(wrong_sig)
         end
         trigger.execute(url, payload, webhook_type, secret: secret)
       end
@@ -274,9 +274,9 @@ describe Webhooks::Trigger do
     context 'with both secret and delivery_id' do
       it 'includes all three security headers' do
         expect(RestClient::Request).to receive(:execute) do |args|
-          expect(args[:headers]['X-Chatwoot-Delivery']).to eq('abc-123')
-          expect(args[:headers]['X-Chatwoot-Timestamp']).to be_present
-          expect(args[:headers]['X-Chatwoot-Signature']).to start_with('sha256=')
+          expect(args[:headers]['X-Pilot-Delivery']).to eq('abc-123')
+          expect(args[:headers]['X-Pilot-Timestamp']).to be_present
+          expect(args[:headers]['X-Pilot-Signature']).to start_with('sha256=')
         end
         trigger.execute(url, payload, webhook_type, secret: 'mysecret', delivery_id: 'abc-123')
       end

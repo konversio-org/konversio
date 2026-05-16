@@ -17,7 +17,7 @@ RSpec.describe Integrations::LlmBaseService do
     end
 
     it 'does not track exceptions for hook key failures' do
-      expect(ChatwootExceptionTracker).not_to receive(:new)
+      expect(PilotExceptionTracker).not_to receive(:new)
 
       result = service.send(:make_api_call, body)
 

@@ -2,7 +2,7 @@ require 'rubocop'
 
 module RuboCop::Cop::Chatwoot; end
 
-class RuboCop::Cop::Chatwoot::AttachmentDownload < RuboCop::Cop::Base
+class RuboCop::Cop::Pilot::AttachmentDownload < RuboCop::Cop::Base
   MSG = 'Avoid calling `.file/.blob.download`; use `blob.open` or streaming IO instead.'.freeze
 
   def_node_matcher :unsafe_download?, <<~PATTERN

@@ -13,12 +13,12 @@ export function useAttachments() {
   );
 
   const hasAttachmentsEnabled = computed(() => {
-    const channelConfig = window.chatwootWebChannel;
+    const channelConfig = window.pilotWebChannel;
     return channelConfig?.enabledFeatures?.includes('attachments') || false;
   });
 
   const hasEmojiPickerEnabled = computed(() => {
-    const channelConfig = window.chatwootWebChannel;
+    const channelConfig = window.pilotWebChannel;
     return channelConfig?.enabledFeatures?.includes('emoji_picker') || false;
   });
 

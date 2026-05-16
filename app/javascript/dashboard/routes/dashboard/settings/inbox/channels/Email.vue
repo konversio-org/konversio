@@ -29,7 +29,7 @@ const emailProviderList = computed(() => {
     {
       title: t('INBOX_MGMT.EMAIL_PROVIDERS.GOOGLE.TITLE'),
       description: t('INBOX_MGMT.EMAIL_PROVIDERS.GOOGLE.DESCRIPTION'),
-      isEnabled: !!window.chatwootConfig.googleOAuthClientId,
+      isEnabled: !!window.pilotConfig.googleOAuthClientId,
       key: 'google',
       icon: 'i-woot-gmail',
     },
