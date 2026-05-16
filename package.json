@@ -33,9 +33,9 @@
   "dependencies": {
     "@amplitude/analytics-browser": "^2.11.10",
     "@breezystack/lamejs": "^1.2.7",
-    "@pilot/ninja-keys": "1.2.3",
-    "@pilot/prosemirror-schema": "1.3.10",
-    "@pilot/utils": "^0.0.52",
+    "@chatwoot/ninja-keys": "1.2.3",
+    "@chatwoot/prosemirror-schema": "1.3.10",
+    "@chatwoot/utils": "^0.0.52",
     "@formkit/core": "^1.7.2",
     "@formkit/vue": "^1.7.2",
     "@hcaptcha/vue3-hcaptcha": "^1.3.0",
