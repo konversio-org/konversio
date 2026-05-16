@@ -7,7 +7,7 @@ Sidekiq.configure_client do |config|
 end
 
 # Logs whenever a job is pulled off Redis for execution.
-class PilotDequeuedLogger
+class KonversioDequeuedLogger
   def call(_worker, job, queue)
     payload = job['args'].first
     Sidekiq.logger.info("Dequeued #{job['wrapped']} #{payload['job_id']} from #{queue}")
@@ -20,7 +20,7 @@ Sidekiq.configure_server do |config|
 
   if ActiveModel::Type::Boolean.new.cast(ENV.fetch('ENABLE_SIDEKIQ_DEQUEUE_LOGGER', false))
     config.server_middleware do |chain|
-      chain.add PilotDequeuedLogger
+      chain.add KonversioDequeuedLogger
     end
   end
 

@@ -60,7 +60,7 @@ export const ONGOING_CAMPAIGN_EMPTY_STATE_CONTENT = [
     },
     sender: {
       id: 1,
-      name: 'Pilot',
+      name: 'Konversio',
     },
     message: 'Hi! Chatwoot here. Need help setting up? Let me know!',
     campaign_status: 'active',

@@ -2,7 +2,7 @@ class ApiController < ApplicationController
   skip_before_action :set_current_user, only: [:index]
 
   def index
-    render json: { version: Pilot.config[:version],
+    render json: { version: Konversio.config[:version],
                    timestamp: Time.now.utc.to_fs(:db),
                    queue_services: redis_status,
                    data_services: postgres_status }

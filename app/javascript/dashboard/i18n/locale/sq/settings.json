@@ -405,7 +405,7 @@
         "DESCRIPTION": "Menaxhon përgjigjet automatike, përmbledhjet e bisedave dhe sugjerimet inteligjente të përgjigjeve për ndërveprimet me klientët."
       },
       "COPILOT": {
-        "TITLE": "Bashkëpilot",
+        "TITLE": "Bashkëkonversio",
         "DESCRIPTION": "Ofron sugjerime kontekstuale në kohë reale, rekomandime nga baza e njohurive dhe njohuri proaktive gjatë bisedave."
       }
     },

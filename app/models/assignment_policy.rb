@@ -31,7 +31,7 @@ class AssignmentPolicy < ApplicationRecord
 
   enum conversation_priority: { earliest_created: 0, longest_waiting: 1 }
 
-  enum assignment_order: { round_robin: 0 } unless PilotApp.enterprise?
+  enum assignment_order: { round_robin: 0 } unless KonversioApp.enterprise?
 end
 
 AssignmentPolicy.include_mod_with('Concerns::AssignmentPolicy')

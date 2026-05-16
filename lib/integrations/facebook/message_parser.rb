@@ -60,7 +60,7 @@ class Integrations::Facebook::MessageParser
   end
 
   # TODO : does this work ?
-  def sent_from_pilot_app?
+  def sent_from_konversio_app?
     app_id && app_id == GlobalConfigService.load('FB_APP_ID', '').to_i
   end
 

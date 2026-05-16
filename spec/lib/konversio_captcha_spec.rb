@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe PilotCaptcha do
+describe KonversioCaptcha do
   it 'returns true if HCAPTCHA SERVER KEY is absent' do
     expect(described_class.new('random_key').valid?).to be(true)
   end

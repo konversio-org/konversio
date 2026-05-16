@@ -12,7 +12,7 @@ const formatCustomDomain = customDomain =>
  * @throws {Error} If no valid base URL is found
  */
 const getDefaultBaseURL = () => {
-  const { hostURL, helpCenterURL } = window.pilotConfig || {};
+  const { hostURL, helpCenterURL } = window.konversioConfig || {};
   const baseURL = helpCenterURL || hostURL || '';
 
   if (!baseURL) {

@@ -10,7 +10,7 @@ module Integrations::LlmInstrumentationSpans
   end
 
   def start_llm_turn_span(params)
-    return unless PilotApp.otel_enabled?
+    return unless KonversioApp.otel_enabled?
 
     span = tracer.start_span(params[:span_name])
     set_llm_turn_request_attributes(span, params)
@@ -23,7 +23,7 @@ module Integrations::LlmInstrumentationSpans
   end
 
   def end_llm_turn_span(message)
-    return unless PilotApp.otel_enabled?
+    return unless KonversioApp.otel_enabled?
 
     span = @pending_llm_turn_spans&.pop
     return unless span
@@ -35,7 +35,7 @@ module Integrations::LlmInstrumentationSpans
   end
 
   def start_tool_span(tool_call)
-    return unless PilotApp.otel_enabled?
+    return unless KonversioApp.otel_enabled?
 
     tool_name = tool_call.name.to_s
     span = tracer.start_span(format(TOOL_SPAN_NAME, tool_name))
@@ -49,7 +49,7 @@ module Integrations::LlmInstrumentationSpans
   end
 
   def end_tool_span(result)
-    return unless PilotApp.otel_enabled?
+    return unless KonversioApp.otel_enabled?
 
     span = @pending_tool_spans&.pop
     return unless span

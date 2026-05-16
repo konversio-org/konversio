@@ -44,9 +44,9 @@ RSpec.describe Account do
   describe 'usage_limits' do
     let(:account) { create(:account) }
 
-    it 'returns PilotApp.max limits' do
-      expect(account.usage_limits[:agents]).to eq(PilotApp.max_limit)
-      expect(account.usage_limits[:inboxes]).to eq(PilotApp.max_limit)
+    it 'returns KonversioApp.max limits' do
+      expect(account.usage_limits[:agents]).to eq(KonversioApp.max_limit)
+      expect(account.usage_limits[:inboxes]).to eq(KonversioApp.max_limit)
     end
   end
 

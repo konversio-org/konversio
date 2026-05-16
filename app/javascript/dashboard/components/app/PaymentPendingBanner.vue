@@ -23,7 +23,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isOnPilotCloud: 'globalConfig/isOnPilotCloud',
+      isOnKonversioCloud: 'globalConfig/isOnKonversioCloud',
       getAccount: 'accounts/getAccount',
     }),
     bannerMessage() {
@@ -33,7 +33,7 @@ export default {
       return this.$t('GENERAL_SETTINGS.OPEN_BILLING');
     },
     shouldShowBanner() {
-      if (!this.isOnPilotCloud) {
+      if (!this.isOnKonversioCloud) {
         return false;
       }
 

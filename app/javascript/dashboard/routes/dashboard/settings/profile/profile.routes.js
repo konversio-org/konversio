@@ -32,7 +32,7 @@ export default {
           },
           beforeEnter: (to, from, next) => {
             // Check if MFA is enabled globally
-            if (!parseBoolean(window.pilotConfig?.isMfaEnabled)) {
+            if (!parseBoolean(window.konversioConfig?.isMfaEnabled)) {
               // Redirect to profile settings if MFA is disabled
               next({ name: 'profile_settings_index' });
             } else {

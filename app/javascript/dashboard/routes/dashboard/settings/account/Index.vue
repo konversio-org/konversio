@@ -60,7 +60,7 @@ export default {
       getAccount: 'accounts/getAccount',
       uiFlags: 'accounts/getUIFlags',
       isFeatureEnabledonAccount: 'accounts/isFeatureEnabledonAccount',
-      isOnPilotCloud: 'globalConfig/isOnPilotCloud',
+      isOnKonversioCloud: 'globalConfig/isOnKonversioCloud',
     }),
     showAudioTranscriptionConfig() {
       return this.isFeatureEnabledonAccount(
@@ -239,7 +239,7 @@ export default {
     </div>
     <AudioTranscription v-if="showAudioTranscriptionConfig" />
     <AccountId />
-    <div v-if="!uiFlags.isFetchingItem && isOnPilotCloud">
+    <div v-if="!uiFlags.isFetchingItem && isOnKonversioCloud">
       <AccountDelete />
     </div>
     <BuildInfo />

@@ -12,7 +12,7 @@ defineProps({
     type: String,
     required: true,
   },
-  isOnPilotCloud: {
+  isOnKonversioCloud: {
     type: Boolean,
     default: false,
   },
@@ -53,14 +53,14 @@ const { isAdmin } = useAdmin();
     />
     <p class="text-sm font-normal text-n-slate-11">
       {{ $t(`${featurePrefix}.${i18nKey}.UPGRADE_PROMPT`) }}
-      <span v-if="isOnPilotCloud && !isAdmin">
+      <span v-if="isOnKonversioCloud && !isAdmin">
         {{ $t('GENERAL_SETTINGS.LIMIT_MESSAGES.NON_ADMIN') }}
       </span>
-      <span v-else-if="!isOnPilotCloud && !isSuperAdmin">
+      <span v-else-if="!isOnKonversioCloud && !isSuperAdmin">
         {{ $t(`${featurePrefix}.ENTERPRISE_PAYWALL.ASK_ADMIN`) }}
       </span>
     </p>
-    <template v-if="isOnPilotCloud && isAdmin">
+    <template v-if="isOnKonversioCloud && isAdmin">
       <ButtonV4 blue solid md @click="emit('upgrade')">
         {{ $t(`${featurePrefix}.PAYWALL.UPGRADE_NOW`) }}
       </ButtonV4>
@@ -68,7 +68,7 @@ const { isAdmin } = useAdmin();
         {{ $t(`${featurePrefix}.PAYWALL.CANCEL_ANYTIME`) }}
       </span>
     </template>
-    <template v-else-if="!isOnPilotCloud && isSuperAdmin">
+    <template v-else-if="!isOnKonversioCloud && isSuperAdmin">
       <a href="/super_admin" class="block w-full">
         <ButtonV4 solid blue md class="w-full">
           {{ $t(`${featurePrefix}.PAYWALL.UPGRADE_NOW`) }}

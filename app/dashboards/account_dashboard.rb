@@ -8,13 +8,13 @@ class AccountDashboard < Administrate::BaseDashboard
   # which determines how the attribute is displayed
   # on pages throughout the dashboard.
 
-  enterprise_attribute_types = if PilotApp.enterprise?
+  enterprise_attribute_types = if KonversioApp.enterprise?
                                  attributes = {
                                    limits: AccountLimitsField
                                  }
 
-                                 # Only show manually managed features in Pilot Cloud deployment
-                                 attributes[:manually_managed_features] = ManuallyManagedFeaturesField if PilotApp.chatwoot_cloud?
+                                 # Only show manually managed features in Konversio Cloud deployment
+                                 attributes[:manually_managed_features] = ManuallyManagedFeaturesField if KonversioApp.chatwoot_cloud?
 
                                  # Add all_features last so it appears after manually_managed_features
                                  attributes[:all_features] = AccountFeaturesField
@@ -53,9 +53,9 @@ class AccountDashboard < Administrate::BaseDashboard
 
   # SHOW_PAGE_ATTRIBUTES
   # an array of attributes that will be displayed on the model's show page.
-  enterprise_show_page_attributes = if PilotApp.enterprise?
+  enterprise_show_page_attributes = if KonversioApp.enterprise?
                                       attrs = %i[custom_attributes limits]
-                                      attrs << :manually_managed_features if PilotApp.chatwoot_cloud?
+                                      attrs << :manually_managed_features if KonversioApp.chatwoot_cloud?
                                       attrs << :all_features
                                       attrs
                                     else
@@ -75,9 +75,9 @@ class AccountDashboard < Administrate::BaseDashboard
   # FORM_ATTRIBUTES
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
-  enterprise_form_attributes = if PilotApp.enterprise?
+  enterprise_form_attributes = if KonversioApp.enterprise?
                                  attrs = %i[limits]
-                                 attrs << :manually_managed_features if PilotApp.chatwoot_cloud?
+                                 attrs << :manually_managed_features if KonversioApp.chatwoot_cloud?
                                  attrs << :all_features
                                  attrs
                                else
@@ -119,8 +119,8 @@ class AccountDashboard < Administrate::BaseDashboard
   def permitted_attributes(action)
     attrs = super + [limits: {}]
 
-    # Add manually_managed_features to permitted attributes only for Pilot Cloud
-    attrs << { manually_managed_features: [] } if PilotApp.chatwoot_cloud?
+    # Add manually_managed_features to permitted attributes only for Konversio Cloud
+    attrs << { manually_managed_features: [] } if KonversioApp.chatwoot_cloud?
 
     attrs
   end

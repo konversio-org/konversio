@@ -14,7 +14,7 @@ export function useAccount() {
   const route = useRoute();
   const store = useStore();
   const getAccountFn = useMapGetter('accounts/getAccount');
-  const isOnPilotCloud = useMapGetter('globalConfig/isOnPilotCloud');
+  const isOnKonversioCloud = useMapGetter('globalConfig/isOnKonversioCloud');
   const isFeatureEnabledonAccount = useMapGetter(
     'accounts/isFeatureEnabledonAccount'
   );
@@ -59,7 +59,7 @@ export function useAccount() {
     accountScopedUrl,
     accountScopedRoute,
     isCloudFeatureEnabled,
-    isOnPilotCloud,
+    isOnKonversioCloud,
     updateAccount,
   };
 }

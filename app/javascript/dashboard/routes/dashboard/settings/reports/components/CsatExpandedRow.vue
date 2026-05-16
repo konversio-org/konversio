@@ -19,14 +19,14 @@ const props = defineProps({
 
 const { t } = useI18n();
 const store = useStore();
-const { isCloudFeatureEnabled, isOnPilotCloud } = useAccount();
+const { isCloudFeatureEnabled, isOnKonversioCloud } = useAccount();
 const { formatMessage } = useMessageFormatter();
 
 const isFeatureEnabled = computed(() =>
   isCloudFeatureEnabled('csat_review_notes')
 );
 const showPaywall = computed(
-  () => !isFeatureEnabled.value && isOnPilotCloud.value
+  () => !isFeatureEnabled.value && isOnKonversioCloud.value
 );
 
 const reviewNotes = ref(props.response.csat_review_notes || '');

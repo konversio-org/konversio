@@ -311,16 +311,16 @@ ar:
       description: 'تسمح لك تطبيقات لوحة التحكم بإنشاء وتضمين التطبيقات التي تعرض معلومات المستخدم أو الطلبات أو سجل الدفع، مما يوفر المزيد من السياق لوكلاء دعم العملاء الخاص بك.'
     dyte:
       name: 'Dyte'
-      short_description: 'Start video/voice calls with customers directly from Pilot.'
-      description: 'Dyte هو منتج يدمج وظائف الصوت والفيديو في تطبيقك. مع هذا الدمج، يمكن لوكلائك بدء مكالمات الفيديو/الصوت مع عملائك مباشرة من Pilot.'
+      short_description: 'Start video/voice calls with customers directly from Konversio.'
+      description: 'Dyte هو منتج يدمج وظائف الصوت والفيديو في تطبيقك. مع هذا الدمج، يمكن لوكلائك بدء مكالمات الفيديو/الصوت مع عملائك مباشرة من Konversio.'
       meeting_name: 'بدأ %{agent_name} اجتماعاً'
     slack:
       name: 'Slack'
       short_description: 'Receive notifications and respond to conversations directly in Slack.'
-      description: "دمج Pilot مع Slack للحفاظ على مزامنة فريقك. هذا التكامل يسمح لك باستلام إشعارات للمحادثات الجديدة والرد عليها مباشرة داخل واجهة Slacks."
+      description: "دمج Konversio مع Slack للحفاظ على مزامنة فريقك. هذا التكامل يسمح لك باستلام إشعارات للمحادثات الجديدة والرد عليها مباشرة داخل واجهة Slacks."
     webhooks:
       name: 'Webhook'
-      description: 'أحداث Webhook توفر تحديثات في الوقت الحقيقي حول الأنشطة في حساب Pilot الخاص بك. يمكنك الاشتراك في الأحداث المفضلة الخاصة بك، وسترسل Pilot لك اتصالات HTTP مع التحديثات.'
+      description: 'أحداث Webhook توفر تحديثات في الوقت الحقيقي حول الأنشطة في حساب Konversio الخاص بك. يمكنك الاشتراك في الأحداث المفضلة الخاصة بك، وسترسل Konversio لك اتصالات HTTP مع التحديثات.'
     dialogflow:
       name: 'Dialogflow'
       short_description: 'Build chatbots to handle initial queries before transferring to agents.'

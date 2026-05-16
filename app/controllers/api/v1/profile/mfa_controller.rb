@@ -34,7 +34,7 @@ class Api::V1::Profile::MfaController < Api::BaseController
   end
 
   def check_mfa_feature_available
-    return if Pilot.mfa_enabled?
+    return if Konversio.mfa_enabled?
 
     render json: {
       error: I18n.t('errors.mfa.feature_unavailable')

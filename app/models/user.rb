@@ -189,7 +189,7 @@ class User < ApplicationRecord
   end
 
   def mfa_feature_available?
-    Pilot.mfa_enabled?
+    Konversio.mfa_enabled?
   end
 
   # Workaround for Devise 4.9.x race condition vulnerability (GHSA-57hq-95w6-v4fc).

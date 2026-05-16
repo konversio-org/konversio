@@ -144,8 +144,8 @@ class Account < ApplicationRecord
 
   def usage_limits
     {
-      agents: PilotApp.max_limit.to_i,
-      inboxes: PilotApp.max_limit.to_i
+      agents: KonversioApp.max_limit.to_i,
+      inboxes: KonversioApp.max_limit.to_i
     }
   end
 

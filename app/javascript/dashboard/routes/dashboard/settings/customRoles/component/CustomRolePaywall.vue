@@ -42,7 +42,7 @@ const dummyCustomRolesData = [
 
 const router = useRouter();
 
-const isOnPilotCloud = useMapGetter('globalConfig/isOnPilotCloud');
+const isOnKonversioCloud = useMapGetter('globalConfig/isOnKonversioCloud');
 
 const currentUser = useMapGetter('getCurrentUser');
 const currentAccountId = useMapGetter('getCurrentAccountId');
@@ -51,7 +51,7 @@ const isSuperAdmin = computed(() => {
   return currentUser.value.type === 'SuperAdmin';
 });
 const i18nKey = computed(() =>
-  isOnPilotCloud.value ? 'PAYWALL' : 'ENTERPRISE_PAYWALL'
+  isOnKonversioCloud.value ? 'PAYWALL' : 'ENTERPRISE_PAYWALL'
 );
 
 const goToBillingSettings = () => {
@@ -98,7 +98,7 @@ const tableHeaders = computed(() => {
       <BasePaywallModal
         feature-prefix="CUSTOM_ROLE"
         :i18n-key="i18nKey"
-        :is-on-chatwoot-cloud="isOnPilotCloud"
+        :is-on-chatwoot-cloud="isOnKonversioCloud"
         :is-super-admin="isSuperAdmin"
         @upgrade="goToBillingSettings"
       />

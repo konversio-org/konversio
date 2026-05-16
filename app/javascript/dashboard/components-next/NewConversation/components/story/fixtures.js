@@ -4,7 +4,7 @@ export const contacts = [
       city: 'kerala',
       country: 'India',
       description: 'Curious about the web. ',
-      companyName: 'Pilot',
+      companyName: 'Konversio',
       countryCode: '',
       socialProfiles: {
         github: 'abozler',

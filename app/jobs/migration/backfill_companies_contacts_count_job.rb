@@ -2,7 +2,7 @@ class Migration::BackfillCompaniesContactsCountJob < ApplicationJob
   queue_as :async_database_migration
 
   def perform
-    return unless PilotApp.enterprise?
+    return unless KonversioApp.enterprise?
 
     Company.find_in_batches(batch_size: 100) do |company_batch|
       company_batch.each do |company|

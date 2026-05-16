@@ -1,5 +1,5 @@
 # TODO: lets use HTTParty instead of RestClient
-class PilotHub
+class KonversioHub
   DEFAULT_BASE_URL = 'https://hub.2.chatwoot.com'.freeze
 
   def self.base_url
@@ -37,13 +37,13 @@ class PilotHub
   end
 
   def self.pricing_plan
-    return 'community' unless PilotApp.enterprise?
+    return 'community' unless KonversioApp.enterprise?
 
     InstallationConfig.find_by(name: 'INSTALLATION_PRICING_PLAN')&.value || 'community'
   end
 
   def self.pricing_plan_quantity
-    return 0 unless PilotApp.enterprise?
+    return 0 unless KonversioApp.enterprise?
 
     InstallationConfig.find_by(name: 'INSTALLATION_PRICING_PLAN_QUANTITY')&.value || 0
   end
@@ -59,7 +59,7 @@ class PilotHub
   def self.instance_config
     {
       installation_identifier: installation_identifier,
-      installation_version: Pilot.config[:version],
+      installation_version: Konversio.config[:version],
       installation_host: URI.parse(ENV.fetch('FRONTEND_URL', '')).host,
       installation_env: ENV.fetch('INSTALLATION_ENV', ''),
       edition: ENV.fetch('PLT_EDITION', '')
@@ -91,7 +91,7 @@ class PilotHub
     rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
       Rails.logger.error "Exception: #{e.message}"
     rescue StandardError => e
-      PilotExceptionTracker.new(e).capture_exception
+      KonversioExceptionTracker.new(e).capture_exception
     end
     parsed_response
   end
@@ -102,7 +102,7 @@ class PilotHub
   rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
     Rails.logger.error "Exception: #{e.message}"
   rescue StandardError => e
-    PilotExceptionTracker.new(e).capture_exception
+    KonversioExceptionTracker.new(e).capture_exception
   end
 
   def self.send_push(fcm_options)
@@ -111,7 +111,7 @@ class PilotHub
   rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
     Rails.logger.error "Exception: #{e.message}"
   rescue StandardError => e
-    PilotExceptionTracker.new(e).capture_exception
+    KonversioExceptionTracker.new(e).capture_exception
   end
 
   def self.emit_event(event_name, event_data)
@@ -122,8 +122,8 @@ class PilotHub
   rescue *ExceptionList::REST_CLIENT_EXCEPTIONS => e
     Rails.logger.error "Exception: #{e.message}"
   rescue StandardError => e
-    PilotExceptionTracker.new(e).capture_exception
+    KonversioExceptionTracker.new(e).capture_exception
   end
 end
 
-PilotHub.singleton_class.prepend_mod_with('PilotHub')
+KonversioHub.singleton_class.prepend_mod_with('KonversioHub')

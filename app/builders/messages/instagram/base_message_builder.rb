@@ -190,7 +190,7 @@ class Messages::Instagram::BaseMessageBuilder < Messages::Messenger::MessageBuil
   end
 
   def handle_error(error)
-    PilotExceptionTracker.new(error, account: @inbox.account).capture_exception
+    KonversioExceptionTracker.new(error, account: @inbox.account).capture_exception
     true
   end
 

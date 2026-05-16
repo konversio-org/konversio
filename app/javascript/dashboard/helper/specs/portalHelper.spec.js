@@ -7,31 +7,31 @@ import {
 describe('PortalHelper', () => {
   describe('buildPortalURL', () => {
     it('returns the correct url', () => {
-      window.pilotConfig = {
+      window.konversioConfig = {
         hostURL: 'https://app.chatwoot.com',
         helpCenterURL: 'https://help.chatwoot.com',
       };
       expect(buildPortalURL('handbook')).toEqual(
         'https://help.chatwoot.com/hc/handbook'
       );
-      window.pilotConfig = {};
+      window.konversioConfig = {};
     });
   });
 
   describe('buildPortalArticleURL', () => {
     it('returns the correct url', () => {
-      window.pilotConfig = {
+      window.konversioConfig = {
         hostURL: 'https://app.chatwoot.com',
         helpCenterURL: 'https://help.chatwoot.com',
       };
       expect(
         buildPortalArticleURL('handbook', 'culture', 'fr', 'article-slug')
       ).toEqual('https://help.chatwoot.com/hc/handbook/articles/article-slug');
-      window.pilotConfig = {};
+      window.konversioConfig = {};
     });
 
     it('returns the correct url with custom domain', () => {
-      window.pilotConfig = {
+      window.konversioConfig = {
         hostURL: 'https://app.chatwoot.com',
         helpCenterURL: 'https://help.chatwoot.com',
       };
@@ -47,7 +47,7 @@ describe('PortalHelper', () => {
     });
 
     it('handles https in custom domain correctly', () => {
-      window.pilotConfig = {
+      window.konversioConfig = {
         hostURL: 'https://app.chatwoot.com',
         helpCenterURL: 'https://help.chatwoot.com',
       };
@@ -63,7 +63,7 @@ describe('PortalHelper', () => {
     });
 
     it('uses hostURL when helpCenterURL is not available', () => {
-      window.pilotConfig = {
+      window.konversioConfig = {
         hostURL: 'https://app.chatwoot.com',
         helpCenterURL: '',
       };

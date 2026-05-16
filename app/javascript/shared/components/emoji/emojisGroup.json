@@ -1591,18 +1591,18 @@
       },
       {
         "emoji": "🧑‍✈️",
-        "name": "pilot",
-        "slug": "pilot_plane"
+        "name": "konversio",
+        "slug": "konversio_plane"
       },
       {
         "emoji": "👨‍✈️",
-        "name": "man pilot",
-        "slug": "man_pilot"
+        "name": "man konversio",
+        "slug": "man_konversio"
       },
       {
         "emoji": "👩‍✈️",
-        "name": "woman pilot",
-        "slug": "woman_pilot"
+        "name": "woman konversio",
+        "slug": "woman_konversio"
       },
       {
         "emoji": "🧑‍🚀",

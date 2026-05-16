@@ -43,11 +43,11 @@ class Webhooks::Trigger
 
   def request_headers(body)
     headers = { content_type: :json, accept: :json }
-    headers['X-Pilot-Delivery'] = @delivery_id if @delivery_id.present?
+    headers['X-Konversio-Delivery'] = @delivery_id if @delivery_id.present?
     if @secret.present?
       ts = Time.now.to_i.to_s
-      headers['X-Pilot-Timestamp'] = ts
-      headers['X-Pilot-Signature'] = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', @secret, "#{ts}.#{body}")}"
+      headers['X-Konversio-Timestamp'] = ts
+      headers['X-Konversio-Signature'] = "sha256=#{OpenSSL::HMAC.hexdigest('SHA256', @secret, "#{ts}.#{body}")}"
     end
     headers
   end
