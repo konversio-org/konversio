@@ -40,6 +40,12 @@ module Konversio
 
     config.eager_load_paths << Rails.root.join('lib')
 
+    # Konversio fork-specific code (Pilot AI module, etc.) lives under custom/.
+    # Adding the conventional Rails app subtrees so Zeitwerk picks them up.
+    Dir[Rails.root.join('custom', 'app', '*')].each do |path|
+      config.eager_load_paths << path
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
