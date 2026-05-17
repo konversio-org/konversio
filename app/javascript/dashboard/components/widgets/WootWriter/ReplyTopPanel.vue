@@ -1,5 +1,5 @@
 <script>
-import { ref } from 'vue';
+import { ref, defineAsyncComponent } from 'vue';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useCaptain } from 'dashboard/composables/useCaptain';
 import { useTrack } from 'dashboard/composables';
@@ -10,12 +10,17 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import EditorModeToggle from './EditorModeToggle.vue';
 import CopilotMenuBar from './CopilotMenuBar.vue';
 
+const BriefingButton = defineAsyncComponent(
+  () => import('dashboard/components-next/pilot/briefing/BriefingButton.vue')
+);
+
 export default {
   name: 'ReplyTopPanel',
   components: {
     NextButton,
     EditorModeToggle,
     CopilotMenuBar,
+    BriefingButton,
   },
   directives: {
     OnClickOutside: vOnClickOutside,
@@ -54,7 +59,12 @@ export default {
       default: undefined,
     },
   },
-  emits: ['setReplyMode', 'toggleEditorSize', 'executeCopilotAction'],
+  emits: [
+    'setReplyMode',
+    'toggleEditorSize',
+    'executeCopilotAction',
+    'briefingDraft',
+  ],
   setup(props, { emit }) {
     const setReplyMode = mode => {
       emit('setReplyMode', mode);
@@ -161,6 +171,11 @@ export default {
         </span>
       </div>
     </div>
+    <BriefingButton
+      :conversation-id="conversationId"
+      :disabled="disabled || isEditorDisabled"
+      @draft="payload => $emit('briefingDraft', payload)"
+    />
     <div v-if="captainTasksEnabled" class="flex items-center gap-2">
       <div class="relative">
         <NextButton
