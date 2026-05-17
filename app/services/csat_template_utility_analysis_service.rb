@@ -14,7 +14,7 @@ class CsatTemplateUtilityAnalysisService
   private
 
   def llm_result_or_nil(baseline)
-    llm_output = Captain::CsatUtilityAnalysisService.new(
+    llm_output = Pilot::CsatUtilityAnalysisService.new(
       account: account,
       message: message,
       button_text: button_text,

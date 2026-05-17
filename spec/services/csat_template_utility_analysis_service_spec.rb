@@ -3,10 +3,10 @@ require 'rails_helper'
 RSpec.describe CsatTemplateUtilityAnalysisService do
   let(:account) { build_stubbed(:account) }
   let(:inbox) { build_stubbed(:inbox) }
-  let(:llm_service) { instance_double(Captain::CsatUtilityAnalysisService) }
+  let(:llm_service) { instance_double(Pilot::CsatUtilityAnalysisService) }
 
   before do
-    allow(Captain::CsatUtilityAnalysisService).to receive(:new).and_return(llm_service)
+    allow(Pilot::CsatUtilityAnalysisService).to receive(:new).and_return(llm_service)
     allow(llm_service).to receive(:perform).and_return({ error: 'LLM unavailable' })
   end
 

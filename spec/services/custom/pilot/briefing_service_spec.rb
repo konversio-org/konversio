@@ -27,9 +27,9 @@ RSpec.describe Custom::Pilot::BriefingService do
       expect { service.perform }.to raise_error(described_class::FeatureDisabledError)
     end
 
-    it 'delegates to Captain::ReplySuggestionService and returns the draft' do
-      fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-      expect(::Captain::ReplySuggestionService)
+    it 'delegates to Pilot::ReplySuggestionService and returns the draft' do
+      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+      expect(::Pilot::ReplySuggestionService)
         .to receive(:new)
         .with(account: account, conversation_display_id: conversation.display_id, user: user)
         .and_return(fake_suggestion)
@@ -40,26 +40,26 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'accepts a plain string response (back-compat for stubs)' do
-      fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-      allow(::Captain::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_return('Hello!')
 
       service = described_class.new(conversation: conversation, user: user)
       expect(service.perform).to eq('Hello!')
     end
 
-    it 'raises Custom::Pilot::BriefingService::Error when the captain service returns an error hash' do
-      fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-      allow(::Captain::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+    it 'raises Custom::Pilot::BriefingService::Error when the pilot service returns an error hash' do
+      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_return({ error: 'upstream is down', error_code: 500 })
 
       service = described_class.new(conversation: conversation, user: user)
       expect { service.perform }.to raise_error(described_class::Error, /upstream is down/)
     end
 
-    it 'wraps StandardError from the captain service in a Pilot::BriefingService::Error' do
-      fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-      allow(::Captain::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+    it 'wraps StandardError from the pilot service in a Pilot::BriefingService::Error' do
+      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_raise(StandardError, 'connection refused')
 
       service = described_class.new(conversation: conversation, user: user)
@@ -68,8 +68,8 @@ RSpec.describe Custom::Pilot::BriefingService do
 
     context 'with Logbook' do
       it 'skips Logbook context injection when pilot_logbook_enabled is false' do
-        fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-        allow(::Captain::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+        allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)
@@ -84,8 +84,8 @@ RSpec.describe Custom::Pilot::BriefingService do
 
         stub_const('Pilot::LogbookEntry', Class.new) unless defined?(::Pilot::LogbookEntry)
 
-        fake_suggestion = instance_double(::Captain::ReplySuggestionService)
-        allow(::Captain::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
+        allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)
