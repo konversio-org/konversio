@@ -225,7 +225,7 @@ class Message < ApplicationRecord
     return false unless human_response? && !private?
     return false if conversation.first_reply_created_at.present?
     return false if conversation.messages.outgoing
-                                .where.not(sender_type: ['AgentBot', 'Captain::Assistant'])
+                                .where.not(sender_type: ['AgentBot', 'Pilot::Assistant'])
                                 .where.not(private: true)
                                 .where("(additional_attributes->'campaign_id') is null").count > 1
 
@@ -371,8 +371,7 @@ class Message < ApplicationRecord
   end
 
   def bot_response?
-    # Check if this is a response from AgentBot or Captain::Assistant
-    outgoing? && sender_type.in?(['AgentBot', 'Captain::Assistant'])
+    outgoing? && sender_type.in?(['AgentBot', 'Pilot::Assistant'])
   end
 
   def dispatch_create_events
