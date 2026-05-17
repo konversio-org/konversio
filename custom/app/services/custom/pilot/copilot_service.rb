@@ -2,10 +2,20 @@ module Custom
   module Pilot
     # Generates an asynchronous assistant reply for a Copilot thread.
     #
-    # Per Pilot design D4 + D20 we wrap RubyLLM directly (V2 agentic loop only).
-    # The agentic ai-agents SDK loop is reserved for Autopilot (section 4);
-    # Copilot is a simple chat thread where the LLM responds to the agent's
-    # questions with optional bound-conversation context and Logbook hints.
+    # KNOWN DEVIATION FROM SPEC (must be fixed before Copilot ships to
+    # production — see openspec/changes/pilot-full/specs/pilot-copilot
+    # "Copilot uses the ai-agents SDK runner with full tool execution"
+    # + design.md D20 + D21):
+    #
+    # This scaffold uses `RubyLLM.chat` directly. The spec REQUIRES the
+    # ai-agents SDK runner pattern so tool calls (e.g. `search_conversation`,
+    # contact lookup) execute in-process and the loop runs to completion.
+    # Single-turn RubyLLM mirrors the legacy V1 single-turn pattern, which
+    # has the known empty-response bug we are explicitly fixing in Pilot.
+    #
+    # TODO(pilot-copilot): replace the `run_chat` body with the ai-agents
+    # SDK runner. Persist intermediate `assistant_thinking` messages.
+    # Cap at `max_agent_steps` (default 8) and post a fallback on exhaustion.
     #
     # Returns the assistant reply content as a String, or raises
     # `Custom::Pilot::CopilotService::Error` on LLM/transport failure.
