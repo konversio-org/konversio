@@ -25,3 +25,19 @@ json.name @account.name
 json.support_email @account.support_email
 json.status @account.status
 json.cache_keys @account.cache_keys
+
+# Pilot AI module per-account feature flags. Vue components gate their
+# rendering on these, so they MUST be exposed on the account payload that
+# the dashboard reads via getCurrentAccount.
+json.pilot_enabled @account.pilot_enabled
+json.pilot_briefing_enabled @account.pilot_briefing_enabled
+json.pilot_copilot_enabled @account.pilot_copilot_enabled
+json.pilot_autopilot_enabled @account.pilot_autopilot_enabled
+json.pilot_logbook_enabled @account.pilot_logbook_enabled
+json.pilot_tools_enabled @account.pilot_tools_enabled
+json.pilot_autoresolve_enabled @account.pilot_autoresolve_enabled
+json.pilot_summary_enabled @account.pilot_summary_enabled
+json.pilot_csat_analysis_enabled @account.pilot_csat_analysis_enabled
+json.pilot_follow_up_enabled @account.pilot_follow_up_enabled
+json.pilot_rewrite_enabled @account.pilot_rewrite_enabled
+json.pilot_label_suggestion_enabled @account.pilot_label_suggestion_enabled

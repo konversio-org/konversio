@@ -30,8 +30,8 @@ const isEnabled = computed(() => {
 
 const buttonLabel = computed(() =>
   briefing.loading.value
-    ? t('CONVERSATION.PILOT.BRIEFING.LOADING')
-    : t('CONVERSATION.PILOT.BRIEFING.BUTTON_LABEL')
+    ? t('PILOT.BRIEFING.LOADING')
+    : t('PILOT.BRIEFING.BUTTON_LABEL')
 );
 
 const onClick = async () => {
@@ -57,7 +57,7 @@ const onClick = async () => {
       class="text-xs text-n-ruby-9"
       role="alert"
     >
-      {{ briefing.error.value || $t('CONVERSATION.PILOT.BRIEFING.ERROR') }}
+      {{ briefing.error.value || $t('PILOT.BRIEFING.ERROR') }}
     </span>
   </div>
 </template>
