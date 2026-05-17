@@ -447,8 +447,9 @@
     "TRY_THESE_PROMPTS": "Try these prompts"
   },
   "PILOT": {
+    "ACTIONS_MENU_LABEL": "Pilot AI actions",
     "BRIEFING": {
-      "BUTTON_LABEL": "Get Briefing",
+      "BUTTON_LABEL": "Suggest a reply",
       "LOADING": "Generating briefing…",
       "ERROR": "Could not generate a briefing. Please try again."
     }
