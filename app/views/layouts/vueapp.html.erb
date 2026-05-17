@@ -62,6 +62,17 @@
         browser_name: '<%= browser.name %>',
       }
       window.errorLoggingConfig = '<%= ENV.fetch('SENTRY_FRONTEND_DSN', '') || ENV.fetch('SENTRY_DSN', '') %>'
+      // Suppress Lit dev-mode + multiple-versions warnings emitted by
+      // @chatwoot/ninja-keys (a published npm dep that ships its own copy
+      // of Lit, colliding with the version used elsewhere). Must run
+      // BEFORE Vite loads dashboard.js — that's why it lives here in the
+      // inline script, not in the JS entrypoint.
+      window.litIssuedWarnings = new Set([
+        'dev-mode',
+        'multiple-versions',
+        'change-in-update',
+        'migration',
+      ]);
     </script>
     <% if @global_config['CLOUD_ANALYTICS_TOKEN'].present? %>
     <script>
