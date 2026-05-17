@@ -51,6 +51,7 @@ import {
   getEffectiveChannelType,
 } from 'dashboard/helper/editorHelper';
 import { useCopilotReply } from 'dashboard/composables/useCopilotReply';
+import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { isFileTypeAllowedForChannel } from 'shared/helpers/FileHelper';
 
@@ -94,6 +95,7 @@ export default {
     const replyEditor = useTemplateRef('replyEditor');
     const messageEditor = useTemplateRef('messageEditor');
     const copilot = useCopilotReply();
+    const pilotCopilotDrawer = useCopilotDrawer();
     const shortcutKey = useKbd(['$mod', '+', 'enter']);
 
     return {
@@ -105,6 +107,7 @@ export default {
       replyEditor,
       messageEditor,
       copilot,
+      pilotCopilotDrawer,
       shortcutKey,
     };
   },
@@ -933,6 +936,13 @@ export default {
       this.onFocus();
     },
     executeCopilotAction(action, data) {
+      if (action === 'ask_copilot') {
+        const account = this.$store.getters.getCurrentAccount || {};
+        if (account.pilot_enabled && account.pilot_copilot_enabled) {
+          this.pilotCopilotDrawer.openBoundToConversation(this.conversationId);
+          return;
+        }
+      }
       this.copilot.execute(action, data);
     },
     onBriefingDraft(draft) {
