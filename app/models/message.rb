@@ -409,14 +409,14 @@ class Message < ApplicationRecord
   end
 
   def mark_pending_conversation_as_open_for_human_response
-    return unless captain_pending_conversation?
+    return unless pilot_pending_conversation?
     return unless human_response?
     return if private?
 
     conversation.open!
   end
 
-  def captain_pending_conversation?
+  def pilot_pending_conversation?
     false
   end
 
