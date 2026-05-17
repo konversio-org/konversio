@@ -1,6 +1,6 @@
 class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   include Events::Types
-  before_action :render_not_found_if_empty, only: [:toggle_typing, :toggle_status, :set_custom_attributes, :destroy_custom_attributes]
+  before_action :render_not_found_if_empty, only: [:toggle_status, :set_custom_attributes, :destroy_custom_attributes]
 
   def index
     @conversation = conversation
@@ -44,6 +44,8 @@ class Api::V1::Widget::ConversationsController < Api::V1::Widget::BaseController
   end
 
   def toggle_typing
+    return head :ok if conversation.nil?
+
     case permitted_params[:typing_status]
     when 'on'
       trigger_typing_event(CONVERSATION_TYPING_ON)
