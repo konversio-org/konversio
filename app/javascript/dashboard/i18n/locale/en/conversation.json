@@ -452,6 +452,22 @@
       "BUTTON_LABEL": "Suggest a reply",
       "LOADING": "Generating briefing…",
       "ERROR": "Could not generate a briefing. Please try again."
+    },
+    "COPILOT": {
+      "OPEN": "Copilot",
+      "DRAWER_TITLE": "Copilot",
+      "CLOSE": "Close Copilot",
+      "NEW_THREAD": "New thread",
+      "NEW_THREAD_PLACEHOLDER": "Ask Copilot anything…",
+      "REPLY_PLACEHOLDER": "Send a follow-up…",
+      "SEND": "Send",
+      "PENDING": "Copilot is thinking…",
+      "EMPTY_STATE": "Start a new thread to chat with Copilot.",
+      "THREADS": "Threads",
+      "NO_THREADS": "No threads yet.",
+      "UNTITLED_THREAD": "Untitled thread",
+      "BOUND_CONVERSATION_INTRO": "Asking Copilot about conversation #{id}",
+      "ASK_FROM_COMPOSER": "Ask Copilot"
     }
   },
   "GALLERY_VIEW": {

@@ -5,6 +5,7 @@ import { useElementSize, useWindowSize } from '@vueuse/core';
 import { useMapGetter } from 'dashboard/composables/store';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import { useCaptain } from 'dashboard/composables/useCaptain';
+import { useAccount } from 'dashboard/composables/useAccount';
 import Button from 'dashboard/components-next/button/Button.vue';
 import DropdownBody from 'next/dropdown-menu/base/DropdownBody.vue';
 
@@ -34,6 +35,12 @@ const emit = defineEmits(['executeCopilotAction']);
 const { t } = useI18n();
 
 const { draftMessage } = useCaptain();
+const { currentAccount } = useAccount();
+
+const isPilotCopilotEnabled = computed(() => {
+  const account = currentAccount.value || {};
+  return Boolean(account.pilot_enabled && account.pilot_copilot_enabled);
+});
 
 const replyMode = useMapGetter('draftMessages/getReplyEditorMode');
 
@@ -144,11 +151,19 @@ const generalMenuItems = computed(() => {
     });
   }
 
-  items.push({
-    label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.ASK_COPILOT'),
-    key: 'ask_copilot',
-    icon: 'i-fluent-circle-sparkle-24-regular',
-  });
+  if (isPilotCopilotEnabled.value) {
+    items.push({
+      label: t('PILOT.COPILOT.ASK_FROM_COMPOSER'),
+      key: 'ask_copilot',
+      icon: 'i-fluent-circle-sparkle-24-regular',
+    });
+  } else {
+    items.push({
+      label: t('INTEGRATION_SETTINGS.OPEN_AI.REPLY_OPTIONS.ASK_COPILOT'),
+      key: 'ask_copilot',
+      icon: 'i-fluent-circle-sparkle-24-regular',
+    });
+  }
 
   return items;
 });

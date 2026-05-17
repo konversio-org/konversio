@@ -39,6 +39,7 @@ import integrations from './modules/integrations';
 import labels from './modules/labels';
 import macros from './modules/macros';
 import notifications from './modules/notifications';
+import pilotCopilot from './pilot/copilot';
 import portals from './modules/helpCenterPortals';
 import reports from './modules/reports';
 import sla from './modules/sla';
@@ -92,6 +93,7 @@ export default createStore({
     labels,
     macros,
     notifications,
+    'pilot/copilot': pilotCopilot,
     portals,
     reports,
     sla,
