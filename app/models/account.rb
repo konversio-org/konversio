@@ -110,6 +110,12 @@ class Account < ApplicationRecord
   has_many :whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::Whatsapp'
   has_many :working_hours, dependent: :destroy_async
 
+  has_many :pilot_assistants, class_name: 'Pilot::Assistant', dependent: :destroy_async
+  has_many :pilot_assistant_responses, class_name: 'Pilot::AssistantResponse', dependent: :destroy_async
+  has_many :pilot_documents, class_name: 'Pilot::Document', dependent: :destroy_async
+  has_many :pilot_scenarios, class_name: 'Pilot::Scenario', dependent: :destroy_async
+  has_many :pilot_custom_tools, class_name: 'Pilot::CustomTool', dependent: :destroy_async
+
   has_one_attached :contacts_export
 
   enum :locale, LANGUAGES_CONFIG.map { |key, val| [val[:iso_639_1_code], key] }.to_h, prefix: true
