@@ -446,6 +446,13 @@
   "COPILOT": {
     "TRY_THESE_PROMPTS": "Try these prompts"
   },
+  "PILOT": {
+    "BRIEFING": {
+      "BUTTON_LABEL": "Get Briefing",
+      "LOADING": "Generating briefing…",
+      "ERROR": "Could not generate a briefing. Please try again."
+    }
+  },
   "GALLERY_VIEW": {
     "ERROR_DOWNLOADING": "Unable to download attachment. Please try again"
   }

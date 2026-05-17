@@ -467,6 +467,9 @@ Rails.application.routes.draw do
               get :grouped_conversation_metrics
             end
           end
+          namespace :pilot do
+            resources :briefings, only: [:create]
+          end
         end
       end
     end
