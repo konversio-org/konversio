@@ -4,7 +4,7 @@ module Pilot
   # Ownership is per-agent: an agent only sees their own threads. Admins
   # may see every thread in the account.
   #
-  # The record is a `Captain::CopilotThread`. The controller layer is
+  # The record is a `Pilot::CopilotThread`. The controller layer is
   # responsible for translating cross-agent access into HTTP 404 (rather
   # than 403) so we don't leak existence — see
   # `Api::V2::Accounts::Pilot::CopilotThreadsController`.

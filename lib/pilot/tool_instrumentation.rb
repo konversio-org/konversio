@@ -1,4 +1,4 @@
-module Captain::ToolInstrumentation
+module Pilot::ToolInstrumentation
   extend ActiveSupport::Concern
   include Integrations::LlmInstrumentationConstants
 

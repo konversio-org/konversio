@@ -23,7 +23,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotThreads', type: :request do
 
       expect(response).to have_http_status(:created)
       thread_id = response.parsed_body['id']
-      thread = Captain::CopilotThread.find(thread_id)
+      thread = Pilot::CopilotThread.find(thread_id)
       expect(thread.user_id).to eq(agent.id)
       expect(thread.title).to eq('Refund policy question')
       expect(thread.copilot_messages.user.count).to eq(1)
@@ -68,8 +68,8 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotThreads', type: :request do
   end
 
   describe 'GET /api/v2/accounts/:account_id/pilot/copilot_threads' do
-    let!(:my_thread) { create(:captain_copilot_thread, account: account, user: agent) }
-    let!(:other_thread) { create(:captain_copilot_thread, account: account, user: other_agent) }
+    let!(:my_thread) { create(:pilot_copilot_thread, account: account, user: agent) }
+    let!(:other_thread) { create(:pilot_copilot_thread, account: account, user: other_agent) }
 
     it 'returns only the threads owned by the requesting agent' do
       get url, headers: agent.create_new_auth_token, as: :json

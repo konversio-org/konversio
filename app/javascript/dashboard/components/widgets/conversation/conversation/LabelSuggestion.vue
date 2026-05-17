@@ -5,7 +5,7 @@ import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import { useBranding } from 'shared/composables/useBranding';
 
 // composables
-import { useCaptain } from 'dashboard/composables/useCaptain';
+import { usePilot } from 'dashboard/composables/usePilot';
 import { useTrack } from 'dashboard/composables';
 
 // store & api
@@ -34,10 +34,10 @@ export default {
     },
   },
   setup() {
-    const { captainTasksEnabled } = useCaptain();
+    const { pilotCopilotEnabled } = usePilot();
     const { replaceInstallationName } = useBranding();
 
-    return { captainTasksEnabled, replaceInstallationName };
+    return { pilotCopilotEnabled, replaceInstallationName };
   },
   data() {
     return {
@@ -80,7 +80,7 @@ export default {
     },
     shouldShowSuggestions() {
       if (this.isDismissed) return false;
-      if (!this.captainTasksEnabled) return false;
+      if (!this.pilotCopilotEnabled) return false;
 
       return this.preparedLabels.length && this.chatLabels.length === 0;
     },

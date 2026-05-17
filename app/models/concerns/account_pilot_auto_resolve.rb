@@ -1,4 +1,4 @@
-module AccountCaptainAutoResolve
+module AccountPilotAutoResolve
   extend ActiveSupport::Concern
 
   VALID_CAPTAIN_AUTO_RESOLVE_MODES = %w[evaluated legacy disabled].freeze
