@@ -1,4 +1,4 @@
-class Captain::CsatUtilityAnalysisService < Captain::BaseTaskService
+class Pilot::CsatUtilityAnalysisService < Pilot::BaseTaskService
   pattr_initialize [:account!, :message!, { button_text: nil, language: 'en', baseline: {} }]
 
   def perform

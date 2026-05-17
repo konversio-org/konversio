@@ -16,11 +16,10 @@ import KeyboardEmojiSelector from './keyboardEmojiSelector.vue';
 import TagAgents from '../conversation/TagAgents.vue';
 import VariableList from '../conversation/VariableList.vue';
 import TagTools from '../conversation/TagTools.vue';
-import CopilotMenuBar from './CopilotMenuBar.vue';
 
 import { useEmitter } from 'dashboard/composables/emitter';
 import { useI18n } from 'vue-i18n';
-import { useCaptain } from 'dashboard/composables/useCaptain';
+import { usePilot } from 'dashboard/composables/usePilot';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useTrack } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
@@ -111,7 +110,7 @@ const emit = defineEmits([
 ]);
 
 const { t } = useI18n();
-const { captainTasksEnabled } = useCaptain();
+const { pilotCopilotEnabled } = usePilot();
 
 const TYPING_INDICATOR_IDLE_TIME = 4000;
 const MAXIMUM_FILE_UPLOAD_SIZE = 4; // in MB
@@ -130,7 +129,7 @@ const editorSchema = computed(() => {
     : effectiveChannelType.value;
   const formatting = getFormattingForEditor(
     formatType,
-    captainTasksEnabled.value
+    pilotCopilotEnabled.value
   );
   return buildMessageSchema(formatting.marks, formatting.nodes);
 });
@@ -141,7 +140,7 @@ const editorMenuOptions = computed(() => {
     : effectiveChannelType.value || DEFAULT_FORMATTING;
   const formatting = getFormattingForEditor(
     formatType,
-    captainTasksEnabled.value
+    pilotCopilotEnabled.value
   );
 
   return formatting.menu;
@@ -876,18 +875,6 @@ useEmitter(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, insertContentIntoEditor);
       v-if="showToolsMenu"
       :search-key="toolSearchKey"
       @select-tool="content => insertSpecialContent('tool', content)"
-    />
-    <CopilotMenuBar
-      v-if="showSelectionMenu"
-      v-on-click-outside="handleClickOutside"
-      :has-selection="isTextSelected"
-      :is-editor-menu-popover="isEditorMenuPopover"
-      :editor-content="modelValue"
-      :conversation-id="conversationId"
-      :show-selection-menu="showSelectionMenu"
-      :show-general-menu="false"
-      class="copilot-editor-menu"
-      @execute-copilot-action="handleCopilotAction"
     />
     <input
       ref="imageUpload"

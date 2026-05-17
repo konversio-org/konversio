@@ -4,7 +4,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotMessages', type: :request do
   let(:account) { create(:account) }
   let(:agent) { create(:user, account: account, role: :agent) }
   let(:other_agent) { create(:user, account: account, role: :agent) }
-  let!(:thread) { create(:captain_copilot_thread, account: account, user: agent) }
+  let!(:thread) { create(:pilot_copilot_thread, account: account, user: agent) }
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/copilot_threads/#{thread.id}/copilot_messages" }
 
   before do
@@ -54,9 +54,9 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotMessages', type: :request do
   end
 
   describe 'GET .../copilot_messages' do
-    let!(:user_message) { create(:captain_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'first' }) }
+    let!(:user_message) { create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'first' }) }
     let!(:assistant_message) do
-      create(:captain_copilot_message, copilot_thread: thread, account: account, message_type: :assistant, message: { content: 'second' })
+      create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :assistant, message: { content: 'second' })
     end
 
     it 'returns messages in chronological order' do

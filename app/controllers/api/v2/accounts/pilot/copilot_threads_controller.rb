@@ -14,13 +14,13 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
 
     thread = nil
     ActiveRecord::Base.transaction do
-      thread = Captain::CopilotThread.create!(
+      thread = Pilot::CopilotThread.create!(
         account: Current.account,
         user: Current.user,
         title: derive_title(params[:message]),
         assistant_id: params[:assistant_id]
       )
-      Captain::CopilotMessage.create!(
+      Pilot::CopilotMessage.create!(
         copilot_thread: thread,
         account: Current.account,
         message_type: :user,
@@ -51,7 +51,7 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
   end
 
   def scoped_threads
-    base = Captain::CopilotThread.where(account_id: Current.account.id)
+    base = Pilot::CopilotThread.where(account_id: Current.account.id)
     return base if Current.account_user&.administrator?
 
     base.where(user_id: Current.user.id)

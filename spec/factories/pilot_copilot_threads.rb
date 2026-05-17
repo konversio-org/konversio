@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 FactoryBot.define do
-  factory :captain_copilot_thread, class: 'Captain::CopilotThread' do
+  factory :pilot_copilot_thread, class: 'Pilot::CopilotThread' do
     account
     user
     sequence(:title) { |n| "Copilot thread #{n}" }

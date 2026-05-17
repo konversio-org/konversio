@@ -21,7 +21,7 @@
 # assistant. Backed by the existing `copilot_threads` table (table name kept
 # `copilot_*` per minimal-fork doctrine; the Ruby class lives under
 # `Captain::` to mirror Captain V2 naming).
-class Captain::CopilotThread < ApplicationRecord
+class Pilot::CopilotThread < ApplicationRecord
   self.table_name = 'copilot_threads'
 
   belongs_to :account
@@ -33,7 +33,7 @@ class Captain::CopilotThread < ApplicationRecord
   attribute :assistant_id, :integer
 
   has_many :copilot_messages,
-           class_name: 'Captain::CopilotMessage',
+           class_name: 'Pilot::CopilotMessage',
            foreign_key: :copilot_thread_id,
            inverse_of: :copilot_thread,
            dependent: :destroy

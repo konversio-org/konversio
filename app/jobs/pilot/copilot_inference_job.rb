@@ -9,7 +9,7 @@ module Pilot
     queue_as :default
 
     def perform(thread_id:, conversation_id: nil)
-      thread = Captain::CopilotThread.find_by(id: thread_id)
+      thread = Pilot::CopilotThread.find_by(id: thread_id)
       return if thread.blank?
 
       reply = Custom::Pilot::CopilotService.new(
@@ -30,7 +30,7 @@ module Pilot
     def persist_assistant_message(thread, content)
       return if content.blank?
 
-      Captain::CopilotMessage.create!(
+      Pilot::CopilotMessage.create!(
         copilot_thread: thread,
         account: thread.account,
         message_type: :assistant,
