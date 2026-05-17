@@ -164,16 +164,89 @@ Pilot config uses **`PILOT_*`** env vars / `InstallationConfig` keys, never
 Migrating Chatwoot users have to rename their env vars once. The
 brand-consistent naming wins long-term over the one-time migration cost.
 
-### Pilot Features (planned)
+### Pilot sub-features (aviation metaphor)
 
-1. **BYO-key**: User configures provider (OpenAI, Scaleway, Mistral, etc.) + API key + endpoint URL
-2. **Smart reply suggestions**: AI-generated reply drafts for agents
-3. **Conversation summarization**: Auto-summarize long threads
-4. **Label suggestions**: AI-suggested labels based on conversation content
-5. **Help-center aware**: Pulls from knowledge base articles for accurate answers
-6. **Auto-triage**: Route conversations based on AI-classified intent
-7. **Human handoff**: Seamless transition from AI to human agent
-8. **No vendor lock-in**: Switch providers anytime, run local models via Ollama
+Pilot has four user-visible sub-features, each with a name from the
+aviation/flying metaphor. Each maps cleanly to a feature Chatwoot
+shipped under "Captain":
+
+| Pilot feature | What it does | Chatwoot's name for it |
+|---|---|---|
+| **Copilot** | Agent-facing chat sidebar — agent talks to Pilot about a ticket ("summarize this", "rewrite my draft", "what's the customer asking?") | Copilot (same word — already aviation) |
+| **Autopilot** | Customer-facing chatbot — Pilot replies directly in the inbox when no human is in the loop; hands over to an agent when needed | Assistant |
+| **Briefing** | One-click reply draft in the composer — agent presses a button, gets a context-aware draft to edit and send | Reply suggestion |
+| **Logbook** | Per-contact persistent memory — Pilot remembers what's important about each customer across conversations | Memories |
+
+Cross-cutting:
+
+- **BYO-key**: pick any OpenAI-compatible provider (OpenAI / Scaleway / Mistral / Groq / Ollama / Anthropic via proxy / Gemini via proxy)
+- **EU-first defaults**: Scaleway + Mistral Small 3.2 as the recommended preset
+- **Pluggable tools** for Copilot + Autopilot: `add_label`, `add_private_note`, `set_priority`, `update_custom_attribute`, `assign_to_team`, `escalate_to_human`, `http_get`/`http_post`
+- **No vendor lock-in**: switch providers anytime, run local models via Ollama
+
+### Marketing copy (the value of the metaphor)
+
+> Your agents pair with Copilot — chat with your AI about any conversation, get summaries, drafts, and answers.
+>
+> Turn on Autopilot to let Pilot handle routine customer questions while your team focuses on complex cases.
+>
+> Every interaction goes into the Logbook — Pilot remembers each customer so the next conversation picks up where the last one left off.
+>
+> One click in the composer gives your agent a Briefing — a context-aware draft they can edit and send.
+
+### Code layout (planned)
+
+```
+custom/
+├── app/
+│   ├── controllers/api/v2/konversio/pilot/
+│   │   ├── briefings_controller.rb       — POST /pilot/briefings (returns reply draft)
+│   │   ├── copilot_messages_controller.rb — Copilot chat thread CRUD
+│   │   ├── autopilot_inboxes_controller.rb — bind/unbind Autopilot to an inbox
+│   │   ├── logbook_controller.rb         — per-contact memory CRUD
+│   │   └── settings_controller.rb        — Pilot config CRUD
+│   ├── models/custom/pilot/
+│   │   ├── copilot_thread.rb
+│   │   ├── copilot_message.rb
+│   │   ├── autopilot_inbox.rb
+│   │   ├── logbook_entry.rb
+│   │   └── pilot_setting.rb
+│   └── services/custom/pilot/
+│       ├── pilot_service.rb              — base, LLM routing
+│       ├── briefing_service.rb           — reply drafts
+│       ├── copilot/
+│       │   ├── chat_service.rb           — agent ↔ AI conversation
+│       │   ├── summarize_service.rb
+│       │   └── rewrite_service.rb
+│       ├── autopilot/
+│       │   ├── reply_service.rb          — customer-facing AI reply
+│       │   ├── handover_service.rb       — escalate to human
+│       │   └── intent_service.rb         — classify customer intent
+│       ├── logbook/
+│       │   ├── memorize_service.rb       — write to logbook after each conversation
+│       │   └── recall_service.rb         — fetch contact's logbook for prompt context
+│       └── tools/
+│           ├── base_tool.rb
+│           ├── add_label_tool.rb
+│           ├── add_private_note_tool.rb
+│           └── http_tool.rb
+└── config/
+    └── initializers/
+        └── pilot.rb                      — register Pilot in ChatwootApp.extensions
+```
+
+### DB tables (planned)
+
+```
+pilot_settings           (id, account_id, provider, api_key_encrypted, model, ...)
+pilot_knowledge_sources  (id, account_id, source_type, url, status)
+pilot_documents          (id, source_id, content, embedding vector(1536))
+pilot_copilot_threads    (id, account_id, agent_id, conversation_id)
+pilot_copilot_messages   (id, thread_id, role, content, tool_calls)
+pilot_autopilot_inboxes  (id, inbox_id, enabled, handover_keywords, system_prompt)
+pilot_logbook_entries    (id, contact_id, summary, updated_at)
+pilot_tool_invocations   (id, copilot_message_id, tool_name, args, result)
+```
 
 ### Provider Support
 
