@@ -2,6 +2,7 @@
 import { h, ref, computed, onMounted } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useStore } from 'vuex';
@@ -38,7 +39,17 @@ const emit = defineEmits([
   'closeMobileSidebar',
 ]);
 
-const { accountScopedRoute, isOnKonversioCloud } = useAccount();
+const { accountScopedRoute, isOnKonversioCloud, currentAccount } = useAccount();
+const pilotCopilotDrawer = useCopilotDrawer();
+
+const isPilotCopilotEnabled = computed(() => {
+  const account = currentAccount.value || {};
+  return Boolean(account.pilot_enabled && account.pilot_copilot_enabled);
+});
+
+const handleOpenCopilot = () => {
+  pilotCopilotDrawer.open();
+};
 const store = useStore();
 const searchShortcut = useKbd([`$mod`, 'k']);
 const { t } = useI18n();
@@ -834,6 +845,32 @@ const menuItems = computed(() => {
           :key="item.name"
           v-bind="item"
         />
+        <li
+          v-if="isPilotCopilotEnabled"
+          class="grid gap-1 text-sm cursor-pointer select-none min-w-0"
+        >
+          <button
+            v-if="isEffectivelyCollapsed"
+            type="button"
+            class="flex items-center justify-center size-10 rounded-lg text-n-slate-11 hover:bg-n-alpha-2"
+            :title="t('PILOT.COPILOT.OPEN')"
+            @click="handleOpenCopilot"
+          >
+            <span class="i-ph-robot size-4" />
+          </button>
+          <button
+            v-else
+            type="button"
+            class="flex items-center gap-2 px-1.5 py-1 rounded-lg h-8 min-w-0 text-n-slate-11 hover:bg-n-alpha-2 w-full"
+            :title="t('PILOT.COPILOT.OPEN')"
+            @click="handleOpenCopilot"
+          >
+            <span class="i-ph-robot size-4 flex-shrink-0" />
+            <span class="truncate text-body-main">
+              {{ t('PILOT.COPILOT.OPEN') }}
+            </span>
+          </button>
+        </li>
       </ul>
     </nav>
     <section
