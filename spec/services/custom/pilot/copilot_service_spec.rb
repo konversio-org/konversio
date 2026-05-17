@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Custom::Pilot::CopilotService do
   let(:account) { create(:account) }
   let(:agent) { create(:user, account: account, role: :agent) }
-  let(:thread) { create(:captain_copilot_thread, account: account, user: agent) }
+  let(:thread) { create(:pilot_copilot_thread, account: account, user: agent) }
 
   before do
     account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
@@ -25,7 +25,7 @@ RSpec.describe Custom::Pilot::CopilotService do
     end
 
     it 'returns the assistant content built from the thread history' do
-      create(:captain_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'Hello' })
+      create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'Hello' })
 
       service = described_class.new(thread: thread)
 

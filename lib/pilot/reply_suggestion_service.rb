@@ -1,4 +1,4 @@
-class Captain::ReplySuggestionService < Captain::BaseTaskService
+class Pilot::ReplySuggestionService < Pilot::BaseTaskService
   pattr_initialize [:account!, :conversation_display_id!, :user!]
 
   def perform
@@ -39,4 +39,4 @@ class Captain::ReplySuggestionService < Captain::BaseTaskService
   end
 end
 
-Captain::ReplySuggestionService.prepend_mod_with('Captain::ReplySuggestionService')
+Pilot::ReplySuggestionService.prepend_mod_with('Pilot::ReplySuggestionService')

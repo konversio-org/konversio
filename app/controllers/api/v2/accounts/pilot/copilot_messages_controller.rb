@@ -10,7 +10,7 @@ class Api::V2::Accounts::Pilot::CopilotMessagesController < Api::V1::Accounts::B
   def create
     raise ActionController::ParameterMissing, :message if params[:message].blank?
 
-    user_message = Captain::CopilotMessage.create!(
+    user_message = Pilot::CopilotMessage.create!(
       copilot_thread: @thread,
       account: Current.account,
       message_type: :user,
@@ -36,7 +36,7 @@ class Api::V2::Accounts::Pilot::CopilotMessagesController < Api::V1::Accounts::B
   end
 
   def load_thread
-    base = Captain::CopilotThread.where(account_id: Current.account.id)
+    base = Pilot::CopilotThread.where(account_id: Current.account.id)
     base = base.where(user_id: Current.user.id) unless Current.account_user&.administrator?
 
     @thread = base.find_by(id: params[:copilot_thread_id])

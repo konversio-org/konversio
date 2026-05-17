@@ -3,11 +3,11 @@ require 'rails_helper'
 RSpec.describe Pilot::CopilotInferenceJob do
   let(:account) { create(:account) }
   let(:agent) { create(:user, account: account, role: :agent) }
-  let(:thread) { create(:captain_copilot_thread, account: account, user: agent) }
+  let(:thread) { create(:pilot_copilot_thread, account: account, user: agent) }
 
   before do
     account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
-    create(:captain_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'hi' })
+    create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'hi' })
   end
 
   it 'invokes CopilotService and persists the assistant reply' do
@@ -46,6 +46,6 @@ RSpec.describe Pilot::CopilotInferenceJob do
 
     expect do
       described_class.perform_now(thread_id: thread.id)
-    end.not_to change(Captain::CopilotMessage, :count)
+    end.not_to change(Pilot::CopilotMessage, :count)
   end
 end

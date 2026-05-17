@@ -1,6 +1,6 @@
-class Captain::BaseTaskService
+class Pilot::BaseTaskService
   include Integrations::LlmInstrumentation
-  include Captain::ToolInstrumentation
+  include Pilot::ToolInstrumentation
   include Llm::ExceptionTrackable
 
   # gpt-4o-mini supports 128,000 tokens
@@ -8,7 +8,17 @@ class Captain::BaseTaskService
   # sticking with 120000 to be safe
   # 120000 * 4 = 480,000 characters (rounding off downwards to 400,000 to be safe)
   TOKEN_LIMIT = 400_000
-  GPT_MODEL = Llm::Config::DEFAULT_MODEL
+
+  # Resolved at call time via const_missing so PILOT_OPEN_AI_MODEL
+  # (env-first via GlobalConfigService) wins over the hardcoded default.
+  # The previous `GPT_MODEL = Llm::Config::DEFAULT_MODEL` froze the
+  # default at load time, so PILOT_OPEN_AI_MODEL never reached the
+  # actual LLM call.
+  def self.const_missing(name)
+    return Llm::Config.model_for(:default) if name == :GPT_MODEL
+
+    super
+  end
 
   # Prepend enterprise module to subclasses when they're defined.
   # This ensures the enterprise perform wrapper is applied even when
@@ -16,7 +26,7 @@ class Captain::BaseTaskService
   # the module before the class in the ancestor chain.
   def self.inherited(subclass)
     super
-    subclass.prepend_mod_with('Captain::BaseTaskService')
+    subclass.prepend_mod_with('Pilot::BaseTaskService')
   end
 
   pattr_initialize [:account!, { conversation_display_id: nil }]
@@ -32,9 +42,7 @@ class Captain::BaseTaskService
   end
 
   def api_base
-    # Pilot fork: route all captain LLM calls through PILOT_* config only.
-    # Per pilot-foundation "Config namespace isolation" requirement, we
-    # never read CAPTAIN_* env vars or InstallationConfig rows.
+    # PILOT_* only — Llm::Config strips trailing /v1, we re-append.
     endpoint = ::Llm::Config.api_base.presence || 'https://api.openai.com'
     endpoint = endpoint.chomp('/').chomp('/v1')
     "#{endpoint}/v1"
@@ -43,7 +51,7 @@ class Captain::BaseTaskService
   def make_api_call(model:, messages:, schema: nil, tools: [])
     # Community edition prerequisite checks
     # Enterprise module handles these with more specific error messages (cloud vs self-hosted)
-    return { error: I18n.t('captain.disabled'), error_code: 403 } unless captain_tasks_enabled?
+    return { error: I18n.t('captain.disabled'), error_code: 403 } unless pilot_tasks_enabled?
     return { error: I18n.t('captain.api_key_missing'), error_code: 401 } unless api_key_configured?
 
     instrumentation_params = build_instrumentation_params(model, messages)
@@ -76,7 +84,15 @@ class Captain::BaseTaskService
   end
 
   def build_chat(context, model:, messages:, schema: nil, tools: [])
-    chat = context.chat(model: model)
+    # When PILOT_OPEN_AI_API_PROVIDER=openai_compatible, pass provider +
+    # assume_model_exists so RubyLLM skips its model registry (which
+    # doesn't know Scaleway's mistral-*, Nebius's Qwen/*, etc.).
+    chat_options = { model: model }
+    if Llm::Config.openai_compatible?
+      chat_options[:provider] = :openai
+      chat_options[:assume_model_exists] = true
+    end
+    chat = context.chat(**chat_options)
     system_msg = messages.find { |m| m[:role] == 'system' }
     chat.with_instructions(system_msg[:content]) if system_msg
     chat.with_schema(schema) if schema
@@ -148,7 +164,7 @@ class Captain::BaseTaskService
     messages
   end
 
-  def captain_tasks_enabled?
+  def pilot_tasks_enabled?
     account.feature_enabled?('captain_tasks')
   end
 
@@ -178,9 +194,7 @@ class Captain::BaseTaskService
   end
 
   def system_api_key
-    # Pilot fork: PILOT_* only. We never read CAPTAIN_* env vars or
-    # InstallationConfig rows. See pilot-foundation "Config namespace
-    # isolation" requirement.
+    # PILOT_* only — Llm::Config is env-first via GlobalConfigService.
     @system_api_key ||= ::Llm::Config.api_key.presence
   end
 
@@ -195,7 +209,7 @@ class Captain::BaseTaskService
   # Follow-up context for client-side refinement
   def build_follow_up_context?
     # FollowUpService should return its own updated context
-    !is_a?(Captain::FollowUpService)
+    !is_a?(Pilot::FollowUpService)
   end
 
   def build_follow_up_context(messages, response)
@@ -214,4 +228,4 @@ class Captain::BaseTaskService
     user_msg ? user_msg[:content] : nil
   end
 end
-Captain::BaseTaskService.prepend_mod_with('Captain::BaseTaskService')
+Pilot::BaseTaskService.prepend_mod_with('Pilot::BaseTaskService')

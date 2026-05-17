@@ -2,8 +2,9 @@ module Custom
   module Pilot
     # Generates a one-click reply draft for an agent on a given conversation.
     #
-    # This wraps the surviving MIT `Captain::ReplySuggestionService` (per
-    # Pilot design D4) and adds:
+    # This wraps the renamed MIT reply-suggestion service (now
+    # `Pilot::ReplySuggestionService`, formerly `Captain::ReplySuggestionService`)
+    # per Pilot design D3/D4 and adds:
     #   * per-account feature-flag gating (`pilot_briefing_enabled` + master
     #     `pilot_enabled`)
     #   * Pilot-namespaced telemetry events
@@ -49,7 +50,7 @@ module Custom
       private
 
       def run_reply_suggestion
-        suggestion_service = ::Captain::ReplySuggestionService.new(
+        suggestion_service = ::Pilot::ReplySuggestionService.new(
           account: account,
           conversation_display_id: conversation.display_id,
           user: user
@@ -62,7 +63,7 @@ module Custom
       end
 
       # The MIT ReplySuggestionService returns a Hash with a `:message` key on
-      # success (see lib/captain/base_task_service.rb#build_ruby_llm_response).
+      # success (see lib/pilot/base_task_service.rb#build_ruby_llm_response).
       # If for any reason a String slips through (e.g. a test stub) we return
       # it as-is.
       def extract_draft(response)
@@ -80,7 +81,7 @@ module Custom
         return if context_text.blank?
 
         # Placeholder hook — concrete prompt-injection happens in section 5
-        # once we own the request construction inside Captain via a wrapper.
+        # once we own the request construction inside Pilot via a wrapper.
         Rails.logger.info("[pilot.briefing] logbook context length=#{context_text.length}")
       end
 
