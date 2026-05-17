@@ -115,3 +115,43 @@ features:
   help_center_search:
     models: [text-embedding-3-small]
     default: text-embedding-3-small
+
+  # --- Pilot feature -> model registry ----------------------------------------
+  # These keys are consumed by Custom::Pilot::* services via Llm::Config#model_for.
+  # In an OpenAI-compatible deployment (PILOT_OPEN_AI_API_PROVIDER=openai_compatible)
+  # the runtime model string is overridden by the PILOT_OPEN_AI_MODEL env var or
+  # the per-feature PILOT_OPEN_AI_<FEATURE>_MODEL override, so the entries below
+  # are only used for default selection in the dashboard/Pilot settings UI.
+  briefing:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1, gpt-5.1]
+    default: gpt-4.1-mini
+  pilot_copilot:
+    models: [gpt-5-mini, gpt-4.1, gpt-5.1, gpt-5.2, claude-haiku-4.5, claude-sonnet-4.5, gemini-3-flash, gemini-3-pro]
+    default: gpt-5.1
+  autopilot:
+    models: [gpt-5-mini, gpt-4.1, gpt-5.1, gpt-5.2, claude-haiku-4.5, claude-sonnet-4.5]
+    default: gpt-5.1
+  logbook:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1]
+    default: gpt-4.1-mini
+  summary:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1]
+    default: gpt-4.1-mini
+  csat_analysis:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1]
+    default: gpt-4.1-mini
+  follow_up:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1]
+    default: gpt-4.1-mini
+  rewrite:
+    models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1]
+    default: gpt-4.1-mini
+  pilot_label_suggestion:
+    models: [gpt-4.1-nano, gpt-4.1-mini, gpt-5-mini]
+    default: gpt-4.1-nano
+  translation:
+    models: [gpt-4.1-mini, gpt-4.1, gpt-5-mini]
+    default: gpt-4.1-mini
+  embedding:
+    models: [text-embedding-3-small]
+    default: text-embedding-3-small
