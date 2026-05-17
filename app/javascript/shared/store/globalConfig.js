@@ -54,6 +54,9 @@ const state = {
 export const getters = {
   get: $state => $state,
   isOnChatwootCloud: $state => $state.deploymentEnv === 'cloud',
+  // Alias added during the Chatwoot -> Konversio rename pass so consumers
+  // that adopted the new name (composables/useAccount.js etc.) resolve.
+  isOnKonversioCloud: $state => $state.deploymentEnv === 'cloud',
   isACustomBrandedInstance: $state => $state.installationName !== 'Chatwoot',
   isAChatwootInstance: $state => $state.installationName === 'Chatwoot',
 };
