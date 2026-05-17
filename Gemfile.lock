@@ -339,6 +339,7 @@ GEM
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
       rake
+    fiddle (1.1.8)
     flag_shih_tzu (0.3.23)
     foreman (0.87.2)
     fugit (1.11.1)
@@ -1077,6 +1078,7 @@ DEPENDENCIES
   faker
   faraday_middleware-aws-sigv4
   fcm
+  fiddle
   flag_shih_tzu
   foreman
   geocoder

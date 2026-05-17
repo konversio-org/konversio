@@ -1,6 +1,14 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+# Ensure rbenv-managed Ruby is on PATH so `bundle exec` finds the project's
+# Bundler version (Ruby 3.4.4 + Bundler 2.5.16) instead of macOS system
+# Ruby 2.6 which surfaces as "Could not find 'bundler' (2.5.16)" on every
+# commit.
+if command -v rbenv >/dev/null 2>&1; then
+  eval "$(rbenv init - sh)"
+fi
+
 # lint js and vue files
 npx --no-install lint-staged
 
