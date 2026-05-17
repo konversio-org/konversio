@@ -22,7 +22,7 @@ Metrics/ClassLength:
 Metrics/MethodLength:
   Max: 19
   Exclude:
-    - 'enterprise/lib/captain/agent.rb'
+    - 'enterprise/lib/pilot/agent.rb'
 
 RSpec/ExampleLength:
   Max: 50
@@ -94,8 +94,8 @@ Metrics/ModuleLength:
 
 Rails/HelperInstanceVariable:
   Exclude:
-    - enterprise/app/helpers/captain/chat_helper.rb
-    - enterprise/app/helpers/captain/chat_response_helper.rb
+    - enterprise/app/helpers/pilot/chat_helper.rb
+    - enterprise/app/helpers/pilot/chat_response_helper.rb
 Rails/ApplicationController:
   Exclude:
     - 'app/controllers/api/v1/widget/messages_controller.rb'
@@ -125,13 +125,13 @@ Rails/RedundantPresenceValidationOnBelongsTo:
 
 Rails/InverseOf:
   Exclude:
-    - enterprise/app/models/captain/assistant.rb
+    - enterprise/app/models/pilot/assistant.rb
 
 Rails/UniqueValidationWithoutIndex:
   Exclude:
     - app/models/canned_response.rb
     - app/models/telegram_bot.rb
-    - enterprise/app/models/captain_inbox.rb
+    - enterprise/app/models/pilot_inbox.rb
     - 'app/models/channel/twitter_profile.rb'
     - 'app/models/webhook.rb'
     - 'app/models/contact.rb'

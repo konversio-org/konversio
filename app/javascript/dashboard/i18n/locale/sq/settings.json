@@ -311,15 +311,15 @@
     "ACTIVE": "Aktiv",
     "COMPANIES": "Kompani",
     "ALL_COMPANIES": "Të gjitha kompanitë",
-    "CAPTAIN": "Kapiten",
-    "CAPTAIN_ASSISTANTS": "Asistentët",
-    "CAPTAIN_DOCUMENTS": "Dokumentet",
-    "CAPTAIN_RESPONSES": "Pyetjet e Shpeshta",
-    "CAPTAIN_TOOLS": "Mjetet",
-    "CAPTAIN_SCENARIOS": "Skenarë",
-    "CAPTAIN_PLAYGROUND": "Fusha e lojës",
-    "CAPTAIN_INBOXES": "Kutia postare",
-    "CAPTAIN_SETTINGS": "Cilësimet",
+    "PILOT": "Kapiten",
+    "PILOT_ASSISTANTS": "Asistentët",
+    "PILOT_DOCUMENTS": "Dokumentet",
+    "PILOT_RESPONSES": "Pyetjet e Shpeshta",
+    "PILOT_TOOLS": "Mjetet",
+    "PILOT_SCENARIOS": "Skenarë",
+    "PILOT_PLAYGROUND": "Fusha e lojës",
+    "PILOT_INBOXES": "Kutia postare",
+    "PILOT_SETTINGS": "Cilësimet",
     "HOME": "Faqja Kryesore",
     "AGENTS": "Agjentët",
     "AGENT_BOTS": "Botat",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Lexo dokumentacionin",
     "SECURITY": "Siguria",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Procesi i Bisedës"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Cilësimet e Captain",
-    "DESCRIPTION": "Konfiguroni modelet dhe veçoritë AI për Captain. Captain përdor faturim bazuar në kredi, do të ngarkoheni me kredi për çdo veprim që Captain kryen bazuar në modelin e zgjedhur.",
-    "LOADING": "Duke ngarkuar konfigurimin e Captain...",
-    "LINK_TEXT": "Mësoni më shumë rreth Kredive të Captain",
-    "NOT_ENABLED": "Captain nuk është aktivizuar për llogarinë tuaj. Ju lutemi përmirësoni planin tuaj për të pasur akses në veçoritë e Captain.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Cilësimet e Pilot",
+    "DESCRIPTION": "Konfiguroni modelet dhe veçoritë AI për Pilot. Pilot përdor faturim bazuar në kredi, do të ngarkoheni me kredi për çdo veprim që Pilot kryen bazuar në modelin e zgjedhur.",
+    "LOADING": "Duke ngarkuar konfigurimin e Pilot...",
+    "LINK_TEXT": "Mësoni më shumë rreth Kredive të Pilot",
+    "NOT_ENABLED": "Pilot nuk është aktivizuar për llogarinë tuaj. Ju lutemi përmirësoni planin tuaj për të pasur akses në veçoritë e Pilot.",
     "MODEL_CONFIG": {
       "TITLE": "Konfigurimi i Modelit",
       "DESCRIPTION": "Zgjidhni modelet AI për veçori të ndryshme.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Cilësimet e Captain u përditësuan me sukses.",
-      "ERROR": "Dështoi përditësimi i cilësimeve të Captain. Ju lutemi provoni përsëri."
+      "SUCCESS": "Cilësimet e Pilot u përditësuan me sukses.",
+      "ERROR": "Dështoi përditësimi i cilësimeve të Pilot. Ju lutemi provoni përsëri."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Shiko faturat e mëparshme, redakto detajet e faturimit, ose anulo abonimin tënd.",
       "BUTTON_TXT": "Shko te portali i faturimit"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Menaxhoni përdorimin dhe kreditë për Captain AI.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Menaxhoni përdorimin dhe kreditë për Pilot AI.",
       "BUTTON_TXT": "Bleni më shumë kredi",
       "DOCUMENTS": "Dokumentet",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain nuk është i disponueshëm në planin falas, përmirësoni tani për të pasur akses në asistentë, copilot dhe më shumë.",
+      "UPGRADE": "Pilot nuk është i disponueshëm në planin falas, përmirësoni tani për të pasur akses në asistentë, copilot dhe më shumë.",
       "REFRESH_CREDITS": "Rifresko"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Bleni më shumë kredite",
       "MODAL_TITLE": "Bleni Kredite AI",
-      "MODAL_DESCRIPTION": "Bleni kredi shtesë për Captain AI.",
+      "MODAL_DESCRIPTION": "Bleni kredi shtesë për Pilot AI.",
       "CREDITS": "KREDITE",
       "ONE_TIME": "një herë",
       "POPULAR": "Më e Popullarizuar",

@@ -311,15 +311,15 @@
     "ACTIVE": "有効",
     "COMPANIES": "Companies",
     "ALL_COMPANIES": "All Companies",
-    "CAPTAIN": "キャプテン",
-    "CAPTAIN_ASSISTANTS": "アシスタント",
-    "CAPTAIN_DOCUMENTS": "ドキュメント",
-    "CAPTAIN_RESPONSES": "FAQ",
-    "CAPTAIN_TOOLS": "Tools",
-    "CAPTAIN_SCENARIOS": "Scenarios",
-    "CAPTAIN_PLAYGROUND": "Playground",
-    "CAPTAIN_INBOXES": "受信トレイ",
-    "CAPTAIN_SETTINGS": "設定",
+    "PILOT": "キャプテン",
+    "PILOT_ASSISTANTS": "アシスタント",
+    "PILOT_DOCUMENTS": "ドキュメント",
+    "PILOT_RESPONSES": "FAQ",
+    "PILOT_TOOLS": "Tools",
+    "PILOT_SCENARIOS": "Scenarios",
+    "PILOT_PLAYGROUND": "Playground",
+    "PILOT_INBOXES": "受信トレイ",
+    "PILOT_SETTINGS": "設定",
     "HOME": "ホーム",
     "AGENTS": "担当者",
     "AGENT_BOTS": "ボット",
@@ -381,15 +381,15 @@
     },
     "DOCS": "ドキュメントを読む",
     "SECURITY": "Security",
-    "CAPTAIN_AI": "キャプテン",
+    "PILOT_AI": "キャプテン",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Configure your AI models and features for Pilot. Pilot follows a credit based billing, you will be charged credits for every action Pilot takes based on the model selected.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot is not enabled for your account. Please upgrade your plan to access Pilot features.",
     "MODEL_CONFIG": {
       "TITLE": "Model Configuration",
       "DESCRIPTION": "Select AI models for different features.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "過去の請求書を確認したり、請求情報を編集したり、サブスクリプションをキャンセルしたりできます。",
       "BUTTON_TXT": "請求ポータルへ"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "キャプテン",
-      "DESCRIPTION": "Captain AIの使用状況とクレジットを管理する。",
+      "DESCRIPTION": "Pilot AIの使用状況とクレジットを管理する。",
       "BUTTON_TXT": "クレジットを追加購入する",
       "DOCUMENTS": "ドキュメント",
       "RESPONSES": "応答数",
-      "UPGRADE": "Captainは無料プランでは利用できません。アシスタント、Copilotなどの機能を利用するには、プランをアップグレードしてください。",
+      "UPGRADE": "Pilotは無料プランでは利用できません。アシスタント、Copilotなどの機能を利用するには、プランをアップグレードしてください。",
       "REFRESH_CREDITS": "再読み込み"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "クレジットを追加購入する",
       "MODAL_TITLE": "Buy AI Credits",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "one-time",
       "POPULAR": "Most Popular",

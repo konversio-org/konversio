@@ -42,7 +42,7 @@ import {
 } from 'dashboard/helper/quotedEmailHelper';
 import {
   CONVERSATION_EVENTS,
-  CAPTAIN_EVENTS,
+  PILOT_EVENTS,
 } from '../../../helper/AnalyticsHelper/events';
 import fileUploadMixin from 'dashboard/mixins/fileUploadMixin';
 import {
@@ -834,7 +834,7 @@ export default {
       const normalizedEditorMessage = normalizeForComparison(editorMessage);
 
       if (normalizedAcceptedMessage && normalizedEditorMessage) {
-        useTrack(CAPTAIN_EVENTS.AI_ASSISTED_MESSAGE_SENT, {
+        useTrack(PILOT_EVENTS.AI_ASSISTED_MESSAGE_SENT, {
           conversationId: this.conversationIdByRoute,
           channelType: this.channelType,
           editedBeforeSend:

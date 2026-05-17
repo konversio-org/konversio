@@ -56,7 +56,7 @@ export default {
     const { height: topBannerHeight } = useElementSize(topBannerRef);
 
     const {
-      captainTasksEnabled,
+      pilotTasksEnabled,
       isLabelSuggestionFeatureEnabled,
       getLabelSuggestions,
     } = useLabelSuggestions();
@@ -64,7 +64,7 @@ export default {
     provide('contextMenuElementTarget', conversationPanelRef);
 
     return {
-      captainTasksEnabled,
+      pilotTasksEnabled,
       getLabelSuggestions,
       isLabelSuggestionFeatureEnabled,
       conversationPanelRef,
@@ -100,7 +100,7 @@ export default {
     shouldShowLabelSuggestions() {
       return (
         this.isOpen &&
-        this.captainTasksEnabled &&
+        this.pilotTasksEnabled &&
         this.isLabelSuggestionFeatureEnabled &&
         !this.messageSentSinceOpened
       );
@@ -291,7 +291,7 @@ export default {
       const existingLabels = this.currentChat?.labels || [];
       if (existingLabels.length > 0) return;
 
-      if (!this.captainTasksEnabled || !this.isLabelSuggestionFeatureEnabled) {
+      if (!this.pilotTasksEnabled || !this.isLabelSuggestionFeatureEnabled) {
         return;
       }
 

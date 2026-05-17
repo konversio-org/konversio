@@ -20,7 +20,7 @@ const props = defineProps({
   },
   enableVariables: { type: Boolean, default: false },
   enableCannedResponses: { type: Boolean, default: true },
-  enableCaptainTools: { type: Boolean, default: false },
+  enablePilotTools: { type: Boolean, default: false },
   signature: { type: String, default: '' },
   allowSignature: { type: Boolean, default: false },
   sendWithSignature: { type: Boolean, default: false },
@@ -104,7 +104,7 @@ watch(
         :disabled="disabled"
         :enable-variables="enableVariables"
         :enable-canned-responses="enableCannedResponses"
-        :enable-captain-tools="enableCaptainTools"
+        :enable-pilot-tools="enablePilotTools"
         :signature="signature"
         :allow-signature="allowSignature"
         :send-with-signature="sendWithSignature"

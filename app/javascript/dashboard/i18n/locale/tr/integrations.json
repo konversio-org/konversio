@@ -22,11 +22,11 @@
     "LOADING": "Fetching integrations",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain is not enabled on your account.",
+    "PILOT": {
+      "DISABLED": "Pilot is not enabled on your account.",
       "CLICK_HERE_TO_CONFIGURE": "Click here to configure",
-      "LOADING_CONSOLE": "Loading Captain Console...",
-      "FAILED_TO_LOAD_CONSOLE": "Failed to load Captain Console. Please refresh and try again."
+      "LOADING_CONSOLE": "Loading Pilot Console...",
+      "FAILED_TO_LOAD_CONSOLE": "Failed to load Pilot Console. Please refresh and try again."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Abone Olunan Olaylar",
@@ -388,8 +388,8 @@
       }
     }
   },
-  "CAPTAIN": {
-    "NAME": "Captain",
+  "PILOT": {
+    "NAME": "Pilot",
     "HEADER_KNOW_MORE": "Daha fazla bilgi edinin",
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "Asistanlar",
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "Hızlı bir özet mi gerekiyor, geçmiş konuşmaları mı kontrol etmek istiyorsunuz, yoksa daha iyi bir yanıt mı tasarlamak istiyorsunuz? Copilot işleri hızlandırmak için burada.",
       "SEND_MESSAGE": "Mesajı Gönder...",
       "EMPTY_MESSAGE": "Yanıt oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.",
-      "LOADER": "Captain düşünüyor",
+      "LOADER": "Pilot düşünüyor",
       "YOU": "Sen",
       "USE": "Bunu kullan",
       "RESET": "Sıfırla",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Mesajınızı yazın...",
       "HEADER": "Oyun Alanı",
       "DESCRIPTION": "Bu oyun alanını asistanınıza mesaj göndermek ve yanıtlarının doğru, hızlı ve beklediğiniz tonda olup olmadığını kontrol etmek için kullanın.",
-      "CREDIT_NOTE": "Buradan gönderilen mesajlar Captain kredilerinize sayılacaktır."
+      "CREDIT_NOTE": "Buradan gönderilen mesajlar Pilot kredilerinize sayılacaktır."
     },
     "PAYWALL": {
-      "TITLE": "Captain AI kullanmak için yükseltin",
-      "AVAILABLE_ON": "Captain ücretsiz planda kullanılamaz.",
+      "TITLE": "Pilot AI kullanmak için yükseltin",
+      "AVAILABLE_ON": "Pilot ücretsiz planda kullanılamaz.",
       "UPGRADE_PROMPT": "Asistanlarımıza, Copilot'a ve daha fazlasına erişim sağlamak için planınızı yükseltin.",
       "UPGRADE_NOW": "Şimdi yükselt",
       "CANCEL_ANYTIME": "You can change or cancel your plan anytime"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI yalnızca Enterprise planlarında mevcuttur.",
+      "AVAILABLE_ON": "Pilot AI yalnızca Enterprise planlarında mevcuttur.",
       "UPGRADE_PROMPT": "Asistanlarımıza, Copilot'a ve daha fazlasına erişim sağlamak için planınızı yükseltin.",
       "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
     },
     "BANNER": {
-      "RESPONSES": "Yanıt sınırınızın %80'inden fazlasını kullandınız. Captain AI'yı kullanmaya devam etmek için lütfen yükseltin.",
-      "DOCUMENTS": "Belge sınırı aşıldı. Captain AI'yı kullanmaya devam etmek için yükseltme yapın."
+      "RESPONSES": "Yanıt sınırınızın %80'inden fazlasını kullandınız. Pilot AI'yı kullanmaya devam etmek için lütfen yükseltin.",
+      "DOCUMENTS": "Belge sınırı aşıldı. Pilot AI'yı kullanmaya devam etmek için yükseltme yapın."
     },
     "FORM": {
       "CANCEL": "İptal Et",
@@ -576,8 +576,8 @@
         "TITLE": "No assistants available",
         "SUBTITLE": "Kullanıcılara hızlı ve doğru yanıtlar sağlayacak bir asistan oluşturun. Asistan, yardım makalelerinizden ve geçmiş konuşmalardan öğrenebilir.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Captain Asistan, doğrudan müşterilerle etkileşim kurar, yardım belgelerinizden ve geçmiş konuşmalardan öğrenir ve anında, doğru yanıtlar sunar. Başlangıçtaki sorgulamaları ele alır, hızlı çözümler sunar ve gerektiğinde bir temsilciye aktarır."
+          "TITLE": "Pilot Assistant",
+          "NOTE": "Pilot Asistan, doğrudan müşterilerle etkileşim kurar, yardım belgelerinizden ve geçmiş konuşmalardan öğrenir ve anında, doğru yanıtlar sunar. Başlangıçtaki sorgulamaları ele alır, hızlı çözümler sunar ve gerektiğinde bir temsilciye aktarır."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "Kullanılabilir belge yok",
         "SUBTITLE": "Belgeler, asistanınız tarafından SSS oluşturmak için kullanılır. Asistanınıza içerik sağlamak için belge aktarabilirsiniz.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Belge",
-          "NOTE": "Captain'daki bir belge, asistan için bir bilgi kaynağı görevi görür. Yardım merkezinizi veya kılavuzlarınızı bağlayarak Captain, içeriği analiz edebilir ve müşteri sorularına doğru yanıtlar sağlayabilir."
+          "TITLE": "Pilot Belge",
+          "NOTE": "Pilot'daki bir belge, asistan için bir bilgi kaynağı görevi görür. Yardım merkezinizi veya kılavuzlarınızı bağlayarak Pilot, içeriği analiz edebilir ve müşteri sorularına doğru yanıtlar sağlayabilir."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Özel araç silinemedi"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Fatura Detayları",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "Hepsi"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "Add a question and its corresponding answer to the knowledge base and select the assistant it should be associated with.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "SSS, asistanınızın müşterilerinizden gelen sorulara hızlı ve doğru yanıtlar vermesine yardımcı olur. Bunlar içeriğinizden otomatik olarak oluşturulabilir veya manuel olarak eklenebilir.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain SSS, bilgi tabanınızda eksik olan veya sıkça sorulan yaygın müşteri sorularını tespit eder ve desteği geliştirmek için ilgili SSS'leri oluşturur. Her öneriyi inceleyebilir ve onaylayıp onaylamamaya karar verebilirsiniz."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Pilot SSS, bilgi tabanınızda eksik olan veya sıkça sorulan yaygın müşteri sorularını tespit eder ve desteği geliştirmek için ilgili SSS'leri oluşturur. Her öneriyi inceleyebilir ve onaylayıp onaylamamaya karar verebilirsiniz."
         }
       }
     },

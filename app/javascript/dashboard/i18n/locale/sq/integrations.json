@@ -22,11 +22,11 @@
     "LOADING": "Duke marrë integrimet",
     "SEARCH_PLACEHOLDER": "Kërko integrime...",
     "NO_RESULTS": "Nuk u gjet asnjë integrim që përputhet me kërkimin tuaj",
-    "CAPTAIN": {
-      "DISABLED": "Captain nuk është aktivizuar në llogarinë tuaj.",
+    "PILOT": {
+      "DISABLED": "Pilot nuk është aktivizuar në llogarinë tuaj.",
       "CLICK_HERE_TO_CONFIGURE": "Klikoni këtu për të konfiguruar",
-      "LOADING_CONSOLE": "Duke ngarkuar Konsolën Captain...",
-      "FAILED_TO_LOAD_CONSOLE": "Ngarkimi i Konsolës Captain dështoi. Ju lutemi rifreskoni dhe provoni përsëri."
+      "LOADING_CONSOLE": "Duke ngarkuar Konsolën Pilot...",
+      "FAILED_TO_LOAD_CONSOLE": "Ngarkimi i Konsolës Pilot dështoi. Ju lutemi rifreskoni dhe provoni përsëri."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Ngjarjet e abonuar",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "Kapiten",
     "HEADER_KNOW_MORE": "Mëso më shumë",
     "ASSISTANT_SWITCHER": {
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Shkruani mesazhin tuaj...",
       "HEADER": "Fushë loje",
       "DESCRIPTION": "Përdorni këtë fushë loje për të dërguar mesazhe asistentit tuaj dhe për të kontrolluar nëse përgjigjet saktë, shpejt dhe me tonin që prisni.",
-      "CREDIT_NOTE": "Mesazhet e dërguara këtu do të llogariten në kreditë tuaja të Captain."
+      "CREDIT_NOTE": "Mesazhet e dërguara këtu do të llogariten në kreditë tuaja të Pilot."
     },
     "PAYWALL": {
-      "TITLE": "Përmirëso për të përdorur Captain AI",
-      "AVAILABLE_ON": "Captain nuk është i disponueshëm në planin falas.",
+      "TITLE": "Përmirëso për të përdorur Pilot AI",
+      "AVAILABLE_ON": "Pilot nuk është i disponueshëm në planin falas.",
       "UPGRADE_PROMPT": "Përmirëso planin tënd për të pasur akses në asistentët tanë, copilot dhe më shumë.",
       "UPGRADE_NOW": "Përmirëso tani",
       "CANCEL_ANYTIME": "Mund të ndryshosh ose anullosh planin tënd në çdo kohë"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI është në dispozicion vetëm në planet Enterprise.",
+      "AVAILABLE_ON": "Pilot AI është në dispozicion vetëm në planet Enterprise.",
       "UPGRADE_PROMPT": "Përmirëso planin tënd për të pasur akses në asistentët tanë, copilot dhe më shumë.",
       "ASK_ADMIN": "Ju lutemi kontaktoni administratorin tuaj për përmirësimin."
     },
     "BANNER": {
-      "RESPONSES": "Keni përdorur mbi 80% të kufirit të përgjigjeve tuaja. Për të vazhduar përdorimin e Captain AI, ju lutemi përmirësoni.",
-      "DOCUMENTS": "Kufiri i dokumenteve është arritur. Përmirësoni për të vazhduar përdorimin e Captain AI."
+      "RESPONSES": "Keni përdorur mbi 80% të kufirit të përgjigjeve tuaja. Për të vazhduar përdorimin e Pilot AI, ju lutemi përmirësoni.",
+      "DOCUMENTS": "Kufiri i dokumenteve është arritur. Përmirësoni për të vazhduar përdorimin e Pilot AI."
     },
     "FORM": {
       "CANCEL": "Anulo",
@@ -576,8 +576,8 @@
         "TITLE": "Nuk ka asistentë në dispozicion",
         "SUBTITLE": "Krijoni një asistent për të dhënë përgjigje të shpejta dhe të sakta për përdoruesit tuaj. Ai mund të mësojë nga artikujt tuaj të ndihmës dhe bisedat e kaluara.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Asistenti Captain",
-          "NOTE": "Asistenti Captain komunikon drejtpërdrejt me klientët, mëson nga dokumentacioni juaj i ndihmës dhe bisedat e kaluara, dhe jep përgjigje të menjëhershme e të sakta. Ai trajton pyetjet fillestare dhe ofron zgjidhje të shpejta përpara se bisedën ta kalojë te një agjent kur është e nevojshme."
+          "TITLE": "Asistenti Pilot",
+          "NOTE": "Asistenti Pilot komunikon drejtpërdrejt me klientët, mëson nga dokumentacioni juaj i ndihmës dhe bisedat e kaluara, dhe jep përgjigje të menjëhershme e të sakta. Ai trajton pyetjet fillestare dhe ofron zgjidhje të shpejta përpara se bisedën ta kalojë te një agjent kur është e nevojshme."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "Nuk ka dokumente në dispozicion",
         "SUBTITLE": "Dokumentet përdoren nga asistenti juaj për të krijuar pyetje të shpeshta. Mund të importoni dokumente për t’i dhënë kontekst asistentit tuaj.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Dokumenti Captain",
-          "NOTE": "Një dokument në Captain shërben si një burim njohurish për asistentin. Duke lidhur qendrën tuaj të ndihmës ose udhëzuesit, Captain mund të analizojë përmbajtjen dhe të ofrojë përgjigje të sakta për pyetjet e klientëve."
+          "TITLE": "Dokumenti Pilot",
+          "NOTE": "Një dokument në Pilot shërben si një burim njohurish për asistentin. Duke lidhur qendrën tuaj të ndihmës ose udhëzuesit, Pilot mund të analizojë përmbajtjen dhe të ofrojë përgjigje të sakta për pyetjet e klientëve."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Dështoi fshirja e mjetit të personalizuar"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "Të gjitha"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain ka gjetur disa pyetje të shpeshta që klientët tuaj po kërkonin.",
+        "TITLE": "Pilot ka gjetur disa pyetje të shpeshta që klientët tuaj po kërkonin.",
         "ACTION": "Klikoni këtu për të rishikuar"
       },
       "FORM_DESCRIPTION": "Shtoni një pyetje dhe përgjigjen përkatëse në bazën e njohurive dhe zgjidhni asistentin me të cilin duhet të lidhet.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "Pyetjet e Shpeshta ndihmojnë asistentin tuaj të japë përgjigje të shpejta dhe të sakta për pyetjet e klientëve tuaj. Ato mund të gjenerohen automatikisht nga përmbajtja juaj ose të shtohen manualisht.",
         "CLEAR_SEARCH": "Pastro filtrat aktivë",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Pyetjet e Shpeshta Captain",
-          "NOTE": "Pyetjet e Shpeshta Captain zbulojnë pyetjet e zakonshme të klientëve—qoftë ato që mungojnë në bazën tuaj të njohurive ose që kërkohen shpesh—dhe gjenerojnë Pyetje të Shpeshta relevante për të përmirësuar mbështetjen. Ju mund të rishikoni çdo sugjerim dhe të vendosni nëse do ta miratoni apo refuzoni."
+          "TITLE": "Pyetjet e Shpeshta Pilot",
+          "NOTE": "Pyetjet e Shpeshta Pilot zbulojnë pyetjet e zakonshme të klientëve—qoftë ato që mungojnë në bazën tuaj të njohurive ose që kërkohen shpesh—dhe gjenerojnë Pyetje të Shpeshta relevante për të përmirësuar mbështetjen. Ju mund të rishikoni çdo sugjerim dhe të vendosni nëse do ta miratoni apo refuzoni."
         }
       }
     },

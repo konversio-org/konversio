@@ -311,15 +311,15 @@
     "ACTIVE": "Aktiivne",
     "COMPANIES": "Ettevõtted",
     "ALL_COMPANIES": "Kõik ettevõtted",
-    "CAPTAIN": "Kapten",
-    "CAPTAIN_ASSISTANTS": "Abilised",
-    "CAPTAIN_DOCUMENTS": "Dokumendid",
-    "CAPTAIN_RESPONSES": "KKK",
-    "CAPTAIN_TOOLS": "Tööriistad",
-    "CAPTAIN_SCENARIOS": "Stsenaariumid",
-    "CAPTAIN_PLAYGROUND": "Mänguväljak",
-    "CAPTAIN_INBOXES": "Postkastid",
-    "CAPTAIN_SETTINGS": "Seaded",
+    "PILOT": "Kapten",
+    "PILOT_ASSISTANTS": "Abilised",
+    "PILOT_DOCUMENTS": "Dokumendid",
+    "PILOT_RESPONSES": "KKK",
+    "PILOT_TOOLS": "Tööriistad",
+    "PILOT_SCENARIOS": "Stsenaariumid",
+    "PILOT_PLAYGROUND": "Mänguväljak",
+    "PILOT_INBOXES": "Postkastid",
+    "PILOT_SETTINGS": "Seaded",
     "HOME": "Avaleht",
     "AGENTS": "Agendid",
     "AGENT_BOTS": "Botid",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Loe dokumentatsiooni",
     "SECURITY": "Turvalisus",
-    "CAPTAIN_AI": "Kapten",
+    "PILOT_AI": "Kapten",
     "CONVERSATION_WORKFLOW": "Vestluse töövoog"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Seadista oma AI mudelid ja funktsioonid Captainile. Captain kasutab krediidipõhist arveldamist, iga Captaini tegevuse eest valitud mudeli alusel võetakse krediite.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain ei ole sinu kontol lubatud. Palun uuenda oma plaani, et pääseda Captaini funktsioonidele ligi.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Seadista oma AI mudelid ja funktsioonid Pilotile. Pilot kasutab krediidipõhist arveldamist, iga Piloti tegevuse eest valitud mudeli alusel võetakse krediite.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot ei ole sinu kontol lubatud. Palun uuenda oma plaani, et pääseda Piloti funktsioonidele ligi.",
     "MODEL_CONFIG": {
       "TITLE": "Mudeli seadistus",
       "DESCRIPTION": "Vali AI mudelid erinevate funktsioonide jaoks.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Vaata oma varasemaid arveid, muuda arveldusandmeid või tühista tellimus.",
       "BUTTON_TXT": "Mine arveldusportaali"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "Kapten",
-      "DESCRIPTION": "Halda Captain AI kasutust ja krediite.",
+      "DESCRIPTION": "Halda Pilot AI kasutust ja krediite.",
       "BUTTON_TXT": "Osta rohkem krediite",
       "DOCUMENTS": "Dokumendid",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain ei ole tasuta plaanis saadaval, uuenda kohe, et saada ligipääs assistentidele, copilotile ja muule.",
+      "UPGRADE": "Pilot ei ole tasuta plaanis saadaval, uuenda kohe, et saada ligipääs assistentidele, copilotile ja muule.",
       "REFRESH_CREDITS": "Värskenda"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Osta rohkem krediite",
       "MODAL_TITLE": "Osta AI krediite",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "KREDIIDID",
       "ONE_TIME": "ühekordne",
       "POPULAR": "Kõige populaarsem",

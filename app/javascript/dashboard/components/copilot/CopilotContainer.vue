@@ -24,8 +24,8 @@ const { isEnterprise } = useConfig();
 const { width: windowWidth } = useWindowSize();
 
 const currentUser = useMapGetter('getCurrentUser');
-const assistants = useMapGetter('captainAssistants/getRecords');
-const uiFlags = useMapGetter('captainAssistants/getUIFlags');
+const assistants = useMapGetter('pilotAssistants/getRecords');
+const uiFlags = useMapGetter('pilotAssistants/getUIFlags');
 const inboxAssistant = useMapGetter('getCopilotAssistant');
 const currentChat = useMapGetter('getSelectedChat');
 
@@ -48,7 +48,7 @@ const isFeatureEnabledonAccount = useMapGetter(
 const selectedAssistantId = ref(null);
 
 const activeAssistant = computed(() => {
-  const preferredId = uiSettings.value.preferred_captain_assistant_id;
+  const preferredId = uiSettings.value.preferred_pilot_assistant_id;
 
   // If the user has selected a specific assistant, it takes first preference for Copilot.
   if (preferredId) {
@@ -80,7 +80,7 @@ const closeCopilotPanel = () => {
 const setAssistant = async assistant => {
   selectedAssistantId.value = assistant.id;
   await updateUISettings({
-    preferred_captain_assistant_id: assistant.id,
+    preferred_pilot_assistant_id: assistant.id,
   });
 };
 
@@ -88,12 +88,12 @@ const shouldShowCopilotPanel = computed(() => {
   if (!isEnterprise) {
     return false;
   }
-  const isCaptainEnabled = isFeatureEnabledonAccount.value(
+  const isPilotEnabled = isFeatureEnabledonAccount.value(
     currentAccountId.value,
-    FEATURE_FLAGS.CAPTAIN
+    FEATURE_FLAGS.PILOT
   );
   const { is_copilot_panel_open: isCopilotPanelOpen } = uiSettings.value;
-  return isCaptainEnabled && isCopilotPanelOpen && !uiFlags.value.fetchingList;
+  return isPilotEnabled && isCopilotPanelOpen && !uiFlags.value.fetchingList;
 });
 
 const handleReset = () => {
@@ -124,7 +124,7 @@ const sendMessage = async message => {
 
 onMounted(() => {
   if (isEnterprise) {
-    store.dispatch('captainAssistants/get');
+    store.dispatch('pilotAssistants/get');
   }
 });
 </script>

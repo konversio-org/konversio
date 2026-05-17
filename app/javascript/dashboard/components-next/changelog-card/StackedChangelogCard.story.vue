@@ -2,14 +2,13 @@
 import StackedChangelogCard from './StackedChangelogCard.vue';
 
 const imageCards = {
-  id: 'chatwoot-captain',
-  title: 'Chatwoot Captain',
-  meta_title: 'Chatwoot Captain',
+  id: 'chatwoot-pilot',
+  title: 'Chatwoot Pilot',
+  meta_title: 'Chatwoot Pilot',
   meta_description:
     'Watch how our latest feature can transform your workflow with powerful automation tools.',
-  slug: 'chatwoot-captain',
-  feature_image:
-    'https://www.chatwoot.com/images/captain/captain_thumbnail.jpg',
+  slug: 'chatwoot-pilot',
+  feature_image: 'https://www.chatwoot.com/images/pilot/pilot_thumbnail.jpg',
 };
 
 const handleReadMore = () => {

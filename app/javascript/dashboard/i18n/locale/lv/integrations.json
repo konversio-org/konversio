@@ -22,11 +22,11 @@
     "LOADING": "Integrāciju iegūšana",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain jūsu kontā nav iespējots.",
+    "PILOT": {
+      "DISABLED": "Pilot jūsu kontā nav iespējots.",
       "CLICK_HERE_TO_CONFIGURE": "Noklikšķiniet šeit, lai konfigurētu",
-      "LOADING_CONSOLE": "Notiek Captain konsoles ielāde...",
-      "FAILED_TO_LOAD_CONSOLE": "Neizdevās ielādēt Captain konsoli. Lūdzu, mēģiniet vēlreiz."
+      "LOADING_CONSOLE": "Notiek Pilot konsoles ielāde...",
+      "FAILED_TO_LOAD_CONSOLE": "Neizdevās ielādēt Pilot konsoli. Lūdzu, mēģiniet vēlreiz."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Abonētie Notikumi",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "Kapteinis",
     "HEADER_KNOW_MORE": "Uzzināt vairāk",
     "ASSISTANT_SWITCHER": {
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Rakstiet savu ziņojumu...",
       "HEADER": "Izmēģinājuma laukums",
       "DESCRIPTION": "Izmantojiet šo izmēģinājuma laukumu, lai sūtītu ziņojumus savam palīgam un pārbaudītu, vai tas atbild precīzi, ātri un ar gaidīto toni.",
-      "CREDIT_NOTE": "Šeit nosūtītie ziņojumi tiks ieskaitīti jūsu Captain kredītos."
+      "CREDIT_NOTE": "Šeit nosūtītie ziņojumi tiks ieskaitīti jūsu Pilot kredītos."
     },
     "PAYWALL": {
-      "TITLE": "Modernizējiet abonementu, lai izmantotu Captain AI",
-      "AVAILABLE_ON": "Captain nav pieejams bezmaksas abonementā.",
+      "TITLE": "Modernizējiet abonementu, lai izmantotu Pilot AI",
+      "AVAILABLE_ON": "Pilot nav pieejams bezmaksas abonementā.",
       "UPGRADE_PROMPT": "Modernizējiet savu abonementu, lai iegūtu piekļuvi viruālajiem asistentiem un copilot.",
       "UPGRADE_NOW": "Pāriet uz maksas versiju tagad",
       "CANCEL_ANYTIME": "Jūs varat jebkurā laikā mainīt vai atcelt savu versiju"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI ir pieejams tikai Enterprise plānos.",
+      "AVAILABLE_ON": "Pilot AI ir pieejams tikai Enterprise plānos.",
       "UPGRADE_PROMPT": "Modernizējiet savu abonementu, lai iegūtu piekļuvi viruālajiem asistentiem un copilot.",
       "ASK_ADMIN": "Lai pārietu uz maksas versiju, lūdzu sazinieties ar savu administratoru."
     },
     "BANNER": {
-      "RESPONSES": "Jūs esat izmantojis vairāk kā 80% no sava atbilžu ierobežojuma. Lai turpinātu izmantot Captain AI, lūdzu, atjauniniet abonementu.",
-      "DOCUMENTS": "Sasniegts dokumentu limits. Atjauniniet abonementu, lai turpinātu izmantot Captain AI."
+      "RESPONSES": "Jūs esat izmantojis vairāk kā 80% no sava atbilžu ierobežojuma. Lai turpinātu izmantot Pilot AI, lūdzu, atjauniniet abonementu.",
+      "DOCUMENTS": "Sasniegts dokumentu limits. Atjauniniet abonementu, lai turpinātu izmantot Pilot AI."
     },
     "FORM": {
       "CANCEL": "Atcelt",
@@ -576,8 +576,8 @@
         "TITLE": "Asistenti nav pieejami",
         "SUBTITLE": "Izveidot palīgu, lai sniegtu lietotājiem ātras un precīzas atbildes. Tas var mācīties no Jūsu palīdzības rakstiem un iepriekšējām sarunām.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Captain Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
+          "TITLE": "Pilot Assistant",
+          "NOTE": "Pilot Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "Dokumenti nav pieejami",
         "SUBTITLE": "Jūsu palīgs izmanto dokumentus, lai izveidotu bieži uzdotos jautājumus. Jūs varat importēt dokumentus, lai nodrošinātu kontekstu savam palīgam.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "A document in Captain serves as a knowledge resource for the assistant. By connecting your help center or guides, Captain can analyze the content and provide accurate responses for customer inquiries."
+          "TITLE": "Pilot Document",
+          "NOTE": "A document in Pilot serves as a knowledge resource for the assistant. By connecting your help center or guides, Pilot can analyze the content and provide accurate responses for customer inquiries."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Failed to delete custom tool"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Atvērt norēķinus",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Lai pārietu uz maksas versiju, lūdzu sazinieties ar savu administratoru."
       },
@@ -975,7 +975,7 @@
         "ALL": "Visi"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "Pievienot jautājumu un tā atbildi zināšanu bāzei, kā arī izvēlēties asistentu, ar kuru tas būs saistīts.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "Bieži uzdotie jautājumi palīdz Jūsu asistentam sniegt ātras un precīzas atbildes uz Jūsu klientu jautājumiem. Tos var ģenerēt automātiski no jūsu satura vai pievienot manuāli.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
         }
       }
     },

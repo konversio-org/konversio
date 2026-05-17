@@ -778,7 +778,7 @@ describe('#addMentions', () => {
     });
   });
 
-  describe('#getInboxCaptainAssistantById', () => {
+  describe('#getInboxPilotAssistantById', () => {
     it('fetches inbox assistant by id', async () => {
       axios.get.mockResolvedValue({
         data: {
@@ -787,10 +787,10 @@ describe('#addMentions', () => {
           description: 'Assistant description',
         },
       });
-      await actions.getInboxCaptainAssistantById({ commit }, 1);
+      await actions.getInboxPilotAssistantById({ commit }, 1);
       expect(commit.mock.calls).toEqual([
         [
-          types.SET_INBOX_CAPTAIN_ASSISTANT,
+          types.SET_INBOX_PILOT_ASSISTANT,
           { id: 1, name: 'Assistant', description: 'Assistant description' },
         ],
       ]);

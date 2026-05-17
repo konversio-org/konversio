@@ -54,7 +54,7 @@ properties:
     type:
       - string
       - 'null'
-    enum: ["Contact", "User", "AgentBot", "Captain::Assistant", null]
+    enum: ["Contact", "User", "AgentBot", "Pilot::Assistant", null]
     description: The type of the sender
   sender_id:
     type:

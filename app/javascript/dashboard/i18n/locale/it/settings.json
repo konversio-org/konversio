@@ -311,15 +311,15 @@
     "ACTIVE": "Attivi",
     "COMPANIES": "Aziende",
     "ALL_COMPANIES": "Tutte le Aziende",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "Assistenti",
-    "CAPTAIN_DOCUMENTS": "Documenti",
-    "CAPTAIN_RESPONSES": "FAQ",
-    "CAPTAIN_TOOLS": "Strumenti",
-    "CAPTAIN_SCENARIOS": "Scenari",
-    "CAPTAIN_PLAYGROUND": "Playground",
-    "CAPTAIN_INBOXES": "Inbox",
-    "CAPTAIN_SETTINGS": "Impostazioni",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "Assistenti",
+    "PILOT_DOCUMENTS": "Documenti",
+    "PILOT_RESPONSES": "FAQ",
+    "PILOT_TOOLS": "Strumenti",
+    "PILOT_SCENARIOS": "Scenari",
+    "PILOT_PLAYGROUND": "Playground",
+    "PILOT_INBOXES": "Inbox",
+    "PILOT_SETTINGS": "Impostazioni",
     "HOME": "Home",
     "AGENTS": "Operatori",
     "AGENT_BOTS": "Bots",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Leggi i documenti",
     "SECURITY": "Sicurezza",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Workflow Conversazione"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Impostazioni Captain",
-    "DESCRIPTION": "Configura i tuoi modelli AI e le funzionalità di Captain. La fatturazione di Captain si basa sui crediti, che ti verranno scalati per ogni azione di Captain in base al modello selezionato.",
-    "LOADING": "Caricamento configurazione Captain...",
-    "LINK_TEXT": "Scopri di più sui Crediti Captain",
-    "NOT_ENABLED": "Captain non è abilitato per il tuo account. Aggiorna il tuo piano per accedere alle funzionalità Captain.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Impostazioni Pilot",
+    "DESCRIPTION": "Configura i tuoi modelli AI e le funzionalità di Pilot. La fatturazione di Pilot si basa sui crediti, che ti verranno scalati per ogni azione di Pilot in base al modello selezionato.",
+    "LOADING": "Caricamento configurazione Pilot...",
+    "LINK_TEXT": "Scopri di più sui Crediti Pilot",
+    "NOT_ENABLED": "Pilot non è abilitato per il tuo account. Aggiorna il tuo piano per accedere alle funzionalità Pilot.",
     "MODEL_CONFIG": {
       "TITLE": "Configurazione Modello",
       "DESCRIPTION": "Seleziona modelli AI per le varie funzionalità.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Impostazioni Captain aggiornate con successo.",
-      "ERROR": "Impossibile aggiornare le impostazioni Captain. Per favore riprova."
+      "SUCCESS": "Impostazioni Pilot aggiornate con successo.",
+      "ERROR": "Impossibile aggiornare le impostazioni Pilot. Per favore riprova."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Visualizza le tue fatture precedenti, modifica i tuoi dati di fatturazione o annulla il tuo abbonamento.",
       "BUTTON_TXT": "Vai al portale di fatturazione"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Gestisci utilizzo e crediti per Captain AI.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Gestisci utilizzo e crediti per Pilot AI.",
       "BUTTON_TXT": "Acquista più crediti",
       "DOCUMENTS": "Documenti",
       "RESPONSES": "Risposte",
-      "UPGRADE": "Captain non è disponibile sul piano gratuito, aggiorna ora per ottenere l'accesso agli assistenti, copilot e altro ancora.",
+      "UPGRADE": "Pilot non è disponibile sul piano gratuito, aggiorna ora per ottenere l'accesso agli assistenti, copilot e altro ancora.",
       "REFRESH_CREDITS": "Aggiorna"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Acquista più crediti",
       "MODAL_TITLE": "Acquista Crediti AI",
-      "MODAL_DESCRIPTION": "Acquista crediti aggiuntivi per Captain AI.",
+      "MODAL_DESCRIPTION": "Acquista crediti aggiuntivi per Pilot AI.",
       "CREDITS": "CREDITI",
       "ONE_TIME": "una tantum",
       "POPULAR": "Più Popolare",
