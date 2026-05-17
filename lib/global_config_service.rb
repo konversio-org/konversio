@@ -1,18 +1,29 @@
 class GlobalConfigService
+  # Env-first precedence, per pilot-foundation D5 ("Env-first config via
+  # GlobalConfigService"): if the process environment has a value for the
+  # key, that value wins over any cached DB row, and the DB row is updated
+  # so the admin UI shows the effective value. Falls back to DB, then to
+  # the supplied default.
   def self.load(config_key, default_value)
-    config = GlobalConfig.get(config_key)[config_key]
-    return config if config.present?
+    env_value = ENV[config_key].presence
+    return load_from_env(config_key, env_value) if env_value
 
-    # To support migrating existing instance relying on env variables
-    # TODO: deprecate this later down the line
-    config_value = ENV.fetch(config_key) { default_value }
+    db_value = GlobalConfig.get(config_key)[config_key]
+    return db_value if db_value.present?
 
-    return if config_value.blank?
+    default_value.presence
+  end
 
-    i = InstallationConfig.where(name: config_key).first_or_create(value: config_value, locked: false)
-    # To clear a nil value that might have been cached in the previous call
-    GlobalConfig.clear_cache
-    i.value
+  def self.load_from_env(config_key, env_value)
+    row = InstallationConfig.find_by(name: config_key)
+    if row.nil?
+      InstallationConfig.create!(name: config_key, value: env_value, locked: false)
+      GlobalConfig.clear_cache
+    elsif row.value != env_value
+      row.update!(value: env_value)
+      GlobalConfig.clear_cache
+    end
+    env_value
   end
 
   def self.account_signup_enabled?

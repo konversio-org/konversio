@@ -32,8 +32,11 @@ class Captain::BaseTaskService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    endpoint = endpoint.chomp('/')
+    # Pilot fork: route all captain LLM calls through PILOT_* config only.
+    # Per pilot-foundation "Config namespace isolation" requirement, we
+    # never read CAPTAIN_* env vars or InstallationConfig rows.
+    endpoint = ::Llm::Config.api_base.presence || 'https://api.openai.com'
+    endpoint = endpoint.chomp('/').chomp('/v1')
     "#{endpoint}/v1"
   end
 
@@ -175,7 +178,10 @@ class Captain::BaseTaskService
   end
 
   def system_api_key
-    @system_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    # Pilot fork: PILOT_* only. We never read CAPTAIN_* env vars or
+    # InstallationConfig rows. See pilot-foundation "Config namespace
+    # isolation" requirement.
+    @system_api_key ||= ::Llm::Config.api_key.presence
   end
 
   def exception_tracking_account
