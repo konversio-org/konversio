@@ -219,7 +219,7 @@ pt_BR:
     attachment: 'Anexo'
     no_content: 'Sem conteúdo'
   conversations:
-    captain:
+    pilot:
       handoff: 'Transferindo para que outro agente dê assistência.'
     messages:
       instagram_story_content: '%{story_sender} mencionou você na conversa: '
@@ -232,7 +232,7 @@ pt_BR:
       delivery_status:
         error_code: 'Código de erro: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'A conversa foi marcada como resolvida por %{user_name} por inatividade'
         resolved_with_reason: 'A conversa foi marcada como resolvida por %{user_name} (%{reason})'
         resolved_by_tool: 'A conversa foi marcada como resolvida por %{user_name}: %{reason}'
@@ -349,7 +349,7 @@ pt_BR:
       name: 'LeadSquared'
       short_description: 'Sincronize seus contatos e conversas com LeadSquared CRM.'
       description: 'Sincronize seus contatos e conversas com LeadSquared CRM. Essa integração cria automaticamente leads em LeadSquared quando novos contatos são adicionados, e registra a atividade de conversação para fornecer à sua equipe de vendas um contexto completo.'
-  captain:
+  pilot:
     copilot_message_required: A mensagem é obrigatória
     copilot_error: 'Conecte com um assistente a esta caixa de entrada para usar Copilot'
     copilot_limit: 'Você está sem créditos de Copilot. Pode comprar mais créditos na seção de faturamento.'

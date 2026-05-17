@@ -206,7 +206,7 @@ zh:
     attachment: '附件'
     no_content: '无内容'
   conversations:
-    captain:
+    pilot:
       handoff: '正在转接另一个客服以获得进一步协助。'
     messages:
       instagram_story_content: '%{story_sender} 会话中提到了你: '
@@ -219,7 +219,7 @@ zh:
       delivery_status:
         error_code: '错误代码: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: '对话被系统标记为已解决, 原因是 %{user_name} 不活跃'
         resolved_with_reason: 'Conversation was marked resolved by %{user_name} (%{reason})'
         resolved_by_tool: 'Conversation was marked resolved by %{user_name}: %{reason}'
@@ -326,8 +326,8 @@ zh:
       description: '直接从对话窗口在 Linear 中创建问题。或者，链接现有的 Linear 问题以简化问题跟踪过程。'
     notion:
       name: 'Notion'
-      short_description: 'Integrate databases, documents and pages directly with Captain.'
-      description: 'Connect your Notion workspace to enable Captain to access and generate intelligent responses using content from your databases, documents, and pages to provide more contextual customer support.'
+      short_description: 'Integrate databases, documents and pages directly with Pilot.'
+      description: 'Connect your Notion workspace to enable Pilot to access and generate intelligent responses using content from your databases, documents, and pages to provide more contextual customer support.'
     shopify:
       name: 'Shopify'
       short_description: '从您的 Shopify 商店访问订单详情和客户数据。'
@@ -336,13 +336,13 @@ zh:
       name: 'LeadSquared'
       short_description: '与 LeadSquared CRM 同步您的联系人和对话。'
       description: '与 LeadSquared CRM 同步您的联系人和对话。 当添加新联系人时，这种集成会自动在潜在客户创建线索，并记录对话活动，为您的销售团队提供完整的上下文。'
-  captain:
+  pilot:
     copilot_message_required: 消息是必填项
     copilot_error: '请为该收件箱连接一个助手以使用 Copilot'
     copilot_limit: '您的 Copilot 积分已用完。您可以从计费部分购买更多积分。'
-    upgrade: 'Upgrade your plan to enable Captain AI'
-    disabled: 'Captain AI is disabled for this account.'
-    api_key_missing: 'Captain AI API key is not configured.'
+    upgrade: 'Upgrade your plan to enable Pilot AI'
+    disabled: 'Pilot AI is disabled for this account.'
+    api_key_missing: 'Pilot AI API key is not configured.'
     copilot:
       using_tool: '使用工具 %{function_name}'
       completed_tool_call: '%{function_name} 工具调用完成'

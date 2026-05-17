@@ -133,8 +133,8 @@
 - name: linear_integration
   display_name: Linear Integration
   enabled: false
-- name: captain_integration
-  display_name: Captain
+- name: pilot_integration
+  display_name: Pilot
   enabled: false
   premium: true
 - name: custom_roles
@@ -173,8 +173,8 @@
 - name: notion_integration
   display_name: Notion Integration
   enabled: false
-- name: captain_integration_v2
-  display_name: Captain V2
+- name: pilot_integration_v2
+  display_name: Pilot V2
   enabled: false
   premium: true
 - name: whatsapp_embedded_signup
@@ -230,8 +230,8 @@
   display_name: CSAT Review Notes
   enabled: false
   premium: true
-- name: captain_tasks
-  display_name: Captain Tasks
+- name: pilot_tasks
+  display_name: Pilot Tasks
   enabled: true
 - name: conversation_required_attributes
   display_name: Required Conversation Attributes

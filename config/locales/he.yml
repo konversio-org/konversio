@@ -219,7 +219,7 @@ he:
     attachment: 'קובץ מצורף'
     no_content: 'אין תוכן'
   conversations:
-    captain:
+    pilot:
       handoff: 'מעביר לסוכן אחר לעזרה נוספת.'
     messages:
       instagram_story_content: '%{story_sender} הזכיר אותך בסטורי: '
@@ -232,7 +232,7 @@ he:
       delivery_status:
         error_code: 'קוד שגיאה: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'השיחה סומנה כפתורה על ידי %{user_name} עקב חוסר פעילות'
         resolved_with_reason: 'Conversation was marked resolved by %{user_name} (%{reason})'
         resolved_by_tool: 'Conversation was marked resolved by %{user_name}: %{reason}'
@@ -339,8 +339,8 @@ he:
       description: 'צור בעיות ב-Linear ישירות מחלון השיחה שלך. לחלופין, קשר בעיות Linear קיימות לתהליך מעקב בעיות יעיל וזורם יותר.'
     notion:
       name: 'Notion'
-      short_description: 'שלב מסדי נתונים, מסמכים ודפים ישירות עם Captain.'
-      description: 'חבר את סביבת העבודה שלך ב-Notion כדי לאפשר ל-Captain לגשת וליצור תגובות חכמות באמצעות תוכן ממסדי הנתונים, המסמכים והדפים שלך כדי לספק תמיכת לקוחות הקשרית יותר.'
+      short_description: 'שלב מסדי נתונים, מסמכים ודפים ישירות עם Pilot.'
+      description: 'חבר את סביבת העבודה שלך ב-Notion כדי לאפשר ל-Pilot לגשת וליצור תגובות חכמות באמצעות תוכן ממסדי הנתונים, המסמכים והדפים שלך כדי לספק תמיכת לקוחות הקשרית יותר.'
     shopify:
       name: 'Shopify'
       short_description: 'גש לפרטי הזמנות ונתוני לקוחות מחנות Shopify שלך.'
@@ -349,13 +349,13 @@ he:
       name: 'LeadSquared'
       short_description: 'סנכרן את אנשי הקשר והשיחות שלך עם LeadSquared CRM.'
       description: 'סנכרן את אנשי הקשר והשיחות שלך עם LeadSquared CRM. אינטגרציה זו יוצרת אוטומטית לידים ב-LeadSquared כאשר אנשי קשר חדשים מתווספים, ומתעדת פעילות שיחות כדי לספק לצוות המכירות שלך הקשר מלא.'
-  captain:
+  pilot:
     copilot_message_required: הודעה נדרשת
     copilot_error: 'אנא חבר עוזר לתיבת דואר נכנס זו כדי להשתמש ב-Copilot'
     copilot_limit: 'נגמרו לך זיכויי Copilot. אתה יכול לקנות זיכויים נוספים מסעיף החיובים.'
-    upgrade: 'שדרג את התכנית שלך כדי להפעיל את Captain AI'
-    disabled: 'Captain AI מושבת עבור חשבון זה.'
-    api_key_missing: 'מפתח ה-API של Captain AI לא מוגדר.'
+    upgrade: 'שדרג את התכנית שלך כדי להפעיל את Pilot AI'
+    disabled: 'Pilot AI מושבת עבור חשבון זה.'
+    api_key_missing: 'מפתח ה-API של Pilot AI לא מוגדר.'
     copilot:
       using_tool: 'משתמש בכלי %{function_name}'
       completed_tool_call: 'הושלם קריאת כלי %{function_name}'

@@ -2,7 +2,7 @@ module Custom
   module Pilot
     # Generates an asynchronous assistant reply for a Copilot thread.
     #
-    # Per Pilot design D4 + D20 we wrap RubyLLM directly (Captain V2-only).
+    # Per Pilot design D4 + D20 we wrap RubyLLM directly (V2 agentic loop only).
     # The agentic ai-agents SDK loop is reserved for Autopilot (section 4);
     # Copilot is a simple chat thread where the LLM responds to the agent's
     # questions with optional bound-conversation context and Logbook hints.

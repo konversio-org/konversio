@@ -51,8 +51,8 @@ class Pilot::BaseTaskService
   def make_api_call(model:, messages:, schema: nil, tools: [])
     # Community edition prerequisite checks
     # Enterprise module handles these with more specific error messages (cloud vs self-hosted)
-    return { error: I18n.t('captain.disabled'), error_code: 403 } unless pilot_tasks_enabled?
-    return { error: I18n.t('captain.api_key_missing'), error_code: 401 } unless api_key_configured?
+    return { error: I18n.t('pilot.disabled'), error_code: 403 } unless pilot_tasks_enabled?
+    return { error: I18n.t('pilot.api_key_missing'), error_code: 401 } unless api_key_configured?
 
     instrumentation_params = build_instrumentation_params(model, messages)
     instrumentation_method = tools.any? ? :instrument_tool_session : :instrument_llm_call
@@ -165,7 +165,7 @@ class Pilot::BaseTaskService
   end
 
   def pilot_tasks_enabled?
-    account.feature_enabled?('captain_tasks')
+    account.feature_enabled?('pilot_tasks')
   end
 
   def api_key_configured?

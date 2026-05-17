@@ -454,20 +454,20 @@
       "ERROR": "Could not generate a briefing. Please try again."
     },
     "COPILOT": {
-      "OPEN": "Copilot",
-      "DRAWER_TITLE": "Copilot",
-      "CLOSE": "Close Copilot",
+      "OPEN": "Pilot",
+      "DRAWER_TITLE": "Pilot",
+      "CLOSE": "Close Pilot",
       "NEW_THREAD": "New thread",
-      "NEW_THREAD_PLACEHOLDER": "Ask Copilot anything…",
+      "NEW_THREAD_PLACEHOLDER": "Ask Pilot anything…",
       "REPLY_PLACEHOLDER": "Send a follow-up…",
       "SEND": "Send",
-      "PENDING": "Copilot is thinking…",
-      "EMPTY_STATE": "Start a new thread to chat with Copilot.",
+      "PENDING": "Pilot is thinking…",
+      "EMPTY_STATE": "Start a new thread to chat with Pilot.",
       "THREADS": "Threads",
       "NO_THREADS": "No threads yet.",
       "UNTITLED_THREAD": "Untitled thread",
-      "BOUND_CONVERSATION_INTRO": "Asking Copilot about conversation #{id}",
-      "ASK_FROM_COMPOSER": "Ask Copilot"
+      "BOUND_CONVERSATION_INTRO": "Asking Pilot about conversation #{id}",
+      "ASK_FROM_COMPOSER": "Ask Pilot"
     }
   },
   "GALLERY_VIEW": {

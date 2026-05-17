@@ -219,7 +219,7 @@ zh_TW:
     attachment: '附件'
     no_content: '無內容'
   conversations:
-    captain:
+    pilot:
       handoff: '正在轉接至其他客服人員以提供進一步協助。'
     messages:
       instagram_story_content: '%{story_sender} 在限時動態中提及了您：'
@@ -232,7 +232,7 @@ zh_TW:
       delivery_status:
         error_code: '錯誤代碼：%{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: '%{user_name} 因無活動而將對話標記為已解決'
         resolved_with_reason: '%{user_name} 將對話標記為已解決（%{reason}）'
         resolved_by_tool: '%{user_name} 將對話標記為已解決：%{reason}'
@@ -339,8 +339,8 @@ zh_TW:
       description: '直接從對話視窗中在 Linear 建立議題。或者連結現有的 Linear 議題，讓議題追蹤流程更加順暢高效。'
     notion:
       name: 'Notion'
-      short_description: '將資料庫、文件和頁面直接與 Captain 整合。'
-      description: '連結您的 Notion 工作區，讓 Captain 能夠存取並使用您的資料庫、文件和頁面內容產生智慧回應，提供更具情境的客戶支援。'
+      short_description: '將資料庫、文件和頁面直接與 Pilot 整合。'
+      description: '連結您的 Notion 工作區，讓 Pilot 能夠存取並使用您的資料庫、文件和頁面內容產生智慧回應，提供更具情境的客戶支援。'
     shopify:
       name: 'Shopify'
       short_description: '從您的 Shopify 商店存取訂單詳情和客戶資料。'
@@ -349,13 +349,13 @@ zh_TW:
       name: 'LeadSquared'
       short_description: '將您的聯絡人和對話與 LeadSquared CRM 同步。'
       description: '將您的聯絡人和對話與 LeadSquared CRM 同步。此整合會在新增聯絡人時自動在 LeadSquared 中建立潛在客戶，並記錄對話活動，為您的銷售團隊提供完整的上下文。'
-  captain:
+  pilot:
     copilot_message_required: '訊息為必填'
     copilot_error: '請先為此收件匣連結助理以使用 Copilot'
     copilot_limit: '您的 Copilot 點數已用完。您可以在帳單區域購買更多點數。'
-    upgrade: '請升級您的方案以啟用 Captain AI'
-    disabled: '此帳號已停用 Captain AI。'
-    api_key_missing: '尚未設定 Captain AI API 金鑰。'
+    upgrade: '請升級您的方案以啟用 Pilot AI'
+    disabled: '此帳號已停用 Pilot AI。'
+    api_key_missing: '尚未設定 Pilot AI API 金鑰。'
     copilot:
       using_tool: '正在使用工具 %{function_name}'
       completed_tool_call: '已完成 %{function_name} 工具呼叫'
