@@ -391,6 +391,12 @@
   "PILOT": {
     "NAME": "Pilot",
     "HEADER_KNOW_MORE": "Know more",
+    "ACTIONS_MENU_LABEL": "Pilot AI actions",
+    "BRIEFING": {
+      "BUTTON_LABEL": "Suggest a reply",
+      "LOADING": "Generating briefing…",
+      "ERROR": "Could not generate a briefing. Please try again."
+    },
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "Assistants",
       "SWITCH_ASSISTANT": "Switch between assistants",
@@ -398,6 +404,20 @@
       "EMPTY_LIST": "No assistants found, please create one to get started"
     },
     "COPILOT": {
+      "OPEN": "Pilot",
+      "DRAWER_TITLE": "Pilot",
+      "CLOSE": "Close Pilot",
+      "NEW_THREAD": "New thread",
+      "NEW_THREAD_PLACEHOLDER": "Ask Pilot anything…",
+      "REPLY_PLACEHOLDER": "Send a follow-up…",
+      "SEND": "Send",
+      "PENDING": "Pilot is thinking…",
+      "EMPTY_STATE": "Start a new thread to chat with Pilot.",
+      "THREADS": "Threads",
+      "NO_THREADS": "No threads yet.",
+      "UNTITLED_THREAD": "Untitled thread",
+      "BOUND_CONVERSATION_INTRO": "Asking Pilot about conversation #{id}",
+      "ASK_FROM_COMPOSER": "Ask Pilot",
       "TITLE": "Copilot",
       "TRY_THESE_PROMPTS": "Try these prompts",
       "PANEL_TITLE": "Get started with Copilot",
