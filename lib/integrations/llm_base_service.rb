@@ -84,8 +84,9 @@ class Integrations::LlmBaseService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    endpoint = endpoint.chomp('/')
+    # Route all LLM calls through Pilot config (PILOT_* only, env-first).
+    endpoint = ::Llm::Config.api_base.presence || 'https://api.openai.com'
+    endpoint = endpoint.chomp('/').chomp('/v1')
     "#{endpoint}/v1"
   end
 
