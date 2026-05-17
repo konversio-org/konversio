@@ -219,7 +219,7 @@ bn:
     attachment: 'সংযুক্তি'
     no_content: 'কোনো বিষয়বস্তু নেই'
   conversations:
-    captain:
+    pilot:
       handoff: 'আরও সহায়তার জন্য অন্য এজেন্টের কাছে হস্তান্তর করা হচ্ছে।.'
     messages:
       instagram_story_content: '%{story_sender} আপনাকে স্টোরিতে উল্লেখ করেছেন: '
@@ -232,7 +232,7 @@ bn:
       delivery_status:
         error_code: 'ত্রুটি কোড: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'নিষ্ক্রিয়তার কারণে %{user_name} কথোপকথনটি সমাধান হয়েছে বলে চিহ্নিত করেছেন'
         resolved_with_reason: '%{user_name} কথোপকথনটি সমাধান করেছেন (%{reason})'
         resolved_by_tool: 'আলোচনাটি %{user_name} দ্বারা সমাধান হয়েছে: %{reason}'
@@ -339,8 +339,8 @@ bn:
       description: 'আপনার কথোপকথনের উইন্ডো থেকেই সরাসরি Linear-এ ইস্যু তৈরি করুন। বিকল্পভাবে, বিদ্যমান Linear ইস্যুগুলিকে সংযুক্ত করুন আরও সহজ ও কার্যকর ইস্যু ট্র্যাকিংয়ের জন্য।.'
     notion:
       name: 'Notion'
-      short_description: 'ডাটাবেস, ডকুমেন্ট এবং পেজগুলো সরাসরি Captain-এর সাথে সংযুক্ত করুন।.'
-      description: 'আপনার Notion ওয়ার্কস্পেস সংযুক্ত করুন যাতে Captain আপনার ডাটাবেস, ডকুমেন্ট এবং পেজের কনটেন্ট ব্যবহার করে আরও প্রাসঙ্গিক গ্রাহক সহায়তার জন্য বুদ্ধিমান উত্তর তৈরি ও প্রদান করতে পারে।.'
+      short_description: 'ডাটাবেস, ডকুমেন্ট এবং পেজগুলো সরাসরি Pilot-এর সাথে সংযুক্ত করুন।.'
+      description: 'আপনার Notion ওয়ার্কস্পেস সংযুক্ত করুন যাতে Pilot আপনার ডাটাবেস, ডকুমেন্ট এবং পেজের কনটেন্ট ব্যবহার করে আরও প্রাসঙ্গিক গ্রাহক সহায়তার জন্য বুদ্ধিমান উত্তর তৈরি ও প্রদান করতে পারে।.'
     shopify:
       name: 'Shopify'
       short_description: 'আপনার Shopify স্টোর থেকে অর্ডার বিবরণ এবং গ্রাহকের তথ্য দেখুন।.'
@@ -349,13 +349,13 @@ bn:
       name: 'LeadSquared'
       short_description: 'আপনার যোগাযোগ এবং কথোপকথন LeadSquared CRM-এর সাথে সিঙ্ক করুন।.'
       description: 'আপনার যোগাযোগ এবং কথোপকথন LeadSquared CRM-এর সাথে সিঙ্ক করুন। এই ইন্টিগ্রেশনটি স্বয়ংক্রিয়ভাবে নতুন যোগাযোগ যোগ হলে LeadSquared-এ লিড তৈরি করে এবং কথোপকথনের কার্যকলাপ লগ করে, যাতে আপনার বিক্রয় দল সম্পূর্ণ প্রেক্ষাপট পায়।.'
-  captain:
+  pilot:
     copilot_message_required: বার্তা আবশ্যক
     copilot_error: 'Copilot ব্যবহার করতে এই ইনবক্সে একটি সহকারী সংযুক্ত করুন'
     copilot_limit: 'আপনার Copilot ক্রেডিট শেষ হয়ে গেছে। বিলিং বিভাগ থেকে আরও ক্রেডিট কিনতে পারেন।.'
-    upgrade: 'Captain AI সক্রিয় করতে আপনার প্ল্যান আপগ্রেড করুন'
-    disabled: 'এই অ্যাকাউন্টের জন্য Captain AI নিষ্ক্রিয় করা হয়েছে।.'
-    api_key_missing: 'Captain AI API কী কনফিগার করা হয়নি।.'
+    upgrade: 'Pilot AI সক্রিয় করতে আপনার প্ল্যান আপগ্রেড করুন'
+    disabled: 'এই অ্যাকাউন্টের জন্য Pilot AI নিষ্ক্রিয় করা হয়েছে।.'
+    api_key_missing: 'Pilot AI API কী কনফিগার করা হয়নি।.'
     copilot:
       using_tool: 'টুল %{function_name} ব্যবহার করা হচ্ছে'
       completed_tool_call: '%{function_name} টুল কল সম্পন্ন হয়েছে'

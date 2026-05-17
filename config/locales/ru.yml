@@ -219,7 +219,7 @@ ru:
     attachment: 'Вложение'
     no_content: 'Нет содержимого'
   conversations:
-    captain:
+    pilot:
       handoff: 'Передача другому агенту для дальнейшей помощи.'
     messages:
       instagram_story_content: '%{story_sender} упомянул Вас в истории: '
@@ -232,7 +232,7 @@ ru:
       delivery_status:
         error_code: 'Код ошибки: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'Диалог был решен %{user_name} из-за бездействия'
         resolved_with_reason: 'Conversation was marked resolved by %{user_name} (%{reason})'
         resolved_by_tool: 'Диалог был завершен %{user_name} с причиной: %{reason}'
@@ -339,8 +339,8 @@ ru:
       description: 'Создавайте или прикрепляйте уже существующие задачи в Linear непосредственно из окна диалога для более упорядоченного и эффективного процесса отслеживания проблем.'
     notion:
       name: 'Notion'
-      short_description: 'Интеграция баз данных, документов и страниц напрямую с Captain.'
-      description: 'Подключите ваше рабочее пространство Notion, чтобы включить Captain для доступа к Ии ответам, используя содержимое из вашей базы данных, документов и страниц, чтобы обеспечить более точную поддержку клиентов.'
+      short_description: 'Интеграция баз данных, документов и страниц напрямую с Pilot.'
+      description: 'Подключите ваше рабочее пространство Notion, чтобы включить Pilot для доступа к Ии ответам, используя содержимое из вашей базы данных, документов и страниц, чтобы обеспечить более точную поддержку клиентов.'
     shopify:
       name: 'Shopify'
       short_description: 'Доступ к информации о заказе и данным о клиентах из магазина Shopify.'
@@ -349,13 +349,13 @@ ru:
       name: 'LeadSquared'
       short_description: 'Синхронизация контактов и диалогов с LeadSquared CRM.'
       description: 'Синхронизация контактов и диалогов с LeadSquared CRM. Эта интеграция автоматически создает лиды в LeadSquared при добавлении новых контактов, и ведет разговор активности, чтобы обеспечить вашу команду продаж полным контекстом.'
-  captain:
+  pilot:
     copilot_message_required: Необходимо ввести сообщение
     copilot_error: 'Пожалуйста, подключите ассистента к этому источнику входящих для использования Copilot'
     copilot_limit: 'У вас закончились кредиты для Copilot. Вы можете купить дополнительные кредиты в разделе биллинга.'
-    upgrade: 'Улучшите свой план, чтобы включить Captain AI'
-    disabled: 'Captain AI отключён для этого аккаунта.'
-    api_key_missing: 'API ключ Captain AI не настроен.'
+    upgrade: 'Улучшите свой план, чтобы включить Pilot AI'
+    disabled: 'Pilot AI отключён для этого аккаунта.'
+    api_key_missing: 'API ключ Pilot AI не настроен.'
     copilot:
       using_tool: 'Использование инструмента %{function_name}'
       completed_tool_call: 'Вызов инструмента %{function_name}'

@@ -98,12 +98,12 @@ class ReportingEventListener < BaseListener
     safe_rollup(reporting_event)
   end
 
-  def conversation_captain_inference_resolved(event)
-    create_captain_inference_event(event, 'conversation_captain_inference_resolved')
+  def conversation_pilot_inference_resolved(event)
+    create_pilot_inference_event(event, 'conversation_pilot_inference_resolved')
   end
 
-  def conversation_captain_inference_handoff(event)
-    create_captain_inference_event(event, 'conversation_captain_inference_handoff')
+  def conversation_pilot_inference_handoff(event)
+    create_pilot_inference_event(event, 'conversation_pilot_inference_handoff')
   end
 
   def conversation_opened(event)
@@ -148,7 +148,7 @@ class ReportingEventListener < BaseListener
     reporting_event.save!
   end
 
-  def create_captain_inference_event(event, event_name)
+  def create_pilot_inference_event(event, event_name)
     conversation = extract_conversation_and_account(event)[0]
     time_to_event = event.timestamp.to_i - conversation.created_at.to_i
 

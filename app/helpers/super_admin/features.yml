@@ -41,12 +41,12 @@ help_center:
   description: 'Allow agents to create help center articles and publish them in a portal.'
   enabled: true
   icon: 'icon-book-2-line'
-captain:
-  name: 'Captain'
+pilot:
+  name: 'Pilot'
   description: 'Enable AI-powered conversations with your customers.'
   enabled: true
-  icon: 'icon-captain'
-  config_key: 'captain'
+  icon: 'icon-pilot'
+  config_key: 'pilot'
 
 # ------- Communication Channels ------- #
 live_chat:

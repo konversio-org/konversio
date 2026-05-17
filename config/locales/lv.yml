@@ -219,7 +219,7 @@ lv:
     attachment: 'Pielikums'
     no_content: 'Nav satura'
   conversations:
-    captain:
+    pilot:
       handoff: 'Transferring to another agent for further assistance.'
     messages:
       instagram_story_content: '%{story_sender} pieminēja jūs stāstā: '
@@ -232,7 +232,7 @@ lv:
       delivery_status:
         error_code: 'Kļūdas kods: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'Conversation was marked resolved by %{user_name} due to inactivity'
         resolved_with_reason: 'Conversation was marked resolved by %{user_name} (%{reason})'
         resolved_by_tool: 'Conversation was marked resolved by %{user_name}: %{reason}'
@@ -339,8 +339,8 @@ lv:
       description: 'Izveidojiet problēmu pieteikumus programmā Linear, tieši no sarunas loga. Varat arī sasaistīt esošos Linear problēmu pieteikumus, lai nodrošinātu racionālāku un efektīvāku problēmu izsekošanas procesu.'
     notion:
       name: 'Notion'
-      short_description: 'Integrate databases, documents and pages directly with Captain.'
-      description: 'Connect your Notion workspace to enable Captain to access and generate intelligent responses using content from your databases, documents, and pages to provide more contextual customer support.'
+      short_description: 'Integrate databases, documents and pages directly with Pilot.'
+      description: 'Connect your Notion workspace to enable Pilot to access and generate intelligent responses using content from your databases, documents, and pages to provide more contextual customer support.'
     shopify:
       name: 'Shopify'
       short_description: 'Access order details and customer data from your Shopify store.'
@@ -349,13 +349,13 @@ lv:
       name: 'LeadSquared'
       short_description: 'Sync your contacts and conversations with LeadSquared CRM.'
       description: 'Sync your contacts and conversations with LeadSquared CRM. This integration automatically creates leads in LeadSquared when new contacts are added, and logs conversation activity to provide your sales team with complete context.'
-  captain:
+  pilot:
     copilot_message_required: Nepieciešams ziņojums
     copilot_error: 'Lai izmantotu Copilot, lūdzu, pievienojiet šai iesūtnei palīgu'
     copilot_limit: 'Jums ir beigušies Copilot kredīti. Vairāk kredītu varat iegādāties norēķinu sadaļā.'
-    upgrade: 'Jauniniet savu plānu, lai iespējotu Captain AI'
-    disabled: 'Captain AI šim kontam ir atspējots.'
-    api_key_missing: 'Captain AI API atslēga nav konfigurēta.'
+    upgrade: 'Jauniniet savu plānu, lai iespējotu Pilot AI'
+    disabled: 'Pilot AI šim kontam ir atspējots.'
+    api_key_missing: 'Pilot AI API atslēga nav konfigurēta.'
     copilot:
       using_tool: 'Tiek izmantots rīks %{function_name}'
       completed_tool_call: 'Pabeigta %{function_name} rīka izsaukšana'
