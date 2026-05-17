@@ -10,8 +10,8 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import EditorModeToggle from './EditorModeToggle.vue';
 import CopilotMenuBar from './CopilotMenuBar.vue';
 
-const BriefingButton = defineAsyncComponent(
-  () => import('dashboard/components-next/pilot/briefing/BriefingButton.vue')
+const PilotActionsMenu = defineAsyncComponent(
+  () => import('dashboard/components-next/pilot/PilotActionsMenu.vue')
 );
 
 export default {
@@ -20,7 +20,7 @@ export default {
     NextButton,
     EditorModeToggle,
     CopilotMenuBar,
-    BriefingButton,
+    PilotActionsMenu,
   },
   directives: {
     OnClickOutside: vOnClickOutside,
@@ -171,7 +171,7 @@ export default {
         </span>
       </div>
     </div>
-    <BriefingButton
+    <PilotActionsMenu
       :conversation-id="conversationId"
       :disabled="disabled || isEditorDisabled"
       @draft="payload => $emit('briefingDraft', payload)"
