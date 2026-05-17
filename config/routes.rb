@@ -578,6 +578,9 @@ Rails.application.routes.draw do
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'
   post 'webhooks/shopify', to: 'webhooks/shopify#events'
 
+  # Resend ActionMailbox ingress
+  mount ActionMailbox::Resend::Engine, at: '/rails/action_mailbox/resend'
+
   namespace :twitter do
     resource :callback, only: [:show]
   end
