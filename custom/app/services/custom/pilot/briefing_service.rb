@@ -2,9 +2,8 @@ module Custom
   module Pilot
     # Generates a one-click reply draft for an agent on a given conversation.
     #
-    # This wraps the renamed MIT reply-suggestion service (now
-    # `Pilot::ReplySuggestionService`, formerly `Captain::ReplySuggestionService`)
-    # per Pilot design D3/D4 and adds:
+    # This wraps `Pilot::ReplySuggestionService` per Pilot design D3/D4
+    # and adds:
     #   * per-account feature-flag gating (`pilot_briefing_enabled` + master
     #     `pilot_enabled`)
     #   * Pilot-namespaced telemetry events

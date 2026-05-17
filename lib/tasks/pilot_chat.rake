@@ -1,22 +1,22 @@
 require 'io/console'
 require 'readline'
 
-namespace :captain do
-  desc 'Start interactive chat with Captain assistant - Usage: rake captain:chat[assistant_id] or rake captain:chat -- assistant_id'
+namespace :pilot do
+  desc 'Start interactive chat with Pilot assistant - Usage: rake pilot:chat[assistant_id] or rake pilot:chat -- assistant_id'
   task :chat, [:assistant_id] => :environment do |_, args|
     assistant_id = args[:assistant_id] || ARGV[1]
 
     unless assistant_id
       puts '❌ Please provide an assistant ID'
-      puts 'Usage: rake captain:chat[assistant_id]'
+      puts 'Usage: rake pilot:chat[assistant_id]'
       puts "\nAvailable assistants:"
-      Captain::Assistant.includes(:account).each do |assistant|
+      Pilot::Assistant.includes(:account).each do |assistant|
         puts "  ID: #{assistant.id} - #{assistant.name} (Account: #{assistant.account.name})"
       end
       exit 1
     end
 
-    assistant = Captain::Assistant.find_by(id: assistant_id)
+    assistant = Pilot::Assistant.find_by(id: assistant_id)
     unless assistant
       puts "❌ Assistant with ID #{assistant_id} not found"
       exit 1
@@ -25,12 +25,12 @@ namespace :captain do
     # Clear ARGV to prevent gets from reading files
     ARGV.clear
 
-    chat_session = CaptainChatSession.new(assistant)
+    chat_session = PilotChatSession.new(assistant)
     chat_session.start
   end
 end
 
-class CaptainChatSession
+class PilotChatSession
   def initialize(assistant)
     @assistant = assistant
     @message_history = []
@@ -141,7 +141,7 @@ class CaptainChatSession
   end
 
   def generate_assistant_response
-    runner = Captain::Assistant::AgentRunnerService.new(assistant: @assistant, callbacks: build_callbacks)
+    runner = Pilot::Assistant::AgentRunnerService.new(assistant: @assistant, callbacks: build_callbacks)
     runner.generate_response(message_history: @message_history)
   end
 

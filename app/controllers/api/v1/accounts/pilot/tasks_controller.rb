@@ -1,4 +1,4 @@
-class Api::V1::Accounts::Captain::TasksController < Api::V1::Accounts::BaseController
+class Api::V1::Accounts::Pilot::TasksController < Api::V1::Accounts::BaseController
   before_action :check_authorization
 
   def rewrite
@@ -66,8 +66,8 @@ class Api::V1::Accounts::Captain::TasksController < Api::V1::Accounts::BaseContr
   end
 
   def check_authorization
-    authorize(:'captain/tasks')
+    authorize(:'pilot/tasks')
   end
 end
 
-Api::V1::Accounts::Captain::TasksController.prepend_mod_with('Api::V1::Accounts::Captain::TasksController')
+Api::V1::Accounts::Pilot::TasksController.prepend_mod_with('Api::V1::Accounts::Pilot::TasksController')

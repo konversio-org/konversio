@@ -1,5 +1,5 @@
-######  Captain Agent Tools Configuration #######
-# id: Tool identifier used to resolve the class (Captain::Tools::{PascalCase(id)}Tool)
+######  Pilot Agent Tools Configuration #######
+# id: Tool identifier used to resolve the class (Pilot::Tools::{PascalCase(id)}Tool)
 # title: Human-readable tool name for frontend display
 # description: Brief description of what the tool does
 # icon: Icon name for frontend display (frontend icon system)

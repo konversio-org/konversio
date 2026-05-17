@@ -1,4 +1,4 @@
-class Api::V1::Accounts::Captain::PreferencesController < Api::V1::Accounts::BaseController
+class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseController
   before_action :current_account
   before_action :authorize_account_update, only: [:update]
 
@@ -7,9 +7,9 @@ class Api::V1::Accounts::Captain::PreferencesController < Api::V1::Accounts::Bas
   end
 
   def update
-    params_to_update = captain_params
-    @current_account.captain_models = params_to_update[:captain_models] if params_to_update[:captain_models]
-    @current_account.captain_features = params_to_update[:captain_features] if params_to_update[:captain_features]
+    params_to_update = pilot_params
+    @current_account.pilot_models = params_to_update[:pilot_models] if params_to_update[:pilot_models]
+    @current_account.pilot_features = params_to_update[:pilot_features] if params_to_update[:pilot_features]
     @current_account.save!
 
     render json: preferences_payload
@@ -29,39 +29,39 @@ class Api::V1::Accounts::Captain::PreferencesController < Api::V1::Accounts::Bas
     authorize @current_account, :update?
   end
 
-  def captain_params
+  def pilot_params
     permitted = {}
-    permitted[:captain_models] = merged_captain_models if params[:captain_models].present?
-    permitted[:captain_features] = merged_captain_features if params[:captain_features].present?
+    permitted[:pilot_models] = merged_pilot_models if params[:pilot_models].present?
+    permitted[:pilot_features] = merged_pilot_features if params[:pilot_features].present?
     permitted
   end
 
-  def merged_captain_models
-    existing_models = @current_account.captain_models || {}
-    existing_models.merge(permitted_captain_models)
+  def merged_pilot_models
+    existing_models = @current_account.pilot_models || {}
+    existing_models.merge(permitted_pilot_models)
   end
 
-  def merged_captain_features
-    existing_features = @current_account.captain_features || {}
-    existing_features.merge(permitted_captain_features)
+  def merged_pilot_features
+    existing_features = @current_account.pilot_features || {}
+    existing_features.merge(permitted_pilot_features)
   end
 
-  def permitted_captain_models
-    params.require(:captain_models).permit(
+  def permitted_pilot_models
+    params.require(:pilot_models).permit(
       :editor, :assistant, :copilot, :label_suggestion,
       :audio_transcription, :help_center_search
     ).to_h.stringify_keys
   end
 
-  def permitted_captain_features
-    params.require(:captain_features).permit(
+  def permitted_pilot_features
+    params.require(:pilot_features).permit(
       :editor, :assistant, :copilot, :label_suggestion,
       :audio_transcription, :help_center_search
     ).to_h.stringify_keys
   end
 
   def features_with_account_preferences
-    preferences = Current.account.captain_preferences
+    preferences = Current.account.pilot_preferences
     account_features = preferences[:features] || {}
     account_models = preferences[:models] || {}
 
