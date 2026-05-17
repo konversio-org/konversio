@@ -1,6 +1,6 @@
-class Captain::BaseTaskService
+class Pilot::BaseTaskService
   include Integrations::LlmInstrumentation
-  include Captain::ToolInstrumentation
+  include Pilot::ToolInstrumentation
   include Llm::ExceptionTrackable
 
   # gpt-4o-mini supports 128,000 tokens
@@ -16,7 +16,7 @@ class Captain::BaseTaskService
   # the module before the class in the ancestor chain.
   def self.inherited(subclass)
     super
-    subclass.prepend_mod_with('Captain::BaseTaskService')
+    subclass.prepend_mod_with('Pilot::BaseTaskService')
   end
 
   pattr_initialize [:account!, { conversation_display_id: nil }]
@@ -32,15 +32,13 @@ class Captain::BaseTaskService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
-    endpoint = endpoint.chomp('/')
-    "#{endpoint}/v1"
+    "#{Llm::Config.api_base}/v1"
   end
 
   def make_api_call(model:, messages:, schema: nil, tools: [])
     # Community edition prerequisite checks
     # Enterprise module handles these with more specific error messages (cloud vs self-hosted)
-    return { error: I18n.t('captain.disabled'), error_code: 403 } unless captain_tasks_enabled?
+    return { error: I18n.t('captain.disabled'), error_code: 403 } unless pilot_tasks_enabled?
     return { error: I18n.t('captain.api_key_missing'), error_code: 401 } unless api_key_configured?
 
     instrumentation_params = build_instrumentation_params(model, messages)
@@ -145,7 +143,7 @@ class Captain::BaseTaskService
     messages
   end
 
-  def captain_tasks_enabled?
+  def pilot_tasks_enabled?
     account.feature_enabled?('captain_tasks')
   end
 
@@ -175,7 +173,7 @@ class Captain::BaseTaskService
   end
 
   def system_api_key
-    @system_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    @system_api_key ||= Llm::Config.api_key
   end
 
   def exception_tracking_account
@@ -189,7 +187,7 @@ class Captain::BaseTaskService
   # Follow-up context for client-side refinement
   def build_follow_up_context?
     # FollowUpService should return its own updated context
-    !is_a?(Captain::FollowUpService)
+    !is_a?(Pilot::FollowUpService)
   end
 
   def build_follow_up_context(messages, response)
@@ -208,4 +206,4 @@ class Captain::BaseTaskService
     user_msg ? user_msg[:content] : nil
   end
 end
-Captain::BaseTaskService.prepend_mod_with('Captain::BaseTaskService')
+Pilot::BaseTaskService.prepend_mod_with('Pilot::BaseTaskService')

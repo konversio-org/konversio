@@ -1,4 +1,4 @@
-class Captain::RewriteService < Captain::BaseTaskService
+class Pilot::RewriteService < Pilot::BaseTaskService
   pattr_initialize [:account!, :content!, :operation!, { conversation_display_id: nil }]
 
   TONE_OPERATIONS = %i[casual professional friendly confident straightforward].freeze
