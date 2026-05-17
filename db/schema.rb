@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_10_092753) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -73,6 +73,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_10_092753) do
     t.integer "status", default: 0
     t.jsonb "internal_attributes", default: {}, null: false
     t.jsonb "settings", default: {}
+    t.boolean "pilot_enabled", default: false, null: false
+    t.boolean "pilot_briefing_enabled", default: false, null: false
+    t.boolean "pilot_copilot_enabled", default: false, null: false
+    t.boolean "pilot_autopilot_enabled", default: false, null: false
+    t.boolean "pilot_logbook_enabled", default: false, null: false
+    t.boolean "pilot_tools_enabled", default: false, null: false
+    t.boolean "pilot_autoresolve_enabled", default: false, null: false
+    t.boolean "pilot_summary_enabled", default: false, null: false
+    t.boolean "pilot_csat_analysis_enabled", default: false, null: false
+    t.boolean "pilot_follow_up_enabled", default: false, null: false
+    t.boolean "pilot_rewrite_enabled", default: false, null: false
+    t.boolean "pilot_label_suggestion_enabled", default: false, null: false
+    t.index ["id"], name: "index_accounts_on_pilot_enabled", where: "pilot_enabled"
     t.index ["status"], name: "index_accounts_on_status"
   end
 
@@ -381,11 +394,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_10_092753) do
     t.integer "sync_status"
     t.datetime "last_synced_at"
     t.datetime "last_sync_attempted_at"
+    t.index ["account_id", "sync_status"], name: "index_captain_documents_on_account_id_and_sync_status"
     t.index ["account_id"], name: "index_captain_documents_on_account_id"
     t.index ["assistant_id", "external_link"], name: "index_captain_documents_on_assistant_id_and_external_link", unique: true
     t.index ["assistant_id"], name: "index_captain_documents_on_assistant_id"
     t.index ["status"], name: "index_captain_documents_on_status"
-    t.index ["account_id", "sync_status"], name: "index_captain_documents_on_account_id_and_sync_status"
   end
 
   create_table "captain_inboxes", force: :cascade do |t|
