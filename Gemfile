@@ -48,6 +48,8 @@ gem 'gmail_xoauth'
 gem 'net-smtp',  '~> 0.3.4'
 # Prevent CSV injection
 gem 'csv-safe'
+# Webhook signature verification for Resend ingress
+gem 'svix'
 
 ##-- for active storage --##
 gem 'aws-sdk-s3', require: false
@@ -59,6 +61,7 @@ gem 'image_processing'
 
 ##-- for actionmailbox --##
 gem 'aws-actionmailbox-ses', '~> 0'
+gem 'actionmailbox-resend'
 
 ##-- gems for database --#
 gem 'groupdate'
