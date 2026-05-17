@@ -311,15 +311,15 @@
     "ACTIVE": "פעיל",
     "COMPANIES": "Companies",
     "ALL_COMPANIES": "All Companies",
-    "CAPTAIN": "קפטן",
-    "CAPTAIN_ASSISTANTS": "עוזרים",
-    "CAPTAIN_DOCUMENTS": "מסמכים",
-    "CAPTAIN_RESPONSES": "שאלות נפוצות",
-    "CAPTAIN_TOOLS": "כלים",
-    "CAPTAIN_SCENARIOS": "תרחישים",
-    "CAPTAIN_PLAYGROUND": "מגרש משחקים",
-    "CAPTAIN_INBOXES": "תיבות דואר נכנס",
-    "CAPTAIN_SETTINGS": "הגדרות",
+    "PILOT": "קפטן",
+    "PILOT_ASSISTANTS": "עוזרים",
+    "PILOT_DOCUMENTS": "מסמכים",
+    "PILOT_RESPONSES": "שאלות נפוצות",
+    "PILOT_TOOLS": "כלים",
+    "PILOT_SCENARIOS": "תרחישים",
+    "PILOT_PLAYGROUND": "מגרש משחקים",
+    "PILOT_INBOXES": "תיבות דואר נכנס",
+    "PILOT_SETTINGS": "הגדרות",
     "HOME": "בית",
     "AGENTS": "סוכנים",
     "AGENT_BOTS": "בוטים",
@@ -381,15 +381,15 @@
     },
     "DOCS": "קרא מסמכים",
     "SECURITY": "אבטחה",
-    "CAPTAIN_AI": "קפטן",
+    "PILOT_AI": "קפטן",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Configure your AI models and features for Pilot. Pilot follows a credit based billing, you will be charged credits for every action Pilot takes based on the model selected.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot is not enabled for your account. Please upgrade your plan to access Pilot features.",
     "MODEL_CONFIG": {
       "TITLE": "Model Configuration",
       "DESCRIPTION": "Select AI models for different features.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "הצג את החשבוניות הקודמות שלך, ערוך את פרטי החיוב שלך או בטל את המנוי שלך.",
       "BUTTON_TXT": "עבור לפורטל החיובים"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "קפטן",
-      "DESCRIPTION": "נהל שימוש וזיכויים עבור Captain AI.",
+      "DESCRIPTION": "נהל שימוש וזיכויים עבור Pilot AI.",
       "BUTTON_TXT": "קנה עוד זיכויים",
       "DOCUMENTS": "מסמכים",
       "RESPONSES": "תגובות",
-      "UPGRADE": "Captain אינו זמין בתוכנית החינמית, שדרג עכשיו כדי לקבל גישה לעוזרים, ל-Copilot ועוד.",
+      "UPGRADE": "Pilot אינו זמין בתוכנית החינמית, שדרג עכשיו כדי לקבל גישה לעוזרים, ל-Copilot ועוד.",
       "REFRESH_CREDITS": "רענן"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "קנה עוד זיכויים",
       "MODAL_TITLE": "Buy AI Credits",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "one-time",
       "POPULAR": "Most Popular",

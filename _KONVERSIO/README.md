@@ -8,16 +8,16 @@ the full Chatwoot toolset plus AI features without the Enterprise license.
 | Layer | Name | Notes |
 |---|---|---|
 | **Platform / product** | **Konversio** | The fork. Replaces "Chatwoot" everywhere in code. |
-| **AI module (future)** | **Pilot** | Replacement for Chatwoot's Enterprise "Captain". Not built yet — Phase 2. |
+| **AI module (future)** | **Pilot** | Replacement for Chatwoot's Enterprise "Pilot". Not built yet — Phase 2. |
 | **Human support staff** | Agents | Unchanged from Chatwoot terminology. |
-| **Chatwoot's AI brand** | Captain | Referenced only for context; the code was stripped. |
+| **Chatwoot's AI brand** | Pilot | Referenced only for context; the code was stripped. |
 
 ## What This Is
 
 Konversio is an open-source (MIT) customer support platform forked from
 Chatwoot v4.13.0 (April 17, 2026). We dropped every line of proprietary
 enterprise code, leaving a clean MIT base. The AI layer that Chatwoot
-sells as "Captain" (Enterprise-only, $200/month for 10,000 responses,
+sells as "Pilot" (Enterprise-only, $200/month for 10,000 responses,
 vendor-locked) will be replaced by **Pilot** — a fully open, BYO-key,
 multi-provider AI module that lives in `custom/app/services/custom/pilot/`.
 
@@ -30,7 +30,7 @@ rebranded." Pilot lands in Phase 2.
 Chatwoot v4.13.0 (MIT core + proprietary enterprise/)
     │
     ├── Removed: enterprise/ (all proprietary code)
-    ├── Removed: Captain AI UI + API (dead without enterprise backend)
+    ├── Removed: Pilot AI UI + API (dead without enterprise backend)
     ├── Stubbed: Copilot/AI reply composables (will be rebuilt as Pilot)
     ├── Renamed: Chatwoot → Konversio
     │
@@ -48,14 +48,14 @@ Chatwoot v4.13.0 (MIT core + proprietary enterprise/)
 | `enterprise/` | All EE code (~200+ Ruby files) | Proprietary license |
 | `spec/enterprise/` | EE test suite | Proprietary |
 | `app/javascript/dashboard/api/enterprise/` | EE API client | Calls deleted EE routes |
-| `app/javascript/dashboard/api/captain/` | Captain API client | Calls deleted EE routes |
-| `app/javascript/dashboard/components-next/captain/` | 61 Captain UI components | Dead UI |
-| `app/javascript/dashboard/routes/dashboard/captain/` | Captain page routes | Dead routes |
-| `app/javascript/dashboard/routes/dashboard/settings/captain/` | Captain settings | Dead settings |
-| `app/javascript/dashboard/store/captain/` | Captain Vuex stores | Dead stores |
-| `app/javascript/dashboard/composables/captain/` | Captain composables | Dead logic |
-| Captain/copilot spec files | EE test files | Tests for deleted code |
-| Captain image assets | Icons/illustrations | Dead assets |
+| `app/javascript/dashboard/api/pilot/` | Pilot API client | Calls deleted EE routes |
+| `app/javascript/dashboard/components-next/pilot/` | 61 Pilot UI components | Dead UI |
+| `app/javascript/dashboard/routes/dashboard/pilot/` | Pilot page routes | Dead routes |
+| `app/javascript/dashboard/routes/dashboard/settings/pilot/` | Pilot settings | Dead settings |
+| `app/javascript/dashboard/store/pilot/` | Pilot Vuex stores | Dead stores |
+| `app/javascript/dashboard/composables/pilot/` | Pilot composables | Dead logic |
+| Pilot/copilot spec files | EE test files | Tests for deleted code |
+| Pilot image assets | Icons/illustrations | Dead assets |
 
 ### Stubbed Out
 
@@ -65,12 +65,12 @@ These features called enterprise-only APIs and would crash. They're now safe no-
 |------|-------------|
 | `useCopilotReply.js` | Returns inactive state; reset/execute/accept are no-ops |
 | `useLabelSuggestions.js` | Returns empty arrays; feature flags always false |
-| `TagTools.vue` | Empty template — no captain tools to show |
+| `TagTools.vue` | Empty template — no pilot tools to show |
 | `accounts.js` (store) | checkout/subscription/limits log a console warning |
 | `PurchaseCreditsModal.vue` | Top-up purchase is a no-op |
-| `CustomerSatisfactionPage.vue` | Utility analyzer hidden (needed captain) |
-| `billing/Index.vue` | Captain limits section removed |
-| `BulkSelectBar.vue` | Placeholder component (was in captain dir) |
+| `CustomerSatisfactionPage.vue` | Utility analyzer hidden (needed pilot) |
+| `billing/Index.vue` | Pilot limits section removed |
+| `BulkSelectBar.vue` | Placeholder component (was in pilot dir) |
 
 ### Cleaned Config
 
@@ -82,9 +82,9 @@ These features called enterprise-only APIs and would crash. They're now safe no-
 
 These remain because they're MIT-licensed infrastructure we'll reuse:
 
-- `app/models/concerns/captain_featurable.rb` — LLM model/feature config
-- `app/models/concerns/account_captain_auto_resolve.rb` — Auto-resolve mode
-- `app/controllers/api/v1/accounts/captain/preferences_controller.rb` — Settings endpoint
+- `app/models/concerns/pilot_featurable.rb` — LLM model/feature config
+- `app/models/concerns/account_pilot_auto_resolve.rb` — Auto-resolve mode
+- `app/controllers/api/v1/accounts/pilot/preferences_controller.rb` — Settings endpoint
 - `lib/llm/models.rb` — LLM model registry
 - `lib/llm/config.rb` — LLM configuration
 - `config/initializers/01_inject_enterprise_edition_module.rb` — Extension hook system
@@ -148,18 +148,18 @@ custom/
 ### Config naming
 
 Pilot config uses **`PILOT_*`** env vars / `InstallationConfig` keys, never
-`CAPTAIN_*`. This is a deliberate break from upstream Chatwoot:
+`PILOT_*`. This is a deliberate break from upstream Chatwoot:
 
 | Chatwoot | Pilot |
 |---|---|
-| `CAPTAIN_OPEN_AI_API_KEY` | `PILOT_OPEN_AI_API_KEY` |
-| `CAPTAIN_OPEN_AI_ENDPOINT` | `PILOT_OPEN_AI_ENDPOINT` |
-| `CAPTAIN_OPEN_AI_MODEL` | `PILOT_OPEN_AI_MODEL` |
-| `CAPTAIN_OPEN_AI_API_PROVIDER` | `PILOT_OPEN_AI_API_PROVIDER` |
-| `CAPTAIN_EMBEDDING_MODEL` | `PILOT_EMBEDDING_MODEL` |
-| `CAPTAIN_EMBEDDING_DIMENSIONS` | `PILOT_EMBEDDING_DIMENSIONS` |
-| `CAPTAIN_OPEN_AI_TRANSLATION_MODEL` | `PILOT_OPEN_AI_TRANSLATION_MODEL` |
-| `CAPTAIN_FIRECRAWL_API_KEY` | `PILOT_FIRECRAWL_API_KEY` |
+| `PILOT_OPEN_AI_API_KEY` | `PILOT_OPEN_AI_API_KEY` |
+| `PILOT_OPEN_AI_ENDPOINT` | `PILOT_OPEN_AI_ENDPOINT` |
+| `PILOT_OPEN_AI_MODEL` | `PILOT_OPEN_AI_MODEL` |
+| `PILOT_OPEN_AI_API_PROVIDER` | `PILOT_OPEN_AI_API_PROVIDER` |
+| `PILOT_EMBEDDING_MODEL` | `PILOT_EMBEDDING_MODEL` |
+| `PILOT_EMBEDDING_DIMENSIONS` | `PILOT_EMBEDDING_DIMENSIONS` |
+| `PILOT_OPEN_AI_TRANSLATION_MODEL` | `PILOT_OPEN_AI_TRANSLATION_MODEL` |
+| `PILOT_FIRECRAWL_API_KEY` | `PILOT_FIRECRAWL_API_KEY` |
 
 Migrating Chatwoot users have to rename their env vars once. The
 brand-consistent naming wins long-term over the one-time migration cost.
@@ -168,7 +168,7 @@ brand-consistent naming wins long-term over the one-time migration cost.
 
 Pilot has four user-visible sub-features, each with a name from the
 aviation/flying metaphor. Each maps cleanly to a feature Chatwoot
-shipped under "Captain":
+shipped under "Pilot":
 
 | Pilot feature | What it does | Chatwoot's name for it |
 |---|---|---|

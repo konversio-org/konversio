@@ -22,11 +22,11 @@
     "LOADING": "통합을 가져오는 중",
     "SEARCH_PLACEHOLDER": "통합 검색...",
     "NO_RESULTS": "검색과 일치하는 통합이 없습니다",
-    "CAPTAIN": {
-      "DISABLED": "계정에서 Captain이 활성화되어 있지 않습니다.",
+    "PILOT": {
+      "DISABLED": "계정에서 Pilot이 활성화되어 있지 않습니다.",
       "CLICK_HERE_TO_CONFIGURE": "여기를 클릭하여 구성하십시오",
-      "LOADING_CONSOLE": "Captain 콘솔을 로드하는 중...",
-      "FAILED_TO_LOAD_CONSOLE": "Captain 콘솔을 로드하지 못했습니다. 페이지를 새로고침한 후 다시 시도하십시오."
+      "LOADING_CONSOLE": "Pilot 콘솔을 로드하는 중...",
+      "FAILED_TO_LOAD_CONSOLE": "Pilot 콘솔을 로드하지 못했습니다. 페이지를 새로고침한 후 다시 시도하십시오."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "구독된 이벤트",
@@ -388,8 +388,8 @@
       }
     }
   },
-  "CAPTAIN": {
-    "NAME": "Captain",
+  "PILOT": {
+    "NAME": "Pilot",
     "HEADER_KNOW_MORE": "자세히 알아보기",
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "어시스턴트",
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "빠른 요약이 필요하거나 이전 대화를 확인하거나 더 나은 답장을 작성하고 싶으신가요? Copilot이 도와드립니다.",
       "SEND_MESSAGE": "메시지 보내기...",
       "EMPTY_MESSAGE": "응답을 생성하는 중 오류가 발생했습니다. 다시 시도하십시오.",
-      "LOADER": "Captain이 생각 중입니다",
+      "LOADER": "Pilot이 생각 중입니다",
       "YOU": "나",
       "USE": "사용하기",
       "RESET": "초기화",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "메시지를 입력하십시오...",
       "HEADER": "플레이그라운드",
       "DESCRIPTION": "이 플레이그라운드를 사용하여 어시스턴트에게 메시지를 보내고 정확하고 빠르게 기대하는 톤으로 응답하는지 확인하십시오.",
-      "CREDIT_NOTE": "여기에서 보낸 메시지는 Captain 크레딧에 포함됩니다."
+      "CREDIT_NOTE": "여기에서 보낸 메시지는 Pilot 크레딧에 포함됩니다."
     },
     "PAYWALL": {
-      "TITLE": "Captain AI를 사용하려면 업그레이드하십시오",
-      "AVAILABLE_ON": "Captain은 무료 요금제에서 사용할 수 없습니다.",
+      "TITLE": "Pilot AI를 사용하려면 업그레이드하십시오",
+      "AVAILABLE_ON": "Pilot은 무료 요금제에서 사용할 수 없습니다.",
       "UPGRADE_PROMPT": "어시스턴트, Copilot 등에 액세스하려면 요금제를 업그레이드하십시오.",
       "UPGRADE_NOW": "지금 업그레이드",
       "CANCEL_ANYTIME": "언제든지 요금제를 변경하거나 취소할 수 있습니다"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI는 Enterprise 요금제에서만 사용할 수 있습니다.",
+      "AVAILABLE_ON": "Pilot AI는 Enterprise 요금제에서만 사용할 수 있습니다.",
       "UPGRADE_PROMPT": "어시스턴트, Copilot 등에 액세스하려면 요금제를 업그레이드하십시오.",
       "ASK_ADMIN": "업그레이드를 위해 관리자에게 문의하십시오."
     },
     "BANNER": {
-      "RESPONSES": "응답 한도의 80% 이상을 사용했습니다. Captain AI를 계속 사용하려면 업그레이드하십시오.",
-      "DOCUMENTS": "문서 한도에 도달했습니다. Captain AI를 계속 사용하려면 업그레이드하십시오."
+      "RESPONSES": "응답 한도의 80% 이상을 사용했습니다. Pilot AI를 계속 사용하려면 업그레이드하십시오.",
+      "DOCUMENTS": "문서 한도에 도달했습니다. Pilot AI를 계속 사용하려면 업그레이드하십시오."
     },
     "FORM": {
       "CANCEL": "취소",
@@ -576,8 +576,8 @@
         "TITLE": "사용 가능한 어시스턴트가 없습니다",
         "SUBTITLE": "사용자에게 빠르고 정확한 응답을 제공하는 어시스턴트를 만드십시오. 도움말 문서와 이전 대화에서 학습할 수 있습니다.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain 어시스턴트",
-          "NOTE": "Captain 어시스턴트는 고객과 직접 대화하며, 도움말 문서와 이전 대화에서 학습하여 즉각적이고 정확한 응답을 제공합니다. 초기 문의를 처리하여 빠른 해결을 제공하고 필요한 경우 상담원에게 전환합니다."
+          "TITLE": "Pilot 어시스턴트",
+          "NOTE": "Pilot 어시스턴트는 고객과 직접 대화하며, 도움말 문서와 이전 대화에서 학습하여 즉각적이고 정확한 응답을 제공합니다. 초기 문의를 처리하여 빠른 해결을 제공하고 필요한 경우 상담원에게 전환합니다."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "사용 가능한 문서가 없습니다",
         "SUBTITLE": "문서는 어시스턴트가 FAQ를 생성하는 데 사용됩니다. 어시스턴트에 컨텍스트를 제공하기 위해 문서를 가져올 수 있습니다.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain 문서",
-          "NOTE": "Captain의 문서는 어시스턴트를 위한 지식 리소스로 활용됩니다. 도움말 센터나 가이드를 연결하면 Captain이 내용을 분석하여 고객 문의에 대한 정확한 응답을 제공할 수 있습니다."
+          "TITLE": "Pilot 문서",
+          "NOTE": "Pilot의 문서는 어시스턴트를 위한 지식 리소스로 활용됩니다. 도움말 센터나 가이드를 연결하면 Pilot이 내용을 분석하여 고객 문의에 대한 정확한 응답을 제공할 수 있습니다."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "사용자 정의 도구를 삭제하지 못했습니다"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "청구서 열기",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "업그레이드에 대해 관리자에게 문의하십시오."
       },
@@ -975,7 +975,7 @@
         "ALL": "전체"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain이 고객이 찾고 있던 FAQ를 발견했습니다.",
+        "TITLE": "Pilot이 고객이 찾고 있던 FAQ를 발견했습니다.",
         "ACTION": "여기를 클릭하여 검토하십시오"
       },
       "FORM_DESCRIPTION": "지식 베이스에 질문과 해당 답변을 추가하고 연결할 어시스턴트를 선택하십시오.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "FAQ는 어시스턴트가 고객의 질문에 빠르고 정확한 답변을 제공하는 데 도움이 됩니다. 콘텐츠에서 자동으로 생성되거나 수동으로 추가할 수 있습니다.",
         "CLEAR_SEARCH": "활성 필터 지우기",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain FAQ는 지식 베이스에서 누락되었거나 자주 질문되는 일반적인 고객 질문을 감지하고 관련 FAQ를 생성하여 지원을 개선합니다. 각 제안을 검토하고 승인 또는 거부를 결정할 수 있습니다."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Pilot FAQ는 지식 베이스에서 누락되었거나 자주 질문되는 일반적인 고객 질문을 감지하고 관련 FAQ를 생성하여 지원을 개선합니다. 각 제안을 검토하고 승인 또는 거부를 결정할 수 있습니다."
         }
       }
     },

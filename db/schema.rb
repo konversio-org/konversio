@@ -331,7 +331,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "captain_assistant_responses", force: :cascade do |t|
+  create_table "pilot_assistant_responses", force: :cascade do |t|
     t.string "question", null: false
     t.text "answer", null: false
     t.vector "embedding", limit: 1536
@@ -343,14 +343,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.integer "status", default: 1, null: false
     t.string "documentable_type"
     t.boolean "edited", default: false, null: false
-    t.index ["account_id"], name: "index_captain_assistant_responses_on_account_id"
-    t.index ["assistant_id"], name: "index_captain_assistant_responses_on_assistant_id"
+    t.index ["account_id"], name: "index_pilot_assistant_responses_on_account_id"
+    t.index ["assistant_id"], name: "index_pilot_assistant_responses_on_assistant_id"
     t.index ["documentable_id", "documentable_type"], name: "idx_cap_asst_resp_on_documentable"
     t.index ["embedding"], name: "vector_idx_knowledge_entries_embedding", using: :ivfflat
-    t.index ["status"], name: "index_captain_assistant_responses_on_status"
+    t.index ["status"], name: "index_pilot_assistant_responses_on_status"
   end
 
-  create_table "captain_assistants", force: :cascade do |t|
+  create_table "pilot_assistants", force: :cascade do |t|
     t.string "name", null: false
     t.bigint "account_id", null: false
     t.string "description"
@@ -359,10 +359,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.jsonb "config", default: {}, null: false
     t.jsonb "response_guidelines", default: []
     t.jsonb "guardrails", default: []
-    t.index ["account_id"], name: "index_captain_assistants_on_account_id"
+    t.index ["account_id"], name: "index_pilot_assistants_on_account_id"
   end
 
-  create_table "captain_custom_tools", force: :cascade do |t|
+  create_table "pilot_custom_tools", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "slug", null: false
     t.string "title", null: false
@@ -377,11 +377,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id", "slug"], name: "index_captain_custom_tools_on_account_id_and_slug", unique: true
-    t.index ["account_id"], name: "index_captain_custom_tools_on_account_id"
+    t.index ["account_id", "slug"], name: "index_pilot_custom_tools_on_account_id_and_slug", unique: true
+    t.index ["account_id"], name: "index_pilot_custom_tools_on_account_id"
   end
 
-  create_table "captain_documents", force: :cascade do |t|
+  create_table "pilot_documents", force: :cascade do |t|
     t.string "name"
     t.string "external_link", null: false
     t.text "content"
@@ -394,24 +394,24 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.integer "sync_status"
     t.datetime "last_synced_at"
     t.datetime "last_sync_attempted_at"
-    t.index ["account_id", "sync_status"], name: "index_captain_documents_on_account_id_and_sync_status"
-    t.index ["account_id"], name: "index_captain_documents_on_account_id"
-    t.index ["assistant_id", "external_link"], name: "index_captain_documents_on_assistant_id_and_external_link", unique: true
-    t.index ["assistant_id"], name: "index_captain_documents_on_assistant_id"
-    t.index ["status"], name: "index_captain_documents_on_status"
+    t.index ["account_id", "sync_status"], name: "index_pilot_documents_on_account_id_and_sync_status"
+    t.index ["account_id"], name: "index_pilot_documents_on_account_id"
+    t.index ["assistant_id", "external_link"], name: "index_pilot_documents_on_assistant_id_and_external_link", unique: true
+    t.index ["assistant_id"], name: "index_pilot_documents_on_assistant_id"
+    t.index ["status"], name: "index_pilot_documents_on_status"
   end
 
-  create_table "captain_inboxes", force: :cascade do |t|
-    t.bigint "captain_assistant_id", null: false
+  create_table "pilot_inboxes", force: :cascade do |t|
+    t.bigint "pilot_assistant_id", null: false
     t.bigint "inbox_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["captain_assistant_id", "inbox_id"], name: "index_captain_inboxes_on_captain_assistant_id_and_inbox_id", unique: true
-    t.index ["captain_assistant_id"], name: "index_captain_inboxes_on_captain_assistant_id"
-    t.index ["inbox_id"], name: "index_captain_inboxes_on_inbox_id"
+    t.index ["pilot_assistant_id", "inbox_id"], name: "index_pilot_inboxes_on_pilot_assistant_id_and_inbox_id", unique: true
+    t.index ["pilot_assistant_id"], name: "index_pilot_inboxes_on_pilot_assistant_id"
+    t.index ["inbox_id"], name: "index_pilot_inboxes_on_inbox_id"
   end
 
-  create_table "captain_scenarios", force: :cascade do |t|
+  create_table "pilot_scenarios", force: :cascade do |t|
     t.string "title"
     t.text "description"
     t.text "instruction"
@@ -421,10 +421,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.bigint "account_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_captain_scenarios_on_account_id"
-    t.index ["assistant_id", "enabled"], name: "index_captain_scenarios_on_assistant_id_and_enabled"
-    t.index ["assistant_id"], name: "index_captain_scenarios_on_assistant_id"
-    t.index ["enabled"], name: "index_captain_scenarios_on_enabled"
+    t.index ["account_id"], name: "index_pilot_scenarios_on_account_id"
+    t.index ["assistant_id", "enabled"], name: "index_pilot_scenarios_on_assistant_id_and_enabled"
+    t.index ["assistant_id"], name: "index_pilot_scenarios_on_assistant_id"
+    t.index ["enabled"], name: "index_pilot_scenarios_on_enabled"
   end
 
   create_table "categories", force: :cascade do |t|

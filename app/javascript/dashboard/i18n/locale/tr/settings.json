@@ -311,15 +311,15 @@
     "ACTIVE": "Aktif",
     "COMPANIES": "Şirketler",
     "ALL_COMPANIES": "Tüm Şirketler",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "Assistants",
-    "CAPTAIN_DOCUMENTS": "Belgeler",
-    "CAPTAIN_RESPONSES": "SSS",
-    "CAPTAIN_TOOLS": "Araçlar",
-    "CAPTAIN_SCENARIOS": "Scenarios",
-    "CAPTAIN_PLAYGROUND": "Oyun Alanı",
-    "CAPTAIN_INBOXES": "Gelen kutuları",
-    "CAPTAIN_SETTINGS": "Ayarlar",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "Assistants",
+    "PILOT_DOCUMENTS": "Belgeler",
+    "PILOT_RESPONSES": "SSS",
+    "PILOT_TOOLS": "Araçlar",
+    "PILOT_SCENARIOS": "Scenarios",
+    "PILOT_PLAYGROUND": "Oyun Alanı",
+    "PILOT_INBOXES": "Gelen kutuları",
+    "PILOT_SETTINGS": "Ayarlar",
     "HOME": "Anasayfa",
     "AGENTS": "Kullanıcılar",
     "AGENT_BOTS": "Botlar",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Dokümantasyonu oku",
     "SECURITY": "Güvenlik",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Konuşma Akışı"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Configure your AI models and features for Pilot. Pilot follows a credit based billing, you will be charged credits for every action Pilot takes based on the model selected.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot is not enabled for your account. Please upgrade your plan to access Pilot features.",
     "MODEL_CONFIG": {
       "TITLE": "Model Configuration",
       "DESCRIPTION": "Select AI models for different features.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Önceki faturalarınızı görüntüleyin, fatura detaylarınızı düzenleyin veya aboneliğinizi iptal edin.",
       "BUTTON_TXT": "Fatura portalına git"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Manage usage and credits for Captain AI.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Manage usage and credits for Pilot AI.",
       "BUTTON_TXT": "Buy more credits",
       "DOCUMENTS": "Belgeler",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain, ücretsiz planda mevcut değildir. Asistanlara, Copilot'a ve daha fazlasına erişim sağlamak için şimdi yükseltin.",
+      "UPGRADE": "Pilot, ücretsiz planda mevcut değildir. Asistanlara, Copilot'a ve daha fazlasına erişim sağlamak için şimdi yükseltin.",
       "REFRESH_CREDITS": "Yenile"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Buy more credits",
       "MODAL_TITLE": "Buy AI Credits",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "one-time",
       "POPULAR": "Most Popular",

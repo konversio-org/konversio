@@ -16,13 +16,13 @@ Resend. **No AI module yet** — that's Phase 2.
 | Layer | Name | Status |
 |---|---|---|
 | Platform / product | **Konversio** | Replaces "Chatwoot" everywhere in code |
-| AI module (umbrella, future) | **Pilot** | Replaces Chatwoot's "Captain". Not built yet. |
+| AI module (umbrella, future) | **Pilot** | Replaces Chatwoot's "Pilot". Not built yet. |
 | Pilot sub-feature: agent-side chat sidebar | **Copilot** | Chatwoot had this too, same name |
 | Pilot sub-feature: customer-facing chatbot | **Autopilot** | (Chatwoot called it "Assistant") |
 | Pilot sub-feature: one-click reply draft button | **Briefing** | (Chatwoot: "Reply suggestion") |
 | Pilot sub-feature: per-contact persistent memory | **Logbook** | (Chatwoot: "Memories") |
 | Human support staff | **Agents** | Unchanged from Chatwoot |
-| Chatwoot's old AI brand | **Captain** | Referenced only as historical context |
+| Chatwoot's old AI brand | **Pilot** | Referenced only as historical context |
 
 **Do not flip Konversio and Pilot.** Konversio is the platform; Pilot is one
 feature *inside* Konversio. (Session history: an earlier rename pass
@@ -189,14 +189,14 @@ Stock Chatwoot CE layout with these meaningful additions / changes:
 | `Gemfile` | + `actionmailbox-resend`, + `svix`, + `fiddle` (Ruby 3.4 deprecation silencer) |
 | `LICENSE` | Pure MIT, "Copyright (c) 2026 Konversio. Based on Chatwoot v4.13.0 (MIT)." |
 | `enterprise/` | **Deleted.** Chatwoot Enterprise License code, can't be redistributed. |
-| `app/javascript/dashboard/api/captain/` | **Deleted.** Frontend for the Enterprise Captain API. |
-| `app/javascript/dashboard/components-next/captain/` | **Deleted.** Captain UI components (61 of them). |
-| `app/javascript/dashboard/routes/dashboard/captain/` | **Deleted.** |
-| `app/javascript/dashboard/store/captain/` | **Deleted.** |
-| `app/javascript/dashboard/composables/useCaptain.js` | **Stubbed** — returns inactive state |
+| `app/javascript/dashboard/api/pilot/` | **Deleted.** Frontend for the Enterprise Pilot API. |
+| `app/javascript/dashboard/components-next/pilot/` | **Deleted.** Pilot UI components (61 of them). |
+| `app/javascript/dashboard/routes/dashboard/pilot/` | **Deleted.** |
+| `app/javascript/dashboard/store/pilot/` | **Deleted.** |
+| `app/javascript/dashboard/composables/usePilot.js` | **Stubbed** — returns inactive state |
 | `app/javascript/dashboard/composables/useCopilotReply.js` | **Stubbed** |
 | `app/javascript/dashboard/composables/useLabelSuggestions.js` | **Stubbed** |
-| `lib/captain/*` (services like `reply_suggestion_service.rb`) | **Kept** — MIT, will be wrapped by Pilot in Phase 2 |
+| `lib/pilot/*` (services like `reply_suggestion_service.rb`) | **Kept** — MIT, will be wrapped by Pilot in Phase 2 |
 | `custom/app/services/custom/pilot/` | **Doesn't exist yet** — Phase 2 scaffolding goes here |
 
 ---
@@ -263,8 +263,8 @@ custom/
 ### Suggested build order
 
 1. **Briefing** (smallest, contained, daily useful for Migrately-as-customer-zero):
-   - Port `lib/llm/config.rb` + `lib/llm/models.rb` + `config/initializers/ai_agents.rb` from `support.migrately.nl-upgrade`, renaming `CAPTAIN_*` → `PILOT_*`
-   - Add `custom/app/services/custom/pilot/briefing_service.rb` (mirrors `lib/captain/reply_suggestion_service.rb` MIT code, parameterized for Pilot config)
+   - Port `lib/llm/config.rb` + `lib/llm/models.rb` + `config/initializers/ai_agents.rb` from `support.migrately.nl-upgrade`, renaming `PILOT_*` → `PILOT_*`
+   - Add `custom/app/services/custom/pilot/briefing_service.rb` (mirrors `lib/pilot/reply_suggestion_service.rb` MIT code, parameterized for Pilot config)
    - Add an API endpoint `POST /api/v2/konversio/pilot/briefings` that takes a conversation_id and returns a draft
    - Patch Vue composer to show a "Get Briefing" button when `pilot_enabled` on the account
 2. **Copilot** (the chat sidebar — bigger UX work)
@@ -288,13 +288,13 @@ Google Gemini (via proxy).
 relevant commits that should be cherry-picked / re-applied to Konversio:
 
 ```
-GlobalConfigService refactor — Captain config reads env first then DB
+GlobalConfigService refactor — Pilot config reads env first then DB
 OpenAI-compatible provider patches — supports any /v1/chat/completions backend
 embedding_dimensions param — for embedding model truncation (1536-dim pgvector)
 TranslateQueryService model config — language-matching infrastructure
 ```
 
-(Rename `CAPTAIN_*` → `PILOT_*` everywhere as you port. Keep `lib/captain/*`
+(Rename `PILOT_*` → `PILOT_*` everywhere as you port. Keep `lib/pilot/*`
 service files in place for now — Pilot will wrap them, not replace them.)
 
 ---

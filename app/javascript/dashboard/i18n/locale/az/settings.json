@@ -311,15 +311,15 @@
     "ACTIVE": "Aktiv",
     "COMPANIES": "Şirkətlər",
     "ALL_COMPANIES": "Bütün Şirkətlər",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "Köməkçilər",
-    "CAPTAIN_DOCUMENTS": "Sənədlər",
-    "CAPTAIN_RESPONSES": "Tez-tez verilən suallar",
-    "CAPTAIN_TOOLS": "Alətlər",
-    "CAPTAIN_SCENARIOS": "Ssenarilər",
-    "CAPTAIN_PLAYGROUND": "Oyun meydanı",
-    "CAPTAIN_INBOXES": "Gələn qutuları",
-    "CAPTAIN_SETTINGS": "Parametrlər",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "Köməkçilər",
+    "PILOT_DOCUMENTS": "Sənədlər",
+    "PILOT_RESPONSES": "Tez-tez verilən suallar",
+    "PILOT_TOOLS": "Alətlər",
+    "PILOT_SCENARIOS": "Ssenarilər",
+    "PILOT_PLAYGROUND": "Oyun meydanı",
+    "PILOT_INBOXES": "Gələn qutuları",
+    "PILOT_SETTINGS": "Parametrlər",
     "HOME": "Ana səhifə",
     "AGENTS": "Agentlər",
     "AGENT_BOTS": "Botlar",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Sənədləri oxuyun",
     "SECURITY": "Təhlükəsizlik",
-    "CAPTAIN_AI": "Kapitan",
+    "PILOT_AI": "Kapitan",
     "CONVERSATION_WORKFLOW": "Söhbət İş Axını"
   },
-  "CAPTAIN_SETTINGS": {
+  "PILOT_SETTINGS": {
     "TITLE": "Kapitan Ayarları",
     "DESCRIPTION": "Kapitan üçün AI modellərinizi və xüsusiyyətlərinizi konfiqurasiya edin. Kapitan kredit əsaslı ödəniş sistemi ilə işləyir, seçilmiş modelə əsasən Kapitanın hər hərəkəti üçün kreditlər hesablanacaq.",
-    "LOADING": "Captain konfiqurasiyası yüklənir...",
-    "LINK_TEXT": "Captain Krediti haqqında daha çox məlumat əldə edin",
-    "NOT_ENABLED": "Captain hesabınız üçün aktiv deyil. Captain xüsusiyyətlərinə daxil olmaq üçün planınızı yüksəldin.",
+    "LOADING": "Pilot konfiqurasiyası yüklənir...",
+    "LINK_TEXT": "Pilot Krediti haqqında daha çox məlumat əldə edin",
+    "NOT_ENABLED": "Pilot hesabınız üçün aktiv deyil. Pilot xüsusiyyətlərinə daxil olmaq üçün planınızı yüksəldin.",
     "MODEL_CONFIG": {
       "TITLE": "Model Konfiqurasiyası",
       "DESCRIPTION": "Fərqli xüsusiyyətlər üçün AI modellərini seçin.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain parametrləri uğurla yeniləndi.",
-      "ERROR": "Captain parametrlərini yeniləmək alınmadı. Zəhmət olmasa, yenidən cəhd edin."
+      "SUCCESS": "Pilot parametrləri uğurla yeniləndi.",
+      "ERROR": "Pilot parametrlərini yeniləmək alınmadı. Zəhmət olmasa, yenidən cəhd edin."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,7 +447,7 @@
       "DESCRIPTION": "Əvvəlki fakturalarınızı baxın, ödəniş məlumatlarınızı redaktə edin və ya abunəliyinizi ləğv edin.",
       "BUTTON_TXT": "Ödəniş portalına keçin"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "Kapitan",
       "DESCRIPTION": "Kapitan AI üçün istifadə və kreditləri idarə edin.",
       "BUTTON_TXT": "Daha çox kredit alın",
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Daha çox kredit al",
       "MODAL_TITLE": "AI Kreditləri Al",
-      "MODAL_DESCRIPTION": "Captain AI üçün əlavə kreditlər satın alın.",
+      "MODAL_DESCRIPTION": "Pilot AI üçün əlavə kreditlər satın alın.",
       "CREDITS": "KREDİTLƏR",
       "ONE_TIME": "bir dəfəlik",
       "POPULAR": "Ən Populyar",

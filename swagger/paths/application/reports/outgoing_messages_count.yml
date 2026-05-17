@@ -6,7 +6,7 @@ security:
   - userApiKey: []
 description: |
   Get the count of outgoing messages grouped by a specified entity (agent, team, inbox, or label).
-  When grouped by agent, messages sent by bots (AgentBot, Captain::Assistant) are excluded.
+  When grouped by agent, messages sent by bots (AgentBot, Pilot::Assistant) are excluded.
 
   **Note:** This API endpoint is available only in Chatwoot version 4.11.0 and above.
 parameters:

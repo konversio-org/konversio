@@ -311,15 +311,15 @@
     "ACTIVE": "Aktif",
     "COMPANIES": "Syarikat",
     "ALL_COMPANIES": "Semua Syarikat",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "Pembantu",
-    "CAPTAIN_DOCUMENTS": "Dokumen",
-    "CAPTAIN_RESPONSES": "Soalan Lazim",
-    "CAPTAIN_TOOLS": "Alat",
-    "CAPTAIN_SCENARIOS": "Senario",
-    "CAPTAIN_PLAYGROUND": "Padang Permainan",
-    "CAPTAIN_INBOXES": "Petak Masuk",
-    "CAPTAIN_SETTINGS": "Tetapan",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "Pembantu",
+    "PILOT_DOCUMENTS": "Dokumen",
+    "PILOT_RESPONSES": "Soalan Lazim",
+    "PILOT_TOOLS": "Alat",
+    "PILOT_SCENARIOS": "Senario",
+    "PILOT_PLAYGROUND": "Padang Permainan",
+    "PILOT_INBOXES": "Petak Masuk",
+    "PILOT_SETTINGS": "Tetapan",
     "HOME": "Laman Utama",
     "AGENTS": "Ejen",
     "AGENT_BOTS": "Bot",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Baca dokumen",
     "SECURITY": "Keselamatan",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Aliran Kerja Perbualan"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Tetapan Captain",
-    "DESCRIPTION": "Konfigurasikan model AI dan ciri untuk Captain anda. Captain menggunakan pengebilan berasaskan kredit, anda akan dikenakan kredit untuk setiap tindakan yang diambil Captain berdasarkan model yang dipilih.",
-    "LOADING": "Memuatkan konfigurasi Captain...",
-    "LINK_TEXT": "Ketahui lebih lanjut tentang Kredit Captain",
-    "NOT_ENABLED": "Captain tidak diaktifkan untuk akaun anda. Sila naik taraf pelan anda untuk mengakses ciri Captain.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Tetapan Pilot",
+    "DESCRIPTION": "Konfigurasikan model AI dan ciri untuk Pilot anda. Pilot menggunakan pengebilan berasaskan kredit, anda akan dikenakan kredit untuk setiap tindakan yang diambil Pilot berdasarkan model yang dipilih.",
+    "LOADING": "Memuatkan konfigurasi Pilot...",
+    "LINK_TEXT": "Ketahui lebih lanjut tentang Kredit Pilot",
+    "NOT_ENABLED": "Pilot tidak diaktifkan untuk akaun anda. Sila naik taraf pelan anda untuk mengakses ciri Pilot.",
     "MODEL_CONFIG": {
       "TITLE": "Konfigurasi Model",
       "DESCRIPTION": "Pilih model AI untuk ciri yang berbeza.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Tetapan Captain berjaya dikemas kini.",
-      "ERROR": "Gagal mengemas kini tetapan Captain. Sila cuba lagi."
+      "SUCCESS": "Tetapan Pilot berjaya dikemas kini.",
+      "ERROR": "Gagal mengemas kini tetapan Pilot. Sila cuba lagi."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Lihat invois anda sebelum ini, sunting butiran bil anda, atau batalkan langganan anda.",
       "BUTTON_TXT": "Pergi ke portal bil"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Urus penggunaan dan kredit untuk Captain AI.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Urus penggunaan dan kredit untuk Pilot AI.",
       "BUTTON_TXT": "Beli lebih banyak kredit",
       "DOCUMENTS": "Dokumen",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain tidak tersedia dalam pelan percuma, naik taraf sekarang untuk mendapatkan akses kepada pembantu, copilot dan lain-lain.",
+      "UPGRADE": "Pilot tidak tersedia dalam pelan percuma, naik taraf sekarang untuk mendapatkan akses kepada pembantu, copilot dan lain-lain.",
       "REFRESH_CREDITS": "Segarkan"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Beli lebih banyak kredit",
       "MODAL_TITLE": "Beli Kredit AI",
-      "MODAL_DESCRIPTION": "Beli kredit tambahan untuk Captain AI.",
+      "MODAL_DESCRIPTION": "Beli kredit tambahan untuk Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "sekali sahaja",
       "POPULAR": "Paling Popular",

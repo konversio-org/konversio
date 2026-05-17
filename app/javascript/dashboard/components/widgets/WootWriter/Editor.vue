@@ -24,12 +24,11 @@ import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
 import { useTrack } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAlert } from 'dashboard/composables';
-import { vOnClickOutside } from '@vueuse/components';
 
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import {
   CONVERSATION_EVENTS,
-  CAPTAIN_EVENTS,
+  PILOT_EVENTS,
 } from 'dashboard/helper/AnalyticsHelper/events';
 import { MESSAGE_EDITOR_IMAGE_RESIZES } from 'dashboard/constants/editor';
 
@@ -81,7 +80,7 @@ const props = defineProps({
   updateSelectionWith: { type: String, default: '' },
   enableVariables: { type: Boolean, default: false },
   enableCannedResponses: { type: Boolean, default: true },
-  enableCaptainTools: { type: Boolean, default: false },
+  enablePilotTools: { type: Boolean, default: false },
   variables: { type: Object, default: () => ({}) },
   signature: { type: String, default: '' },
   // allowSignature is a kill switch, ensuring no signature methods
@@ -106,7 +105,6 @@ const emit = defineEmits([
   'focus',
   'input',
   'update:modelValue',
-  'executeCopilotAction',
 ]);
 
 const { t } = useI18n();
@@ -206,21 +204,6 @@ const isEditorMenuPopover = computed(
     editorRoot.value?.classList.contains('popover-prosemirror-menu') ?? false
 );
 
-const handleCopilotAction = actionKey => {
-  if (actionKey === 'improve_selection' && editorView?.state) {
-    const { from, to } = editorView.state.selection;
-    const selectedText = editorView.state.doc.textBetween(from, to).trim();
-
-    if (from !== to && selectedText) {
-      emit('executeCopilotAction', 'improve', selectedText);
-    }
-  } else {
-    emit('executeCopilotAction', actionKey, props.modelValue);
-  }
-
-  showSelectionMenu.value = false;
-};
-
 const contentFromEditor = () => {
   return MessageMarkdownSerializer.serialize(editorView.state.doc);
 };
@@ -280,13 +263,13 @@ const plugins = computed(() => {
       trigger: '@',
       showMenu: showToolsMenu,
       searchTerm: toolSearchKey,
-      isAllowed: () => props.enableCaptainTools,
+      isAllowed: () => props.enablePilotTools,
     }),
     createSuggestionPlugin({
       trigger: '@',
       showMenu: showUserMentions,
       searchTerm: mentionSearchKey,
-      isAllowed: () => props.isPrivate || !props.enableCaptainTools,
+      isAllowed: () => props.isPrivate || !props.enablePilotTools,
     }),
     createSuggestionPlugin({
       trigger: '/',
@@ -334,7 +317,7 @@ watch(showVariables, updatedValue => {
   emit('toggleVariablesMenu', !props.isPrivate && updatedValue);
 });
 watch(showToolsMenu, updatedValue => {
-  emit('toggleToolsMenu', props.enableCaptainTools && updatedValue);
+  emit('toggleToolsMenu', props.enablePilotTools && updatedValue);
 });
 
 function focusEditorInputField(pos = 'end') {
@@ -411,18 +394,12 @@ function openFileBrowser() {
 function handleCopilotClick() {
   const isOpening = !showSelectionMenu.value;
   if (isOpening) {
-    useTrack(CAPTAIN_EVENTS.EDITOR_AI_MENU_OPENED, {
+    useTrack(PILOT_EVENTS.EDITOR_AI_MENU_OPENED, {
       conversationId: props.conversationId,
       entryPoint: 'inline',
     });
   }
   showSelectionMenu.value = isOpening;
-}
-
-function handleClickOutside(event) {
-  // Check if the clicked element or its parents have the ignored class
-  if (event.target.closest('.ProseMirror-copilot')) return;
-  showSelectionMenu.value = false;
 }
 
 function reloadState(content = props.modelValue) {

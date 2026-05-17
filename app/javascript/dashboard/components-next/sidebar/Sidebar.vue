@@ -332,8 +332,8 @@ const menuItems = computed(() => {
         },
       ],
     },
-    // Captain sidebar entry removed during the Enterprise strip — the
-    // captain_assistants_* routes no longer exist in this MIT fork. The
+    // Pilot sidebar entry removed during the Enterprise strip — the
+    // pilot_assistants_* routes no longer exist in this MIT fork. The
     // Pilot AI module (custom/app/services/custom/pilot/, openspec/changes/
     // pilot-full) will replace this with a "Pilot" sidebar entry as
     // Copilot/Autopilot/Tools ship.
@@ -531,10 +531,10 @@ const menuItems = computed(() => {
           to: accountScopedRoute('general_settings_index'),
         },
         // {
-        //   name: 'Settings Captain',
-        //   label: t('SIDEBAR.CAPTAIN_AI'),
-        //   icon: 'i-woot-captain',
-        //   to: accountScopedRoute('captain_settings_index'),
+        //   name: 'Settings Pilot',
+        //   label: t('SIDEBAR.PILOT_AI'),
+        //   icon: 'i-woot-pilot',
+        //   to: accountScopedRoute('pilot_settings_index'),
         // },
         {
           name: 'Settings Agents',
