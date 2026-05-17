@@ -7,6 +7,7 @@ ___
 
 The modern customer support platform, an open-source alternative to Intercom, Zendesk, Salesforce Service Cloud etc.
 
+<!-- @TODO: All badges below point at chatwoot/chatwoot (CircleCI, Docker, Crowdin, Discord, status, ArtifactHub). Replace with Konversio-owned equivalents or remove. -->
 <p>
   <img src="https://img.shields.io/circleci/build/github/chatwoot/chatwoot" alt="CircleCI Badge">
     <a href="https://hub.docker.com/r/chatwoot/chatwoot/"><img src="https://img.shields.io/docker/pulls/chatwoot/chatwoot" alt="Docker Pull Badge"></a>
@@ -20,25 +21,23 @@ The modern customer support platform, an open-source alternative to Intercom, Ze
 </p>
 
 
-<p>
-  <a href="https://heroku.com/deploy?template=https://github.com/chatwoot/chatwoot/tree/master" alt="Deploy to Heroku">
-     <img width="150" alt="Deploy" src="https://www.herokucdn.com/deploy/button.svg"/>
-  </a>
-  <a href="https://marketplace.digitalocean.com/apps/chatwoot?refcode=f2238426a2a8" alt="Deploy to DigitalOcean">
-     <img width="200" alt="Deploy to DO" src="https://www.deploytodo.com/do-btn-blue.svg"/>
-  </a>
-</p>
-
+<!-- @TODO: Dashboard screenshots are still Chatwoot's. Swap once Konversio UI diverges visibly. -->
 <img src="./.github/screenshots/dashboard.png#gh-light-mode-only" width="100%" alt="Chat dashboard dark mode"/>
 <img src="./.github/screenshots/dashboard-dark.png#gh-dark-mode-only" width="100%" alt="Chat dashboard"/>
 
 ---
 
-Konversio is the modern, open-source, and self-hosted customer support platform designed to help businesses deliver exceptional customer support experience. Built for scale and flexibility, Konversio gives you full control over your customer data while providing powerful tools to manage conversations across channels.
+## About Konversio
 
-### ✨ Captain – AI Agent for Support
+Konversio is a fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, distributed under the MIT license. We've forked only the MIT-licensed core — Chatwoot's Enterprise overlay (including **Captain AI**) is not included or redistributed.
 
-Supercharge your support with Captain, Konversio’s AI agent. Captain helps automate responses, handle common queries, and reduce agent workload—ensuring customers get instant, accurate answers. With Captain, your team can focus on complex conversations while routine questions are resolved automatically. Read more about Captain [here](https://chwt.app/captain-docs).
+On top of this foundation we're building **Pilot**, a fully open-source AI layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). If AI was your only reason for considering Chatwoot Enterprise, Pilot removes that need. *(Pilot does not replicate other Enterprise features such as SSO or advanced role management.)*
+
+Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-processor** — you control where data lives and which providers touch it. This makes Konversio a suitable building block for **EU-sovereign, GDPR-compliant deployments**. The software enables compliance; the deployment achieves it.
+
+### ✨ Pilot – Open-Source BYOK AI Layer
+
+Pilot is Konversio's open-source AI layer for customer support — the open alternative to closed AI add-ons. Pilot is **bring-your-own-key**: you supply credentials for OpenAI, Anthropic, Mistral, or point it at a local model via Ollama. No customer data is routed through a vendor's AI sub-processor, making Pilot a fit for EU-sovereign deployments and regulated industries.
 
 ### 💬 Omnichannel Support Desk
 
@@ -85,10 +84,7 @@ Publish help articles, FAQs, and guides through the built-in Help Center Portal.
 - Downloadable Reports for offline analysis and reporting.
 
 
-## Documentation
-
-Detailed documentation is available at [chatwoot.com/help-center](https://www.chatwoot.com/help-center).
-
+<!-- @TODO: Points at Chatwoot's Crowdin. Honest only if Konversio upstreams translation contributions — otherwise replace with Konversio's own process or remove. -->
 ## Translation process
 
 The translation process for Konversio web and mobile app is managed at [https://translate.chatwoot.com](https://translate.chatwoot.com) using Crowdin. Please read the [translation guide](https://www.chatwoot.com/docs/contributing/translating-chatwoot-to-your-language) for contributing to Konversio.
@@ -98,29 +94,7 @@ The translation process for Konversio web and mobile app is managed at [https://
 We use the [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The base branch is `develop`.
 If you are looking for a stable version, please use the `master` or tags labelled as `v1.x.x`.
 
-## Deployment
-
-### Heroku one-click deploy
-
-Deploying Konversio to Heroku is a breeze. It's as simple as clicking this button:
-
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/chatwoot/chatwoot/tree/master)
-
-Follow this [link](https://www.chatwoot.com/docs/environment-variables) to understand setting the correct environment variables for the app to work with all the features. There might be breakages if you do not set the relevant environment variables.
-
-
-### DigitalOcean 1-Click Kubernetes deployment
-
-Konversio now supports 1-Click deployment to DigitalOcean as a kubernetes app.
-
-<a href="https://marketplace.digitalocean.com/apps/chatwoot?refcode=f2238426a2a8" alt="Deploy to DigitalOcean">
-  <img width="200" alt="Deploy to DO" src="https://www.deploytodo.com/do-btn-blue.svg"/>
-</a>
-
-### Other deployment options
-
-For other supported options, checkout our [deployment page](https://chatwoot.com/deploy).
-
+<!-- @TODO: Verify SECURITY.md — likely still routes vulnerability reports to security@chatwoot.com. Update to a Konversio contact. -->
 ## Security
 
 Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
@@ -129,11 +103,13 @@ Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md)
 
 If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/cJXdrwS) server.
 
-## Contributors
+<!-- @TODO: Verify ./LICENSE actually contains Chatwoot's MIT copyright notice. If it was stripped during the fork, restore it — required for MIT compliance. -->
+## Attribution & Contributors
 
-Thanks goes to all these [wonderful people](https://www.chatwoot.com/docs/contributors):
+Konversio is built on the work of the [Chatwoot](https://github.com/chatwoot/chatwoot) team and its [wonderful contributors](https://www.chatwoot.com/docs/contributors). Original Chatwoot copyright and MIT license terms are preserved in [`LICENSE`](./LICENSE).
 
 <a href="https://github.com/chatwoot/chatwoot/graphs/contributors"><img src="https://opencollective.com/chatwoot/contributors.svg?width=890&button=false" /></a>
 
 
-*Konversio* &copy; 2017-2026, Konversio Inc - Released under the MIT License.
+*Chatwoot* &copy; 2017–2025, Chatwoot Inc — MIT License.
+*Konversio* &copy; 2025–2026, Konversio Inc — MIT License (Pilot and other original code).
