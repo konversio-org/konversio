@@ -935,6 +935,11 @@ export default {
     executeCopilotAction(action, data) {
       this.copilot.execute(action, data);
     },
+    onBriefingDraft(draft) {
+      if (!draft) return;
+      this.message = draft;
+      this.onFocus();
+    },
     clearMessage() {
       this.message = '';
       this.clearCopilotAcceptedMessage();
@@ -1242,6 +1247,7 @@ export default {
       @toggle-editor-size="toggleEditorSize"
       @toggle-copilot="copilot.toggleEditor"
       @execute-copilot-action="executeCopilotAction"
+      @briefing-draft="onBriefingDraft"
     />
     <ArticleSearchPopover
       v-if="showArticleSearchPopover && connectedPortalSlug"
