@@ -45,6 +45,11 @@ if (isLibraryMode) {
 export default defineConfig({
   plugins: plugins,
   server: {
+    // Vite 5 default-denies requests whose Host header isn't on this
+    // allowlist. Inside docker compose, Rails proxies to http://vite:3036
+    // so the Host header reaches Vite as "vite". Localhost is the host
+    // header when the browser hits Vite directly on the published port.
+    allowedHosts: ['vite', 'localhost'],
     watch: {
       usePolling: true,
       interval: 1000,
