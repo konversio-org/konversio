@@ -144,14 +144,14 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
       <textarea
         v-model="draft"
         rows="5"
-        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+        class="w-full resize-none !outline-none !border-0 !bg-transparent !p-0 !mb-0 !h-auto text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
         :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
       />
       <hr class="my-2 border-t border-n-iris-7" />
       <textarea
         v-model="refinement"
         rows="2"
-        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+        class="w-full resize-none !outline-none !border-0 !bg-transparent !p-0 !mb-0 !h-auto text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
         :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
         @keydown="onRefinementKeydown"
       />
