@@ -11,6 +11,7 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
 import { emitter } from 'shared/helpers/mitt';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
+import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 
 const props = defineProps({
   conversationId: {
@@ -27,7 +28,13 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['draft', 'summary', 'followUp', 'rewrite']);
+const emit = defineEmits([
+  'draft',
+  'summary',
+  'followUp',
+  'rewrite',
+  'requestReplyMode',
+]);
 
 const { t } = useI18n();
 const { currentAccount } = useAccount();
@@ -83,11 +90,11 @@ const actions = computed(() => {
       handler: async () => {
         const result = await summary.generate(props.conversationId);
         if (!result) return;
-        // Insert into the composer as a draft (mirrors how Copilot's
-        // "Use this response" hands text back). The rich editor parses
-        // the markdown so the agent can edit, switch to Private Note,
-        // and send. INSERT_INTO_RICH_EDITOR covers Website/Email channels
-        // — plain-text channels never reach Pilot today.
+        // Summary is an INTERNAL artefact — auto-switch to Private Note
+        // so the agent can't accidentally send the summary to the
+        // customer. Then insert the markdown into the composer; the
+        // ProseMirror editor parses it into rich text.
+        emit('requestReplyMode', REPLY_EDITOR_MODES.NOTE);
         emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, result);
         emit('summary', result);
       },

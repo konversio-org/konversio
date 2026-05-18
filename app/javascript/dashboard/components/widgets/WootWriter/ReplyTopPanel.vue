@@ -48,7 +48,7 @@ export default {
       default: undefined,
     },
   },
-  emits: ['setReplyMode', 'toggleEditorSize', 'briefingDraft'],
+  emits: ['setReplyMode', 'briefingDraft'],
   setup(props, { emit }) {
     const setReplyMode = mode => {
       emit('setReplyMode', mode);
@@ -127,10 +127,13 @@ export default {
         </span>
       </div>
     </div>
+    <!-- Pilot AI actions: sparkle menu (briefing, summary, follow-up, rewrite) -->
     <PilotActionsMenu
       :conversation-id="conversationId"
+      :editor-content="editorContent"
       :disabled="disabled || isEditorDisabled"
       @draft="payload => $emit('briefingDraft', payload)"
+      @request-reply-mode="setReplyMode"
     />
   </div>
 </template>
