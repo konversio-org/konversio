@@ -4,10 +4,11 @@ Snapshot of project state, conventions, and where to pick up next. Companion
 to `_KONVERSIO/README.md` (which is the "what + why"); this doc is the
 "how, where, and what's next."
 
-Current state: `main` at tag **`v0.2.0-konversio-base`** —
-MIT fork of Chatwoot v4.13.0, branded as Konversio, deployed at
-https://konversio.migrately.nl, with end-to-end inbound mail working via
-Resend. **No AI module yet** — that's Phase 2.
+Current state: working branch `purge-captain` (not yet merged to `main`)
+— MIT fork of Chatwoot v4.13.0, branded as Konversio, deployed base at
+https://konversio.migrately.nl. **Phase 2 (Pilot AI module) is now ~70%
+built and verified end-to-end against OpenAI / Scaleway.** See
+"Phase 2 status (May 2026)" below for the full state.
 
 ---
 
@@ -245,57 +246,198 @@ sender's MUA
 
 ---
 
-## What's NOT done (Phase 2 = Pilot AI module)
+## Phase 2 status (May 2026)
 
-Per the locked-in plan in `_KONVERSIO/README.md`, the AI layer lives in:
+The mega-proposal at `openspec/changes/pilot-full/` defines 10
+sub-features. As of the last working session on `purge-captain`:
 
-```
-custom/
-└── app/services/custom/pilot/
-    ├── pilot_service.rb          base class, LLM routing
-    ├── briefing_service.rb       one-click reply draft (start here)
-    ├── copilot/                  agent-side chat sidebar
-    ├── autopilot/                customer-facing chatbot
-    ├── logbook/                  per-contact memory
-    └── tools/                    pluggable tool framework
-```
+### Working end-to-end (verified via Chrome MCP + rails runner)
 
-### Suggested build order
+| Sub-feature | What it does | Surface |
+|---|---|---|
+| **Foundation** | env-first `PILOT_*` config, OpenAI-compatible routing, embedding dim control | `lib/llm/config.rb`, `lib/global_config_service.rb` |
+| **Copilot** | agent-side chat drawer with persistent threads + ai-agents SDK runner + 4 in-process tools (search_conversation, get_conversation, get_contact, search_documentation) | Dashboard sidebar drawer |
+| **Briefing** | one-click reply draft → fills composer in Reply mode | Sparkle dropdown |
+| **Autopilot** | customer-facing chatbot: vector KB retrieval, typing indicator, handover flow, status-lifecycle gating, multilingual | Chat widget |
+| **Summary** | conversation summary → fills composer in **Private Note** mode (auto-switch, footgun-safe) | Sparkle dropdown |
+| **Follow-up** | 1-3 clarifying questions for the agent | Sparkle dropdown (API works; UI emit currently → void) |
+| **Rewrite** | rewrites composer draft in friendly tone | Sparkle dropdown (whole-draft only, no selection toolbar yet) |
+| **CSAT analysis** | background job: sentiment / themes / escalation flag on free-text CSAT comment | `pilot_csat_analysis_enabled` |
+| **Label suggestion** | background job: populates `conversation.suggested_label_ids` on conversation create | `pilot_label_suggestion_enabled` |
 
-1. **Briefing** (smallest, contained, daily useful for Migrately-as-customer-zero):
-   - Port `lib/llm/config.rb` + `lib/llm/models.rb` + `config/initializers/ai_agents.rb` from `support.migrately.nl-upgrade`, renaming `PILOT_*` → `PILOT_*`
-   - Add `custom/app/services/custom/pilot/briefing_service.rb` (mirrors `lib/pilot/reply_suggestion_service.rb` MIT code, parameterized for Pilot config)
-   - Add an API endpoint `POST /api/v2/konversio/pilot/briefings` that takes a conversation_id and returns a draft
-   - Patch Vue composer to show a "Get Briefing" button when `pilot_enabled` on the account
-2. **Copilot** (the chat sidebar — bigger UX work)
-3. **Logbook** (per-contact memory — needs DB schema + extraction job)
-4. **Autopilot** (customer-facing — biggest, needs Agent Bot pattern + handover logic)
-5. **Tools framework** (pluggable, do once Autopilot exists since that's the main consumer)
+### Built but not user-visible
 
-### Validated LLM provider for EU residency
+- **SuggestedLabelChips.vue** — exists, not mounted above label selector.
+- **RewriteToolbar.vue** floating selection-based — exists in tree but not mounted; ProseMirror hook needed for the selection version.
+- **FollowUp result handler** — emit goes to void; needs ReplyTopPanel listener to insert as chips.
+- **CSAT report aggregation view** — schema columns ready (`pilot_sentiment`, `pilot_themes`, `pilot_escalation_recommended`), no UI card.
 
-**Scaleway + Mistral Small 3.2 24B** verified in the other fork during this
-session — 0.5s LLM round-trip, ~0.95s end-to-end, fluent Dutch, no prompt
-hacks needed. Recommended as Pilot's EU-first default.
+### Not started
 
-Alternative providers (all OpenAI-compatible, all tested in the other fork):
-Nebius, Mistral La Plateforme, Groq, Ollama (local), Anthropic (via proxy),
-Google Gemini (via proxy).
+| Section | Description |
+|---|---|
+| **4 controllers + admin UI** | Assistants/Documents/Scenarios/Responses CRUD endpoints + dashboard sidebar group. Everything still done via rails console today. |
+| **5 Logbook** | Per-contact persistent memory, extraction job, injection into Briefing/Copilot/Autopilot context |
+| **6 Tools** | Pluggable HTTP tool framework for Autopilot custom tools |
+| **7 Telemetry** | `pilot_events` table, activity log view, sensitive-payload redaction. Note: event dispatch (`dispatch_event(:foo)`) is already plumbed everywhere; just needs a persister. |
+| **8 Onboarding** | First-time admin wizard with provider config + connection test |
+| **9 Autoresolve** | Scheduled job to auto-resolve idle Autopilot conversations |
 
-### Source patches to port
+### Validated providers
 
-`support.migrately.nl-upgrade` (the user's other Chatwoot fork) has these
-relevant commits that should be cherry-picked / re-applied to Konversio:
+- **OpenAI** — `gpt-4o-mini` + `text-embedding-3-small` is the current dev default. Set via `PILOT_OPEN_AI_API_KEY` / `PILOT_OPEN_AI_MODEL` / `PILOT_EMBEDDING_MODEL`.
+- **Scaleway + Mistral Small 3.2 24B** — EU-residency option, verified working in earlier session. Use `PILOT_OPEN_AI_API_PROVIDER=openai_compatible` + Scaleway endpoint.
 
-```
-GlobalConfigService refactor — Pilot config reads env first then DB
-OpenAI-compatible provider patches — supports any /v1/chat/completions backend
-embedding_dimensions param — for embedding model truncation (1536-dim pgvector)
-TranslateQueryService model config — language-matching infrastructure
-```
+### Demo flow that works today
 
-(Rename `PILOT_*` → `PILOT_*` everywhere as you port. Keep `lib/pilot/*`
-service files in place for now — Pilot will wrap them, not replace them.)
+1. Open `http://localhost:3000/widget?website_token=<token>` → type "When are you open?" → bot answers from KB
+2. Type "I want to speak to a human" → bot says "Transferring..." → conversation status → `pending` → bot stops responding (no loop)
+3. Login at `/app/accounts/1/conversations` → open the conversation → click sparkle → Summarize → composer switches to Private Note + markdown summary lands
+4. Multi-turn agent-side: click Pilot icon in sidebar → Copilot drawer opens → "How many open conversations?" → bot calls `search_conversation` tool → answers with real data
+
+### Branch state
+
+- **`main`** — last released; doesn't have Phase 2.
+- **`purge-captain`** — current working branch, all Phase 2 commits. Not yet rebased/merged to main. Recommend tagging `v0.3.0-pilot-mvp` and merging once the next round of UI mount work is done (Section 10 follow-ups + Section 4 admin UI).
+
+---
+
+## Dev-infra lessons from Phase 2 sessions (read before changing Vue/JS!)
+
+Konversio's Docker + Vite + Rails dev stack is fragile in ways that
+upstream Chatwoot mostly ignores. These cost real hours in past sessions;
+read them before you change Vite config or spawn an agent that smoke-tests
+in the browser.
+
+### 1. The three Vite knobs that must agree
+
+| Setting | File | Wrong value → what breaks |
+|---|---|---|
+| `host` | `config/vite.json` | Default `::1` → Rails container can't reach Vite. Must be `0.0.0.0`. |
+| `autoBuild` | `config/vite.json` | `true` → Rails inline-compiles on cold widget loads → ENOMEM crash; `false` → manifest must exist, else 404 cascade on all assets. We run with `false`. |
+| `usePolling` | `vite.config.ts` server.watch | macOS bind mounts don't fire native fs events into Linux containers, so the watcher must poll. Also `CHOKIDAR_USEPOLLING=true` env var as belt-and-suspenders. |
+
+### 2. Manifest drift between Rails ↔ Vite
+
+Rails reads `public/vite-dev/.vite/manifest.json` **once at boot** and caches
+it. Vite rebuilds produce new chunk hashes (e.g. `dashboard-CpUZs8i0.js`).
+Rails keeps serving HTML with old hash references → 404 cascade.
+
+**Recovery**: after any Vite full rebuild, also `docker compose restart rails`
+so it re-reads the manifest. The polling-watcher setup (lesson 1) avoids
+needing manual `bin/vite build` for incremental edits, but the FIRST
+build after a clean state still needs the Rails restart.
+
+### 3. HMR is not magical
+
+Vite's HMR pushes updated modules to connected browsers, but:
+- **Template-only edits** (text, styles, simple bindings) → HMR works clean.
+- **Parent passing new listener/prop to child** (e.g. `@new-event="handler"` on a child mount) → HMR pushes the updated source, but the *mounted Vue vnode props* on the live instance can stay stale. Bug we hit: `onRequestReplyMode` was in compiled source but `inst.vnode.props` on the mounted PilotActionsMenu didn't include it.
+
+**Test**: `inst.vnode.props` via Chrome MCP `evaluate_script` walking up from a DOM element. If listeners are missing, HMR didn't fully apply.
+
+**Recovery**: hard refresh (Cmd+Shift+R), or close-and-reopen tab. Browser navigation between routes ≠ full reload — Vue keeps modules in memory.
+
+### 4. The `vite_javascript_tag` chdir bug → connection pool exhaustion
+
+`vite_javascript_tag` does `Dir.chdir` to read the manifest. **Not thread-safe.**
+With multiple Puma threads + concurrent widget requests, the chdir race
+throws, the template render aborts, and the AR connection that was checked
+out for the request never gets returned. After ~5 cascading failures,
+every new request times out at 5s with `ConnectionTimeoutError` — looks
+like Rails has hung but it's really pool exhaustion from leaked connections.
+
+**Fix in `purge-captain`**: `config/database.yml` pool = `RAILS_MAX_THREADS * 2`,
+plus Puma `before_fork` / `on_worker_boot` hooks that disconnect+reestablish.
+
+### 5. Two different `getCurrentAccount` getters
+
+| Getter | Returns |
+|---|---|
+| `useMapGetter('getCurrentAccount')` | Agent's account-**membership** stub (id, name, role) — NO `pilot_*` flags |
+| `useMapGetter('accounts/getAccount')(accountId)` | Full account JSON including `pilot_*` flags |
+| `useAccount()` composable | Wraps the above — **canonical**, use this |
+
+Using the wrong getter compiles fine, runs without error, and silently
+evaluates feature gates to `false`. Bug hit: SummarizeButton used the
+wrong one, popover never rendered despite all flags being true.
+
+**Rule**: always use `useAccount()` for `pilot_*` flag checks.
+
+### 6. Worktree agents work off stale base
+
+When you spawn an agent with `isolation: "worktree"`, the worktree branch
+is created off `purge-captain`'s **current HEAD at spawn time**. If commits
+land on `purge-captain` after the agent starts, the worktree is stale.
+
+Hit this 4 times across agents that needed to smoke-test in the running
+container — Docker mounts the **main repo path**, not the worktree path, so
+the agent has to either:
+- Mirror its files to the main repo to test (then revert main on completion), or
+- Skip live testing, leave changes uncommitted on worktree, accept that
+  the reviewer needs to copy files to main + verify.
+
+The Section 4 backend agent + Summary-mount agent both did the mirror
+approach. Both got it right but explained the maneuver in their reports.
+
+**Rule for prompts**: if an agent needs to smoke-test in browser/Docker,
+explicitly tell it Docker mounts main, not the worktree, and that it
+should mirror to main for the test phase.
+
+### 7. The lint-staged catch-22
+
+`git add foo.vue` → husky pre-commit → eslint on staged files → catches
+**pre-existing** lint errors in `foo.vue` from prior contributors → commit
+rejected.
+
+Hit this twice. Common pre-existing errors:
+- Unused emit declarations (`emits: ['toggleEditorSize', ...]` but never `emit('toggleEditorSize')`)
+- Unused props
+- Trailing newlines / prettier formatting drift
+
+**Rule**: when touching a file, expect to fix unrelated lint in the same
+commit. Or do a separate `chore: fix lint` commit first if it's
+substantial.
+
+### 8. Cache layers, in order of depth
+
+When something behaves "stale" in dev mode, peel back in order:
+
+1. Browser HTTP cache → Cmd+Shift+R
+2. Vue HMR module cache → close+reopen tab
+3. Vite transform cache (in-memory) → `docker compose restart vite`
+4. `node_modules/.vite/deps/` → `rm -rf node_modules/.vite && restart`
+5. `tmp/cache/vite/last-build-development.json` → `rm` (vite_ruby uses this to decide "skip build")
+6. `public/vite-dev/` (the built output Rails serves) → `rm -rf && bin/vite build`
+7. Full `docker compose down && up` → nuclear
+
+90% of dev-mode weirdness clears at level 1-2.
+
+### 9. Vue 3 emit name normalization (compiler-level)
+
+When child does `emit('requestReplyMode', val)`, the parent listens via
+template attribute `@request-reply-mode="..."`. Vue's compiler converts
+this to `onRequestReplyMode` prop on the rendered child vnode.
+
+If you grep compiled output for `request-reply-mode`, you'll find only
+source-map text. The actual wiring is `onRequestReplyMode` (camelCase
+with `on` prefix). Inspecting `inst.vnode.props` shows `onRequestReplyMode`.
+
+**Rule**: when verifying "is my event listener actually wired in compiled
+output?", grep for `on<EventName>` (camelCase, `on`-prefixed), not the
+kebab-case template attribute.
+
+### 10. Pre-existing Chatwoot quirks (not our fault, but ignore them)
+
+These show up in console / logs but are upstream Chatwoot dev-mode issues:
+
+- `Multiple versions of Lit loaded` — webcomponent dedup issue upstream
+- `POST .../widget/conversations/toggle_typing 404` on every keystroke before first message — controller `before_action :render_not_found_if_empty` bails when no conversation exists. We replaced the 404 with a silent 200 no-op for `toggle_typing` specifically.
+- `chdir` warnings under load — see lesson 4
+- `[@vue/compiler-sfc] ::v-deep usage as a combinator has been deprecated` — upstream component CSS
+
+**Rule**: don't chase these in your session. File them as "pre-existing
+upstream noise" and move on.
 
 ---
 
@@ -313,11 +455,37 @@ service files in place for now — Pilot will wrap them, not replace them.)
 ## How to pick up this work in a future session
 
 1. `cd /Users/rcoenen/Dev/Konversio`
-2. `git fetch origin && git checkout main && git pull`
-3. Read this file. Then `_KONVERSIO/README.md`.
-4. Confirm naming model in your head: **Konversio = product, Pilot = AI feature (future).**
-5. If working on Phase 2: start with Briefing (smallest, contained, daily useful).
-6. If working on infra: see "Followups" above.
-7. Pre-deploy: always run `bundle exec rails assets:precompile` locally before pushing to Heroku.
-8. Commits: Conventional Commits format. Don't mention Claude in messages.
-9. Pushes: `git push origin main` (GitHub) THEN `git push heroku main` (deploy).
+2. `git fetch origin && git checkout purge-captain && git pull` (NOT main — Phase 2 lives on `purge-captain` until it's tagged and merged)
+3. Read this file end-to-end. Especially "Phase 2 status" and "Dev-infra lessons".
+4. Confirm the naming model: **Konversio = product, Pilot = AI module, Copilot/Autopilot/Briefing/Summary/etc = sub-features inside Pilot.** Do not flip them.
+5. Bring up the stack: `docker compose up -d` then `until curl -fs http://localhost:3000/app/login >/dev/null; do sleep 2; done`. The full set is `postgres, redis, rails, sidekiq, vite, mailhog, base`.
+6. Smoke-test a known-good feature first to confirm your environment isn't broken before touching code: open `http://localhost:3000/widget?website_token=<token>` (find token via `rails runner "puts Account.first.inboxes.first.channel.website_token"`), type "what are your hours?", expect a Pilot Autopilot reply in ~5s.
+
+### If you're picking up Phase 2
+
+The natural next chunks, in rough priority order:
+
+| Chunk | Why | Size |
+|---|---|---|
+| **Section 10 follow-ups** (mount FollowUpSuggestionsButton + RewriteToolbar selection-based + SuggestedLabelChips + CSAT report card) | Surface work that's already-built backend | Half-day each |
+| **Section 4 admin UI** (controllers + Vue components for Assistants/Documents/Scenarios CRUD) | Removes the "manage from rails console only" limitation | Multi-day |
+| **Section 7 Telemetry** (`pilot_events` persister + activity log view) | All events are dispatched already; just need a persister + read view. High value for debugging Pilot in production. | Half-day |
+| **Section 5 Logbook** | Per-contact memory injected into all bots — biggest UX leap | Multi-day |
+| **Section 6 Tools** | Pluggable HTTP tools for Autopilot | Multi-day |
+| **Section 8 Onboarding wizard** | First-time admin setup | Day |
+| **Section 9 Autoresolve** | Scheduled job, small surface | Half-day |
+
+### Commit/deploy discipline
+
+- Conventional Commits (`feat(pilot-*)`, `fix(dev)`, `chore(brand)`).
+- Don't mention Claude in messages.
+- Pre-deploy: `bundle exec rails assets:precompile` locally before pushing to Heroku (catches most build errors). With the live-HMR polling now in place this is rarely needed during dev itself.
+- Pushes: `git push origin purge-captain` for now. Tag + merge to `main` (`git push heroku main`) only once the next round is stable and you want it on prod.
+
+### Spawning agents
+
+When you spawn agents for Phase 2 work:
+- Use `isolation: "worktree"` for clean isolation.
+- **Brief them that Docker mounts the main repo, not the worktree.** If they need to smoke-test, they must mirror files to the main repo and revert after.
+- Tell them the latest commit on the base they're targeting, so they can verify they have it (multiple agents hit "stale base" issue).
+- Include "use Chrome MCP for browser verification, not just rails-runner smoke tests" when UI is involved — pure backend tests miss surface-wiring bugs.
