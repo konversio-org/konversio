@@ -409,7 +409,8 @@
       "BUTTON_LABEL": "Suggest follow-up",
       "LOADING": "Thinking…",
       "ERROR": "Could not fetch suggestions. Please try again.",
-      "POPOVER_TITLE": "Clarifying questions",
+      "POPOVER_TITLE": "Pick a follow-up to ask",
+      "EMPTY": "No suggestions right now — try again after the customer replies.",
       "INSERT": "Insert"
     },
     "REWRITE": {
