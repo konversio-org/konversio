@@ -15,6 +15,7 @@ import ReplyBottomPanel from 'dashboard/components/widgets/WootWriter/ReplyBotto
 import CopilotReplyBottomPanel from 'dashboard/components/widgets/WootWriter/CopilotReplyBottomPanel.vue';
 import ArticleSearchPopover from 'dashboard/routes/dashboard/helpcenter/components/ArticleSearch/SearchPopover.vue';
 import CopilotEditorSection from './CopilotEditorSection.vue';
+import PilotPreviewPanel from 'dashboard/components-next/pilot/PilotPreviewPanel.vue';
 import MessageSignatureMissingAlert from './MessageSignatureMissingAlert.vue';
 import ReplyBoxBanner from './ReplyBoxBanner.vue';
 import QuotedEmailPreview from './QuotedEmailPreview.vue';
@@ -78,6 +79,7 @@ export default {
     WhatsappTemplates,
     WootMessageEditor,
     QuotedEmailPreview,
+    PilotPreviewPanel,
     CopilotEditorSection,
     CopilotReplyBottomPanel,
   },
@@ -138,6 +140,12 @@ export default {
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
       copilotAcceptedMessages: {},
+      // In-composer preview state for one-shot Pilot actions (Suggest a
+      // reply, Summarize). When non-null, PilotPreviewPanel replaces
+      // the WootMessageEditor; Accept inserts content + closes, Dismiss
+      // just closes. Mirrors Chatwoot Enterprise Captain's editor-swap
+      // UX, conceptually.
+      pilotPreview: null,
     };
   },
   computed: {
@@ -519,6 +527,14 @@ export default {
     );
     emitter.on(BUS_EVENTS.INSERT_INTO_NORMAL_EDITOR, this.addIntoEditor);
     emitter.on(CMD_AI_ASSIST, this.executeCopilotAction);
+
+    // Pilot in-composer preview lifecycle. PilotActionsMenu fires
+    // START → READY/ERROR; ReplyBox renders the swap panel based on
+    // the resulting state. Close (Accept/Dismiss) happens via direct
+    // Vue events between PilotPreviewPanel and this component.
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_START, this.onPilotPreviewStart);
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_READY, this.onPilotPreviewReady);
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_ERROR, this.onPilotPreviewError);
   },
   unmounted() {
     document.removeEventListener('paste', this.onPaste);
@@ -530,6 +546,9 @@ export default {
       this.onNewConversationModalActive
     );
     emitter.off(CMD_AI_ASSIST, this.executeCopilotAction);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_START, this.onPilotPreviewStart);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_READY, this.onPilotPreviewReady);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_ERROR, this.onPilotPreviewError);
   },
   methods: {
     getDraftKey(
@@ -950,6 +969,51 @@ export default {
       this.message = draft;
       this.onFocus();
     },
+    onPilotPreviewStart({ actionKey, targetMode }) {
+      this.pilotPreview = {
+        actionKey,
+        targetMode,
+        content: '',
+        isGenerating: true,
+        errorMessage: '',
+      };
+    },
+    onPilotPreviewReady({ content }) {
+      if (!this.pilotPreview) return;
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        content,
+        isGenerating: false,
+        errorMessage: '',
+      };
+    },
+    onPilotPreviewError({ errorMessage }) {
+      if (!this.pilotPreview) return;
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        isGenerating: false,
+        errorMessage: errorMessage || '',
+      };
+    },
+    onPilotPreviewAccept(editedContent) {
+      if (!this.pilotPreview) return;
+      const target = this.pilotPreview.targetMode;
+      // Close the panel first so the WootMessageEditor for the target
+      // mode is mounted and listening to INSERT_INTO_RICH_EDITOR before
+      // the bus emit fires.
+      this.pilotPreview = null;
+      this.setReplyMode(target);
+      // Wait for the replyType watcher to swap drafts (briefing fix
+      // db1010c88 documents the same race), then insert via callback —
+      // lint rule vue/next-tick-style requires callback over await.
+      this.$nextTick(() => {
+        emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, editedContent);
+        this.onFocus();
+      });
+    },
+    onPilotPreviewDismiss() {
+      this.pilotPreview = null;
+    },
     clearMessage() {
       this.message = '';
       this.clearCopilotAcceptedMessage();
@@ -1302,8 +1366,17 @@ export default {
           @play="recordingAudioState = 'playing'"
           @pause="recordingAudioState = 'paused'"
         />
+        <PilotPreviewPanel
+          v-if="pilotPreview && !showAudioRecorderEditor"
+          :action-key="pilotPreview.actionKey"
+          :is-generating="pilotPreview.isGenerating"
+          :initial-content="pilotPreview.content"
+          :error-message="pilotPreview.errorMessage"
+          @accept="onPilotPreviewAccept"
+          @dismiss="onPilotPreviewDismiss"
+        />
         <CopilotEditorSection
-          v-if="copilot.isActive.value && !showAudioRecorderEditor"
+          v-else-if="copilot.isActive.value && !showAudioRecorderEditor"
           :show-copilot-editor="copilot.showEditor.value"
           :is-generating-content="copilot.isGenerating.value"
           :generated-content="copilot.generatedContent.value"
