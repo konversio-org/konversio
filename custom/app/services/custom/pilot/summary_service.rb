@@ -12,10 +12,12 @@ module Custom
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
 
-      attr_reader :conversation
+      attr_reader :conversation, :previous_output, :refinement_instruction
 
-      def initialize(conversation:, account: nil)
+      def initialize(conversation:, account: nil, previous_output: nil, refinement_instruction: nil)
         @conversation = conversation
+        @previous_output = previous_output
+        @refinement_instruction = refinement_instruction
         super(account: account || conversation&.account)
       end
 
@@ -26,7 +28,9 @@ module Custom
 
         response = ::Pilot::SummaryService.new(
           account: account,
-          conversation_display_id: conversation.display_id
+          conversation_display_id: conversation.display_id,
+          previous_output: previous_output,
+          refinement_instruction: refinement_instruction
         ).perform
 
         raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?

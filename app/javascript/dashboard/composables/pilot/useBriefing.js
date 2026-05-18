@@ -1,30 +1,33 @@
 import { ref } from 'vue';
 import { useMapGetter } from 'dashboard/composables/store';
-import PilotSummariesAPI from 'dashboard/api/pilot/summaries';
+import PilotBriefingsAPI from 'dashboard/api/pilot/briefings';
 
 /**
- * Pilot Summary composable.
+ * Pilot Briefing composable.
  *
- * Wraps the `POST /api/v2/accounts/:id/pilot/summaries` endpoint and
- * exposes reactive `loading`, `error`, and `summary` state plus a
+ * Wraps the `POST /api/v2/accounts/:id/pilot/briefings` endpoint and
+ * exposes reactive `loading`, `error`, and `draft` state plus a
  * `generate(conversationId)` action.
+ *
+ * The composer can read `briefingEnabled` directly to decide whether to
+ * render the button.
  */
-export function useSummary() {
+export function useBriefing() {
   const currentAccount = useMapGetter('getCurrentAccount');
 
   const loading = ref(false);
   const error = ref(null);
-  const summary = ref(null);
+  const draft = ref(null);
 
-  const summaryEnabled = () => {
+  const briefingEnabled = () => {
     const account = currentAccount.value || {};
-    return Boolean(account.pilot_enabled && account.pilot_summary_enabled);
+    return Boolean(account.pilot_enabled && account.pilot_briefing_enabled);
   };
 
   const reset = () => {
     loading.value = false;
     error.value = null;
-    summary.value = null;
+    draft.value = null;
   };
 
   const generate = async (conversationId, opts = {}) => {
@@ -32,17 +35,17 @@ export function useSummary() {
 
     loading.value = true;
     error.value = null;
-    summary.value = null;
+    draft.value = null;
 
     try {
-      const response = await PilotSummariesAPI.generate(conversationId, opts);
-      summary.value = response?.data?.summary || '';
-      return summary.value;
+      const response = await PilotBriefingsAPI.generate(conversationId, opts);
+      draft.value = response?.data?.draft || '';
+      return draft.value;
     } catch (err) {
       const message =
         err?.response?.data?.error ||
         err?.message ||
-        'Failed to generate summary';
+        'Failed to generate briefing';
       error.value = message;
       return null;
     } finally {
@@ -53,8 +56,8 @@ export function useSummary() {
   return {
     loading,
     error,
-    summary,
-    summaryEnabled,
+    draft,
+    briefingEnabled,
     generate,
     reset,
   };

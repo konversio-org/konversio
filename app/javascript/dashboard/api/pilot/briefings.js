@@ -1,9 +1,9 @@
 /* global axios */
 import ApiClient from '../ApiClient';
 
-class PilotSummariesAPI extends ApiClient {
+class PilotBriefingsAPI extends ApiClient {
   constructor() {
-    super('pilot/summaries', { accountScoped: true, apiVersion: 'v2' });
+    super('pilot/briefings', { accountScoped: true, apiVersion: 'v2' });
   }
 
   generate(conversationId, { previousOutput, refinementInstruction } = {}) {
@@ -15,4 +15,4 @@ class PilotSummariesAPI extends ApiClient {
   }
 }
 
-export default new PilotSummariesAPI();
+export default new PilotBriefingsAPI();

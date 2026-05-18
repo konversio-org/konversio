@@ -16,11 +16,13 @@ module Custom
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
 
-      attr_reader :conversation, :user
+      attr_reader :conversation, :user, :previous_output, :refinement_instruction
 
-      def initialize(conversation:, user: nil, account: nil)
+      def initialize(conversation:, user: nil, account: nil, previous_output: nil, refinement_instruction: nil)
         @conversation = conversation
         @user = user
+        @previous_output = previous_output
+        @refinement_instruction = refinement_instruction
         super(account: account || conversation&.account)
       end
 
@@ -52,7 +54,9 @@ module Custom
         suggestion_service = ::Pilot::ReplySuggestionService.new(
           account: account,
           conversation_display_id: conversation.display_id,
-          user: user
+          user: user,
+          previous_output: previous_output,
+          refinement_instruction: refinement_instruction
         )
 
         result = suggestion_service.perform

@@ -1,31 +1,32 @@
-class Api::V2::Accounts::Pilot::SummariesController < Api::V1::Accounts::BaseController
+class Api::V2::Accounts::Pilot::BriefingsController < Api::V1::Accounts::BaseController
   before_action :ensure_feature_enabled
   before_action :ensure_conversation_id
   before_action :load_conversation
   before_action :authorize_conversation
 
   def create
-    summary = Custom::Pilot::SummaryService.new(
+    draft = Custom::Pilot::BriefingService.new(
       conversation: @conversation,
+      user: Current.user,
       account: Current.account,
       previous_output: params[:previous_output],
       refinement_instruction: params[:refinement_instruction]
     ).perform
 
-    render json: { summary: summary }, status: :ok
-  rescue Custom::Pilot::SummaryService::FeatureDisabledError
-    render json: { error: 'Pilot Summary is not enabled for this account' }, status: :forbidden
-  rescue Custom::Pilot::SummaryService::Error => e
-    Rails.logger.error("[pilot.summaries] LLM failure: #{e.message}")
+    render json: { draft: draft }, status: :ok
+  rescue Custom::Pilot::BriefingService::FeatureDisabledError
+    render json: { error: 'Pilot Briefing is not enabled for this account' }, status: :forbidden
+  rescue Custom::Pilot::BriefingService::Error => e
+    Rails.logger.error("[pilot.briefings] LLM failure: #{e.message}")
     render json: { error: e.message }, status: :internal_server_error
   end
 
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_summary_enabled
+    return if Current.account.pilot_enabled && Current.account.pilot_briefing_enabled
 
-    render json: { error: 'Pilot Summary is not enabled for this account' }, status: :forbidden
+    render json: { error: 'Pilot Briefing is not enabled for this account' }, status: :forbidden
   end
 
   def ensure_conversation_id
@@ -42,8 +43,12 @@ class Api::V2::Accounts::Pilot::SummariesController < Api::V1::Accounts::BaseCon
   def authorize_conversation
     return if @conversation.blank?
 
-    authorize @conversation, :create?, policy_class: Pilot::SummaryPolicy
+    authorize @conversation, :create?, policy_class: Pilot::BriefingPolicy
   rescue Pundit::NotAuthorizedError
+    render_pilot_forbidden
+  end
+
+  def render_pilot_forbidden
     render json: { error: 'You are not authorized to access this conversation' }, status: :forbidden
   end
 end
