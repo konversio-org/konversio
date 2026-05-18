@@ -37,7 +37,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['accept', 'dismiss']);
+const emit = defineEmits(['accept', 'dismiss', 'refine']);
 
 const { t } = useI18n();
 
@@ -63,6 +63,28 @@ const onAccept = () => {
 };
 
 const onDismiss = () => emit('dismiss');
+
+// Refinement loop: a second input below the generated content lets the
+// agent type instructions like "make it shorter" / "ask about their
+// refund status". Pressing Enter (or clicking the send button) emits
+// 'refine' with the instruction. ReplyBox fires the API call with the
+// current draft as previous_output, swaps to the thinking state, then
+// replaces draft with the refined content when the response lands.
+const refinement = ref('');
+const refinementDisabled = computed(
+  () => props.isGenerating || !refinement.value.trim()
+);
+const submitRefinement = () => {
+  if (refinementDisabled.value) return;
+  emit('refine', { instruction: refinement.value.trim(), draft: draft.value });
+  refinement.value = '';
+};
+const onRefinementKeydown = e => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+    e.preventDefault();
+    submitRefinement();
+  }
+};
 
 // Keyboard shortcut: Cmd/Ctrl + Enter accepts. Active for the lifetime
 // of the panel; removed on unmount so it doesn't leak past the swap.
@@ -123,13 +145,34 @@ const dotDelay2 = { animationDelay: '-0.15s' };
       </div>
 
       <!-- Preview state -->
-      <textarea
-        v-else
-        v-model="draft"
-        rows="5"
-        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
-        :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
-      />
+      <template v-else>
+        <textarea
+          v-model="draft"
+          rows="5"
+          class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+          :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
+        />
+        <!-- Refinement input: send arbitrary follow-up instructions to
+             refine the generated content in place. Press Enter to send. -->
+        <div
+          class="mt-3 flex items-end gap-2 rounded-md border border-n-iris-7 bg-n-iris-2 px-3 py-2"
+        >
+          <textarea
+            v-model="refinement"
+            rows="1"
+            class="flex-1 resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+            :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
+            @keydown="onRefinementKeydown"
+          />
+          <button
+            type="button"
+            :disabled="refinementDisabled"
+            :aria-label="t('PILOT.PREVIEW_REFINE_SUBMIT')"
+            class="i-ph-arrow-up-bold size-7 rounded-full bg-n-iris-9 hover:enabled:bg-n-iris-10 disabled:opacity-40 disabled:cursor-not-allowed text-white p-1 shrink-0"
+            @click="submitRefinement"
+          />
+        </div>
+      </template>
     </div>
 
     <!-- Action row sits outside the box, mirroring Captain's layout -->

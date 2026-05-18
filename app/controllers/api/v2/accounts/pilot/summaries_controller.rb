@@ -7,7 +7,9 @@ class Api::V2::Accounts::Pilot::SummariesController < Api::V1::Accounts::BaseCon
   def create
     summary = Custom::Pilot::SummaryService.new(
       conversation: @conversation,
-      account: Current.account
+      account: Current.account,
+      previous_output: params[:previous_output],
+      refinement_instruction: params[:refinement_instruction]
     ).perform
 
     render json: { summary: summary }, status: :ok

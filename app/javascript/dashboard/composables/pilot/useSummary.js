@@ -27,7 +27,7 @@ export function useSummary() {
     summary.value = null;
   };
 
-  const generate = async conversationId => {
+  const generate = async (conversationId, opts = {}) => {
     if (!conversationId) return null;
 
     loading.value = true;
@@ -35,7 +35,7 @@ export function useSummary() {
     summary.value = null;
 
     try {
-      const response = await PilotSummariesAPI.generate(conversationId);
+      const response = await PilotSummariesAPI.generate(conversationId, opts);
       summary.value = response?.data?.summary || '';
       return summary.value;
     } catch (err) {
