@@ -43,10 +43,6 @@ export default {
       type: Number,
       default: () => 0,
     },
-    editorContent: {
-      type: String,
-      default: undefined,
-    },
   },
   emits: ['setReplyMode', 'briefingDraft'],
   setup(props, { emit }) {
@@ -128,10 +124,9 @@ export default {
         </span>
       </div>
     </div>
-    <!-- Pilot AI actions: sparkle menu (briefing, summary, follow-up, rewrite) -->
+    <!-- Pilot AI actions: sparkle menu (briefing, summary, ask copilot) -->
     <PilotActionsMenu
       :conversation-id="conversationId"
-      :editor-content="editorContent"
       :disabled="disabled || isEditorDisabled"
       @draft="payload => $emit('briefingDraft', payload)"
       @request-reply-mode="setReplyMode"
