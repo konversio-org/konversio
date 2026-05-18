@@ -96,9 +96,6 @@ const handleKey = e => {
 };
 onMounted(() => document.addEventListener('keydown', handleKey));
 onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
-
-const dotDelay1 = { animationDelay: '-0.3s' };
-const dotDelay2 = { animationDelay: '-0.15s' };
 </script>
 
 <template>
@@ -124,12 +121,10 @@ const dotDelay2 = { animationDelay: '-0.15s' };
         <span v-else>{{ t('PILOT.BRIEFING.LOADING') }}</span>
         <span class="ml-1 flex items-center gap-1">
           <span
-            :style="dotDelay1"
-            class="size-1 rounded-full bg-n-iris-9 animate-bounce"
+            class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.3s]"
           />
           <span
-            :style="dotDelay2"
-            class="size-1 rounded-full bg-n-iris-9 animate-bounce"
+            class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.15s]"
           />
           <span class="size-1 rounded-full bg-n-iris-9 animate-bounce" />
         </span>
@@ -152,26 +147,18 @@ const dotDelay2 = { animationDelay: '-0.15s' };
           class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
           :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
         />
-        <!-- Refinement input: send arbitrary follow-up instructions to
-             refine the generated content in place. Press Enter to send. -->
-        <div
-          class="mt-3 flex items-end gap-2 rounded-md border border-n-iris-7 bg-n-iris-2 px-3 py-2"
-        >
-          <textarea
-            v-model="refinement"
-            rows="1"
-            class="flex-1 resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
-            :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
-            @keydown="onRefinementKeydown"
-          />
-          <button
-            type="button"
-            :disabled="refinementDisabled"
-            :aria-label="t('PILOT.PREVIEW_REFINE_SUBMIT')"
-            class="i-ph-arrow-up-bold size-7 rounded-full bg-n-iris-9 hover:enabled:bg-n-iris-10 disabled:opacity-40 disabled:cursor-not-allowed text-white p-1 shrink-0"
-            @click="submitRefinement"
-          />
-        </div>
+        <!-- Refinement input: a borderless textarea separated from the
+             draft by a thin divider. Submission is keyboard-only —
+             Enter sends, the surrounding Accept button (⌘+↵) is the
+             dedicated affordance for "this draft is done". -->
+        <hr class="my-2 border-t border-n-iris-7" />
+        <textarea
+          v-model="refinement"
+          rows="2"
+          class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+          :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
+          @keydown="onRefinementKeydown"
+        />
       </template>
     </div>
 
