@@ -431,13 +431,51 @@ kebab-case template attribute.
 
 These show up in console / logs but are upstream Chatwoot dev-mode issues:
 
-- `Multiple versions of Lit loaded` — webcomponent dedup issue upstream
 - `POST .../widget/conversations/toggle_typing 404` on every keystroke before first message — controller `before_action :render_not_found_if_empty` bails when no conversation exists. We replaced the 404 with a silent 200 no-op for `toggle_typing` specifically.
 - `chdir` warnings under load — see lesson 4
 - `[@vue/compiler-sfc] ::v-deep usage as a combinator has been deprecated` — upstream component CSS
 
 **Rule**: don't chase these in your session. File them as "pre-existing
 upstream noise" and move on.
+
+### 11. Lit dedup — fixed, but the path was non-obvious
+
+The `Multiple versions of Lit loaded` warning used to be in lesson 10. It
+is now resolved, but two prior attempts crashed the build for the same
+reason — recording the working approach here so it doesn't get re-broken.
+
+**Symptom**: ninja-keys (which pulls `lit` directly) and `@material/mwc-icon`
+(transitively, via ninja-keys) each ended up as separately pre-bundled
+Vite chunks with their own copies of Lit. Same `lit@2.2.6` on disk under
+pnpm, but two JS module identities at runtime → Lit's globalThis self-check
+fires the warning.
+
+**Naive fix that fails**: just add `resolve.dedupe: ['lit']` +
+`optimizeDeps.include: ['lit', '@chatwoot/ninja-keys', '@material/mwc-icon']`
+to `vite.config.ts`. The mwc-icon pre-bundle step crashes with
+`Failed to resolve import "lit" from .../@material/mwc-icon/mwc-icon-host.css.js`
+because esbuild's pre-bundler can't resolve the bare `lit` specifier from
+inside the `.css.js` sub-file under the pnpm-isolated package layout.
+
+**Working fix (in `purge-captain`)**:
+1. `pnpm patch @material/mwc-icon@0.25.3` — rewrite the two
+   `from 'lit'` imports inside `mwc-icon.js` and `mwc-icon-host.css.js` to
+   `from 'lit/index.js'` (explicit subpath bypasses esbuild's bare-specifier
+   resolver). Patch lives in `patches/@material__mwc-icon@0.25.3.patch` and
+   is registered under `pnpm.patchedDependencies` in `package.json`.
+2. `vite.config.ts` carries `resolve.dedupe: ['lit', 'lit-element',
+   'lit-html', '@lit/reactive-element']` plus
+   `optimizeDeps.include: [...lit packages, '@chatwoot/ninja-keys',
+   '@material/mwc-icon']` so all Lit consumers share one optimized chunk.
+
+**Bonus**: pre-bundling `@chatwoot/ninja-keys` and `@material/mwc-icon`
+collapses hundreds of individual ES-module requests per dev-mode page load
+into two chunks. The dashboard loads noticeably faster as a side effect.
+
+**Cache recovery**: if you ever change `optimizeDeps.include`, the cached
+pre-bundles in `node_modules/.vite/deps/` go stale and you get a Vite import-
+resolution overlay on next reload. Recovery is the lesson-8 ladder:
+`rm -rf node_modules/.vite tmp/cache/vite && docker compose restart vite rails`.
 
 ---
 
