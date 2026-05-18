@@ -5,6 +5,7 @@ import { vOnClickOutside } from '@vueuse/components';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useSummary } from 'dashboard/composables/pilot/useSummary';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import MessageFormatter from 'shared/helpers/MessageFormatter.js';
 
 const props = defineProps({
   conversationId: {
@@ -26,6 +27,11 @@ const popoverOpen = ref(false);
 const isEnabled = computed(() => {
   const account = currentAccount.value || {};
   return Boolean(account.pilot_enabled && account.pilot_summary_enabled);
+});
+
+const formattedSummary = computed(() => {
+  if (!summary.summary.value) return '';
+  return new MessageFormatter(summary.summary.value).formattedMessage;
 });
 
 const closePopover = () => {
@@ -79,9 +85,10 @@ const onClick = async () => {
           {{ t('PILOT.SUMMARY.CLOSE') }}
         </button>
       </div>
-      <p class="text-sm text-n-slate-12 whitespace-pre-wrap">
-        {{ summary.summary.value }}
-      </p>
+      <div
+        v-dompurify-html="formattedSummary"
+        class="prose-sm text-sm text-n-slate-12 break-words"
+      />
     </div>
   </div>
 </template>
