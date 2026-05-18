@@ -45,12 +45,26 @@ const followUp = useFollowUp();
 const rewrite = useRewrite();
 
 const isOpen = ref(false);
+// When non-empty, the menu surface shows a "pick a follow-up to ask" panel
+// instead of the default action list. Reset whenever the menu closes so
+// re-opening always starts at the default actions.
+const followUpResults = ref([]);
+// Sticky flag that survives a result-set reset: when the agent picks a
+// suggestion, the popover closes immediately; surfacing the "No more
+// suggestions" empty state would be wrong. We only render empty-state
+// copy when generate() completed with zero results AND the agent hasn't
+// already accepted one.
+const followUpEmpty = ref(false);
+
 const closeMenu = () => {
   isOpen.value = false;
+  followUpResults.value = [];
+  followUpEmpty.value = false;
 };
 const toggleMenu = () => {
   if (props.disabled) return;
-  isOpen.value = !isOpen.value;
+  if (isOpen.value) closeMenu();
+  else isOpen.value = true;
 };
 
 // Master gate: every sub-feature requires pilot_enabled AND its own flag.
@@ -119,9 +133,24 @@ const actions = computed(() => {
       key: 'follow_up',
       label: t('PILOT.FOLLOW_UP.BUTTON_LABEL'),
       icon: 'i-ph-question-fill',
+      // The popover stays open during generation so the loading spinner
+      // (driven by `anyLoading` on the trigger button) and the result
+      // panel both anchor to the same surface — single mental model for
+      // the agent.
+      keepMenuOpen: true,
       handler: async () => {
         const suggestions = await followUp.generate(props.conversationId);
-        if (suggestions && suggestions.length) emit('followUp', suggestions);
+        // Guard: agent may have clicked outside while the request was
+        // in flight. Don't repopulate state into a closed surface.
+        if (!isOpen.value) return;
+        if (suggestions && suggestions.length) {
+          // Cap at 3 — the LLM occasionally over-produces and we want a
+          // tight, scannable list.
+          followUpResults.value = suggestions.slice(0, 3);
+          emit('followUp', suggestions);
+        } else {
+          followUpEmpty.value = true;
+        }
       },
     });
   }
@@ -153,10 +182,25 @@ const isVisible = computed(
 );
 
 const onActionClick = async action => {
-  if (action.disabled) return;
-  closeMenu();
-  if (anyLoading.value) return;
+  if (action.disabled || anyLoading.value) return;
+  // Actions that show in-menu results (currently only follow-up) keep
+  // the popover open through generation so the loading state and the
+  // resulting panel share the same anchor.
+  if (!action.keepMenuOpen) closeMenu();
   await action.handler();
+};
+
+const onFollowUpPick = async text => {
+  // Follow-up questions are customer-facing — force Reply mode even if
+  // the agent currently has Private Note selected, then insert via the
+  // shared editor bus (same channel Summary uses). The await nextTick()
+  // lets ReplyBox's replyType watcher flush draft state before the
+  // insert lands; without it the question would write into the wrong
+  // draft slot (the exact bug we hit on Summary, fixed by db1010c88).
+  emit('requestReplyMode', REPLY_EDITOR_MODES.REPLY);
+  await nextTick();
+  emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, text);
+  closeMenu();
 };
 
 const firstError = computed(
@@ -196,20 +240,53 @@ const firstError = computed(
     <div
       v-if="isOpen"
       role="menu"
-      class="absolute bottom-full right-0 mb-2 min-w-56 rounded-lg border border-n-strong bg-n-solid-3 py-2 shadow-lg z-50"
+      class="absolute bottom-full right-0 mb-2 rounded-lg border border-n-strong bg-n-solid-3 py-2 shadow-lg z-50"
+      :class="[followUpResults.length || followUpEmpty ? 'w-80' : 'min-w-56']"
     >
-      <button
-        v-for="action in actions"
-        :key="action.key"
-        type="button"
-        role="menuitem"
-        :disabled="action.disabled"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="onActionClick(action)"
-      >
-        <span class="inline-block size-4" :class="[action.icon]" />
-        {{ action.label }}
-      </button>
+      <template v-if="followUpResults.length">
+        <div
+          class="px-4 pt-1 pb-2 text-xs font-semibold uppercase text-n-slate-11"
+        >
+          {{ t('PILOT.FOLLOW_UP.POPOVER_TITLE') }}
+        </div>
+        <button
+          v-for="(suggestion, idx) in followUpResults"
+          :key="idx"
+          type="button"
+          role="menuitem"
+          class="group flex w-full items-start gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3"
+          @click="onFollowUpPick(suggestion)"
+        >
+          <span
+            class="i-ph-question-fill mt-0.5 inline-block size-4 shrink-0 text-n-violet-9"
+          />
+          <span class="flex-1 leading-snug">{{ suggestion }}</span>
+          <span
+            class="i-ph-arrow-right mt-0.5 inline-block size-4 shrink-0 text-n-slate-11 opacity-0 transition-opacity group-hover:opacity-100"
+          />
+        </button>
+      </template>
+
+      <template v-else-if="followUpEmpty">
+        <div class="px-4 py-2 text-sm text-n-slate-11">
+          {{ t('PILOT.FOLLOW_UP.EMPTY') }}
+        </div>
+      </template>
+
+      <template v-else>
+        <button
+          v-for="action in actions"
+          :key="action.key"
+          type="button"
+          role="menuitem"
+          :disabled="action.disabled"
+          class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="onActionClick(action)"
+        >
+          <span class="inline-block size-4" :class="[action.icon]" />
+          {{ action.label }}
+        </button>
+      </template>
     </div>
 
     <span v-if="firstError" class="text-xs text-n-ruby-9" role="alert">
