@@ -1,0 +1,26 @@
+diff --git a/mwc-icon-host.css.js b/mwc-icon-host.css.js
+index d9b014eb1952f069bda717711eb337ae40f99885..a4320b70700909d02541e88c82010dc3c03bc1cc 100644
+--- a/mwc-icon-host.css.js
++++ b/mwc-icon-host.css.js
+@@ -3,6 +3,6 @@
+  * Copyright 2021 Google LLC
+  * SPDX-LIcense-Identifier: Apache-2.0
+  */
+-import { css } from 'lit';
++import { css } from 'lit/index.js';
+ export const styles = css `:host{font-family:var(--mdc-icon-font, "Material Icons");font-weight:normal;font-style:normal;font-size:var(--mdc-icon-size, 24px);line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;word-wrap:normal;direction:ltr;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;-moz-osx-font-smoothing:grayscale;font-feature-settings:"liga"}`;
+ //# sourceMappingURL=mwc-icon-host.css.js.map
+\ No newline at end of file
+diff --git a/mwc-icon.js b/mwc-icon.js
+index 28b2700f068721f70f17c88101c3785b5c8ad0ec..696f3d18983454a3cc4c862ad41cbbebf901dd94 100644
+--- a/mwc-icon.js
++++ b/mwc-icon.js
+@@ -6,7 +6,7 @@
+ import { __decorate } from "tslib";
+ // Style preference for leading underscores.
+ // tslint:disable:strip-private-property-underscore
+-import { html, LitElement } from 'lit';
++import { html, LitElement } from 'lit/index.js';
+ import { customElement } from 'lit/decorators.js';
+ import { styles } from './mwc-icon-host.css';
+ /** @soyCompatible */
