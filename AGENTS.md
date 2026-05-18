@@ -90,23 +90,12 @@
 
 - Use compact `module/class` definitions; avoid nested styles
 
-## Enterprise Edition Notes
+## Fork Status
 
-- Chatwoot has an Enterprise overlay under `enterprise/` that extends/overrides OSS code.
-- When you add or modify core functionality, always check for corresponding files in `enterprise/` and keep behavior compatible.
-- Follow the Enterprise development practices documented here:
-  - https://chatwoot.help/hc/handbook/articles/developing-enterprise-edition-features-38
-
-Practical checklist for any change impacting core logic or public APIs
-- Search for related files in both trees before editing (e.g., `rg -n "FooService|ControllerName|ModelName" app enterprise`).
-- If adding new endpoints, services, or models, consider whether Enterprise needs:
-  - An override (e.g., `enterprise/app/...`), or
-  - An extension point (e.g., `prepend_mod_with`, hooks, configuration) to avoid hard forks.
-- Avoid hardcoding instance- or plan-specific behavior in OSS; prefer configuration, feature flags, or extension points consumed by Enterprise.
-- Keep request/response contracts stable across OSS and Enterprise; update both sets of routes/controllers when introducing new APIs.
-- When renaming/moving shared code, mirror the change in `enterprise/` to prevent drift.
-- Tests: Add Enterprise-specific specs under `spec/enterprise`, mirroring OSS spec layout where applicable.
-- When modifying existing OSS features for Enterprise-only behavior, add an Enterprise module (via `prepend_mod_with`/`include_mod_with`) instead of editing OSS files directly—especially for policies, controllers, and services. For Enterprise-exclusive features, place code directly under `enterprise/`.
+- Konversio is a hard fork of Chatwoot v4.13.0 — no upstream tracking, 100% MIT, self-hosted only.
+- The `enterprise/` overlay and Captain AI have been removed; there is no OSS/Enterprise split to preserve.
+- Captain has been renamed to `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
+- Edit core files freely — no `prepend_mod_with` dance, no mirror-edits, no `spec/enterprise`.
 
 ## Branding / White-labeling note
 
