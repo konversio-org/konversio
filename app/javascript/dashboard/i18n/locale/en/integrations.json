@@ -398,7 +398,7 @@
     "PREVIEW_ACCEPT_SHORTCUT": "⌘ + ↵",
     "PREVIEW_DISMISS": "Discard",
     "PREVIEW_PLACEHOLDER": "Edit before accepting…",
-    "PREVIEW_REFINE_PLACEHOLDER": "Give Pilot additional prompts, or ask anything else… Press enter to send follow-up",
+    "PREVIEW_REFINE_PLACEHOLDER": "Give Pilot additional prompts, or ask anything else…",
     "PREVIEW_REFINE_SUBMIT": "Send follow-up",
     "BRIEFING": {
       "BUTTON_LABEL": "Suggest a reply",

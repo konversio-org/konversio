@@ -99,92 +99,86 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
-    <!-- Violet status/preview box. Captain replaces the whole editor
-         area with this tinted region; buttons sit below, outside it. -->
+  <!-- Single violet region containing the draft, the refinement input,
+       and the Discard / Accept actions. Thin dividers separate the
+       three zones; everything is visually grouped inside one panel. -->
+  <div
+    class="rounded-lg bg-n-iris-3 px-4 py-3 text-n-iris-12"
+    role="region"
+    :aria-label="
+      isSummary
+        ? t('PILOT.SUMMARY.PREVIEW_TITLE')
+        : t('PILOT.BRIEFING.PREVIEW_TITLE')
+    "
+  >
+    <!-- Thinking state -->
     <div
-      class="rounded-lg bg-n-iris-3 px-4 py-3 text-n-iris-12"
-      role="region"
-      :aria-label="
-        isSummary
-          ? t('PILOT.SUMMARY.PREVIEW_TITLE')
-          : t('PILOT.BRIEFING.PREVIEW_TITLE')
-      "
+      v-if="isGenerating"
+      class="flex items-center gap-2 py-2 text-sm text-n-iris-11"
     >
-      <!-- Thinking state -->
-      <div
-        v-if="isGenerating"
-        class="flex items-center gap-2 py-2 text-sm text-n-iris-11"
-      >
-        <PilotSparkleIcon class="size-4 shrink-0" />
-        <span v-if="isSummary">{{ t('PILOT.SUMMARY.LOADING') }}</span>
-        <span v-else>{{ t('PILOT.BRIEFING.LOADING') }}</span>
-        <span class="ml-1 flex items-center gap-1">
-          <span
-            class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.3s]"
-          />
-          <span
-            class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.15s]"
-          />
-          <span class="size-1 rounded-full bg-n-iris-9 animate-bounce" />
-        </span>
-      </div>
-
-      <!-- Error state -->
-      <div
-        v-else-if="errorMessage"
-        class="py-2 text-sm text-n-ruby-11"
-        role="alert"
-      >
-        {{ errorMessage }}
-      </div>
-
-      <!-- Preview state -->
-      <template v-else>
-        <textarea
-          v-model="draft"
-          rows="5"
-          class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
-          :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
+      <PilotSparkleIcon class="size-4 shrink-0" />
+      <span v-if="isSummary">{{ t('PILOT.SUMMARY.LOADING') }}</span>
+      <span v-else>{{ t('PILOT.BRIEFING.LOADING') }}</span>
+      <span class="ml-1 flex items-center gap-1">
+        <span
+          class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.3s]"
         />
-        <!-- Refinement input: a borderless textarea separated from the
-             draft by a thin divider. Submission is keyboard-only —
-             Enter sends, the surrounding Accept button (⌘+↵) is the
-             dedicated affordance for "this draft is done". -->
-        <hr class="my-2 border-t border-n-iris-7" />
-        <textarea
-          v-model="refinement"
-          rows="2"
-          class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
-          :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
-          @keydown="onRefinementKeydown"
+        <span
+          class="size-1 rounded-full bg-n-iris-9 animate-bounce [animation-delay:-0.15s]"
         />
-      </template>
+        <span class="size-1 rounded-full bg-n-iris-9 animate-bounce" />
+      </span>
     </div>
 
-    <!-- Action row sits outside the box, mirroring Captain's layout -->
-    <div class="flex items-center justify-between">
-      <NextButton
-        ghost
-        slate
-        sm
-        :label="t('PILOT.PREVIEW_DISMISS')"
-        @click="onDismiss"
+    <!-- Error state -->
+    <div
+      v-else-if="errorMessage"
+      class="py-2 text-sm text-n-ruby-11"
+      role="alert"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <!-- Preview state: draft → divider → refinement → divider → actions -->
+    <template v-else>
+      <textarea
+        v-model="draft"
+        rows="5"
+        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+        :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
       />
-      <NextButton
-        solid
-        sm
-        :disabled="acceptDisabled"
-        class="!bg-n-iris-9 hover:enabled:!bg-n-iris-10 text-white"
-        @click="onAccept"
-      >
-        <span class="flex items-center gap-1.5">
-          <span>{{ t('PILOT.PREVIEW_ACCEPT') }}</span>
-          <span class="text-xs opacity-75">{{
-            t('PILOT.PREVIEW_ACCEPT_SHORTCUT')
-          }}</span>
-        </span>
-      </NextButton>
-    </div>
+      <hr class="my-2 border-t border-n-iris-7" />
+      <textarea
+        v-model="refinement"
+        rows="2"
+        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
+        :placeholder="t('PILOT.PREVIEW_REFINE_PLACEHOLDER')"
+        @keydown="onRefinementKeydown"
+      />
+      <hr class="my-2 border-t border-n-iris-7" />
+      <div class="flex items-center justify-between">
+        <NextButton
+          ghost
+          slate
+          sm
+          :label="t('PILOT.PREVIEW_DISMISS')"
+          @click="onDismiss"
+        />
+        <NextButton
+          solid
+          sm
+          :disabled="acceptDisabled"
+          class="!bg-n-iris-9 hover:enabled:!bg-n-iris-10 text-white"
+          @click="onAccept"
+        >
+          <span class="flex items-center gap-1.5">
+            <span>{{ t('PILOT.PREVIEW_ACCEPT') }}</span>
+            <span class="text-xs opacity-75">{{
+              t('PILOT.PREVIEW_ACCEPT_SHORTCUT')
+            }}</span>
+          </span>
+        </NextButton>
+      </div>
+    </template>
   </div>
 </template>
