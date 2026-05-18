@@ -243,6 +243,25 @@ That's it. One file, two methods, ~10 lines.
    browser-tab favicon is a desktop signal. Mobile push lives in the
    `Notification` model and FCM/APNS pipeline, not in this helper.
 
+6. **Human → bot handback UX** — *deliberately deferred*. The mechanism
+   already works: any agent can click the chevron next to the Resolve
+   button in `ResolveAction.vue` and pick "Mark as pending"; the next
+   incoming customer message then re-triggers `PilotAutopilotListener`
+   because its only gate is `conversation.pending?`
+   (`app/listeners/pilot_autopilot_listener.rb:18`). Verified that
+   upstream Chatwoot OSS and Chatwoot **Enterprise** both ship the same
+   mechanism — Enterprise's Captain uses an identical
+   `return unless conversation_pending?` gate in
+   `enterprise/app/jobs/captain/conversation/response_builder_job.rb`
+   and adds no dedicated "hand back to bot" button.
+   A dedicated, more discoverable "Hand back to Pilot" button alongside
+   Resolve (with optional `assignee_id = nil` to clear the human
+   assignee, plus a customer-visible "Transferring you back..." system
+   message) is ~30 min of work in `ResolveAction.vue` + i18n. Not
+   prioritised — the hidden affordance is good enough for now and we'd
+   be ahead of Chatwoot Enterprise's UX on this point if/when we build
+   it.
+
 ---
 
 ## How to pick this up in a future session
