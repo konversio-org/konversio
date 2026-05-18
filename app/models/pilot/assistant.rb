@@ -14,7 +14,7 @@
 #
 # Indexes
 #
-#  index_captain_assistants_on_account_id  (account_id)
+#  index_pilot_assistants_on_account_id  (account_id)
 #
 
 # Account-scoped Autopilot assistant. Owns documents (knowledge sources),

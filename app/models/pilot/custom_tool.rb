@@ -18,6 +18,11 @@
 #  updated_at        :datetime         not null
 #  account_id        :bigint           not null
 #
+# Indexes
+#
+#  index_pilot_custom_tools_on_account_id           (account_id)
+#  index_pilot_custom_tools_on_account_id_and_slug  (account_id,slug) UNIQUE
+#
 
 # Account-scoped HTTP tool definition exposed to Autopilot. The full Tools
 # sub-feature (executor + guard + per-account limit + admin UI) lands in

@@ -13,6 +13,13 @@
 #  account_id   :bigint           not null
 #  assistant_id :bigint           not null
 #
+# Indexes
+#
+#  index_pilot_scenarios_on_account_id                (account_id)
+#  index_pilot_scenarios_on_assistant_id              (assistant_id)
+#  index_pilot_scenarios_on_assistant_id_and_enabled  (assistant_id,enabled)
+#  index_pilot_scenarios_on_enabled                   (enabled)
+#
 
 # Rule-based behavior unit attached to a Pilot::Assistant. The scenario's
 # `instruction` may reference tools using markdown `[Label](tool://<id>)`

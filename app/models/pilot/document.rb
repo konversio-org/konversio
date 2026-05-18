@@ -16,6 +16,14 @@
 #  account_id             :bigint           not null
 #  assistant_id           :bigint           not null
 #
+# Indexes
+#
+#  index_pilot_documents_on_account_id                      (account_id)
+#  index_pilot_documents_on_account_id_and_sync_status      (account_id,sync_status)
+#  index_pilot_documents_on_assistant_id                    (assistant_id)
+#  index_pilot_documents_on_assistant_id_and_external_link  (assistant_id,external_link) UNIQUE
+#  index_pilot_documents_on_status                          (status)
+#
 
 # Pilot knowledge-source document. Owns a source URL or an attached PDF;
 # searchable knowledge derived from this row is persisted as polymorphic
