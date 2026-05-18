@@ -393,13 +393,14 @@
     "HEADER_KNOW_MORE": "Know more",
     "ACTIONS_MENU_LABEL": "Pilot AI actions",
     "ACTIONS_MENU_LOADING_LABEL": "Generating…",
+    "ACTIONS_MENU_ASK_COPILOT": "Ask Copilot",
     "BRIEFING": {
       "BUTTON_LABEL": "Suggest a reply",
       "LOADING": "Generating briefing…",
       "ERROR": "Could not generate a briefing. Please try again."
     },
     "SUMMARY": {
-      "BUTTON_LABEL": "Summarize",
+      "BUTTON_LABEL": "Summarize the conversation",
       "LOADING": "Summarizing…",
       "ERROR": "Could not generate a summary. Please try again.",
       "POPOVER_TITLE": "Conversation summary",
