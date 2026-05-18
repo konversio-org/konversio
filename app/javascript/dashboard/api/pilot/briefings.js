@@ -6,8 +6,12 @@ class PilotBriefingsAPI extends ApiClient {
     super('pilot/briefings', { accountScoped: true, apiVersion: 'v2' });
   }
 
-  generate(conversationId) {
-    return axios.post(this.url, { conversation_id: conversationId });
+  generate(conversationId, { previousOutput, refinementInstruction } = {}) {
+    return axios.post(this.url, {
+      conversation_id: conversationId,
+      previous_output: previousOutput,
+      refinement_instruction: refinementInstruction,
+    });
   }
 }
 

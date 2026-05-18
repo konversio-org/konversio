@@ -16,6 +16,8 @@ import CopilotReplyBottomPanel from 'dashboard/components/widgets/WootWriter/Cop
 import ArticleSearchPopover from 'dashboard/routes/dashboard/helpcenter/components/ArticleSearch/SearchPopover.vue';
 import CopilotEditorSection from './CopilotEditorSection.vue';
 import PilotPreviewPanel from 'dashboard/components-next/pilot/PilotPreviewPanel.vue';
+import PilotBriefingsAPI from 'dashboard/api/pilot/briefings';
+import PilotSummariesAPI from 'dashboard/api/pilot/summaries';
 import MessageSignatureMissingAlert from './MessageSignatureMissingAlert.vue';
 import ReplyBoxBanner from './ReplyBoxBanner.vue';
 import QuotedEmailPreview from './QuotedEmailPreview.vue';
@@ -1014,6 +1016,47 @@ export default {
     onPilotPreviewDismiss() {
       this.pilotPreview = null;
     },
+    async onPilotPreviewRefine({ instruction, draft }) {
+      if (!this.pilotPreview || !instruction) return;
+      const { actionKey } = this.pilotPreview;
+      // Switch panel to thinking state immediately so the agent sees
+      // feedback; preserve actionKey + targetMode through the refinement.
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        isGenerating: true,
+        errorMessage: '',
+      };
+      const Api =
+        actionKey === 'summary' ? PilotSummariesAPI : PilotBriefingsAPI;
+      try {
+        const response = await Api.generate(this.conversationIdByRoute, {
+          previousOutput: draft,
+          refinementInstruction: instruction,
+        });
+        if (!this.pilotPreview) return;
+        const raw =
+          actionKey === 'summary'
+            ? response?.data?.summary || ''
+            : response?.data?.draft || '';
+        // Same leading-whitespace stripper Summary uses for its first-shot
+        // result (ProseMirror keeps a stray blank line as an empty para).
+        this.pilotPreview = {
+          ...this.pilotPreview,
+          content: raw.replace(/^\s+/, ''),
+          isGenerating: false,
+          errorMessage: '',
+        };
+      } catch (err) {
+        if (!this.pilotPreview) return;
+        const message =
+          err?.response?.data?.error || err?.message || 'Refinement failed';
+        this.pilotPreview = {
+          ...this.pilotPreview,
+          isGenerating: false,
+          errorMessage: message,
+        };
+      }
+    },
     clearMessage() {
       this.message = '';
       this.clearCopilotAcceptedMessage();
@@ -1374,6 +1417,7 @@ export default {
           :error-message="pilotPreview.errorMessage"
           @accept="onPilotPreviewAccept"
           @dismiss="onPilotPreviewDismiss"
+          @refine="onPilotPreviewRefine"
         />
         <CopilotEditorSection
           v-else-if="copilot.isActive.value && !showAudioRecorderEditor"
