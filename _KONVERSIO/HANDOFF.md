@@ -269,7 +269,7 @@ sub-features. As of the last working session on `purge-captain`:
 
 - **SuggestedLabelChips.vue** — exists, not mounted above label selector.
 - **RewriteToolbar.vue** floating selection-based — exists in tree but not mounted; ProseMirror hook needed for the selection version.
-- **FollowUp result handler** — emit goes to void; needs ReplyTopPanel listener to insert as chips.
+- ~~**FollowUp result handler** — emit goes to void; needs ReplyTopPanel listener to insert as chips.~~ Shipped 2026-05-18 (commit `0a4531e4c`) as an in-menu picker inside `PilotActionsMenu.vue` — the sparkle popover swaps to a "Pick a follow-up to ask" panel after the API call, click-to-insert via `INSERT_INTO_RICH_EDITOR`. Design pattern conceptually borrowed from Chatwoot Enterprise Captain's menu→result surface swap.
 - **CSAT report aggregation view** — schema columns ready (`pilot_sentiment`, `pilot_themes`, `pilot_escalation_recommended`), no UI card.
 
 ### Not started
