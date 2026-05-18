@@ -8,7 +8,6 @@ import InboxName from '../InboxName.vue';
 import MoreActions from './MoreActions.vue';
 import Avatar from 'next/avatar/Avatar.vue';
 import SLACardLabel from './components/SLACardLabel.vue';
-import SummarizeButton from 'dashboard/components-next/pilot/summary/SummarizeButton.vue';
 import wootConstants from 'dashboard/constants/globals';
 import { conversationListPageURL } from 'dashboard/helper/URLHelper';
 import { snoozedReopenTime } from 'dashboard/helper/snoozeHelpers';
@@ -153,7 +152,6 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
         :parent-width="width"
         class="hidden md:flex"
       />
-      <SummarizeButton :conversation-id="currentChat.id" />
       <MoreActions :conversation-id="currentChat.id" />
     </div>
   </div>
