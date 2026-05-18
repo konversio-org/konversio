@@ -394,7 +394,8 @@
     "ACTIONS_MENU_LABEL": "Pilot AI actions",
     "ACTIONS_MENU_LOADING_LABEL": "Generating…",
     "ACTIONS_MENU_ASK_COPILOT": "Ask Copilot",
-    "PREVIEW_ACCEPT": "Use this",
+    "PREVIEW_ACCEPT": "Accept",
+    "PREVIEW_ACCEPT_SHORTCUT": "⌘ + ↵",
     "PREVIEW_DISMISS": "Discard",
     "PREVIEW_PLACEHOLDER": "Edit before accepting…",
     "BRIEFING": {
