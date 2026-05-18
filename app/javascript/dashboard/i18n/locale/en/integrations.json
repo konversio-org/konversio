@@ -394,16 +394,21 @@
     "ACTIONS_MENU_LABEL": "Pilot AI actions",
     "ACTIONS_MENU_LOADING_LABEL": "Generating…",
     "ACTIONS_MENU_ASK_COPILOT": "Ask Copilot",
+    "PREVIEW_ACCEPT": "Use this",
+    "PREVIEW_DISMISS": "Discard",
+    "PREVIEW_PLACEHOLDER": "Edit before accepting…",
     "BRIEFING": {
       "BUTTON_LABEL": "Suggest a reply",
-      "LOADING": "Generating briefing…",
-      "ERROR": "Could not generate a briefing. Please try again."
+      "LOADING": "Pilot is drafting a reply…",
+      "ERROR": "Could not generate a briefing. Please try again.",
+      "PREVIEW_TITLE": "Suggested reply"
     },
     "SUMMARY": {
       "BUTTON_LABEL": "Summarize the conversation",
-      "LOADING": "Summarizing…",
+      "LOADING": "Pilot is summarizing the conversation…",
       "ERROR": "Could not generate a summary. Please try again.",
       "POPOVER_TITLE": "Conversation summary",
+      "PREVIEW_TITLE": "Conversation summary",
       "CLOSE": "Close"
     },
     "FOLLOW_UP": {

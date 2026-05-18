@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { vOnClickOutside } from '@vueuse/components';
 import { useAccount } from 'dashboard/composables/useAccount';
@@ -29,8 +29,6 @@ const props = defineProps({
     default: false,
   },
 });
-
-const emit = defineEmits(['draft', 'summary', 'requestReplyMode']);
 
 const { t } = useI18n();
 const { currentAccount } = useAccount();
@@ -67,16 +65,23 @@ const actions = computed(() => {
       label: t('PILOT.BRIEFING.BUTTON_LABEL'),
       icon: 'i-ph-chat-text',
       handler: async () => {
+        // Open the preview surface immediately so the thinking state
+        // is visible while the API call is in flight (matches Captain's
+        // editor-swap UX). ReplyBox owns the panel state and renders
+        // PilotPreviewPanel in place of the composer until Accept or
+        // Dismiss is fired.
+        emitter.emit(BUS_EVENTS.PILOT_PREVIEW_START, {
+          actionKey: 'briefing',
+          targetMode: REPLY_EDITOR_MODES.REPLY,
+        });
         const draft = await briefing.generate(props.conversationId);
-        if (!draft) return;
-        // Briefing is a customer-facing reply — always land in Reply
-        // mode, even if Private Note is currently selected. Wait one
-        // tick so ReplyBox's replyType watcher swaps drafts before the
-        // briefing text is delivered (see db1010c88 for the race the
-        // nextTick guards against).
-        emit('requestReplyMode', REPLY_EDITOR_MODES.REPLY);
-        await nextTick();
-        emit('draft', draft);
+        if (draft) {
+          emitter.emit(BUS_EVENTS.PILOT_PREVIEW_READY, { content: draft });
+        } else {
+          emitter.emit(BUS_EVENTS.PILOT_PREVIEW_ERROR, {
+            errorMessage: briefing.error.value || '',
+          });
+        }
       },
     });
   }
@@ -87,16 +92,23 @@ const actions = computed(() => {
       label: t('PILOT.SUMMARY.BUTTON_LABEL'),
       icon: 'i-ph-note-fill',
       handler: async () => {
+        emitter.emit(BUS_EVENTS.PILOT_PREVIEW_START, {
+          actionKey: 'summary',
+          // Summary is an INTERNAL artefact — Accept lands in Private
+          // Note, never in Reply.
+          targetMode: REPLY_EDITOR_MODES.NOTE,
+        });
         const result = await summary.generate(props.conversationId);
-        if (!result) return;
-        const trimmed = result.replace(/^\s+/, '');
-        // Summary is an INTERNAL artefact — auto-switch to Private
-        // Note so the agent can't accidentally send the summary to the
-        // customer.
-        emit('requestReplyMode', REPLY_EDITOR_MODES.NOTE);
-        await nextTick();
-        emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, trimmed);
-        emit('summary', trimmed);
+        if (result) {
+          // LLM occasionally emits a leading blank line that ProseMirror
+          // keeps as an empty paragraph above the first heading.
+          const trimmed = result.replace(/^\s+/, '');
+          emitter.emit(BUS_EVENTS.PILOT_PREVIEW_READY, { content: trimmed });
+        } else {
+          emitter.emit(BUS_EVENTS.PILOT_PREVIEW_ERROR, {
+            errorMessage: summary.error.value || '',
+          });
+        }
       },
     });
   }
