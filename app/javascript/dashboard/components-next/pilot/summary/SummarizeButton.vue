@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { vOnClickOutside } from '@vueuse/components';
-import { useMapGetter } from 'dashboard/composables/store';
+import { useAccount } from 'dashboard/composables/useAccount';
 import { useSummary } from 'dashboard/composables/pilot/useSummary';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 
@@ -18,7 +18,7 @@ const props = defineProps({
 });
 
 const { t } = useI18n();
-const currentAccount = useMapGetter('getCurrentAccount');
+const { currentAccount } = useAccount();
 
 const summary = useSummary();
 const popoverOpen = ref(false);
