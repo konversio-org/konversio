@@ -9,6 +9,8 @@ import { useFollowUp } from 'dashboard/composables/pilot/useFollowUp';
 import { useRewrite } from 'dashboard/composables/pilot/useRewrite';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
+import { emitter } from 'shared/helpers/mitt';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
 
 const props = defineProps({
   conversationId: {
@@ -80,7 +82,14 @@ const actions = computed(() => {
       icon: 'i-ph-note-fill',
       handler: async () => {
         const result = await summary.generate(props.conversationId);
-        if (result) emit('summary', result);
+        if (!result) return;
+        // Insert into the composer as a draft (mirrors how Copilot's
+        // "Use this response" hands text back). The rich editor parses
+        // the markdown so the agent can edit, switch to Private Note,
+        // and send. INSERT_INTO_RICH_EDITOR covers Website/Email channels
+        // — plain-text channels never reach Pilot today.
+        emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, result);
+        emit('summary', result);
       },
     });
   }
