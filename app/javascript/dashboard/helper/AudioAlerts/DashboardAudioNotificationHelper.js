@@ -179,15 +179,13 @@ export class DashboardAudioNotificationHelper {
       conversation?.meta?.assignee?.id ?? conversation?.assignee_id;
     if (assigneeId !== this.currentUser.id) return;
 
-    // Mirror onNewMessage: if the agent is actively on the dashboard
-    // (and hasn't opted into foreground alerts), don't badge or beep —
-    // they can see the conversation arrive in their inbox directly. The
-    // existing initFaviconSwitcher then clears any badge on the next
-    // visibilitychange→visible, so peripheral signal is naturally
-    // dismissed the moment the agent looks at the tab.
-    if (!this.shouldPlayAlert()) return;
+    // Show favicon badge when the agent's tab is backgrounded
+    if (!WindowVisibilityHelper.isWindowVisible()) {
+      showBadgeOnFavicon();
+    }
 
-    showBadgeOnFavicon();
+    // Audio only when window is hidden or foreground alerts enabled
+    if (!this.shouldPlayAlert()) return;
 
     const { audioAlertType } = this.notificationConfig;
     const assignmentAlertsEnabled =
@@ -217,10 +215,6 @@ export class DashboardAudioNotificationHelper {
       return;
     }
 
-    if (!this.shouldNotifyOnMessage(message)) {
-      return;
-    }
-
     // If the message type is not incoming or private, then dismiss the alert
     const { message_type: messageType, private: isPrivate } = message;
     if (messageType !== MESSAGE_TYPE.INCOMING && !isPrivate) {
@@ -232,15 +226,24 @@ export class DashboardAudioNotificationHelper {
       if (this.store.isMessageFromCurrentConversation(message)) {
         return;
       }
+    }
 
-      // If the user has disabled alerts when active on the dashboard, the dismiss the alert
-      if (this.notificationConfig.playAlertOnlyWhenHidden) {
-        return;
-      }
+    // Always show favicon badge for valid incoming messages
+    showBadgeOnFavicon();
+
+    // Audio alerts respect user preferences
+    if (!this.shouldNotifyOnMessage(message)) {
+      return;
+    }
+
+    if (
+      WindowVisibilityHelper.isWindowVisible() &&
+      this.notificationConfig.playAlertOnlyWhenHidden
+    ) {
+      return;
     }
 
     this.playAudioAlert();
-    showBadgeOnFavicon();
     this.playAudioEvery30Seconds();
   };
 }
