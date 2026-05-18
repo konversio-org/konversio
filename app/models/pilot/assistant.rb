@@ -72,15 +72,23 @@ class Pilot::Assistant < ApplicationRecord
     name
   end
 
+  # No avatar attachment support yet; subclasses or future migrations can
+  # override. Until then `avatar_url` is always nil so push_event_data
+  # falls through to `default_avatar_url`.
   def avatar_url(*)
     nil
+  end
+
+  def default_avatar_url
+    '/assets/images/konversio_bot.svg'
   end
 
   def push_event_data(inbox = nil)
     {
       id: id,
       name: name,
-      avatar_url: avatar_url || inbox&.avatar_url,
+      avatar_url: avatar_url.presence || inbox&.avatar_url || default_avatar_url,
+      description: description,
       type: 'agent_bot'
     }
   end

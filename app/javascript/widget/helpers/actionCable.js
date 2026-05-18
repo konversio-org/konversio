@@ -108,8 +108,13 @@ class ActionCableConnector extends BaseActionCableConnector {
         .id;
     const isUserTypingOnAnotherConversation =
       data.conversation && data.conversation.id !== activeConversationId;
+    // The widget channel receives typing broadcasts for every participant,
+    // including the customer themselves. Without this filter, the customer's
+    // own keystrokes (rebroadcast back to their channel for the dashboard)
+    // render as "agent typing", leaving the indicator stuck.
+    const isSelfTyping = data.user && data.user.type === 'contact';
 
-    if (isUserTypingOnAnotherConversation || data.is_private) {
+    if (isUserTypingOnAnotherConversation || data.is_private || isSelfTyping) {
       return;
     }
     this.clearTimer();
