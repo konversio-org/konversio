@@ -168,6 +168,29 @@ export class DashboardAudioNotificationHelper {
     return shouldPlayAudio.some(Boolean);
   };
 
+  onAssigneeChanged = conversation => {
+    // Triggered when ActionCable broadcasts `assignee.changed`. The
+    // canonical "now you must notice this" moment for bot→human handoffs:
+    // the customer-facing message that prompted the handoff is suppressed
+    // by the `pending` filter in onNewMessage, so without this hook the
+    // assigned agent would never get a favicon badge or audio cue.
+    if (!this.currentUser) return;
+    const assigneeId =
+      conversation?.meta?.assignee?.id ?? conversation?.assignee_id;
+    if (assigneeId !== this.currentUser.id) return;
+
+    showBadgeOnFavicon();
+
+    const { audioAlertType } = this.notificationConfig;
+    const assignmentAlertsEnabled =
+      audioAlertType.includes('all') ||
+      audioAlertType.includes(EVENT_TYPES.ASSIGNED) ||
+      audioAlertType.includes('mine');
+    if (assignmentAlertsEnabled && this.shouldPlayAlert()) {
+      this.playAudioAlert();
+    }
+  };
+
   onNewMessage = message => {
     // If the user does not have the permission to view the conversation, then dismiss the alert
     // FIX ME: There shouldn't be a new message if the user has no access to the conversation.
