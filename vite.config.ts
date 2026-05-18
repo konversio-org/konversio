@@ -44,6 +44,12 @@ if (isLibraryMode) {
 
 export default defineConfig({
   plugins: plugins,
+  server: {
+    watch: {
+      usePolling: true,
+      interval: 1000,
+    },
+  },
   build: {
     rollupOptions: {
       output: {
