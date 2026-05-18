@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_18_005607) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -331,102 +331,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.datetime "updated_at", precision: nil, null: false
   end
 
-  create_table "pilot_assistant_responses", force: :cascade do |t|
-    t.string "question", null: false
-    t.text "answer", null: false
-    t.vector "embedding", limit: 1536
-    t.bigint "assistant_id", null: false
-    t.bigint "documentable_id"
-    t.bigint "account_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "status", default: 1, null: false
-    t.string "documentable_type"
-    t.boolean "edited", default: false, null: false
-    t.index ["account_id"], name: "index_pilot_assistant_responses_on_account_id"
-    t.index ["assistant_id"], name: "index_pilot_assistant_responses_on_assistant_id"
-    t.index ["documentable_id", "documentable_type"], name: "idx_cap_asst_resp_on_documentable"
-    t.index ["embedding"], name: "vector_idx_knowledge_entries_embedding", using: :ivfflat
-    t.index ["status"], name: "index_pilot_assistant_responses_on_status"
-  end
-
-  create_table "pilot_assistants", force: :cascade do |t|
-    t.string "name", null: false
-    t.bigint "account_id", null: false
-    t.string "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.jsonb "config", default: {}, null: false
-    t.jsonb "response_guidelines", default: []
-    t.jsonb "guardrails", default: []
-    t.index ["account_id"], name: "index_pilot_assistants_on_account_id"
-  end
-
-  create_table "pilot_custom_tools", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.string "slug", null: false
-    t.string "title", null: false
-    t.text "description"
-    t.string "http_method", default: "GET", null: false
-    t.text "endpoint_url", null: false
-    t.text "request_template"
-    t.text "response_template"
-    t.string "auth_type", default: "none"
-    t.jsonb "auth_config", default: {}
-    t.jsonb "param_schema", default: []
-    t.boolean "enabled", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id", "slug"], name: "index_pilot_custom_tools_on_account_id_and_slug", unique: true
-    t.index ["account_id"], name: "index_pilot_custom_tools_on_account_id"
-  end
-
-  create_table "pilot_documents", force: :cascade do |t|
-    t.string "name"
-    t.string "external_link", null: false
-    t.text "content"
-    t.bigint "assistant_id", null: false
-    t.bigint "account_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "status", default: 0, null: false
-    t.jsonb "metadata", default: {}
-    t.integer "sync_status"
-    t.datetime "last_synced_at"
-    t.datetime "last_sync_attempted_at"
-    t.index ["account_id", "sync_status"], name: "index_pilot_documents_on_account_id_and_sync_status"
-    t.index ["account_id"], name: "index_pilot_documents_on_account_id"
-    t.index ["assistant_id", "external_link"], name: "index_pilot_documents_on_assistant_id_and_external_link", unique: true
-    t.index ["assistant_id"], name: "index_pilot_documents_on_assistant_id"
-    t.index ["status"], name: "index_pilot_documents_on_status"
-  end
-
-  create_table "pilot_inboxes", force: :cascade do |t|
-    t.bigint "pilot_assistant_id", null: false
-    t.bigint "inbox_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["pilot_assistant_id", "inbox_id"], name: "index_pilot_inboxes_on_pilot_assistant_id_and_inbox_id", unique: true
-    t.index ["pilot_assistant_id"], name: "index_pilot_inboxes_on_pilot_assistant_id"
-    t.index ["inbox_id"], name: "index_pilot_inboxes_on_inbox_id"
-  end
-
-  create_table "pilot_scenarios", force: :cascade do |t|
-    t.string "title"
-    t.text "description"
-    t.text "instruction"
-    t.jsonb "tools", default: []
-    t.boolean "enabled", default: true, null: false
-    t.bigint "assistant_id", null: false
-    t.bigint "account_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_pilot_scenarios_on_account_id"
-    t.index ["assistant_id", "enabled"], name: "index_pilot_scenarios_on_assistant_id_and_enabled"
-    t.index ["assistant_id"], name: "index_pilot_scenarios_on_assistant_id"
-    t.index ["enabled"], name: "index_pilot_scenarios_on_enabled"
-  end
-
   create_table "categories", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "portal_id", null: false
@@ -725,6 +629,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.datetime "waiting_since"
     t.text "cached_label_list"
     t.bigint "assignee_agent_bot_id"
+    t.integer "suggested_label_ids", default: [], null: false, array: true
     t.index ["account_id", "display_id"], name: "index_conversations_on_account_id_and_display_id", unique: true
     t.index ["account_id", "id"], name: "index_conversations_on_id_and_account_id"
     t.index ["account_id", "inbox_id", "status", "assignee_id"], name: "conv_acid_inbid_stat_asgnid_idx"
@@ -780,6 +685,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.text "csat_review_notes"
     t.datetime "review_notes_updated_at"
     t.bigint "review_notes_updated_by_id"
+    t.string "pilot_sentiment"
+    t.text "pilot_themes", default: [], array: true
+    t.boolean "pilot_escalation_recommended", default: false, null: false
     t.index ["account_id"], name: "index_csat_survey_responses_on_account_id"
     t.index ["assigned_agent_id"], name: "index_csat_survey_responses_on_assigned_agent_id"
     t.index ["contact_id"], name: "index_csat_survey_responses_on_contact_id"
@@ -1090,6 +998,102 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_17_022346) do
     t.index ["secondary_actor_type", "secondary_actor_id"], name: "uniq_secondary_actor_per_account_notifications"
     t.index ["user_id", "account_id", "snoozed_until", "read_at"], name: "idx_notifications_performance"
     t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "pilot_assistant_responses", force: :cascade do |t|
+    t.string "question", null: false
+    t.text "answer", null: false
+    t.vector "embedding", limit: 1536
+    t.bigint "assistant_id", null: false
+    t.bigint "documentable_id"
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "status", default: 1, null: false
+    t.string "documentable_type"
+    t.boolean "edited", default: false, null: false
+    t.index ["account_id"], name: "index_pilot_assistant_responses_on_account_id"
+    t.index ["assistant_id"], name: "index_pilot_assistant_responses_on_assistant_id"
+    t.index ["documentable_id", "documentable_type"], name: "idx_cap_asst_resp_on_documentable"
+    t.index ["embedding"], name: "vector_idx_knowledge_entries_embedding", using: :ivfflat
+    t.index ["status"], name: "index_pilot_assistant_responses_on_status"
+  end
+
+  create_table "pilot_assistants", force: :cascade do |t|
+    t.string "name", null: false
+    t.bigint "account_id", null: false
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "config", default: {}, null: false
+    t.jsonb "response_guidelines", default: []
+    t.jsonb "guardrails", default: []
+    t.index ["account_id"], name: "index_pilot_assistants_on_account_id"
+  end
+
+  create_table "pilot_custom_tools", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.text "description"
+    t.string "http_method", default: "GET", null: false
+    t.text "endpoint_url", null: false
+    t.text "request_template"
+    t.text "response_template"
+    t.string "auth_type", default: "none"
+    t.jsonb "auth_config", default: {}
+    t.jsonb "param_schema", default: []
+    t.boolean "enabled", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "slug"], name: "index_pilot_custom_tools_on_account_id_and_slug", unique: true
+    t.index ["account_id"], name: "index_pilot_custom_tools_on_account_id"
+  end
+
+  create_table "pilot_documents", force: :cascade do |t|
+    t.string "name"
+    t.string "external_link", null: false
+    t.text "content"
+    t.bigint "assistant_id", null: false
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
+    t.jsonb "metadata", default: {}
+    t.integer "sync_status"
+    t.datetime "last_synced_at"
+    t.datetime "last_sync_attempted_at"
+    t.index ["account_id", "sync_status"], name: "index_pilot_documents_on_account_id_and_sync_status"
+    t.index ["account_id"], name: "index_pilot_documents_on_account_id"
+    t.index ["assistant_id", "external_link"], name: "index_pilot_documents_on_assistant_id_and_external_link", unique: true
+    t.index ["assistant_id"], name: "index_pilot_documents_on_assistant_id"
+    t.index ["status"], name: "index_pilot_documents_on_status"
+  end
+
+  create_table "pilot_inboxes", force: :cascade do |t|
+    t.bigint "pilot_assistant_id", null: false
+    t.bigint "inbox_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["inbox_id"], name: "index_pilot_inboxes_on_inbox_id"
+    t.index ["pilot_assistant_id", "inbox_id"], name: "index_pilot_inboxes_on_pilot_assistant_id_and_inbox_id", unique: true
+    t.index ["pilot_assistant_id"], name: "index_pilot_inboxes_on_pilot_assistant_id"
+  end
+
+  create_table "pilot_scenarios", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.text "instruction"
+    t.jsonb "tools", default: []
+    t.boolean "enabled", default: true, null: false
+    t.bigint "assistant_id", null: false
+    t.bigint "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_pilot_scenarios_on_account_id"
+    t.index ["assistant_id", "enabled"], name: "index_pilot_scenarios_on_assistant_id_and_enabled"
+    t.index ["assistant_id"], name: "index_pilot_scenarios_on_assistant_id"
+    t.index ["enabled"], name: "index_pilot_scenarios_on_enabled"
   end
 
   create_table "platform_app_permissibles", force: :cascade do |t|

@@ -2,19 +2,22 @@
 #
 # Table name: csat_survey_responses
 #
-#  id                         :bigint           not null, primary key
-#  csat_review_notes          :text
-#  feedback_message           :text
-#  rating                     :integer          not null
-#  review_notes_updated_at    :datetime
-#  created_at                 :datetime         not null
-#  updated_at                 :datetime         not null
-#  account_id                 :bigint           not null
-#  assigned_agent_id          :bigint
-#  contact_id                 :bigint           not null
-#  conversation_id            :bigint           not null
-#  message_id                 :bigint           not null
-#  review_notes_updated_by_id :bigint
+#  id                           :bigint           not null, primary key
+#  csat_review_notes            :text
+#  feedback_message             :text
+#  pilot_escalation_recommended :boolean          default(FALSE), not null
+#  pilot_sentiment              :string
+#  pilot_themes                 :text             default([]), is an Array
+#  rating                       :integer          not null
+#  review_notes_updated_at      :datetime
+#  created_at                   :datetime         not null
+#  updated_at                   :datetime         not null
+#  account_id                   :bigint           not null
+#  assigned_agent_id            :bigint
+#  contact_id                   :bigint           not null
+#  conversation_id              :bigint           not null
+#  message_id                   :bigint           not null
+#  review_notes_updated_by_id   :bigint
 #
 # Indexes
 #
@@ -44,4 +47,16 @@ class CsatSurveyResponse < ApplicationRecord
   scope :filter_by_team_id, ->(team_id) { joins(:conversation).where(conversations: { team_id: team_id }) if team_id.present? }
   # filter by rating value
   scope :filter_by_rating, ->(rating) { where(rating: rating) if rating.present? }
+
+  after_create_commit :enqueue_pilot_analysis
+
+  private
+
+  def enqueue_pilot_analysis
+    return if feedback_message.blank?
+    return unless account&.respond_to?(:pilot_enabled) && account.pilot_enabled
+    return unless account.respond_to?(:pilot_csat_analysis_enabled) && account.pilot_csat_analysis_enabled
+
+    Pilot::CsatAnalysisJob.perform_later(id)
+  end
 end

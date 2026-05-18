@@ -20,7 +20,26 @@ class PilotAutopilotListener < BaseListener
     ::Pilot::AutopilotInferenceJob.perform_later(message_id: message.id)
   end
 
+  # Enqueues the Pilot Label Suggestion job for every new conversation
+  # when the account has `pilot_label_suggestion_enabled = true`. The
+  # job is non-destructive: it populates `conversation.suggested_label_ids`
+  # so the UI can offer one-click apply chips above the label selector.
+  def conversation_created(event)
+    conversation = extract_conversation_and_account(event)[0]
+    return if conversation.blank?
+    return unless label_suggestion_active?(conversation.account)
+
+    ::Pilot::LabelSuggestionJob.perform_later(conversation.id)
+  end
+
   private
+
+  def label_suggestion_active?(account)
+    return false unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
+    return false unless account.respond_to?(:pilot_label_suggestion_enabled) && account.pilot_label_suggestion_enabled
+
+    true
+  end
 
   def autopilot_active?(account, inbox)
     return false unless account.respond_to?(:pilot_enabled) && account.pilot_enabled

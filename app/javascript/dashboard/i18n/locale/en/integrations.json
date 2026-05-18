@@ -397,6 +397,36 @@
       "LOADING": "Generating briefing…",
       "ERROR": "Could not generate a briefing. Please try again."
     },
+    "SUMMARY": {
+      "BUTTON_LABEL": "Summarize",
+      "LOADING": "Summarizing…",
+      "ERROR": "Could not generate a summary. Please try again.",
+      "POPOVER_TITLE": "Conversation summary",
+      "CLOSE": "Close"
+    },
+    "FOLLOW_UP": {
+      "BUTTON_LABEL": "Suggest follow-up",
+      "LOADING": "Thinking…",
+      "ERROR": "Could not fetch suggestions. Please try again.",
+      "POPOVER_TITLE": "Clarifying questions",
+      "INSERT": "Insert"
+    },
+    "REWRITE": {
+      "BUTTON_LABEL": "Rewrite",
+      "LOADING": "Rewriting…",
+      "ERROR": "Could not rewrite. Please try again.",
+      "TONE_PICKER_TITLE": "Pick a tone",
+      "TONES": {
+        "FRIENDLY": "Friendly",
+        "FORMAL": "Formal",
+        "CONCISE": "Concise",
+        "EMPATHETIC": "Empathetic",
+        "ASSERTIVE": "Assertive"
+      }
+    },
+    "LABEL_SUGGESTION": {
+      "CHIP_TITLE": "Suggested labels"
+    },
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "Assistants",
       "SWITCH_ASSISTANT": "Switch between assistants",
