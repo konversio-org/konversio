@@ -5,6 +5,8 @@ module Pilot
   # posts the reply as an outgoing message or transitions the conversation
   # to `pending` for human follow-up.
   class AutopilotInferenceJob < ApplicationJob
+    include Events::Types
+
     queue_as :default
 
     def perform(message_id:)
@@ -16,11 +18,7 @@ module Pilot
       assistant = assistant_for(conversation.inbox)
       return if assistant.blank?
 
-      result = ::Custom::Pilot::AutopilotService.new(
-        assistant: assistant,
-        conversation: conversation,
-        account: assistant.account
-      ).perform
+      result = run_inference_with_typing(conversation, assistant)
 
       if result.handover.handover?
         process_handover(conversation, assistant, result)
@@ -34,6 +32,23 @@ module Pilot
     end
 
     private
+
+    def run_inference_with_typing(conversation, assistant)
+      dispatch_typing(CONVERSATION_TYPING_ON, conversation, assistant)
+      ::Custom::Pilot::AutopilotService.new(
+        assistant: assistant,
+        conversation: conversation,
+        account: assistant.account
+      ).perform
+    ensure
+      dispatch_typing(CONVERSATION_TYPING_OFF, conversation, assistant)
+    end
+
+    def dispatch_typing(event, conversation, assistant)
+      Rails.configuration.dispatcher.dispatch(event, Time.zone.now, conversation: conversation, user: assistant)
+    rescue StandardError => e
+      Rails.logger.warn("[pilot.autopilot_inference_job] typing dispatch failed event=#{event}: #{e.message}")
+    end
 
     def eligible?(message)
       return false unless message.message_type == 'incoming'
@@ -67,14 +82,25 @@ module Pilot
       )
     end
 
-    def process_handover(conversation, _assistant, result)
-      conversation.update(status: :pending) unless conversation.pending?
+    # Customer-facing handover per pilot-autopilot spec ("Handover to human agent"
+    # requirement) and mirroring Chatwoot Enterprise Captain's
+    # `Captain::Conversation::ResponseBuilderJob#create_handoff_message`.
+    # Uses Chatwoot core's `bot_handoff!` (transitions status, resets
+    # waiting_since, dispatches CONVERSATION_BOT_HANDOFF) instead of a raw
+    # status update. Posts a customer-visible message from the assistant's
+    # configured handoff_message, falling back to the i18n default.
+    def process_handover(conversation, assistant, _result)
+      conversation.bot_handoff! unless conversation.open?
+
+      content = assistant.config['handoff_message'].presence ||
+                I18n.t('conversations.pilot.handoff')
+
       conversation.messages.create!(
         message_type: :outgoing,
         account_id: conversation.account_id,
         inbox_id: conversation.inbox_id,
-        content: "Autopilot handover: #{result.handover.reason}",
-        private: true
+        sender: assistant,
+        content: content
       )
     end
   end

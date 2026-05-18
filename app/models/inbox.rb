@@ -167,8 +167,19 @@ class Inbox < ApplicationRecord
   end
 
   def active_bot?
-    agent_bot_inbox&.active? || hooks.where(app_id: %w[dialogflow],
-                                            status: 'enabled').count.positive?
+    agent_bot_inbox&.active? ||
+      hooks.where(app_id: %w[dialogflow], status: 'enabled').count.positive? ||
+      pilot_assistant_attached?
+  end
+
+  # An inbox with a Pilot::Assistant attached follows the same lifecycle as
+  # an inbox with an AgentBot: incoming conversations start in `pending`
+  # status so the bot can respond, and transition to `open` via
+  # `Conversation#bot_handoff!` when the bot escalates to a human.
+  def pilot_assistant_attached?
+    return false unless defined?(::Pilot::Inbox)
+
+    ::Pilot::Inbox.exists?(inbox_id: id)
   end
 
   def inbox_type

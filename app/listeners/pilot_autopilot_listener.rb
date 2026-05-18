@@ -11,6 +11,11 @@ class PilotAutopilotListener < BaseListener
     return unless message.message_type == 'incoming'
     return if message.private?
     return unless autopilot_active?(account, message.inbox)
+    # Only respond while the conversation is bot-handled. After
+    # `Conversation#bot_handoff!` transitions status to `open`, a human
+    # agent has taken over — the bot must stop firing inference on every
+    # subsequent customer message to avoid handoff loops.
+    return unless message.conversation&.pending?
 
     ::Pilot::AutopilotInferenceJob.perform_later(message_id: message.id)
   end
