@@ -1,7 +1,8 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
 
 // In-composer preview surface for Pilot one-shot actions (Suggest a
 // reply, Summarize the conversation). Conceptually mirrors the
@@ -10,13 +11,12 @@ import NextButton from 'dashboard/components-next/button/Button.vue';
 // preview the agent can Accept (merge into composer) or Dismiss
 // (discard, restore the original editor).
 //
-// Refinement loop ("make it shorter") is deliberately NOT implemented
-// here. Konversio already ships iterative chat via the Copilot drawer
-// (Ask Copilot menu item); duplicating that on the composer surface
-// would be redundant.
+// Layout matches Captain's UX: violet-tinted box for the active state,
+// Discard/Accept buttons positioned outside the box below. Cmd/Ctrl +
+// Enter on the textarea accepts (matches Captain's keyboard shortcut).
 
 const props = defineProps({
-  // 'briefing' | 'summary' — drives the title and the empty-state copy.
+  // 'briefing' | 'summary' — drives the loading copy.
   actionKey: {
     type: String,
     required: true,
@@ -64,89 +64,97 @@ const onAccept = () => {
 
 const onDismiss = () => emit('dismiss');
 
+// Keyboard shortcut: Cmd/Ctrl + Enter accepts. Active for the lifetime
+// of the panel; removed on unmount so it doesn't leak past the swap.
+const handleKey = e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    onAccept();
+  }
+};
+onMounted(() => document.addEventListener('keydown', handleKey));
+onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
+
 const dotDelay1 = { animationDelay: '-0.3s' };
 const dotDelay2 = { animationDelay: '-0.15s' };
 </script>
 
 <template>
-  <div
-    class="flex flex-col gap-3 rounded-lg border border-n-iris-7 bg-n-iris-2 p-4"
-    role="region"
-    :aria-label="
-      isSummary
-        ? t('PILOT.SUMMARY.PREVIEW_TITLE')
-        : t('PILOT.BRIEFING.PREVIEW_TITLE')
-    "
-  >
-    <div class="flex items-center justify-between">
-      <h4 v-if="isSummary" class="text-sm font-semibold text-n-iris-11">
-        {{ t('PILOT.SUMMARY.PREVIEW_TITLE') }}
-      </h4>
-      <h4 v-else class="text-sm font-semibold text-n-iris-11">
-        {{ t('PILOT.BRIEFING.PREVIEW_TITLE') }}
-      </h4>
-      <button
-        type="button"
-        :aria-label="t('PILOT.PREVIEW_DISMISS')"
-        class="i-ph-x size-4 text-n-iris-11 hover:text-n-iris-12 cursor-pointer"
-        @click="onDismiss"
-      />
-    </div>
-
-    <!-- Thinking state -->
+  <div class="flex flex-col gap-3">
+    <!-- Violet status/preview box. Captain replaces the whole editor
+         area with this tinted region; buttons sit below, outside it. -->
     <div
-      v-if="isGenerating"
-      class="flex items-center gap-2 py-6 text-sm text-n-iris-11"
+      class="rounded-lg bg-n-iris-3 px-4 py-3 text-n-iris-12"
+      role="region"
+      :aria-label="
+        isSummary
+          ? t('PILOT.SUMMARY.PREVIEW_TITLE')
+          : t('PILOT.BRIEFING.PREVIEW_TITLE')
+      "
     >
-      <span class="flex items-center gap-1">
-        <span
-          :style="dotDelay1"
-          class="size-1.5 rounded-full bg-n-iris-9 animate-bounce"
-        />
-        <span
-          :style="dotDelay2"
-          class="size-1.5 rounded-full bg-n-iris-9 animate-bounce"
-        />
-        <span class="size-1.5 rounded-full bg-n-iris-9 animate-bounce" />
-      </span>
-      <span v-if="isSummary">{{ t('PILOT.SUMMARY.LOADING') }}</span>
-      <span v-else>{{ t('PILOT.BRIEFING.LOADING') }}</span>
-    </div>
+      <!-- Thinking state -->
+      <div
+        v-if="isGenerating"
+        class="flex items-center gap-2 py-2 text-sm text-n-iris-11"
+      >
+        <PilotSparkleIcon class="size-4 shrink-0" />
+        <span v-if="isSummary">{{ t('PILOT.SUMMARY.LOADING') }}</span>
+        <span v-else>{{ t('PILOT.BRIEFING.LOADING') }}</span>
+        <span class="ml-1 flex items-center gap-1">
+          <span
+            :style="dotDelay1"
+            class="size-1 rounded-full bg-n-iris-9 animate-bounce"
+          />
+          <span
+            :style="dotDelay2"
+            class="size-1 rounded-full bg-n-iris-9 animate-bounce"
+          />
+          <span class="size-1 rounded-full bg-n-iris-9 animate-bounce" />
+        </span>
+      </div>
 
-    <!-- Error state -->
-    <div
-      v-else-if="errorMessage"
-      class="rounded-md border border-n-ruby-7 bg-n-ruby-2 p-3 text-sm text-n-ruby-11"
-      role="alert"
-    >
-      {{ errorMessage }}
-    </div>
+      <!-- Error state -->
+      <div
+        v-else-if="errorMessage"
+        class="py-2 text-sm text-n-ruby-11"
+        role="alert"
+      >
+        {{ errorMessage }}
+      </div>
 
-    <!-- Preview state -->
-    <template v-else>
+      <!-- Preview state -->
       <textarea
+        v-else
         v-model="draft"
-        rows="6"
-        class="w-full resize-none rounded-md border border-n-strong bg-n-solid-3 p-2 text-sm text-n-slate-12 focus:outline-none focus:ring-2 focus:ring-n-iris-7"
+        rows="5"
+        class="w-full resize-none border-0 bg-transparent p-0 text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
         :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
       />
-      <div class="flex items-center justify-end gap-2">
-        <NextButton
-          ghost
-          slate
-          sm
-          :label="t('PILOT.PREVIEW_DISMISS')"
-          @click="onDismiss"
-        />
-        <NextButton
-          solid
-          sm
-          :disabled="acceptDisabled"
-          :label="t('PILOT.PREVIEW_ACCEPT')"
-          class="!bg-n-iris-9 hover:enabled:!bg-n-iris-10 text-white"
-          @click="onAccept"
-        />
-      </div>
-    </template>
+    </div>
+
+    <!-- Action row sits outside the box, mirroring Captain's layout -->
+    <div class="flex items-center justify-between">
+      <NextButton
+        ghost
+        slate
+        sm
+        :label="t('PILOT.PREVIEW_DISMISS')"
+        @click="onDismiss"
+      />
+      <NextButton
+        solid
+        sm
+        :disabled="acceptDisabled"
+        class="!bg-n-iris-9 hover:enabled:!bg-n-iris-10 text-white"
+        @click="onAccept"
+      >
+        <span class="flex items-center gap-1.5">
+          <span>{{ t('PILOT.PREVIEW_ACCEPT') }}</span>
+          <span class="text-xs opacity-75">{{
+            t('PILOT.PREVIEW_ACCEPT_SHORTCUT')
+          }}</span>
+        </span>
+      </NextButton>
+    </div>
   </div>
 </template>
