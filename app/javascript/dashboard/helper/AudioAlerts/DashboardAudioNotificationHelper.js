@@ -179,6 +179,14 @@ export class DashboardAudioNotificationHelper {
       conversation?.meta?.assignee?.id ?? conversation?.assignee_id;
     if (assigneeId !== this.currentUser.id) return;
 
+    // Mirror onNewMessage: if the agent is actively on the dashboard
+    // (and hasn't opted into foreground alerts), don't badge or beep —
+    // they can see the conversation arrive in their inbox directly. The
+    // existing initFaviconSwitcher then clears any badge on the next
+    // visibilitychange→visible, so peripheral signal is naturally
+    // dismissed the moment the agent looks at the tab.
+    if (!this.shouldPlayAlert()) return;
+
     showBadgeOnFavicon();
 
     const { audioAlertType } = this.notificationConfig;
@@ -186,7 +194,7 @@ export class DashboardAudioNotificationHelper {
       audioAlertType.includes('all') ||
       audioAlertType.includes(EVENT_TYPES.ASSIGNED) ||
       audioAlertType.includes('mine');
-    if (assignmentAlertsEnabled && this.shouldPlayAlert()) {
+    if (assignmentAlertsEnabled) {
       this.playAudioAlert();
     }
   };
