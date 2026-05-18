@@ -392,6 +392,7 @@
     "NAME": "Pilot",
     "HEADER_KNOW_MORE": "Know more",
     "ACTIONS_MENU_LABEL": "Pilot AI actions",
+    "ACTIONS_MENU_LOADING_LABEL": "Generating…",
     "BRIEFING": {
       "BUTTON_LABEL": "Suggest a reply",
       "LOADING": "Generating briefing…",
