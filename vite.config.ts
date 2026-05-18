@@ -78,6 +78,13 @@ export default defineConfig({
       : undefined,
   },
   resolve: {
+    // Dedupe Lit so ninja-keys's import and the patched mwc-icon's import
+    // resolve to a single module instance — kills the runtime
+    // "Multiple versions of Lit loaded" warning. The mwc-icon patch
+    // (patches/@material__mwc-icon@0.25.3.patch) rewrites its bare `lit`
+    // import to `lit/index.js` because esbuild pre-bundling of mwc-icon
+    // chokes on the .css.js sub-file's bare specifier under pnpm.
+    dedupe: ['lit', 'lit-element', 'lit-html', '@lit/reactive-element'],
     alias: {
       vue: 'vue/dist/vue.esm-bundler.js',
       components: path.resolve('./app/javascript/dashboard/components'),
@@ -90,6 +97,16 @@ export default defineConfig({
       widget: path.resolve('./app/javascript/widget'),
       assets: path.resolve('./app/javascript/dashboard/assets'),
     },
+  },
+  optimizeDeps: {
+    include: [
+      'lit',
+      'lit-element',
+      'lit-html',
+      '@lit/reactive-element',
+      '@chatwoot/ninja-keys',
+      '@material/mwc-icon',
+    ],
   },
   test: {
     environment: 'jsdom',
