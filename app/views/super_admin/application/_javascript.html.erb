@@ -1,0 +1,52 @@
+<%#
+# Javascript Partial
+
+This partial imports the necessary javascript on each page.
+By default, it includes the application JS,
+but each page can define additional JS sources
+by providing a `content_for(:javascript)` block.
+%>
+
+<% Administrate::Engine.javascripts.each do |js_path| %>
+  <%= javascript_include_tag js_path %>
+<% end %>
+
+<%= yield :javascript %>
+
+<% if Rails.env.test? %>
+  <%= javascript_tag do %>
+    $.fx.off = true;
+    $.ajaxSetup({ async: false });
+  <% end %>
+<% end %>
+
+<% if KonversioHub.support_config[:support_website_token].present? %>
+<script>
+window.konversioSettings = {
+  hideMessageBubble: true,
+};
+
+(function(d,t) {
+  var BASE_URL = '';
+  var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+  g.src= BASE_URL + "/packs/js/sdk.js";
+  g.async = true;
+  s.parentNode.insertBefore(g,s);
+  g.onload=function(){
+    window.konversioSDK.run({
+      websiteToken: '<%= KonversioHub.support_config[:support_website_token] %>',
+      baseUrl: '<%= KonversioHub.support_config[:support_script_url] %>'
+    })
+  }
+})(document,"script");
+
+window.addEventListener('konversio:ready', function() {
+  window.$konversio.setUser('<%= KonversioHub.installation_identifier %>', {
+    identifier_hash: '<%= KonversioHub.support_config[:support_identifier_hash] %>',
+    email: '<%= SuperAdmin.first.email %>',
+    name: '<%= SuperAdmin.first.name %>'
+  });
+})
+
+</script>
+<% end %>

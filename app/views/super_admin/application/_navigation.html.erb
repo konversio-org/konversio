@@ -32,7 +32,7 @@ as defined by the routes in the `admin/` namespace
     <ul class="my-4">
       <%= render partial: "nav_item", locals: { icon: 'icon-grid-line', url: super_admin_root_url, label: 'Dashboard' } %>
       <% Administrate::Namespace.new(namespace).resources.each do |resource| %>
-        <% next if ["account_users", "access_tokens", "installation_configs", "dashboard", "devise/sessions", "app_configs", "instance_statuses", "settings"].include?  resource.resource %>
+        <% next if ["account_users", "access_tokens", "installation_configs", "dashboard", "devise/sessions", "app_configs", "instance_statuses", "settings", "llm_settings", "llm_setting"].include?  resource.resource %>
         <%= render partial: "nav_item", locals: {
             icon: sidebar_icons[resource.resource.to_sym],
             url: resource_index_route(resource),
@@ -41,7 +41,7 @@ as defined by the routes in the `admin/` namespace
         %>
 
       <% end %>
-      <%= render partial: "nav_item", locals: { icon: 'icon-flashlight-line', url: super_admin_llm_settings_url, label: 'LLM Settings' } %>
+      <%= render partial: "nav_item", locals: { icon: 'icon-pilot', url: super_admin_llm_settings_url, label: 'Pilot' } %>
       <%= render 'settings_menu', open: settings_open? %>
     </ul>
   </div>
