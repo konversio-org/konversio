@@ -1,5 +1,5 @@
 module Llm
-  # Hybrid registry for LLM providers used by Pilot.
+  # Registry for LLM providers used by Pilot.
   #
   # `DEFAULTS` ships metadata for well-known providers — operators only set
   # `PILOT_LLM_<SLUG>_API_KEY` to enable them. Any additional provider works
@@ -22,7 +22,7 @@ module Llm
 
     SLOT_DEFAULT_MODELS = {
       chat: -> { Llm::Config::DEFAULT_MODEL },
-      embedding: -> { GlobalConfigService.load('PILOT_EMBEDDING_MODEL', nil).presence || 'text-embedding-3-small' },
+      embedding: -> { 'text-embedding-3-small' },
       audio: -> { 'whisper-1' }
     }.freeze
 
@@ -83,14 +83,7 @@ module Llm
       end
 
       def api_key_for(slug)
-        slug = slug.to_sym
-        key = ENV["PILOT_LLM_#{slug.upcase}_API_KEY"].presence
-        return key if key
-
-        # Legacy fallback for the openai slug.
-        return GlobalConfigService.load('PILOT_OPEN_AI_API_KEY', nil).presence if slug == :openai
-
-        nil
+        ENV["PILOT_LLM_#{slug.to_sym.upcase}_API_KEY"].presence
       end
 
       def endpoint_for(slug)
@@ -116,84 +109,27 @@ module Llm
         capable.first
       end
 
-      # Resolved model for a slot. Reads `PILOT_LLM_<SLOT>_MODEL`, then falls
-      # back to the slot's default (chat → DEFAULT_MODEL, embedding →
-      # legacy PILOT_EMBEDDING_MODEL or text-embedding-3-small, audio →
-      # whisper-1).
+      # Resolved model for a slot. Reads `PILOT_LLM_<SLOT>_MODEL`, falls back
+      # to the slot's hardcoded default.
       def slot_model(slot)
         slot = slot.to_sym
         configured = GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_MODEL", nil).presence
         return configured if configured
 
-        # Chat slot keeps its legacy PILOT_OPEN_AI_MODEL fallback.
-        if slot == :chat
-          legacy = GlobalConfigService.load('PILOT_OPEN_AI_MODEL', nil).presence
-          return legacy if legacy
-        end
-
         SLOT_DEFAULT_MODELS[slot].call
-      end
-
-      # Emits a one-line deprecation log when legacy ENV vars are in use.
-      # Called once from `Llm::Config.initialize!`.
-      def log_legacy_deprecation_once
-        return if @legacy_logged
-
-        legacy_set = ENV['PILOT_OPEN_AI_API_KEY'].present? || ENV['PILOT_OPEN_AI_ENDPOINT'].present? ||
-                     ENV['PILOT_OPEN_AI_API_PROVIDER'].present?
-        new_openai_set = ENV['PILOT_LLM_OPENAI_API_KEY'].present?
-        legacy_active = GlobalConfigService.load('PILOT_LLM_ACTIVE_PROVIDER', nil).present? ||
-                        GlobalConfigService.load('PILOT_LLM_ACTIVE_MODEL', nil).present?
-
-        if legacy_set
-          msg = if new_openai_set
-                  'PILOT_OPEN_AI_* env vars are deprecated; PILOT_LLM_OPENAI_* takes precedence. ' \
-                    'Remove the legacy vars to silence this notice.'
-                else
-                  'PILOT_OPEN_AI_* env vars are deprecated; please migrate to PILOT_LLM_OPENAI_*.'
-                end
-          Rails.logger.info("[Llm::ProviderRegistry] #{msg}")
-        end
-
-        if legacy_active
-          Rails.logger.info(
-            '[Llm::ProviderRegistry] PILOT_LLM_ACTIVE_PROVIDER/MODEL are legacy single-slot rows; ' \
-              'values are migrated to PILOT_LLM_CHAT_* on boot. Edit slots via Super Admin > LLM Settings.'
-          )
-        end
-
-        @legacy_logged = true
-      end
-
-      def reset_legacy_log!
-        @legacy_logged = false
       end
 
       private
 
       def resolve_endpoint(slug, defaults)
-        override = ENV["PILOT_LLM_#{slug.upcase}_ENDPOINT"].presence
-        return override if override
-
-        if slug == :openai
-          return GlobalConfigService.load('PILOT_OPEN_AI_ENDPOINT',
-                                          nil).presence || defaults[:endpoint]
-        end
-
-        defaults[:endpoint]
+        ENV["PILOT_LLM_#{slug.upcase}_ENDPOINT"].presence || defaults[:endpoint]
       end
 
       def resolve_openai_compatible(slug, defaults)
         raw = ENV["PILOT_LLM_#{slug.upcase}_OPENAI_COMPATIBLE"].presence
         return parse_bool(raw) if raw
 
-        if slug == :openai && GlobalConfigService.load('PILOT_OPEN_AI_API_PROVIDER', nil).to_s == 'openai_compatible'
-          return true
-        end
-
-        return defaults[:openai_compatible] if defaults.key?(:openai_compatible)
-
-        true
+        defaults.fetch(:openai_compatible, true)
       end
 
       def resolve_capabilities(slug, defaults)

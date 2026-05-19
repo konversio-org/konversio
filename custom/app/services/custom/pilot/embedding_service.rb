@@ -4,11 +4,11 @@ module Custom
   module Pilot
     # Generates a single 1536-dim embedding vector for a piece of text.
     #
-    # The provider is called via the OpenAI-compatible client so any
-    # PILOT_OPEN_AI_ENDPOINT target (Scaleway, Mistral, Nebius, OpenAI, etc.)
-    # works without further branching.
+    # Routes via the embedding slot configured in Super Admin > LLM Settings
+    # (`Llm::Config.for_slot(:embedding)`), so any OpenAI-compatible provider
+    # (Scaleway, Nebius, OpenAI, etc.) works without further branching.
     #
-    # The configured `PILOT_EMBEDDING_DIMENSIONS` value is passed as
+    # The configured `PILOT_LLM_EMBEDDING_DIMENSIONS` value is passed as
     # `dimensions:` on the request. Servers that support server-side
     # truncation (OpenAI text-embedding-3-*) will honour it. Servers that
     # don't will still produce their native-size vector; this service then
@@ -81,7 +81,7 @@ module Custom
       end
 
       def embedding_dimensions
-        GlobalConfigService.load('PILOT_EMBEDDING_DIMENSIONS', nil).to_i.then do |dim|
+        GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS', nil).to_i.then do |dim|
           dim.positive? ? dim : EXPECTED_DIMENSION
         end
       end
