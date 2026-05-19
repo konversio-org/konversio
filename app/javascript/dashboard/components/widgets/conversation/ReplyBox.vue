@@ -26,7 +26,6 @@ import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vu
 import AudioRecorder from 'dashboard/components/widgets/WootWriter/AudioRecorder.vue';
 import { AUDIO_FORMATS } from 'shared/constants/messages';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
-import { CMD_AI_ASSIST } from 'dashboard/helper/commandbar/events';
 import {
   getMessageVariables,
   getUndefinedVariablesInMessage,
@@ -528,7 +527,6 @@ export default {
       this.onNewConversationModalActive
     );
     emitter.on(BUS_EVENTS.INSERT_INTO_NORMAL_EDITOR, this.addIntoEditor);
-    emitter.on(CMD_AI_ASSIST, this.executeCopilotAction);
 
     // Pilot in-composer preview lifecycle. PilotActionsMenu fires
     // START → READY/ERROR; ReplyBox renders the swap panel based on
@@ -547,7 +545,6 @@ export default {
       BUS_EVENTS.NEW_CONVERSATION_MODAL,
       this.onNewConversationModalActive
     );
-    emitter.off(CMD_AI_ASSIST, this.executeCopilotAction);
     emitter.off(BUS_EVENTS.PILOT_PREVIEW_START, this.onPilotPreviewStart);
     emitter.off(BUS_EVENTS.PILOT_PREVIEW_READY, this.onPilotPreviewReady);
     emitter.off(BUS_EVENTS.PILOT_PREVIEW_ERROR, this.onPilotPreviewError);
@@ -956,16 +953,6 @@ export default {
       this.updateEditorSelectionWith = content;
       this.onFocus();
     },
-    executeCopilotAction(action, data) {
-      if (action === 'ask_copilot') {
-        const account = this.$store.getters.getCurrentAccount || {};
-        if (account.pilot_enabled && account.pilot_copilot_enabled) {
-          this.pilotCopilotDrawer.openBoundToConversation(this.conversationId);
-          return;
-        }
-      }
-      this.copilot.execute(action, data);
-    },
     onBriefingDraft(draft) {
       if (!draft) return;
       this.message = draft;
@@ -1351,6 +1338,7 @@ export default {
     <ReplyTopPanel
       :mode="replyType"
       :conversation-id="conversationId"
+      :editor-content="message"
       :is-reply-restricted="isReplyRestricted"
       :disabled="
         (copilot.isActive.value && copilot.isButtonDisabled.value) ||
@@ -1362,7 +1350,6 @@ export default {
       @set-reply-mode="setReplyMode"
       @toggle-editor-size="toggleEditorSize"
       @toggle-copilot="copilot.toggleEditor"
-      @execute-copilot-action="executeCopilotAction"
       @briefing-draft="onBriefingDraft"
     />
     <ArticleSearchPopover
@@ -1458,7 +1445,6 @@ export default {
           @toggle-canned-menu="toggleCannedMenu"
           @toggle-variables-menu="toggleVariablesMenu"
           @clear-selection="clearEditorSelection"
-          @execute-copilot-action="executeCopilotAction"
         />
 
         <QuotedEmailPreview
