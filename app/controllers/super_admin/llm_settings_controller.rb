@@ -43,7 +43,9 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
   def apply_preset(slug)
     Llm::Presets.apply!(slug)
     Llm::Config.reset!
-    redirect_to super_admin_llm_settings_path, notice: "Preset '#{slug}' applied."
+    Llm::Config.initialize!
+    flash.now[:notice] = "Preset '#{slug}' applied. Sanity test results below."
+    render_with_slot_tests
   end
 
   def apply_slots(slot_params)
@@ -81,8 +83,16 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     end
     GlobalConfig.clear_cache
     Llm::Config.reset!
+    Llm::Config.initialize!
 
-    redirect_to super_admin_llm_settings_path, notice: 'LLM slot configuration updated.'
+    flash.now[:notice] = 'LLM slot configuration updated. Sanity test results below.'
+    render_with_slot_tests
+  end
+
+  def render_with_slot_tests
+    @test_results = SLOTS.each_with_object({}) { |slot, h| h[slot] = run_slot_test(slot) }
+    load_view_state
+    render :show
   end
 
   def load_view_state
@@ -126,7 +136,7 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
 
   def run_slot_test(slot)
     config = Llm::Config.for_slot(slot)
-    return { ok: false, message: "No available provider for #{slot}." } if config[:api_key].blank?
+    return { state: :not_configured, message: 'No provider is configured for this capability.' } if config[:api_key].blank?
 
     case slot
     when :chat then run_chat_test(config)
@@ -134,31 +144,36 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     when :audio then run_audio_test(config)
     end
   rescue StandardError => e
-    { ok: false, message: e.message }
+    { state: :failed, message: e.message }
   end
 
   def run_chat_test(config)
-    Llm::Config.with_api_key(config[:api_key], api_base: config[:endpoint]) do |context|
-      chat_options = { model: config[:model] }
-      if config[:openai_compatible]
-        chat_options[:provider] = :openai
-        chat_options[:assume_model_exists] = true
-      end
-      response = context.chat(**chat_options).ask('ping')
-      { ok: true, message: response.content.to_s.strip.presence || '(empty response)' }
-    end
+    Llm::Config.reset!
+    Llm::Config.initialize!
+
+    agent = ::Agents::Agent.new(
+      name: 'llm_settings_test',
+      instructions: 'Respond with the single word: pong.',
+      model: config[:model],
+      temperature: 0.0,
+      tools: []
+    )
+    result = ::Agents::Runner.with_agents(agent).run('ping', max_turns: 1)
+    return { state: :failed, message: result.error&.message.presence || 'Provider returned a failure with no error message.' } if result.failed?
+
+    { state: :connected, message: 'Provider responded successfully.' }
   end
 
   def run_embedding_test(config)
     client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
     response = client.embeddings(parameters: { model: config[:model], input: 'ping' })
     vector = response.dig('data', 0, 'embedding')
-    return { ok: false, message: 'No embedding returned.' } if vector.blank?
+    return { state: :failed, message: 'Provider returned no embedding vector.' } if vector.blank?
 
-    { ok: true, message: "OK (dim=#{vector.length})" }
+    { state: :connected, message: "Provider responded successfully — #{vector.length} dimensions." }
   end
 
   def run_audio_test(_config)
-    { ok: false, message: 'No audio transcription service is wired in this build (plumbing only).' }
+    { state: :not_configured, message: 'Audio transcription is not enabled for this build.' }
   end
 end

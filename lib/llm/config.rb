@@ -13,7 +13,25 @@ module Llm::Config
       return if @initialized
 
       configure_ruby_llm
+      register_slot_models!
       @initialized = true
+    end
+
+    # Tells RubyLLM's in-memory registry about the slot models the admin
+    # has configured. The agents SDK (used by Autopilot) refuses to call
+    # `RubyLLM::Chat.new(model: X)` if X isn't in the registry, even when
+    # the upstream provider (e.g. Scaleway) would happily serve it. We map
+    # the admin's chosen ID onto the `openai` provider class because every
+    # configured slot here routes through the OpenAI-compatible HTTP API.
+    def register_slot_models!
+      registry = RubyLLM::Models.instance.all
+      Llm::Presets::SLOTS.each do |slot|
+        model_id = for_slot(slot)[:model]
+        next if model_id.blank? || model_id == Llm::Presets::DISABLED_SENTINEL
+        next if registry.any? { |m| m.id == model_id && m.provider == 'openai' }
+
+        registry << RubyLLM::Model::Info.default(model_id, 'openai')
+      end
     end
 
     def reset!
