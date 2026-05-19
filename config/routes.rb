@@ -658,6 +658,10 @@ Rails.application.routes.draw do
         get :refresh, on: :collection
       end
 
+      resource :llm_settings, only: [:show, :update], controller: 'llm_settings' do
+        post :test, on: :collection
+      end
+
       # resources that doesn't appear in primary navigation in super admin
       resources :account_users, only: [:new, :create, :show, :destroy]
     end

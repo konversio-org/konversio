@@ -41,6 +41,7 @@ as defined by the routes in the `admin/` namespace
         %>
 
       <% end %>
+      <%= render partial: "nav_item", locals: { icon: 'icon-flashlight-line', url: super_admin_llm_settings_url, label: 'LLM Settings' } %>
       <%= render 'settings_menu', open: settings_open? %>
     </ul>
   </div>
