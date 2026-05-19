@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
+import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 
 // In-composer preview surface for Pilot one-shot actions (Suggest a
 // reply, Summarize the conversation). Conceptually mirrors the
@@ -40,6 +41,7 @@ const props = defineProps({
 const emit = defineEmits(['accept', 'dismiss', 'refine']);
 
 const { t } = useI18n();
+const { formatMessage } = useMessageFormatter();
 
 // Local mutable copy so the agent can edit the generated content before
 // accepting. Reset whenever the upstream content prop changes.
@@ -52,6 +54,15 @@ watch(
 );
 
 const isSummary = computed(() => props.actionKey === 'summary');
+
+// Render the draft as HTML via the standard markdown formatter so that
+// summary headings (`**Customer Intent**`, …) and inline bold actually
+// look formatted rather than showing raw asterisks. The raw markdown
+// stays in `draft` — that's what we emit on Accept so the Private Note /
+// reply editor receives the same source the LLM produced.
+const renderedDraft = computed(() =>
+  formatMessage(draft.value, false, isSummary.value, true)
+);
 
 const acceptDisabled = computed(
   () => props.isGenerating || !draft.value.trim() || !!props.errorMessage
@@ -141,11 +152,13 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
 
     <!-- Preview state: draft → divider → refinement → divider → actions -->
     <template v-else>
-      <textarea
-        v-model="draft"
-        rows="5"
-        class="w-full resize-none !outline-none !border-0 !bg-transparent !p-0 !mb-0 !h-auto text-sm text-n-iris-12 placeholder:text-n-iris-10 focus:outline-none focus:ring-0"
-        :placeholder="t('PILOT.PREVIEW_PLACEHOLDER')"
+      <!-- Read-only markdown render: headings (**Customer Intent**) and
+           bold inline text render properly. Editing isn't supported here
+           — use the refinement input below, or Accept and edit in the
+           destination tab. -->
+      <div
+        class="pilot-preview-rendered text-sm text-n-iris-12 leading-relaxed [&>p]:my-2 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&_strong]:font-semibold [&_ul]:my-2 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-2 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-1 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:bg-n-iris-4 [&_code]:text-xs"
+        v-html="renderedDraft"
       />
       <hr class="my-2 border-t border-n-iris-7" />
       <textarea
@@ -158,7 +171,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', handleKey));
       <hr class="my-2 border-t border-n-iris-7" />
       <div class="flex items-center justify-between">
         <NextButton
-          ghost
+          outline
           slate
           sm
           :label="t('PILOT.PREVIEW_DISMISS')"
