@@ -1,6 +1,6 @@
 require 'rubocop'
 
-module RuboCop::Cop::Chatwoot; end
+module RuboCop::Cop::Pilot; end
 
 class RuboCop::Cop::Pilot::AttachmentDownload < RuboCop::Cop::Base
   MSG = 'Avoid calling `.file/.blob.download`; use `blob.open` or streaming IO instead.'.freeze
