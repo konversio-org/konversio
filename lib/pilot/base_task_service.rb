@@ -9,11 +9,9 @@ class Pilot::BaseTaskService
   # 120000 * 4 = 480,000 characters (rounding off downwards to 400,000 to be safe)
   TOKEN_LIMIT = 400_000
 
-  # Resolved at call time via const_missing so PILOT_OPEN_AI_MODEL
-  # (env-first via GlobalConfigService) wins over the hardcoded default.
-  # The previous `GPT_MODEL = Llm::Config::DEFAULT_MODEL` froze the
-  # default at load time, so PILOT_OPEN_AI_MODEL never reached the
-  # actual LLM call.
+  # Resolved at call time so the chat slot's model (Super Admin > LLM Settings)
+  # wins over the hardcoded default. Freezing this at load time would prevent
+  # provider switches from taking effect without a restart.
   def self.const_missing(name)
     return Llm::Config.model_for(:default) if name == :GPT_MODEL
 
@@ -84,9 +82,10 @@ class Pilot::BaseTaskService
   end
 
   def build_chat(context, model:, messages:, schema: nil, tools: [])
-    # When PILOT_OPEN_AI_API_PROVIDER=openai_compatible, pass provider +
-    # assume_model_exists so RubyLLM skips its model registry (which
-    # doesn't know Scaleway's mistral-*, Nebius's Qwen/*, etc.).
+    # When the chat provider is openai-compatible (Nebius, Scaleway, OpenRouter,
+    # custom slugs with _OPENAI_COMPATIBLE=true), pass provider + assume_model_exists
+    # so RubyLLM skips its model registry — which doesn't know Scaleway's mistral-*,
+    # Nebius's Qwen/*, etc.
     chat_options = { model: model }
     if Llm::Config.openai_compatible?
       chat_options[:provider] = :openai

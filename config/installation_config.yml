@@ -182,19 +182,6 @@
 # End of Microsoft Email Channel Config
 
 # MARK: Pilot Config
-- name: PILOT_OPEN_AI_API_KEY
-  display_title: 'OpenAI API Key'
-  description: 'The API key used to authenticate requests to the configured LLM provider for Pilot AI.'
-  locked: false
-  type: secret
-- name: PILOT_OPEN_AI_MODEL
-  display_title: 'OpenAI Model'
-  description: 'The model configured for use in Pilot AI. Default: gpt-4.1-mini'
-  locked: false
-- name: PILOT_OPEN_AI_ENDPOINT
-  display_title: 'OpenAI API Endpoint (optional)'
-  description: 'The endpoint configured for use in Pilot AI. Default: https://api.openai.com/'
-  locked: false
 - name: PILOT_LLM_CHAT_PROVIDER
   display_title: 'Chat Slot Provider'
   description: 'Slug of the LLM provider used for Pilot chat completions. Managed via Super Admin > LLM Settings.'
@@ -223,9 +210,9 @@
   display_title: 'LLM Preset'
   description: 'Slug of the currently-selected preset bundle, or "custom" when slots were set individually.'
   locked: false
-- name: PILOT_EMBEDDING_MODEL
-  display_title: 'Embedding Model (legacy fallback)'
-  description: 'Legacy default for the embedding slot when PILOT_LLM_EMBEDDING_MODEL is unset.'
+- name: PILOT_LLM_EMBEDDING_DIMENSIONS
+  display_title: 'Embedding Dimensions'
+  description: 'Vector dimension expected for embeddings (must match the model + pgvector column). Default: 1536'
   locked: false
 - name: PILOT_FIRECRAWL_API_KEY
   display_title: 'FireCrawl API Key (optional)'
