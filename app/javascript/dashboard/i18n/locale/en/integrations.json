@@ -458,6 +458,7 @@
       "NO_THREADS": "No threads yet.",
       "UNTITLED_THREAD": "Untitled thread",
       "BOUND_CONVERSATION_INTRO": "Asking Pilot about conversation #{id}",
+      "POWERED_BY": "Powered by {provider} · {model}",
       "ASK_FROM_COMPOSER": "Ask Pilot",
       "TITLE": "Copilot",
       "TRY_THESE_PROMPTS": "Try these prompts",

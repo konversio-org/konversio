@@ -67,13 +67,17 @@ module Custom
 
       def client
         @client ||= OpenAI::Client.new(
-          access_token: ::Llm::Config.api_key,
-          uri_base: "#{::Llm::Config.api_base}/v1"
+          access_token: slot_config[:api_key],
+          uri_base: "#{slot_config[:endpoint]}/v1"
         )
       end
 
+      def slot_config
+        @slot_config ||= ::Llm::Config.for_slot(:embedding)
+      end
+
       def embedding_model
-        GlobalConfigService.load('PILOT_EMBEDDING_MODEL', nil).presence || DEFAULT_EMBEDDING_MODEL
+        slot_config[:model].presence || DEFAULT_EMBEDDING_MODEL
       end
 
       def embedding_dimensions

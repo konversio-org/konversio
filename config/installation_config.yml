@@ -195,9 +195,37 @@
   display_title: 'OpenAI API Endpoint (optional)'
   description: 'The endpoint configured for use in Pilot AI. Default: https://api.openai.com/'
   locked: false
+- name: PILOT_LLM_CHAT_PROVIDER
+  display_title: 'Chat Slot Provider'
+  description: 'Slug of the LLM provider used for Pilot chat completions. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_CHAT_MODEL
+  display_title: 'Chat Slot Model'
+  description: 'Model identifier sent to the chat provider. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_EMBEDDING_PROVIDER
+  display_title: 'Embedding Slot Provider'
+  description: 'Slug of the LLM provider used for Pilot embeddings. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_EMBEDDING_MODEL
+  display_title: 'Embedding Slot Model'
+  description: 'Model identifier sent to the embedding provider. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_AUDIO_PROVIDER
+  display_title: 'Audio Slot Provider'
+  description: 'Slug of the LLM provider used for Pilot audio transcription. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_AUDIO_MODEL
+  display_title: 'Audio Slot Model'
+  description: 'Model identifier sent to the audio provider. Managed via Super Admin > LLM Settings.'
+  locked: false
+- name: PILOT_LLM_PRESET
+  display_title: 'LLM Preset'
+  description: 'Slug of the currently-selected preset bundle, or "custom" when slots were set individually.'
+  locked: false
 - name: PILOT_EMBEDDING_MODEL
-  display_title: 'Embedding Model (optional)'
-  description: 'The embedding model configured for use in Pilot AI. Default: text-embedding-3-small'
+  display_title: 'Embedding Model (legacy fallback)'
+  description: 'Legacy default for the embedding slot when PILOT_LLM_EMBEDDING_MODEL is unset.'
   locked: false
 - name: PILOT_FIRECRAWL_API_KEY
   display_title: 'FireCrawl API Key (optional)'

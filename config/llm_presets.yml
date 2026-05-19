@@ -1,0 +1,34 @@
+# Pilot LLM preset bundles.
+#
+# Each preset assigns a provider + model to each of the three routing slots
+# (chat, embedding, audio). Selecting a preset in Super Admin > LLM Settings
+# writes the six PILOT_LLM_<SLOT>_* InstallationConfig rows atomically.
+#
+# Schema:
+#   slug:      Stable identifier (kebab-case, also persisted in PILOT_LLM_PRESET)
+#   label:     Human-readable name shown in the UI
+#   chat:      { provider: <slug>, model: <model id> }
+#   embedding: { provider: <slug>, model: <model id> }
+#   audio:     { provider: <slug>, model: <model id> }
+#
+# Validation runs at boot. Presets referencing an unknown provider or a
+# provider that doesn't declare the slot's capability are dropped with a
+# logged warning — they never raise.
+presets:
+  - slug: all-openai
+    label: All OpenAI
+    chat: { provider: openai, model: gpt-4.1-mini }
+    embedding: { provider: openai, model: text-embedding-3-small }
+    audio: { provider: openai, model: whisper-1 }
+
+  - slug: scaleway-chat-openai-rest
+    label: Scaleway chat, OpenAI embeddings + audio
+    chat: { provider: scaleway, model: llama-3.3-70b-instruct }
+    embedding: { provider: openai, model: text-embedding-3-small }
+    audio: { provider: openai, model: whisper-1 }
+
+  - slug: nebius-chat-openai-rest
+    label: Nebius chat, OpenAI embeddings + audio
+    chat: { provider: nebius, model: Qwen/Qwen2.5-72B-Instruct }
+    embedding: { provider: openai, model: text-embedding-3-small }
+    audio: { provider: openai, model: whisper-1 }

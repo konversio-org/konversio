@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import NextButton from 'dashboard/components-next/button/Button.vue';
+import PilotPreferencesAPI from 'dashboard/api/pilot/preferences';
 import CopilotThreadList from './CopilotThreadList.vue';
 import CopilotMessageList from './CopilotMessageList.vue';
 
@@ -25,6 +26,29 @@ const boundConversationId = useMapGetter(
 const inputText = ref('');
 const composingNewThread = ref(false);
 const pollTimer = ref(null);
+const preferences = ref(null);
+
+const providerLabel = computed(() => preferences.value?.active_provider?.label);
+const modelName = computed(() => {
+  const copilot = preferences.value?.features?.copilot;
+  if (!copilot) return '';
+  const selectedId = copilot.selected;
+  const match = (copilot.models || []).find(m => m.id === selectedId);
+  return match?.display_name || selectedId || '';
+});
+const showPoweredBy = computed(
+  () => Boolean(providerLabel.value) && Boolean(modelName.value)
+);
+
+const fetchPreferences = async () => {
+  if (preferences.value) return;
+  try {
+    const { data } = await PilotPreferencesAPI.fetch();
+    preferences.value = data;
+  } catch (err) {
+    preferences.value = null;
+  }
+};
 
 const placeholder = computed(() =>
   composingNewThread.value || !activeThreadId.value
@@ -65,6 +89,7 @@ watch(
     }
     // Refresh threads when drawer opens
     store.dispatch('pilot/copilot/fetchThreads');
+    fetchPreferences();
     if (activeThreadId.value) {
       store.dispatch('pilot/copilot/fetchMessages', activeThreadId.value);
     } else {
@@ -122,6 +147,7 @@ const handleKeydown = event => {
 onMounted(() => {
   if (drawer.isOpen.value) {
     store.dispatch('pilot/copilot/fetchThreads');
+    fetchPreferences();
   }
 });
 
@@ -163,6 +189,15 @@ onUnmounted(() => {
             @click="handleClose"
           />
         </header>
+
+        <div v-if="showPoweredBy" class="px-4 py-1.5 text-xs text-n-slate-10">
+          {{
+            t('PILOT.COPILOT.POWERED_BY', {
+              provider: providerLabel,
+              model: modelName,
+            })
+          }}
+        </div>
 
         <div
           v-if="boundConversationId"
