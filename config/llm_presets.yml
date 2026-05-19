@@ -22,9 +22,10 @@ presets:
     audio: { provider: openai, model: whisper-1 }
 
   - slug: all-scaleway
-    label: All Scaleway (open source, Dutch-first)
-    # Mistral Small 3.2: EU-trained, explicit Dutch + English support, 128k context.
-    chat: { provider: scaleway, model: mistral-small-3.2-24b-instruct-2506 }
+    label: All Scaleway (open source, multilingual)
+    # Qwen3 235B MoE: 113+ languages incl. Dutch, 250k context. More capable
+    # than Mistral Small at a comparable price/quality ratio.
+    chat: { provider: scaleway, model: qwen3-235b-a22b-instruct-2507 }
     # BGE multilingual: 100+ languages, top of MTEB multilingual; 3584 dims.
     embedding: { provider: scaleway, model: bge-multilingual-gemma2 }
     # Whisper large v3: multilingual transcription including Dutch.
