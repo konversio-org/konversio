@@ -100,9 +100,13 @@
                 <% Llm::Presets::SLOTS.each do |slot| %>
                   <div>
                     <span class="text-slate-400"><%= SuperAdmin::LlmSettingsController::SLOT_PURPOSES.dig(slot, :label) %>:</span>
-                    <span class="font-medium"><%= preset[slot][:provider] %></span>
-                    <span class="text-slate-500">·</span>
-                    <span class="font-mono"><%= preset[slot][:model] %></span>
+                    <% if preset[slot].nil? %>
+                      <span class="text-slate-400 italic">disabled</span>
+                    <% else %>
+                      <span class="font-medium"><%= preset[slot][:provider] %></span>
+                      <span class="text-slate-500">·</span>
+                      <span class="font-mono"><%= preset[slot][:model] %></span>
+                    <% end %>
                   </div>
                 <% end %>
               </div>

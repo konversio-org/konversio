@@ -15,7 +15,7 @@ module Llm
       nebius: { label: 'Nebius', endpoint: 'https://api.studio.nebius.ai', openai_compatible: true,
                 capabilities: %i[chat embedding] },
       scaleway: { label: 'Scaleway', endpoint: 'https://api.scaleway.ai', openai_compatible: true,
-                  capabilities: %i[chat embedding] },
+                  capabilities: %i[chat embedding audio] },
       openrouter: { label: 'OpenRouter', endpoint: 'https://openrouter.ai/api', openai_compatible: true,
                     capabilities: %i[chat] }
     }.freeze
@@ -95,10 +95,14 @@ module Llm
       end
 
       # Resolved provider for a slot. Reads `PILOT_LLM_<SLOT>_PROVIDER`, falls
-      # back to the first capable+available provider (openai preferred).
+      # back to the first capable+available provider (openai preferred). The
+      # 'none' sentinel means the slot is explicitly disabled (preset omitted it).
       def slot_provider(slot)
         slot = slot.to_sym
-        configured = GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_PROVIDER", nil).presence
+        raw = GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_PROVIDER", nil)
+        return nil if raw == Llm::Presets::DISABLED_SENTINEL
+
+        configured = raw.presence
         if configured && providers_for(slot).include?(configured.to_sym)
           return configured.to_sym
         end
@@ -110,10 +114,13 @@ module Llm
       end
 
       # Resolved model for a slot. Reads `PILOT_LLM_<SLOT>_MODEL`, falls back
-      # to the slot's hardcoded default.
+      # to the slot's hardcoded default. The 'none' sentinel returns nil.
       def slot_model(slot)
         slot = slot.to_sym
-        configured = GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_MODEL", nil).presence
+        raw = GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_MODEL", nil)
+        return nil if raw == Llm::Presets::DISABLED_SENTINEL
+
+        configured = raw.presence
         return configured if configured
 
         SLOT_DEFAULT_MODELS[slot].call
