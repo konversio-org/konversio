@@ -1,6 +1,12 @@
 class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
   SLOTS = %i[chat embedding audio].freeze
 
+  SLOT_PURPOSES = {
+    chat: { label: 'Chat', used_for: 'Replies, summaries, agent reasoning' },
+    embedding: { label: 'Embeddings', used_for: 'Search and retrieval' },
+    audio: { label: 'Audio', used_for: 'Transcription (plumbed, not yet consumed)' }
+  }.freeze
+
   EMBEDDING_DIMENSIONS = {
     'text-embedding-3-small' => 1536,
     'text-embedding-3-large' => 3072,
@@ -93,14 +99,15 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
                       Llm::Presets.matching_current_config ||
                       Llm::Presets::CUSTOM_SLUG
     @dimension_warning = embedding_dimension_warning
+    configured_count = @providers.count { |p| p[:available] }
+    missing_count = @providers.length - configured_count
+    @provider_status_summary = { configured: configured_count, missing: missing_count }
   end
 
   def embedding_dimension_warning
     current_model = @slots[:embedding][:model]
     new_dim = EMBEDDING_DIMENSIONS[current_model]
-    stored_dim = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS', nil).presence ||
-                 GlobalConfigService.load('PILOT_EMBEDDING_DIMENSIONS', nil).presence
-    stored_dim = stored_dim.to_i
+    stored_dim = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS', nil).to_i
     return nil if new_dim.nil? || stored_dim.zero? || new_dim == stored_dim
 
     {
