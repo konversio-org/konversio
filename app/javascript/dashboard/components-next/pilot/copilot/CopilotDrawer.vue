@@ -28,16 +28,26 @@ const composingNewThread = ref(false);
 const pollTimer = ref(null);
 const preferences = ref(null);
 
-const providerLabel = computed(() => preferences.value?.active_provider?.label);
-const modelName = computed(() => {
-  const copilot = preferences.value?.features?.copilot;
-  if (!copilot) return '';
-  const selectedId = copilot.selected;
-  const match = (copilot.models || []).find(m => m.id === selectedId);
-  return match?.display_name || selectedId || '';
+const SLOT_LABELS = {
+  chat: 'Chat',
+  embedding: 'Embeddings',
+  audio: 'Audio',
+};
+
+const slotRows = computed(() => {
+  const slots = preferences.value?.active_slots || {};
+  return ['chat', 'embedding', 'audio'].map(key => {
+    const entry = slots[key];
+    const providerLabel = entry?.provider?.label;
+    const model = entry?.model;
+    const value =
+      providerLabel && model ? `${providerLabel} · ${model}` : 'N/A';
+    return { key, label: SLOT_LABELS[key], value };
+  });
 });
-const showPoweredBy = computed(
-  () => Boolean(providerLabel.value) && Boolean(modelName.value)
+
+const showSlotRows = computed(() =>
+  slotRows.value.some(r => r.value !== 'N/A')
 );
 
 const fetchPreferences = async () => {
@@ -190,13 +200,16 @@ onUnmounted(() => {
           />
         </header>
 
-        <div v-if="showPoweredBy" class="px-4 py-1.5 text-xs text-n-slate-10">
-          {{
-            t('PILOT.COPILOT.POWERED_BY', {
-              provider: providerLabel,
-              model: modelName,
-            })
-          }}
+        <div
+          v-if="showSlotRows"
+          class="px-4 py-2 text-xs text-n-slate-10 border-b border-n-weak space-y-0.5"
+        >
+          <div v-for="row in slotRows" :key="row.key" class="flex gap-2">
+            <span class="text-n-slate-9 w-20 flex-shrink-0">
+              {{ row.label }}
+            </span>
+            <span class="font-mono">{{ row.value }}</span>
+          </div>
         </div>
 
         <div

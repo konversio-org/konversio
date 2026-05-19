@@ -22,7 +22,8 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
       providers: Llm::Models.providers,
       models: Llm::Models.models,
       features: features_with_account_preferences,
-      active_provider: active_provider_payload
+      active_provider: active_provider_payload,
+      active_slots: active_slots_payload
     }
   end
 
@@ -36,6 +37,19 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
     }
   rescue StandardError
     nil
+  end
+
+  def active_slots_payload
+    Llm::ProviderRegistry::SLOTS.each_with_object({}) do |slot, h|
+      config = Llm::Config.for_slot(slot)
+      provider_slug = config[:provider]
+      h[slot] = {
+        provider: provider_slug ? { slug: provider_slug.to_s, label: Llm::ProviderRegistry.provider(provider_slug)[:label] } : nil,
+        model: config[:model].presence
+      }
+    end
+  rescue StandardError
+    {}
   end
 
   def authorize_account_update
