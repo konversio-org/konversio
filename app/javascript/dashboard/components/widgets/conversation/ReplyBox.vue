@@ -966,6 +966,13 @@ export default {
         isGenerating: true,
         errorMessage: '',
       };
+      // Switch the visible reply-mode tab to match where Accept will
+      // land. Summary always goes to Private Note; reply/rewrite stays
+      // on Reply. Done at START (not Accept) so the agent sees the
+      // correct destination tab highlighted while the preview is open.
+      if (targetMode && targetMode !== this.replyType) {
+        this.setReplyMode(targetMode);
+      }
     },
     onPilotPreviewReady({ content }) {
       if (!this.pilotPreview) return;
