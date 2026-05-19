@@ -7,6 +7,7 @@ module Llm
     SLOTS = %i[chat embedding audio].freeze
     PRESET_CONFIG_KEY = 'PILOT_LLM_PRESET'.freeze
     CUSTOM_SLUG = 'custom'.freeze
+    DISABLED_SENTINEL = 'none'.freeze
 
     class << self
       # All valid presets. Loaded lazily and memoized.
@@ -30,6 +31,8 @@ module Llm
         available = Llm::ProviderRegistry.available_providers.map(&:to_s)
         all.map do |preset|
           missing = SLOTS.filter_map do |slot|
+            next if preset[slot].nil?
+
             slug = preset[slot][:provider]
             slug unless available.include?(slug)
           end
@@ -55,8 +58,13 @@ module Llm
       def matching_current_config_for(slot_map)
         match = all.find do |preset|
           SLOTS.all? do |slot|
-            preset[slot][:provider] == slot_map[slot][:provider].to_s &&
-              preset[slot][:model] == slot_map[slot][:model].to_s
+            current_provider = slot_map[slot][:provider].to_s
+            current_model = slot_map[slot][:model].to_s
+            if preset[slot].nil?
+              current_provider == DISABLED_SENTINEL && current_model == DISABLED_SENTINEL
+            else
+              preset[slot][:provider] == current_provider && preset[slot][:model] == current_model
+            end
           end
         end
         match&.dig(:slug)
@@ -70,6 +78,8 @@ module Llm
         raise ArgumentError, "Unknown preset slug: #{slug}" if preset.nil?
 
         SLOTS.each do |slot|
+          next if preset[slot].nil?
+
           provider = preset[slot][:provider].to_sym
           unless Llm::ProviderRegistry.providers_for(slot).include?(provider)
             raise Llm::ProviderRegistry::CapabilityMismatch,
@@ -79,8 +89,13 @@ module Llm
 
         ActiveRecord::Base.transaction do
           SLOTS.each do |slot|
-            write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", preset[slot][:provider].to_s)
-            write_config("PILOT_LLM_#{slot.upcase}_MODEL", preset[slot][:model].to_s)
+            if preset[slot].nil?
+              write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", DISABLED_SENTINEL)
+              write_config("PILOT_LLM_#{slot.upcase}_MODEL", DISABLED_SENTINEL)
+            else
+              write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", preset[slot][:provider].to_s)
+              write_config("PILOT_LLM_#{slot.upcase}_MODEL", preset[slot][:model].to_s)
+            end
           end
           write_config(PRESET_CONFIG_KEY, preset[:slug])
         end
@@ -114,6 +129,8 @@ module Llm
         nil
       end
 
+      OPTIONAL_SLOTS = %i[audio].freeze
+
       def validate(entry)
         slug = entry['slug'].to_s
         return drop(slug, 'missing slug') if slug.blank?
@@ -122,6 +139,11 @@ module Llm
         slot_map = {}
         SLOTS.each do |slot|
           row = entry[slot.to_s]
+          if row.nil?
+            next if OPTIONAL_SLOTS.include?(slot)
+
+            return drop(slug, "missing #{slot} block")
+          end
           return drop(slug, "missing #{slot} block") unless row.is_a?(Hash)
 
           provider = row['provider'].to_s

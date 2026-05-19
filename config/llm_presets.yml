@@ -21,14 +21,14 @@ presets:
     embedding: { provider: openai, model: text-embedding-3-small }
     audio: { provider: openai, model: whisper-1 }
 
-  - slug: scaleway-chat-openai-rest
-    label: Scaleway chat, OpenAI embeddings + audio
+  - slug: all-scaleway
+    label: All Scaleway (open source)
     chat: { provider: scaleway, model: llama-3.3-70b-instruct }
-    embedding: { provider: openai, model: text-embedding-3-small }
-    audio: { provider: openai, model: whisper-1 }
+    embedding: { provider: scaleway, model: bge-multilingual-gemma2 }
+    audio: { provider: scaleway, model: whisper-large-v3 }
 
-  - slug: nebius-chat-openai-rest
-    label: Nebius chat, OpenAI embeddings + audio
+  - slug: all-nebius
+    label: All Nebius (open source, no audio)
     chat: { provider: nebius, model: Qwen/Qwen2.5-72B-Instruct }
-    embedding: { provider: openai, model: text-embedding-3-small }
-    audio: { provider: openai, model: whisper-1 }
+    embedding: { provider: nebius, model: BAAI/bge-en-icl }
+    # audio omitted — Nebius has no transcription API

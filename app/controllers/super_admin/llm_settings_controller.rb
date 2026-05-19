@@ -11,7 +11,7 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     'text-embedding-3-small' => 1536,
     'text-embedding-3-large' => 3072,
     'BAAI/bge-en-icl' => 4096,
-    'bge-multilingual-gemma2' => 1024
+    'bge-multilingual-gemma2' => 3584
   }.freeze
 
   def show
