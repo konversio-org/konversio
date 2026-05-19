@@ -79,7 +79,6 @@ Rails.application.routes.draw do
             end
             resources :documents, only: [:index, :show, :create, :destroy]
             resource :tasks, only: [], controller: 'tasks' do
-              post :rewrite
               post :summarize
               post :reply_suggestion
               post :label_suggestion
