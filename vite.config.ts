@@ -55,6 +55,15 @@ if (isLibraryMode) {
 
 export default defineConfig({
   plugins: plugins,
+  css: {
+    preprocessorOptions: {
+      // Opt into Sass's modern compiler API. The legacy JS API was
+      // deprecated in Dart Sass 1.79 and will be removed in 2.0.0;
+      // switching now silences the per-file warning and keeps the build
+      // forward-compatible. Same sass package, just a newer entrypoint.
+      scss: { api: 'modern-compiler' },
+    },
+  },
   server: {
     // Vite 5 default-denies requests whose Host header isn't on this
     // allowlist. Inside docker compose, Rails proxies to http://vite:3036
