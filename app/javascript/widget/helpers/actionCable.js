@@ -3,7 +3,7 @@ import { playNewMessageNotificationInWidget } from 'widget/helpers/WidgetAudioNo
 import { ON_AGENT_MESSAGE_RECEIVED } from '../constants/widgetBusEvents';
 import { IFrameHelper } from 'widget/helpers/utils';
 import { shouldTriggerMessageUpdateEvent } from './IframeEventHelper';
-import { CHATWOOT_ON_MESSAGE } from '../constants/sdkEvents';
+import { KONVERSIO_ON_MESSAGE } from '../constants/sdkEvents';
 import { emitter } from '../../shared/helpers/mitt';
 
 const isMessageInActiveConversation = (getters, message) => {
@@ -64,7 +64,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 
     IFrameHelper.sendMessage({
       event: 'onEvent',
-      eventIdentifier: CHATWOOT_ON_MESSAGE,
+      eventIdentifier: KONVERSIO_ON_MESSAGE,
       data,
     });
     if (data.sender_type === 'User') {
@@ -80,7 +80,7 @@ class ActionCableConnector extends BaseActionCableConnector {
     if (shouldTriggerMessageUpdateEvent(data)) {
       IFrameHelper.sendMessage({
         event: 'onEvent',
-        eventIdentifier: CHATWOOT_ON_MESSAGE,
+        eventIdentifier: KONVERSIO_ON_MESSAGE,
         data,
       });
     }
