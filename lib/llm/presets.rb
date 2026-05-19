@@ -10,14 +10,24 @@ module Llm
     DISABLED_SENTINEL = 'none'.freeze
 
     class << self
-      # All valid presets. Loaded lazily and memoized.
+      # All valid presets. Cached and auto-invalidated when the YAML file
+      # changes — saves a YAML parse per request without making operators
+      # restart Rails after editing config/llm_presets.yml.
       def all
-        @all ||= load_and_validate
+        mtime = File.mtime(CONFIG_PATH).to_i
+        if @all.nil? || @cached_mtime != mtime
+          @cached_mtime = mtime
+          @all = load_and_validate
+        end
+        @all
+      rescue Errno::ENOENT
+        []
       end
 
       # Force a reload from disk.
       def reset!
         @all = nil
+        @cached_mtime = nil
       end
 
       def find(slug)
@@ -43,8 +53,8 @@ module Llm
       # Returns the slug of the preset whose slot assignments exactly match
       # the current InstallationConfig rows, or nil.
       def matching_current_config
-        current = SLOTS.each_with_object({}) do |slot, h|
-          h[slot] = {
+        current = SLOTS.index_with do |slot|
+          {
             provider: GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_PROVIDER", nil).to_s,
             model: GlobalConfigService.load("PILOT_LLM_#{slot.upcase}_MODEL", nil).to_s
           }
@@ -151,16 +161,12 @@ module Llm
           return drop(slug, "missing #{slot} provider") if provider.blank?
           return drop(slug, "missing #{slot} model") if model.blank?
 
-          unless Llm::ProviderRegistry.known_slugs.include?(provider.to_sym)
-            return drop(slug, "unknown provider '#{provider}' for #{slot}")
-          end
+          return drop(slug, "unknown provider '#{provider}' for #{slot}") unless Llm::ProviderRegistry.known_slugs.include?(provider.to_sym)
 
           provider_capabilities = (Llm::ProviderRegistry::DEFAULTS[provider.to_sym] || {})[:capabilities] || []
           env_caps = ENV["PILOT_LLM_#{provider.upcase}_CAPABILITIES"].to_s.split(',').map { |s| s.strip.downcase.to_sym }
           capabilities = env_caps.any? ? env_caps : provider_capabilities
-          unless capabilities.include?(slot)
-            return drop(slug, "provider '#{provider}' does not declare capability '#{slot}'")
-          end
+          return drop(slug, "provider '#{provider}' does not declare capability '#{slot}'") unless capabilities.include?(slot)
 
           slot_map[slot] = { provider: provider, model: model }
         end
