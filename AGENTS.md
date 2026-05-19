@@ -1,23 +1,68 @@
 # Chatwoot Development Guidelines
 
-## Build / Test / Lint
+## Dev environments
 
-- **Setup**: `bundle install && pnpm install`
-- **Run Dev**: `pnpm dev` or `overmind start -f ./Procfile.dev`
-- **Seed Local Test Data**: `bundle exec rails db:seed` (quickly populates minimal data for standard feature verification)
-- **Seed Search Test Data**: `bundle exec rails search:setup_test_data` (bulk fixture generation for search/performance/manual load scenarios)
-- **Seed Account Sample Data (richer test data)**: `Seeders::AccountSeeder` is available as an internal utility and is exposed through Super Admin `Accounts#seed`, but can be used directly in dev workflows too:
+Two modes are supported. **Host mode is the default for daily work.**
+
+### Host mode (default — fast)
+
+Rails + Sidekiq run natively on macOS via rbenv. Postgres, Redis, Mailhog, and Vite stay in Docker (services only). Page reloads in ms instead of seconds; native FSEvents → reliable autoload; IDE Ruby tooling works without bridge tricks. `.env.development.local` (git-ignored) overrides container hostnames with `localhost` for the host process.
+
+```bash
+# One-time setup
+brew install libpq libvips imagemagick
+bundle config build.pg --with-pg-config=$(brew --prefix libpq)/bin/pg_config   # only if pg gem fails
+rbenv install $(cat .ruby-version)
+bundle install
+pnpm install
+
+# Daily
+docker compose up -d postgres redis mailhog vite   # services only
+overmind start -f Procfile.host                    # Rails + Sidekiq on host
+```
+
+App at `http://localhost:3000`. Vite HMR at `http://localhost:3036`.
+
+### Container mode (full Linux parity)
+
+Everything in Docker. Slower (mount + watcher overhead) but matches production exactly. Use for: pre-deploy smoke tests, debugging gem issues that only manifest on Linux, onboarding contributors who don't want Ruby on their Mac.
+
+```bash
+docker compose up -d
+```
+
+App at `http://localhost:3000`. Containers: `konversio-{rails,sidekiq,vite,postgres,redis,mailhog}-1`.
+
+### Container mode troubleshooting — the 30-second heuristic
+
+When something is broken in container mode, the temptation is to blame Docker / the file watcher / bootsnap / Vite Ruby. **Resist that for 30 seconds and try the boring stuff first.** Past incidents in this repo cost hours because the platform got blamed when the actual bug was a one-line missing registration. Order of operations:
+
+1. **Differential diagnosis.** If a sibling works and the new thing doesn't, `grep` the wiring of both and diff. The bug is in the diff. Example: when `pilot_open?` was undefined in views but `settings_open?` worked, `grep helper_method app/controllers/super_admin/application_controller.rb` revealed the missing entry in 30 seconds.
+2. **Direct introspection, not theory.** `docker compose exec rails bundle exec rails runner 'puts SomeController._helpers.instance_methods.include?(:foo)'` answers in 5 seconds what an hour of theorizing about "Rails autoload reliability" can't. Chrome DevTools MCP can inspect live DOM / network / globals on the running browser.
+3. **Read the error message literally, including the unfamiliar parts.** `ActionView::Template::Error (undefined method 'X' for an instance of #<Class:0x...>)` — that anonymous Class is the view context, not the controller. The bit you don't recognize is the bit that names the answer.
+4. **Time-box hypotheses.** If a fix doesn't make HTTP 500 → HTTP 200 on the next request, the theory is wrong. Don't layer cache clears, restarts, and env tweaks on top. Transient false positives (puma's worker pool emptying between failing requests) are not validation.
+5. **Suspect your own diff before the substrate.** The platform has been stable for years; your edit from five minutes ago is far more likely to be the bug.
+
+Genuine platform-level gotchas DO exist in this stack and are worth knowing — they're documented in "Common commands" below (`.env` reload via `--force-recreate`, polling watcher, `VITE_RUBY_HOST=vite` for Rails-side dev server detection). But reach for them after step 1–5, not before.
+
+## Common commands
+
+- **Tail logs**: `docker compose logs -f rails` (container mode) / Overmind's own pane (host mode)
+- **Shell into rails container**: `docker compose exec rails bash`
+- **Reload .env in containers** (container mode only): `docker compose up -d --force-recreate rails sidekiq` — `docker compose restart` does NOT re-read the .env file.
+- **Code auto-reload**: This repo uses `config.file_watcher = ActiveSupport::FileUpdateChecker` (polling) in `config/environments/development.rb`. The evented watcher (`listen` → rb-inotify) is unreliable across the macOS↔Linux bridge in Docker/OrbStack — see `rails/rails#40332`, `docker/for-mac#2375`. **Do NOT switch back to `EventedFileUpdateChecker`.** Host mode would tolerate the evented watcher but polling is harmless there. Initializer/Gemfile/route changes always need a Rails restart (`overmind restart backend` in host mode, `docker compose restart rails` in container mode).
+- **Seed Local Test Data**: `bundle exec rails db:seed` (host) / `docker compose exec rails bundle exec rails db:seed` (container)
+- **Seed Search Test Data**: `bundle exec rails search:setup_test_data` (host) / prepend `docker compose exec rails ` (container)
+- **Seed Account Sample Data**: `Seeders::AccountSeeder` is available as an internal utility and is exposed through Super Admin `Accounts#seed`, but can be used directly in dev workflows too:
   - UI path: Super Admin → Accounts → Seed (enqueues `Internal::SeedAccountJob`).
-  - CLI path: `bundle exec rails runner "Internal::SeedAccountJob.perform_now(Account.find(<id>))"` (or call `Seeders::AccountSeeder.new(account: Account.find(<id>)).perform!` directly).
-- **Lint JS/Vue**: `pnpm eslint` / `pnpm eslint:fix`
-- **Lint Ruby**: `bundle exec rubocop -a`
-- **Test JS**: `pnpm test` or `pnpm test:watch`
-- **Test Ruby**: `bundle exec rspec spec/path/to/file_spec.rb`
-- **Single Test**: `bundle exec rspec spec/path/to/file_spec.rb:LINE_NUMBER`
-- **Run Project**: `overmind start -f Procfile.dev`
-- **Ruby Version**: Manage Ruby via `rbenv` and install the version listed in `.ruby-version` (e.g., `rbenv install $(cat .ruby-version)`)
-- **rbenv setup**: Before running any `bundle` or `rspec` commands, init rbenv in your shell (`eval "$(rbenv init -)"`) so the correct Ruby/Bundler versions are used
-- Always prefer `bundle exec` for Ruby CLI tasks (rspec, rake, rubocop, etc.)
+  - CLI path: `bundle exec rails runner "Internal::SeedAccountJob.perform_now(Account.find(<id>))"` (host) / prepend `docker compose exec rails ` (container).
+- **Lint JS/Vue**: `pnpm eslint` / `pnpm eslint:fix` (always on host)
+- **Lint Ruby**: `bundle exec rubocop -a` (host) / `docker compose exec rails bundle exec rubocop -a` (container)
+- **Test JS**: `pnpm test` / `pnpm test:watch`
+- **Test Ruby**: `bundle exec rspec spec/path/to/file_spec.rb` (host) / `docker compose exec rails bundle exec rspec spec/path/to/file_spec.rb` (container)
+- **Single Test**: append `:LINE_NUMBER` to the spec path.
+- **Ruby Version**: managed via `rbenv` per `.ruby-version`. `eval "$(rbenv init - zsh)"` is already in `~/.zshrc`.
+- Always prefer `bundle exec` for Ruby CLI tasks (rspec, rake, rubocop, etc.).
 
 ## Code Style
 
