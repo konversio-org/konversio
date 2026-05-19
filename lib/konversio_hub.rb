@@ -50,9 +50,9 @@ class KonversioHub
 
   def self.support_config
     {
-      support_website_token: InstallationConfig.find_by(name: 'PILOT_SUPPORT_WEBSITE_TOKEN')&.value,
-      support_script_url: InstallationConfig.find_by(name: 'PILOT_SUPPORT_SCRIPT_URL')&.value,
-      support_identifier_hash: InstallationConfig.find_by(name: 'PILOT_SUPPORT_IDENTIFIER_HASH')&.value
+      support_website_token: InstallationConfig.find_by(name: 'KONVERSIO_SUPPORT_WEBSITE_TOKEN')&.value,
+      support_script_url: InstallationConfig.find_by(name: 'KONVERSIO_SUPPORT_SCRIPT_URL')&.value,
+      support_identifier_hash: InstallationConfig.find_by(name: 'KONVERSIO_SUPPORT_IDENTIFIER_HASH')&.value
     }
   end
 
@@ -62,7 +62,7 @@ class KonversioHub
       installation_version: Konversio.config[:version],
       installation_host: URI.parse(ENV.fetch('FRONTEND_URL', '')).host,
       installation_env: ENV.fetch('INSTALLATION_ENV', ''),
-      edition: ENV.fetch('PLT_EDITION', '')
+      edition: ENV.fetch('KONVERSIO_EDITION', '')
     }
   end
 
