@@ -1,11 +1,11 @@
 class Api::V2::Accounts::Pilot::RewritesController < Api::V1::Accounts::BaseController
   before_action :ensure_feature_enabled
-  before_action :ensure_text_and_tone
+  before_action :ensure_text_and_operation
 
   def create
     rewritten = Custom::Pilot::RewriteService.new(
       text: params[:text],
-      tone: params[:tone],
+      operation: params[:operation],
       account: Current.account
     ).perform
 
@@ -15,7 +15,7 @@ class Api::V2::Accounts::Pilot::RewritesController < Api::V1::Accounts::BaseCont
   rescue ArgumentError => e
     render json: {
       error: e.message,
-      allowed_tones: Custom::Pilot::RewriteService::ALLOWED_TONES
+      allowed_operations: Custom::Pilot::RewriteService::ALLOWED_OPERATIONS
     }, status: :unprocessable_entity
   rescue Custom::Pilot::RewriteService::Error => e
     Rails.logger.error("[pilot.rewrites] LLM failure: #{e.message}")
@@ -30,11 +30,11 @@ class Api::V2::Accounts::Pilot::RewritesController < Api::V1::Accounts::BaseCont
     render json: { error: 'Pilot Rewrite is not enabled for this account' }, status: :forbidden
   end
 
-  def ensure_text_and_tone
+  def ensure_text_and_operation
     if params[:text].blank?
       render json: { error: 'text is required' }, status: :bad_request
-    elsif params[:tone].blank?
-      render json: { error: 'tone is required' }, status: :bad_request
+    elsif params[:operation].blank?
+      render json: { error: 'operation is required' }, status: :bad_request
     end
   end
 end

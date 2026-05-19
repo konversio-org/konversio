@@ -1,17 +1,6 @@
 class Api::V1::Accounts::Pilot::TasksController < Api::V1::Accounts::BaseController
   before_action :check_authorization
 
-  def rewrite
-    result = Pilot::RewriteService.new(
-      account: Current.account,
-      content: params[:content],
-      operation: params[:operation],
-      conversation_display_id: params[:conversation_display_id]
-    ).perform
-
-    render_result(result)
-  end
-
   def summarize
     result = Pilot::SummaryService.new(
       account: Current.account,
