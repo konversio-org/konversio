@@ -21,8 +21,21 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
     {
       providers: Llm::Models.providers,
       models: Llm::Models.models,
-      features: features_with_account_preferences
+      features: features_with_account_preferences,
+      active_provider: active_provider_payload
     }
+  end
+
+  def active_provider_payload
+    slug = Llm::ProviderRegistry.slot_provider(:chat)
+    return nil if slug.nil?
+
+    {
+      slug: slug.to_s,
+      label: Llm::ProviderRegistry.provider(slug)[:label]
+    }
+  rescue StandardError
+    nil
   end
 
   def authorize_account_update
