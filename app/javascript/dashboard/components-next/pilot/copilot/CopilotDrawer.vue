@@ -51,7 +51,6 @@ const showSlotRows = computed(() =>
 );
 
 const fetchPreferences = async () => {
-  if (preferences.value) return;
   try {
     const { data } = await PilotPreferencesAPI.fetch();
     preferences.value = data;
