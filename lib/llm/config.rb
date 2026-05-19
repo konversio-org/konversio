@@ -12,7 +12,6 @@ module Llm::Config
     def initialize!
       return if @initialized
 
-      Llm::ProviderRegistry.log_legacy_deprecation_once
       configure_ruby_llm
       @initialized = true
     end
@@ -24,11 +23,11 @@ module Llm::Config
     # Resolves the model name to use for a given Pilot feature.
     #
     # Precedence:
-    #   1. PILOT_OPEN_AI_<FEATURE>_MODEL (e.g. PILOT_OPEN_AI_TRANSLATION_MODEL)
-    #   2. Chat slot's model (PILOT_LLM_CHAT_MODEL → PILOT_OPEN_AI_MODEL → DEFAULT_MODEL)
+    #   1. PILOT_LLM_<FEATURE>_MODEL (e.g. PILOT_LLM_TRANSLATION_MODEL) — escape hatch
+    #   2. Chat slot's model (PILOT_LLM_CHAT_MODEL → DEFAULT_MODEL)
     def model_for(feature)
       feature_key = feature.to_s.upcase
-      per_feature = GlobalConfigService.load("PILOT_OPEN_AI_#{feature_key}_MODEL", nil)
+      per_feature = GlobalConfigService.load("PILOT_LLM_#{feature_key}_MODEL", nil)
       return per_feature if per_feature.present?
 
       for_slot(:chat)[:model]

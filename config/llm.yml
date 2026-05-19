@@ -118,10 +118,9 @@ features:
 
   # --- Pilot feature -> model registry ----------------------------------------
   # These keys are consumed by Custom::Pilot::* services via Llm::Config#model_for.
-  # In an OpenAI-compatible deployment (PILOT_OPEN_AI_API_PROVIDER=openai_compatible)
-  # the runtime model string is overridden by the PILOT_OPEN_AI_MODEL env var or
-  # the per-feature PILOT_OPEN_AI_<FEATURE>_MODEL override, so the entries below
-  # are only used for default selection in the dashboard/Pilot settings UI.
+  # At runtime the chat slot's model (Super Admin > LLM Settings, or the
+  # per-feature PILOT_LLM_<FEATURE>_MODEL escape hatch) overrides the per-feature
+  # default below; the entries here drive default selection in the dashboard UI.
   briefing:
     models: [gpt-4.1-mini, gpt-5-mini, gpt-4.1, gpt-5.1]
     default: gpt-4.1-mini

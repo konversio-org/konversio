@@ -3,8 +3,8 @@
 require 'agents'
 
 Rails.application.config.after_initialize do
-  api_key = GlobalConfigService.load('PILOT_OPEN_AI_API_KEY', nil)
-  model = GlobalConfigService.load('PILOT_OPEN_AI_MODEL', nil).presence || Llm::Config::DEFAULT_MODEL
+  api_key = Llm::Config.api_key
+  model = Llm::Config.model_for(:default)
   api_base = Llm::Config.api_base
 
   if api_key.present?
