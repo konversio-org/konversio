@@ -63,10 +63,14 @@ const isMasterEnabled = computed(() =>
 
 const hasDraft = computed(() => (props.editorContent || '').trim().length > 0);
 
-const rewriteAllowed = computed(() => {
-  const account = currentAccount.value || {};
-  return Boolean(account.pilot_rewrite_enabled) && hasDraft.value;
-});
+// Rewrite items appear whenever the feature is enabled — matching
+// Chatwoot Enterprise's sparkle menu, where Improve / Change tone / Fix
+// grammar are always visible regardless of composer state. We disable
+// (rather than hide) them when there's no draft so the discoverability
+// stays consistent across empty / drafting / preview-active states.
+const rewriteAllowed = computed(() =>
+  Boolean(currentAccount.value?.pilot_rewrite_enabled)
+);
 
 const anyLoading = computed(
   () => briefing.loading.value || summary.loading.value || rewrite.loading.value
@@ -95,16 +99,19 @@ const actions = computed(() => {
   const list = [];
 
   if (rewriteAllowed.value) {
+    const disabledWithoutDraft = !hasDraft.value;
     list.push({
       key: 'improve_reply',
       label: t('PILOT.ACTIONS_MENU_IMPROVE_REPLY'),
       icon: 'i-ph-magic-wand',
+      disabled: disabledWithoutDraft,
       handler: () => runRewrite('improve'),
     });
     list.push({
       key: 'change_tone',
       label: t('PILOT.ACTIONS_MENU_CHANGE_TONE'),
       icon: 'i-ph-faders-horizontal',
+      disabled: disabledWithoutDraft,
       hasSubmenu: true,
       handler: () => {
         toneSubmenuOpen.value = true;
@@ -114,6 +121,7 @@ const actions = computed(() => {
       key: 'fix_grammar',
       label: t('PILOT.ACTIONS_MENU_FIX_GRAMMAR'),
       icon: 'i-ph-check-circle',
+      disabled: disabledWithoutDraft,
       handler: () => runRewrite('fix_spelling_grammar'),
     });
   }
