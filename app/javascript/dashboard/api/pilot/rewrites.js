@@ -6,8 +6,8 @@ class PilotRewritesAPI extends ApiClient {
     super('pilot/rewrites', { accountScoped: true, apiVersion: 'v2' });
   }
 
-  generate({ text, tone }) {
-    return axios.post(this.url, { text, tone });
+  generate({ text, operation }) {
+    return axios.post(this.url, { text, operation });
   }
 }
 

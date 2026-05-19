@@ -5,6 +5,7 @@ import { vOnClickOutside } from '@vueuse/components';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useBriefing } from 'dashboard/composables/pilot/useBriefing';
 import { useSummary } from 'dashboard/composables/pilot/useSummary';
+import { useRewrite } from 'dashboard/composables/pilot/useRewrite';
 import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
@@ -12,17 +13,20 @@ import { emitter } from 'shared/helpers/mitt';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 
-// Menu structure mirrors Chatwoot Enterprise Captain's three-item layout:
-// Suggest a reply / Summarize the conversation / Ask Copilot. Conceptual
-// design only — no upstream code copied. The earlier "Suggest follow-up"
-// entry and standalone "Rewrite" entry have been removed for 1:1 parity;
-// their backends (useFollowUp, useRewrite) remain available for future
-// re-use but are no longer surfaced through this menu.
+// Menu layout: rewrite actions (Improve / Change tone / Fix grammar) sit
+// above the Captain three-item layout (Suggest a reply / Summarize / Ask
+// Copilot). Rewrite items are gated on `pilot_rewrite_enabled` and a
+// non-empty draft. "Change tone" expands the menu inline to show the five
+// spec-defined Pilot tones; picking one closes the menu.
 
 const props = defineProps({
   conversationId: {
     type: [Number, String],
     default: null,
+  },
+  editorContent: {
+    type: String,
+    default: '',
   },
   disabled: {
     type: Boolean,
@@ -35,11 +39,17 @@ const { currentAccount } = useAccount();
 
 const briefing = useBriefing();
 const summary = useSummary();
+const rewrite = useRewrite();
 const copilotDrawer = useCopilotDrawer();
 
 const isOpen = ref(false);
+const toneSubmenuOpen = ref(false);
+
+const TONES = ['friendly', 'formal', 'concise', 'empathetic', 'assertive'];
+
 const closeMenu = () => {
   isOpen.value = false;
+  toneSubmenuOpen.value = false;
 };
 const toggleMenu = () => {
   if (props.disabled) return;
@@ -51,13 +61,62 @@ const isMasterEnabled = computed(() =>
   Boolean(currentAccount.value?.pilot_enabled)
 );
 
+const hasDraft = computed(() => (props.editorContent || '').trim().length > 0);
+
+const rewriteAllowed = computed(() => {
+  const account = currentAccount.value || {};
+  return Boolean(account.pilot_rewrite_enabled) && hasDraft.value;
+});
+
 const anyLoading = computed(
-  () => briefing.loading.value || summary.loading.value
+  () => briefing.loading.value || summary.loading.value || rewrite.loading.value
 );
+
+const runRewrite = async operation => {
+  emitter.emit(BUS_EVENTS.PILOT_PREVIEW_START, {
+    actionKey: `rewrite:${operation}`,
+    targetMode: REPLY_EDITOR_MODES.REPLY,
+  });
+  const result = await rewrite.generate({
+    text: props.editorContent,
+    operation,
+  });
+  if (result) {
+    emitter.emit(BUS_EVENTS.PILOT_PREVIEW_READY, { content: result });
+  } else {
+    emitter.emit(BUS_EVENTS.PILOT_PREVIEW_ERROR, {
+      errorMessage: rewrite.error.value || '',
+    });
+  }
+};
 
 const actions = computed(() => {
   const account = currentAccount.value || {};
   const list = [];
+
+  if (rewriteAllowed.value) {
+    list.push({
+      key: 'improve_reply',
+      label: t('PILOT.ACTIONS_MENU_IMPROVE_REPLY'),
+      icon: 'i-ph-magic-wand',
+      handler: () => runRewrite('improve'),
+    });
+    list.push({
+      key: 'change_tone',
+      label: t('PILOT.ACTIONS_MENU_CHANGE_TONE'),
+      icon: 'i-ph-faders-horizontal',
+      hasSubmenu: true,
+      handler: () => {
+        toneSubmenuOpen.value = true;
+      },
+    });
+    list.push({
+      key: 'fix_grammar',
+      label: t('PILOT.ACTIONS_MENU_FIX_GRAMMAR'),
+      icon: 'i-ph-check-circle',
+      handler: () => runRewrite('fix_spelling_grammar'),
+    });
+  }
 
   if (account.pilot_briefing_enabled) {
     list.push({
@@ -132,17 +191,38 @@ const actions = computed(() => {
   return list;
 });
 
+const toneItems = computed(() =>
+  TONES.map(tone => ({
+    key: `tone_${tone}`,
+    label: t(`PILOT.REWRITE.TONES.${tone.toUpperCase()}`),
+    icon: 'i-ph-faders-horizontal',
+    handler: () => runRewrite(tone),
+  }))
+);
+
 const isVisible = computed(
   () => isMasterEnabled.value && actions.value.length > 0
 );
 
 const onActionClick = async action => {
   if (action.disabled || anyLoading.value) return;
+  // "Change tone" toggles the submenu and keeps the menu open;
+  // every other action closes the menu before firing.
+  if (action.hasSubmenu) {
+    action.handler();
+    return;
+  }
   closeMenu();
   await action.handler();
 };
 
-const firstError = computed(() => briefing.error.value || summary.error.value);
+const onBackClick = () => {
+  toneSubmenuOpen.value = false;
+};
+
+const firstError = computed(
+  () => briefing.error.value || summary.error.value || rewrite.error.value
+);
 </script>
 
 <template>
@@ -175,18 +255,49 @@ const firstError = computed(() => briefing.error.value || summary.error.value);
       role="menu"
       class="absolute bottom-full right-0 mb-2 min-w-56 rounded-lg border border-n-strong bg-n-solid-3 py-2 shadow-lg z-50"
     >
-      <button
-        v-for="action in actions"
-        :key="action.key"
-        type="button"
-        role="menuitem"
-        :disabled="action.disabled"
-        class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
-        @click="onActionClick(action)"
-      >
-        <span class="inline-block size-4" :class="[action.icon]" />
-        {{ action.label }}
-      </button>
+      <template v-if="!toneSubmenuOpen">
+        <button
+          v-for="action in actions"
+          :key="action.key"
+          type="button"
+          role="menuitem"
+          :disabled="action.disabled"
+          class="flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="onActionClick(action)"
+        >
+          <span class="flex items-center gap-2">
+            <span class="inline-block size-4" :class="[action.icon]" />
+            {{ action.label }}
+          </span>
+          <span
+            v-if="action.hasSubmenu"
+            class="inline-block size-3 i-ph-caret-right text-n-slate-10"
+          />
+        </button>
+      </template>
+      <template v-else>
+        <button
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-11 hover:bg-n-slate-3"
+          @click="onBackClick"
+        >
+          <span class="inline-block size-3 i-ph-caret-left" />
+          {{ t('PILOT.ACTIONS_MENU_BACK') }}
+        </button>
+        <div class="my-1 border-t border-n-strong" />
+        <button
+          v-for="tone in toneItems"
+          :key="tone.key"
+          type="button"
+          role="menuitem"
+          class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3"
+          @click="onActionClick(tone)"
+        >
+          <span class="inline-block size-4" :class="[tone.icon]" />
+          {{ tone.label }}
+        </button>
+      </template>
     </div>
 
     <span v-if="firstError" class="text-xs text-n-ruby-9" role="alert">
