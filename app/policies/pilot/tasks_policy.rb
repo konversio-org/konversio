@@ -1,8 +1,4 @@
 class Pilot::TasksPolicy < ApplicationPolicy
-  def rewrite?
-    true
-  end
-
   def summarize?
     true
   end
