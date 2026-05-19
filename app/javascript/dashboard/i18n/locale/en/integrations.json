@@ -394,6 +394,10 @@
     "ACTIONS_MENU_LABEL": "Pilot AI actions",
     "ACTIONS_MENU_LOADING_LABEL": "Generating…",
     "ACTIONS_MENU_ASK_COPILOT": "Ask Copilot",
+    "ACTIONS_MENU_IMPROVE_REPLY": "Improve reply",
+    "ACTIONS_MENU_CHANGE_TONE": "Change tone",
+    "ACTIONS_MENU_FIX_GRAMMAR": "Fix grammar & spelling",
+    "ACTIONS_MENU_BACK": "Back",
     "PREVIEW_ACCEPT": "Accept",
     "PREVIEW_ACCEPT_SHORTCUT": "⌘ + ↵",
     "PREVIEW_DISMISS": "Discard",
@@ -423,10 +427,6 @@
       "INSERT": "Insert"
     },
     "REWRITE": {
-      "BUTTON_LABEL": "Rewrite",
-      "LOADING": "Rewriting…",
-      "ERROR": "Could not rewrite. Please try again.",
-      "TONE_PICKER_TITLE": "Pick a tone",
       "TONES": {
         "FRIENDLY": "Friendly",
         "FORMAL": "Formal",

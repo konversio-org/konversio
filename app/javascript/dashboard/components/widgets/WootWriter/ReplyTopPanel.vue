@@ -35,6 +35,10 @@ export default {
       type: Number,
       default: null,
     },
+    editorContent: {
+      type: String,
+      default: '',
+    },
     isMessageLengthReachingThreshold: {
       type: Boolean,
       default: () => false,
@@ -124,9 +128,10 @@ export default {
         </span>
       </div>
     </div>
-    <!-- Pilot AI actions: sparkle menu (briefing, summary, ask copilot) -->
+    <!-- Pilot AI actions: sparkle menu (rewrite, briefing, summary, ask copilot) -->
     <PilotActionsMenu
       :conversation-id="conversationId"
+      :editor-content="editorContent"
       :disabled="disabled || isEditorDisabled"
       @draft="payload => $emit('briefingDraft', payload)"
       @request-reply-mode="setReplyMode"

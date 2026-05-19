@@ -7,7 +7,9 @@ import PilotRewritesAPI from 'dashboard/api/pilot/rewrites';
  *
  * Wraps the `POST /api/v2/accounts/:id/pilot/rewrites` endpoint and
  * exposes reactive `loading`, `error`, and `rewritten` state plus a
- * `generate({ text, tone })` action.
+ * `generate({ text, operation })` action. `operation` is one of:
+ * `improve`, `fix_spelling_grammar`, `friendly`, `formal`, `concise`,
+ * `empathetic`, `assertive`.
  */
 export function useRewrite() {
   const currentAccount = useMapGetter('getCurrentAccount');
@@ -27,15 +29,15 @@ export function useRewrite() {
     rewritten.value = null;
   };
 
-  const generate = async ({ text, tone }) => {
-    if (!text || !tone) return null;
+  const generate = async ({ text, operation }) => {
+    if (!text || !operation) return null;
 
     loading.value = true;
     error.value = null;
     rewritten.value = null;
 
     try {
-      const response = await PilotRewritesAPI.generate({ text, tone });
+      const response = await PilotRewritesAPI.generate({ text, operation });
       rewritten.value = response?.data?.rewritten || '';
       return rewritten.value;
     } catch (err) {
