@@ -202,6 +202,7 @@
       "REPLY": "Reply",
       "PRIVATE_NOTE": "Private Note",
       "SEND": "Send",
+      "TOGGLE_EDITOR_SIZE": "Toggle composer size",
       "CREATE": "Add Note",
       "INSERT_READ_MORE": "Read more",
       "DISMISS_REPLY": "Dismiss reply",
