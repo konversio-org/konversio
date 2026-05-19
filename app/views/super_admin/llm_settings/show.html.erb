@@ -45,25 +45,36 @@
   </div>
 
   <% if @test_results.present? %>
-    <div class="mb-6 border border-slate-200 rounded">
-      <div class="px-4 py-2 bg-slate-50 border-b border-slate-200">
-        <h3 class="text-sm font-semibold">Test results</h3>
-      </div>
-      <table class="w-full text-sm">
+    <h2 class="text-base font-semibold mb-1">Provider connectivity</h2>
+    <p class="text-xs text-slate-500 mb-3">
+      Checks whether each AI capability can reach its configured provider.
+    </p>
+    <div class="mb-6 border border-slate-200 rounded overflow-hidden">
+      <table class="w-full text-sm table-fixed">
+        <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wide">
+          <tr>
+            <th class="text-left !pl-5 pr-6 py-2 w-40">Capability</th>
+            <th class="text-left px-6 py-2 w-40">Status</th>
+            <th class="text-left px-6 py-2 !pr-5">Detail</th>
+          </tr>
+        </thead>
         <tbody>
           <% @test_results.each do |slot, result| %>
-            <tr class="border-t border-slate-100 first:border-t-0">
-              <td class="px-4 py-2 w-40">
-                <span class="font-medium"><%= SuperAdmin::LlmSettingsController::SLOT_PURPOSES.dig(slot, :label) %></span>
+            <tr class="border-t border-slate-100">
+              <td class="!pl-5 pr-6 py-2 font-medium">
+                <%= SuperAdmin::LlmSettingsController::SLOT_PURPOSES.dig(slot, :label) %>
               </td>
-              <td class="px-4 py-2 w-32">
-                <% if result[:ok] %>
+              <td class="px-6 py-2">
+                <% case result[:state] %>
+                <% when :connected %>
                   <span class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-medium">Connected</span>
+                <% when :not_configured %>
+                  <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-medium">Not configured</span>
                 <% else %>
                   <span class="inline-block px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs font-medium">Failed</span>
                 <% end %>
               </td>
-              <td class="px-4 py-2 text-slate-600 text-xs"><%= result[:message] %></td>
+              <td class="px-6 py-2 !pr-5 text-slate-600 text-xs break-words"><%= result[:message] %></td>
             </tr>
           <% end %>
         </tbody>
@@ -89,7 +100,21 @@
                 data: { 'llm-preset': true } %>
             <div class="flex-1">
               <div class="flex items-center justify-between">
-                <div class="font-medium text-slate-900"><%= preset[:label] %></div>
+                <div class="font-medium text-slate-900 flex items-center gap-2">
+                  <span><%= preset[:label] %></span>
+                  <% if preset[:slug] == 'all-scaleway' %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium"
+                          title="Scaleway is a French cloud provider (Iliad Group) with EU-hosted infrastructure. GDPR-applicable, outside US CLOUD Act jurisdiction.">
+                      🇪🇺 EU digital sovereignty
+                    </span>
+                  <% end %>
+                  <% if preset[:slug] == 'all-openai' %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-medium"
+                          title="OpenAI is incorporated in the United States. Data processed via OpenAI is subject to the US CLOUD Act regardless of region.">
+                      🇺🇸 US CLOUD Act applies
+                    </span>
+                  <% end %>
+                </div>
                 <% unless preset[:applicable] %>
                   <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">
                     Missing: <%= preset[:missing_providers].join(', ') %>
@@ -110,6 +135,19 @@
                   </div>
                 <% end %>
               </div>
+              <% if preset[:slug] == 'all-scaleway' %>
+                <div class="mt-2 text-xs text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded">
+                  Operated by Iliad Group (France) with EU-hosted inference. Subject to GDPR;
+                  no US parent, so outside US CLOUD Act reach.
+                </div>
+              <% end %>
+              <% if preset[:slug] == 'all-openai' %>
+                <div class="mt-2 text-xs text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded">
+                  OpenAI is a US company. Customer data — including prompts and uploads —
+                  is reachable by US authorities under the CLOUD Act, even when API traffic
+                  routes through EU regions.
+                </div>
+              <% end %>
             </div>
           </div>
         </label>
@@ -175,8 +213,9 @@
     </div>
 
     <div class="flex items-center gap-2 mb-8">
-      <%= form.submit 'Save changes', class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600' %>
+      <%= form.submit 'Save changes', class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600', data: { 'llm-submit-label': 'Saving and testing model availability…' } %>
       <button type="submit" formaction="<%= test_super_admin_llm_settings_path %>" formmethod="post"
+              data-llm-submit-label="Testing all slots…"
               class="bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded font-medium hover:bg-slate-50">
         Test all slots
       </button>
@@ -184,6 +223,19 @@
       <span class="text-xs text-slate-500 ml-auto">Tests issue a minimal round-trip per slot. Nothing is persisted.</span>
     </div>
   <% end %>
+
+  <div id="llm-saving-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl px-8 py-6 flex items-center gap-4 max-w-md">
+      <svg class="animate-spin h-8 w-8 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+        <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75"></path>
+      </svg>
+      <div>
+        <div class="font-medium text-slate-900" id="llm-saving-title">Testing model availability…</div>
+        <div class="text-xs text-slate-500 mt-0.5">Pinging chat, embedding, and audio slots against the live provider. This can take a few seconds.</div>
+      </div>
+    </div>
+  </div>
 
   <details class="border border-slate-200 rounded">
     <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between">
@@ -264,6 +316,15 @@
           toggleAdvanced();
           markDirty();
         });
+      });
+
+      form.addEventListener('submit', function (event) {
+        var overlay = document.getElementById('llm-saving-overlay');
+        var title = document.getElementById('llm-saving-title');
+        if (!overlay) return;
+        var label = event.submitter && event.submitter.dataset && event.submitter.dataset.llmSubmitLabel;
+        if (title && label) title.textContent = label;
+        overlay.classList.remove('hidden');
       });
 
       slotInputs.forEach(function (el) {

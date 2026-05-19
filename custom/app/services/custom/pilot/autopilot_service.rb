@@ -58,6 +58,8 @@ module Custom
         context = build_context(history_without_last_user(history))
 
         run_result = runner.run(last_user, context: context, max_turns: max_turns)
+        raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
+
         reply = extract_reply(run_result)
 
         handover = ::Custom::Pilot::HandoverEvaluator.new.evaluate(
