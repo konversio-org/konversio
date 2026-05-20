@@ -27,8 +27,9 @@ The entire `enterprise/` directory, which contained Chatwoot's proprietary
 ("Chatwoot Enterprise Edition License") features — including Captain AI, SLA,
 audit logs, custom roles, and other commercial add-ons. Roughly 55,000 lines
 removed in a single commit (`461d6ab36`). None of this code survives in the
-Konversio tree, and none of it was used as a reference when building Pilot
-(see below).
+Konversio tree. The Enterprise Captain source was read by the Phase 2a
+spec-writing agent (standard clean-room practice, see below); no Captain code
+was used by the Phase 2b implementing agent.
 
 ### Why fork at all
 
@@ -47,10 +48,11 @@ conversations back to humans), but it shares no source code with Captain.
 
 The implementation followed a **three-phase clean-room methodology**, executed
 by three separate AI coding-agent sessions with explicit walls between them.
-This is the same legal pattern Compaq used to reimplement IBM's BIOS in the
-1980s — separation of observation from implementation, mediated by a written
-specification — strengthened by the fact that no agent in this project ever
-read Captain's source code.
+This follows the exact legal pattern Compaq used to reimplement IBM's BIOS in
+the 1980s — a "dirty" team reads the original source and produces a functional
+specification, then a "clean" team builds from only that spec, never seeing
+the original source. No agent that wrote a line of Pilot implementation code
+ever had Captain's source expression in its working context.
 
 ### Phase 1 — Blind Purge
 
@@ -63,31 +65,40 @@ Captain's source expression never entered that agent's analytical context.
 
 Commits: `ed3be41ef`, `461d6ab36`.
 
-### Phase 2a — Behavioral Specification
+### Phase 2a — Behavioral Specification (the "dirty" team)
 
-A separate AI agent session was used to write the `pilot-full` OpenSpec. Its
-only inputs were:
+A separate AI agent session was used to write the `pilot-full` OpenSpec (see
+`openspec/changes/pilot-full/`). This was the **"dirty" team** in the Compaq
+sense — it was permitted to read Chatwoot's Enterprise Captain source code
+(from a parallel Chatwoot Enterprise install) in order to extract product
+behavior, data contracts, API surface, and runtime flow. Its inputs were:
 
-1. Behavioral observation of Captain as a **running product**, accessed by the
+1. Direct reading of Captain's Enterprise source files (models, services,
+   controllers, jobs) to capture behavioral contracts and data shapes.
+2. Behavioral observation of Captain as a **running product**, accessed by the
    project owner as an ordinary end-user customer of Chatwoot.
-2. Descriptions of intended functionality.
+3. Descriptions of intended functionality.
 
-This agent never read Captain's source either — only its observable behavior
-through the user interface. The resulting OpenSpec captures *what* the feature
-does (FAQs, document ingestion, scenarios, reply suggestions, handover) but
-not *how* Captain implements it.
+The resulting OpenSpec captures *what* the feature does (FAQs, document
+ingestion, scenarios, reply suggestions, handover), expressed in Pilot's
+own terms with Pilot-namespaced identifiers. It does not carry over Captain's
+identifier names, prompt wording, class hierarchies, or implementation
+patterns.
 
-This matters legally because copyright protects **expression**, not **ideas or
-functionality**. "Has an FAQ feature" is not copyrightable. The spec lives
-entirely in the unprotectable layer.
+This is the standard clean-room pattern: the dirty team reads protected source
+to produce a specification of unprotectable ideas and functionality. Copyright
+protects **expression**, not **ideas or functionality**. "Has an FAQ feature"
+is not copyrightable. The spec lives entirely in the unprotectable layer, and
+the implementing agent (Phase 2b) built from the spec alone.
 
-### Phase 2b — Spec-Only Build
+### Phase 2b — Spec-Only Build (the "clean" team)
 
 A third AI agent session (Claude, working in this repository) implemented
-Pilot's backend. Its working tree had `enterprise/` already removed; its only
-input besides the existing Konversio codebase was the OpenSpec from Phase 2a.
-The agent had no access to Captain's source expression at any point during
-implementation.
+Pilot's backend. This was the **"clean" team**: its working tree had
+`enterprise/` already removed; its only input besides the existing Konversio
+codebase was the OpenSpec from Phase 2a. The agent had no access to Captain's
+source expression at any point during implementation. All Pilot code was
+written fresh against the spec, not ported or referenced from Captain source.
 
 Resulting files:
 
@@ -102,13 +113,20 @@ multi-provider LLM routing for EU-sovereign deployment.
 Initial commit: `8bcabe45f`. Further development under the `purge-captain`
 branch.
 
-### Why this is stronger than the textbook Chinese Wall
+### Why this follows the textbook clean-room pattern
 
-Classical clean-room methodology (Compaq vs. IBM, 1982) allowed the "dirty"
-team to **read** the original source as long as they only emitted a functional
-spec. Konversio's approach is stricter: the dirty team only ever saw the
-running product, never the source. No human or AI session that wrote a line
-of Pilot code had Captain's source expression in its working context.
+Classical clean-room methodology (Compaq vs. IBM, 1982) works exactly this way:
+the "dirty" team reads the original source and produces a functional
+specification of ideas and behavior, then a "clean" team builds from only that
+specification. The dirty team's exposure to protected expression is legal
+because it only translates that expression into unprotectable functional
+requirements; the clean team's output contains only original expression.
+
+Konversio applies the same pattern with AI agents: the Phase 2a agent (dirty)
+read Captain source and wrote the OpenSpec; the Phase 2b agent (clean) built
+Pilot from the OpenSpec alone. The OpenSpec itself is published in
+`openspec/changes/pilot-full/` so anyone can verify that it describes
+functionality and data contracts, not copied expression.
 
 ### One honest asterisk
 
@@ -148,15 +166,16 @@ contributor (human or AI) extending Pilot must follow them.
 1. **Do not resurrect deleted files from git history.** `enterprise/captain/*`
    was deleted in `461d6ab36`; treat it as if it never existed. Do not run
    `git show 461d6ab36^:enterprise/captain/...` to "see how Captain did it"
-   when extending Pilot. This is the single rule that keeps the Chinese Wall
-   intact.
-2. **New Pilot features follow the same methodology.** Behavior is observed
-   or specified; implementation is built from the spec; the implementer does
-   not read protected source. This applies whether the work is done by a human
-   or an AI agent.
-3. **Do not feed `enterprise/captain/*` source to any AI tool.** Including
-   indirectly — e.g. don't paste it into a Claude session even "just to ask
-   questions about it."
+   when extending Pilot.
+2. **New Pilot features follow the same clean-room methodology.** One agent
+   session (the "dirty" team) may read enterprise source to produce a spec
+   of behavior and data contracts. A separate agent session (the "clean"
+   team) builds from only that spec and never reads protected source.
+3. **The implementing ("clean") agent must never see `enterprise/captain/*`
+   source.** The spec-writing agent is the only one permitted to read
+   protected source, and only to translate expression into functional
+   requirements — not to carry over identifier names, prompts, or
+   implementation patterns.
 4. **The UI shell remains MIT-fork territory.** Files under
    `app/javascript/dashboard/.../pilot/*` and `app/controllers/.../pilot/*`
    can continue to be improved by cherry-picking from upstream Chatwoot MIT
@@ -196,8 +215,9 @@ evidence of copying.
 
 Chatwoot has a free part (MIT) and a paid part (proprietary, including its
 "Captain" AI). Konversio took the free part legally, deleted the paid part
-without reading it, and built its own AI ("Pilot") from a spec written by
-observing how Captain behaves as a user — not by looking at Captain's source.
-The whole result is free, open-source, MIT-licensed, self-hosted, with
-EU-based AI providers. The Chatwoot copyright notice stays in the LICENSE
-file as credit and as legal requirement.
+without reading it, and built its own AI ("Pilot") using clean-room
+methodology: a spec was written from Captain's behavior and data contracts
+(the "dirty" team), then Pilot was implemented from only that spec (the
+"clean" team). The whole result is free, open-source, MIT-licensed,
+self-hosted, with EU-based AI providers. The Chatwoot copyright notice stays
+in the LICENSE file as credit and as legal requirement.
