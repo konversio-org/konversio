@@ -7,13 +7,6 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     audio: { label: 'Audio', used_for: 'Transcription (plumbed, not yet consumed)' }
   }.freeze
 
-  EMBEDDING_DIMENSIONS = {
-    'text-embedding-3-small' => 1536,
-    'text-embedding-3-large' => 3072,
-    'BAAI/bge-en-icl' => 4096,
-    'bge-multilingual-gemma2' => 3584
-  }.freeze
-
   def show
     load_view_state
   end
@@ -30,18 +23,12 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     render :show, status: :unprocessable_entity
   end
 
-  def test
-    @test_results = SLOTS.each_with_object({}) do |slot, h|
-      h[slot] = run_slot_test(slot)
-    end
-    load_view_state
-    render :show
-  end
-
   private
 
   def apply_preset(slug)
     Llm::Presets.apply!(slug)
+    persist_embedding_dimensions_override(nil)
+    GlobalConfig.clear_cache
     Llm::Config.reset!
     Llm::Config.initialize!
     flash.now[:notice] = "Preset '#{slug}' applied. Sanity test results below."
@@ -73,11 +60,14 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
       end
     end
 
+    embedding_dim_override = resolve_embedding_dimensions_override(slot_params, parsed[:embedding][:model])
+
     ActiveRecord::Base.transaction do
       SLOTS.each do |slot|
         write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", parsed[slot][:provider])
         write_config("PILOT_LLM_#{slot.upcase}_MODEL", parsed[slot][:model])
       end
+      persist_embedding_dimensions_override(embedding_dim_override)
       matching = Llm::Presets.matching_current_config_for(parsed)
       write_config(Llm::Presets::PRESET_CONFIG_KEY, matching || Llm::Presets::CUSTOM_SLUG)
     end
@@ -89,16 +79,59 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     render_with_slot_tests
   end
 
+  # Returns the validated embedding dimensions override integer, or nil when
+  # the model is in MODEL_DIMENSIONS and the operator left the field blank.
+  # Raises ArgumentError when an unknown-model save omits the field, so the
+  # show action re-renders with the error flash.
+  def resolve_embedding_dimensions_override(slot_params, model)
+    embedding_row = slot_params['embedding'] || slot_params[:embedding] || {}
+    raw = embedding_row['dimensions'] || (embedding_row.respond_to?(:[]) ? embedding_row[:dimensions] : nil)
+    raw = raw.to_s.strip
+    known_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[model]
+
+    if raw.blank?
+      if known_dim.nil?
+        raise ArgumentError,
+              "Embedding slot: Dimensions is required when the model ('#{model}') is not in the built-in catalog."
+      end
+      return nil
+    end
+
+    value = Integer(raw, 10)
+    raise ArgumentError, 'Embedding slot: Dimensions must be a positive integer.' unless value.positive?
+
+    # Drop the override when it just restates the known value — keeps the
+    # config row absent unless the operator really meant to override.
+    return nil if known_dim == value
+
+    value
+  rescue ::ArgumentError, ::TypeError => e
+    raise ArgumentError, 'Embedding slot: Dimensions must be a positive integer.' if e.message.include?('invalid value for Integer')
+
+    raise
+  end
+
+  def persist_embedding_dimensions_override(value)
+    row = InstallationConfig.find_by(name: 'PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE')
+    if value.nil?
+      row&.destroy
+    else
+      row ||= InstallationConfig.new(name: 'PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', locked: false)
+      row.value = value.to_s
+      row.save!
+    end
+  end
+
   def render_with_slot_tests
-    @test_results = SLOTS.each_with_object({}) { |slot, h| h[slot] = run_slot_test(slot) }
+    @test_results = SLOTS.index_with { |slot| run_slot_test(slot) }
     load_view_state
     render :show
   end
 
   def load_view_state
     @providers = Llm::ProviderRegistry.known_slugs.map { |slug| Llm::ProviderRegistry.provider(slug) }
-    @slots = SLOTS.each_with_object({}) do |slot, h|
-      h[slot] = {
+    @slots = SLOTS.index_with do |slot|
+      {
         provider: Llm::ProviderRegistry.slot_provider(slot),
         model: Llm::ProviderRegistry.slot_model(slot),
         candidates: Llm::ProviderRegistry.providers_for(slot)
@@ -114,17 +147,45 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     @provider_status_summary = { configured: configured_count, missing: missing_count }
   end
 
+  # Compares the resolved expected dimension (from slot config) against the
+  # live pgvector column type. Returns a warning hash on mismatch, an
+  # :unknown_model hash when the model isn't in MODEL_DIMENSIONS and no
+  # override is set, or nil when everything agrees.
   def embedding_dimension_warning
-    current_model = @slots[:embedding][:model]
-    new_dim = EMBEDDING_DIMENSIONS[current_model]
-    stored_dim = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS', nil).to_i
-    return nil if new_dim.nil? || stored_dim.zero? || new_dim == stored_dim
+    column_dim = pilot_assistant_responses_embedding_column_dim
+    return nil if column_dim.nil?
 
-    {
-      model: current_model,
-      new_dim: new_dim,
-      stored_dim: stored_dim
-    }
+    current_model = @slots[:embedding][:model]
+    slot_config = ::Llm::Config.for_slot(:embedding)
+    begin
+      expected_dim = Custom::Pilot::EmbeddingService.expected_dimension(slot_config)
+    rescue Custom::Pilot::EmbeddingService::UnknownModelDimensionError
+      return { kind: :unknown_model, model: current_model, column_dim: column_dim }
+    end
+
+    return nil if expected_dim == column_dim
+
+    { kind: :mismatch, model: current_model, expected_dim: expected_dim, column_dim: column_dim }
+  end
+
+  # Queries pg_attribute for the `embedding` column's vector(N) type and
+  # returns N as an integer. Returns nil when the table or column is
+  # absent (which would imply a not-yet-migrated install).
+  def pilot_assistant_responses_embedding_column_dim
+    sql = <<~SQL.squish
+      SELECT format_type(atttypid, atttypmod) AS sql_type
+      FROM pg_attribute
+      WHERE attrelid = 'pilot_assistant_responses'::regclass
+        AND attname = 'embedding'
+        AND NOT attisdropped
+    SQL
+    row = ActiveRecord::Base.connection.execute(sql).first
+    return nil if row.nil?
+
+    match = row['sql_type'].to_s.match(/\Avector\((\d+)\)\z/)
+    match && match[1].to_i
+  rescue ActiveRecord::StatementInvalid
+    nil
   end
 
   def write_config(name, value)
@@ -169,6 +230,21 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     response = client.embeddings(parameters: { model: config[:model], input: 'ping' })
     vector = response.dig('data', 0, 'embedding')
     return { state: :failed, message: 'Provider returned no embedding vector.' } if vector.blank?
+
+    begin
+      expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
+    rescue Custom::Pilot::EmbeddingService::UnknownModelDimensionError => e
+      return { state: :failed, message: e.message }
+    end
+
+    if vector.length != expected
+      return {
+        state: :failed,
+        message: "Model returned #{vector.length}-dim vectors but you declared #{expected}-dim. " \
+                 'Update the Dimensions field or pick a model whose native dimension is ' \
+                 "#{expected}."
+      }
+    end
 
     { state: :connected, message: "Provider responded successfully — #{vector.length} dimensions." }
   end

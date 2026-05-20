@@ -18,7 +18,6 @@ module Custom
           'search_documentation'
         end
 
-
         def perform(tool_context, query:)
           account = account_for(tool_context)
           return 'Account context unavailable; cannot search documentation.' if account.blank?
@@ -35,8 +34,11 @@ module Custom
 
           format_results(results)
         rescue StandardError => e
-          Rails.logger.warn("[pilot.tools.search_documentation] #{e.class}: #{e.message}")
-          "Tool error while searching documentation: #{e.message}"
+          Rails.logger.error("[pilot.tools.search_documentation] #{e.class}: #{e.message}")
+          "[BACKEND_ERROR] Documentation search failed: #{e.class.name}: #{e.message}. " \
+            'Relay this error verbatim to the agent. Do not apologize, do not invent an ' \
+            'answer, do not claim you lack tools — the knowledge base exists but is ' \
+            'currently unreachable due to a Pilot configuration problem.'
         end
 
         # CopilotService calls this when deciding whether to register the tool.

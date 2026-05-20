@@ -210,9 +210,9 @@
   display_title: 'LLM Preset'
   description: 'Slug of the currently-selected preset bundle, or "custom" when slots were set individually.'
   locked: false
-- name: PILOT_LLM_EMBEDDING_DIMENSIONS
-  display_title: 'Embedding Dimensions'
-  description: 'Vector dimension expected for embeddings (must match the model + pgvector column). Default: 1536'
+- name: PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE
+  display_title: 'Embedding Dimensions (Custom mode override)'
+  description: 'Explicit embedding dimension for Custom-mode slots whose model is not in Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS. Populated by the Super Admin LLM Settings form; do not set by hand.'
   locked: false
 - name: PILOT_FIRECRAWL_API_KEY
   display_title: 'FireCrawl API Key (optional)'
