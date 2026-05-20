@@ -4,11 +4,15 @@ import { useRoute } from 'vue-router';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
-import { useMapGetter } from 'dashboard/composables/store';
-import { FEATURE_FLAGS } from 'dashboard/featureFlags';
+import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
+import { usePilot } from 'dashboard/composables/usePilot';
+import PilotFaceIcon from 'dashboard/components-next/pilot/PilotFaceIcon.vue';
+
 const route = useRoute();
 
-const { uiSettings, updateUISettings } = useUISettings();
+const { updateUISettings } = useUISettings();
+const drawer = useCopilotDrawer();
+const { pilotCopilotEnabled } = usePilot();
 
 const isConversationRoute = computed(() => {
   const CONVERSATION_ROUTES = [
@@ -25,27 +29,18 @@ const isConversationRoute = computed(() => {
   return CONVERSATION_ROUTES.includes(route.name);
 });
 
-const currentAccountId = useMapGetter('getCurrentAccountId');
-const isFeatureEnabledonAccount = useMapGetter(
-  'accounts/isFeatureEnabledonAccount'
-);
-
-const showCopilotLauncher = computed(() => {
-  const isPilotEnabled = isFeatureEnabledonAccount.value(
-    currentAccountId.value,
-    FEATURE_FLAGS.PILOT
-  );
-  return (
-    isPilotEnabled &&
-    !uiSettings.value.is_copilot_panel_open &&
+const showCopilotLauncher = computed(
+  () =>
+    pilotCopilotEnabled.value &&
+    !drawer.isOpen.value &&
     !isConversationRoute.value
-  );
-});
+);
 const toggleSidebar = () => {
   updateUISettings({
-    is_copilot_panel_open: !uiSettings.value.is_copilot_panel_open,
+    is_copilot_panel_open: false,
     is_contact_sidebar_open: false,
   });
+  drawer.toggle();
 };
 </script>
 
@@ -58,12 +53,15 @@ const toggleSidebar = () => {
       class="rounded-full bg-n-alpha-2 backdrop-blur-lg p-1 shadow hover:shadow-md"
     >
       <Button
-        icon="i-woot-pilot"
         no-animation
-        class="!rounded-full !bg-n-solid-3 dark:!bg-n-alpha-2 !text-n-slate-12 text-xl transition-all duration-200 ease-out hover:brightness-110"
+        class="!rounded-full !bg-n-solid-3 dark:!bg-n-alpha-2 transition-all duration-200 ease-out hover:brightness-110"
         lg
         @click="toggleSidebar"
-      />
+      >
+        <template #icon>
+          <PilotFaceIcon class="size-7" />
+        </template>
+      </Button>
     </ButtonGroup>
   </div>
   <template v-else />

@@ -1,10 +1,13 @@
 import { computed } from 'vue';
+import { useAccount } from 'dashboard/composables/useAccount';
 
-// Stubbed in Konversio fork: Pilot Copilot menu is disabled until
-// the Pilot Copilot sub-feature lands. Returns inactive state so
-// downstream code paths skip the legacy Pilot editor menu cleanly.
 export function usePilot() {
-  const pilotCopilotEnabled = computed(() => false);
+  const { currentAccount } = useAccount();
+
+  const pilotCopilotEnabled = computed(() => {
+    const account = currentAccount.value || {};
+    return Boolean(account.pilot_enabled && account.pilot_copilot_enabled);
+  });
 
   return {
     pilotCopilotEnabled,

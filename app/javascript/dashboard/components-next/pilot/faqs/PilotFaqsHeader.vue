@@ -1,6 +1,7 @@
 <script setup>
 import { useI18n } from 'vue-i18n';
 import Button from 'dashboard/components-next/button/Button.vue';
+import FeatureSpotlightPopover from 'dashboard/components-next/feature-spotlight/FeatureSpotlightPopover.vue';
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import FaqSearchInput from './FaqSearchInput.vue';
 
@@ -10,11 +11,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:assistantId', 'update:search', 'create']);
-
-// NOTE: KNOW_MORE_URL points at the upstream Chatwoot docs placeholder.
-// Update once Konversio's own help center for Pilot FAQs is live.
-const KNOW_MORE_URL =
-  'https://www.chatwoot.com/hc/user-guide/articles/captain-faqs';
 
 const { t } = useI18n();
 
@@ -40,15 +36,11 @@ const onCreate = () => emit('create');
       <h1 class="text-heading-md font-medium text-n-slate-12">
         {{ t('PILOT.FAQS.PAGE_TITLE') }}
       </h1>
-      <a
-        :href="KNOW_MORE_URL"
-        target="_blank"
-        rel="noreferrer noopener"
-        class="inline-flex items-center gap-1 text-sm text-n-brand hover:underline"
-      >
-        {{ t('PILOT.FAQS.KNOW_MORE') }}
-        <span aria-hidden="true" class="i-lucide-external-link size-3.5" />
-      </a>
+      <FeatureSpotlightPopover
+        :button-label="t('PILOT.FAQS.KNOW_MORE')"
+        :note="t('PILOT.FAQS.KNOW_MORE_NOTE')"
+        hide-actions
+      />
     </div>
     <div
       class="flex w-full flex-1 items-center justify-end gap-3 min-w-0 sm:w-auto"

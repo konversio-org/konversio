@@ -8,6 +8,7 @@ const types = {
   SET_ACTIVE_THREAD_ID: 'pilot/copilot/SET_ACTIVE_THREAD_ID',
   SET_MESSAGES: 'pilot/copilot/SET_MESSAGES',
   ADD_MESSAGE: 'pilot/copilot/ADD_MESSAGE',
+  REMOVE_THREAD_MESSAGES: 'pilot/copilot/REMOVE_THREAD_MESSAGES',
   SET_AWAITING_RESPONSE: 'pilot/copilot/SET_AWAITING_RESPONSE',
   SET_BOUND_CONVERSATION_ID: 'pilot/copilot/SET_BOUND_CONVERSATION_ID',
   RESET: 'pilot/copilot/RESET',
@@ -64,6 +65,13 @@ export const actions = {
   setActiveThread({ commit, dispatch }, threadId) {
     commit(types.SET_ACTIVE_THREAD_ID, threadId);
     if (threadId) dispatch('fetchMessages', threadId);
+  },
+
+  resetActiveThread({ commit, state: $state }) {
+    const id = $state.activeThreadId;
+    commit(types.SET_ACTIVE_THREAD_ID, null);
+    if (id) commit(types.REMOVE_THREAD_MESSAGES, id);
+    commit(types.SET_AWAITING_RESPONSE, false);
   },
 
   async fetchThreads({ commit }) {
@@ -199,6 +207,12 @@ export const mutations = {
       ...$state.messagesByThread,
       [threadId]: [...current, message],
     };
+  },
+
+  [types.REMOVE_THREAD_MESSAGES]($state, threadId) {
+    if (!threadId || !(threadId in $state.messagesByThread)) return;
+    const { [threadId]: _removed, ...rest } = $state.messagesByThread;
+    $state.messagesByThread = rest;
   },
 
   [types.SET_AWAITING_RESPONSE]($state, value) {
