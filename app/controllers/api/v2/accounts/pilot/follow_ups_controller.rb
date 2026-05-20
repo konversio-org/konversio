@@ -21,7 +21,7 @@ class Api::V2::Accounts::Pilot::FollowUpsController < Api::V1::Accounts::BaseCon
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_follow_up_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_follow_up')
 
     render json: { error: 'Pilot Follow-up is not enabled for this account' }, status: :forbidden
   end

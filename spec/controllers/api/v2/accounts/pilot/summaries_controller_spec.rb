@@ -9,7 +9,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Summaries', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/summaries" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_summary_enabled: true)
+    account.enable_features!(:pilot, :pilot_summary)
   end
 
   describe 'POST /api/v2/accounts/:account_id/pilot/summaries' do
@@ -27,7 +27,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Summaries', type: :request do
     end
 
     it 'returns 403 when the summary flag is off' do
-      account.update!(pilot_summary_enabled: false)
+      account.disable_features!(:pilot_summary)
 
       post url,
            params: { conversation_id: conversation.display_id },

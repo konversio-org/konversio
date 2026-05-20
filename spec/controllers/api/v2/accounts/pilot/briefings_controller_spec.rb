@@ -9,7 +9,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Briefings', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/briefings" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_briefing_enabled: true)
+    account.enable_features!(:pilot, :pilot_briefing)
   end
 
   describe 'POST /api/v2/accounts/:account_id/pilot/briefings' do
@@ -30,7 +30,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Briefings', type: :request do
 
     context 'when the briefing feature flag is off' do
       it 'returns 403' do
-        account.update!(pilot_briefing_enabled: false)
+        account.disable_features!(:pilot_briefing)
 
         post url,
              params: { conversation_id: conversation.display_id },
@@ -43,7 +43,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Briefings', type: :request do
 
     context 'when the master pilot flag is off' do
       it 'returns 403' do
-        account.update!(pilot_enabled: false)
+        account.disable_features!(:pilot)
 
         post url,
              params: { conversation_id: conversation.display_id },

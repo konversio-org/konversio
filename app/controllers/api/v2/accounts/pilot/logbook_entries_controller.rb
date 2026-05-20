@@ -28,7 +28,7 @@ class Api::V2::Accounts::Pilot::LogbookEntriesController < Api::V1::Accounts::Ba
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_logbook_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_logbook')
 
     render json: { error: 'Pilot Logbook is not enabled for this account' }, status: :forbidden
   end

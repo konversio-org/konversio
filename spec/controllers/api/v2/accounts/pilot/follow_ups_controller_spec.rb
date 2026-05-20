@@ -9,7 +9,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::FollowUps', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/follow_ups" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_follow_up_enabled: true)
+    account.enable_features!(:pilot, :pilot_follow_up)
   end
 
   describe 'POST /api/v2/accounts/:account_id/pilot/follow_ups' do
@@ -27,7 +27,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::FollowUps', type: :request do
     end
 
     it 'returns 403 when the follow_up flag is off' do
-      account.update!(pilot_follow_up_enabled: false)
+      account.disable_features!(:pilot_follow_up)
 
       post url,
            params: { conversation_id: conversation.display_id },

@@ -8,7 +8,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotThreads', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/copilot_threads" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_copilot)
   end
 
   describe 'POST /api/v2/accounts/:account_id/pilot/copilot_threads' do
@@ -40,7 +40,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotThreads', type: :request do
     end
 
     it 'returns 403 when pilot_copilot is disabled' do
-      account.update!(pilot_copilot_enabled: false)
+      account.disable_features!(:pilot_copilot)
 
       post url,
            params: { message: 'hi' },
@@ -51,7 +51,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotThreads', type: :request do
     end
 
     it 'returns 403 when the master pilot flag is off' do
-      account.update!(pilot_enabled: false)
+      account.disable_features!(:pilot)
 
       post url,
            params: { message: 'hi' },

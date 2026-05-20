@@ -54,8 +54,8 @@ class CsatSurveyResponse < ApplicationRecord
 
   def enqueue_pilot_analysis
     return if feedback_message.blank?
-    return unless account&.respond_to?(:pilot_enabled) && account.pilot_enabled
-    return unless account.respond_to?(:pilot_csat_analysis_enabled) && account.pilot_csat_analysis_enabled
+    return unless account&.feature_enabled?('pilot')
+    return unless account.feature_enabled?('pilot_csat_analysis')
 
     Pilot::CsatAnalysisJob.perform_later(id)
   end

@@ -8,7 +8,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Responses', type: :request do
   let(:base_url) { "/api/v2/accounts/#{account.id}/pilot/assistants/#{assistant.id}/responses" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_autopilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_autopilot)
     allow(Pilot::UpdateEmbeddingJob).to receive(:perform_later)
   end
 
@@ -22,7 +22,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Responses', type: :request do
 
     context 'when the autopilot feature is disabled' do
       it 'returns 403' do
-        account.update!(pilot_autopilot_enabled: false)
+        account.disable_features!(:pilot_autopilot)
 
         get base_url, headers: admin.create_new_auth_token, as: :json
 

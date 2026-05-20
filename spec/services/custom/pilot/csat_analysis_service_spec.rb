@@ -4,12 +4,12 @@ RSpec.describe Custom::Pilot::CsatAnalysisService do
   let(:account) { create(:account) }
 
   before do
-    account.update!(pilot_enabled: true, pilot_csat_analysis_enabled: true)
+    account.enable_features!(:pilot, :pilot_csat_analysis)
   end
 
   describe '#perform' do
     it 'raises FeatureDisabledError when the csat_analysis flag is off' do
-      account.update!(pilot_csat_analysis_enabled: false)
+      account.disable_features!(:pilot_csat_analysis)
       service = described_class.new(feedback_message: 'slow refund', account: account)
       expect { service.perform }.to raise_error(described_class::FeatureDisabledError)
     end
