@@ -8,21 +8,13 @@ class AccountDashboard < Administrate::BaseDashboard
   # which determines how the attribute is displayed
   # on pages throughout the dashboard.
 
-  enterprise_attribute_types = if KonversioApp.enterprise?
-                                 attributes = {
-                                   limits: AccountLimitsField
-                                 }
+  enterprise_attribute_types = {
+    limits: AccountLimitsField,
+    selected_feature_flags: AccountFeaturesField
+  }
 
-                                 # Only show manually managed features in Konversio Cloud deployment
-                                 attributes[:manually_managed_features] = ManuallyManagedFeaturesField if KonversioApp.chatwoot_cloud?
-
-                                 # Add all_features last so it appears after manually_managed_features
-                                 attributes[:all_features] = AccountFeaturesField
-
-                                 attributes
-                               else
-                                 {}
-                               end
+  # Only show manually managed features in Konversio Cloud deployment
+  enterprise_attribute_types[:manually_managed_features] = ManuallyManagedFeaturesField if KonversioApp.chatwoot_cloud?
 
   ATTRIBUTE_TYPES = {
     id: Field::Number.with_options(searchable: true),
@@ -53,14 +45,10 @@ class AccountDashboard < Administrate::BaseDashboard
 
   # SHOW_PAGE_ATTRIBUTES
   # an array of attributes that will be displayed on the model's show page.
-  enterprise_show_page_attributes = if KonversioApp.enterprise?
-                                      attrs = %i[custom_attributes limits]
-                                      attrs << :manually_managed_features if KonversioApp.chatwoot_cloud?
-                                      attrs << :all_features
-                                      attrs
-                                    else
-                                      []
-                                    end
+  enterprise_show_page_attributes = %i[custom_attributes limits]
+  enterprise_show_page_attributes << :manually_managed_features if KonversioApp.chatwoot_cloud?
+  enterprise_show_page_attributes << :selected_feature_flags
+
   SHOW_PAGE_ATTRIBUTES = (%i[
     id
     name
@@ -75,14 +63,10 @@ class AccountDashboard < Administrate::BaseDashboard
   # FORM_ATTRIBUTES
   # an array of attributes that will be displayed
   # on the model's form (`new` and `edit`) pages.
-  enterprise_form_attributes = if KonversioApp.enterprise?
-                                 attrs = %i[limits]
-                                 attrs << :manually_managed_features if KonversioApp.chatwoot_cloud?
-                                 attrs << :all_features
-                                 attrs
-                               else
-                                 []
-                               end
+  enterprise_form_attributes = %i[limits]
+  enterprise_form_attributes << :manually_managed_features if KonversioApp.chatwoot_cloud?
+  enterprise_form_attributes << :selected_feature_flags
+
   FORM_ATTRIBUTES = (%i[
     name
     locale
@@ -117,7 +101,7 @@ class AccountDashboard < Administrate::BaseDashboard
   # to prevent an error from being raised (wrong number of arguments)
   # Reference: https://github.com/thoughtbot/administrate/pull/2356/files#diff-4e220b661b88f9a19ac527c50d6f1577ef6ab7b0bed2bfdf048e22e6bfa74a05R204
   def permitted_attributes(action)
-    attrs = super + [limits: {}]
+    attrs = super + [limits: {}, selected_feature_flags: []]
 
     # Add manually_managed_features to permitted attributes only for Konversio Cloud
     attrs << { manually_managed_features: [] } if KonversioApp.chatwoot_cloud?

@@ -27,10 +27,7 @@ module Custom
       def feature_enabled?(feature, account = @account)
         return false if account.blank?
 
-        column = "pilot_#{feature}_enabled"
-        return false unless account.respond_to?(:pilot_enabled) && account.respond_to?(column)
-
-        account.pilot_enabled && account.public_send(column)
+        account.feature_enabled?('pilot') && account.feature_enabled?("pilot_#{feature}")
       end
 
       # Yields a RubyLLM chat context bound to the install-wide credentials,

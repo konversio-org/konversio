@@ -6,7 +6,8 @@ export function usePilot() {
 
   const pilotCopilotEnabled = computed(() => {
     const account = currentAccount.value || {};
-    return Boolean(account.pilot_enabled && account.pilot_copilot_enabled);
+    const features = account.features || {};
+    return Boolean(features.pilot && features.pilot_copilot);
   });
 
   return {

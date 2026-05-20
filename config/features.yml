@@ -241,3 +241,43 @@
   display_name: Advanced Assignment
   enabled: false
   premium: true
+# Pilot suite — unified into the same flag system as everything else.
+# Master switch `pilot` gates the entire suite; sub-flags gate individual
+# AI surfaces. All default-on so existing self-hosted installs keep the
+# behavior baked in by past migrations.
+- name: pilot
+  display_name: Pilot AI (master switch)
+  enabled: true
+- name: pilot_briefing
+  display_name: Pilot Briefing
+  enabled: true
+- name: pilot_copilot
+  display_name: Pilot Copilot
+  enabled: true
+- name: pilot_autopilot
+  display_name: Pilot Autopilot
+  enabled: true
+- name: pilot_logbook
+  display_name: Pilot Logbook
+  enabled: true
+- name: pilot_tools
+  display_name: Pilot Tools
+  enabled: true
+- name: pilot_autoresolve
+  display_name: Pilot Auto-resolve
+  enabled: true
+- name: pilot_summary
+  display_name: Pilot Summary
+  enabled: true
+- name: pilot_csat_analysis
+  display_name: Pilot CSAT Analysis
+  enabled: true
+- name: pilot_follow_up
+  display_name: Pilot Follow-up
+  enabled: true
+- name: pilot_rewrite
+  display_name: Pilot Rewrite
+  enabled: true
+- name: pilot_label_suggestion
+  display_name: Pilot Label Suggestion
+  enabled: true
