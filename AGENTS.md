@@ -100,12 +100,12 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 - Prefer `with_modified_env` (from spec helpers) over stubbing `ENV` directly in specs
 - Specs in parallel/reloading environments: prefer comparing `error.class.name` over constant class equality when asserting raised errors
 
-## Codex Worktree Workflow
+## Codex Workflow
 
-- Use a separate git worktree + branch per task to keep changes isolated.
-- Keep Codex-specific local setup under `.codex/` and use `Procfile.worktree` for worktree process orchestration.
-- The setup workflow in `.codex/environments/environment.toml` should dynamically generate per-worktree DB/port values (Rails, Vite, Redis DB index) to avoid collisions.
-- Start each worktree with its own Overmind socket/title so multiple instances can run at the same time.
+- Use a task branch, but keep edits in `/Users/rcoenen/Dev/Konversio` unless a real per-worktree bootstrap exists on disk.
+- Docker/OrbStack mounts `/Users/rcoenen/Dev/Konversio`; container-mode verification must run against that path.
+- Do not verify a separate git worktree with `docker compose exec rails ...` from the main checkout. That tests the main checkout, not the worktree.
+- The previously documented `.codex/environments/environment.toml` and `Procfile.worktree` flow is not present in this repo today. If those files are added later, follow their bootstrap instructions before using a separate worktree.
 
 ## Commit Messages
 

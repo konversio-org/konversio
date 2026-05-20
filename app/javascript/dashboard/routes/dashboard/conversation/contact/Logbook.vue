@@ -130,24 +130,12 @@ export default {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 p-4 border-t border-n-slate-3">
-    <div class="flex flex-col gap-1">
-      <div class="flex items-center justify-between">
-        <h4
-          class="text-xs font-semibold uppercase tracking-wider text-n-slate-11 my-0"
-        >
-          {{ $t('CONTACT_PANEL.LOGBOOK.TITLE') }}
-        </h4>
-        <span class="i-lucide-book-open text-n-slate-10 text-sm" />
-      </div>
-      <p class="text-xs text-n-slate-10 m-0 leading-snug">
-        {{ $t('CONTACT_PANEL.LOGBOOK.SUBTITLE') }}
-      </p>
-    </div>
+  <div class="flex flex-col gap-4 p-4">
+    <p class="text-xs text-n-slate-10 m-0 leading-snug">
+      {{ $t('CONTACT_PANEL.LOGBOOK.SUBTITLE') }}
+    </p>
 
-    <div
-      class="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar"
-    >
+    <div class="flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
       <div v-if="isLoading" class="flex justify-center py-4">
         <span class="i-lucide-loader-2 animate-spin text-n-slate-10" />
       </div>
@@ -167,7 +155,7 @@ export default {
           <span class="text-[10px] font-medium text-n-slate-10 uppercase">
             {{ formatTime(entry.updated_at || entry.created_at) }}
             <span v-if="isEdited(entry)" class="normal-case text-n-slate-9">
-              · {{ $t('CONTACT_PANEL.LOGBOOK.EDITED') }}
+              {{ $t('CONTACT_PANEL.LOGBOOK.EDITED') }}
             </span>
           </span>
           <div
@@ -254,19 +242,3 @@ export default {
     />
   </div>
 </template>
-
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--n-slate-4);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--n-slate-5);
-}
-</style>
