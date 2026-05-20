@@ -1,0 +1,397 @@
+<% content_for(:title) do %>
+  LLM Settings
+<% end %>
+
+<header class="main-content__header" role="banner">
+  <h1 class="main-content__page-title" id="page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body max-w-4xl">
+  <% if flash[:notice] %>
+    <div class="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded mb-4">
+      <%= flash[:notice] %>
+    </div>
+  <% end %>
+
+  <% if @error.present? %>
+    <div class="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded mb-4">
+      <strong>Couldn't save:</strong> <%= @error %>
+    </div>
+  <% end %>
+
+  <% if @dimension_warning %>
+    <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded mb-4">
+      <% if @dimension_warning[:kind] == :unknown_model %>
+        <strong>Embedding model dimension not declared.</strong>
+        The embedding slot uses <code><%= @dimension_warning[:model] %></code>, which is not in the built-in catalog.
+        Set the <strong>Dimensions</strong> field below (Custom mode) so the system knows what to expect from the provider.
+        The <code>pilot_assistant_responses.embedding</code> column is currently <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+      <% else %>
+        <strong>Embedding dimension mismatch.</strong>
+        The embedding slot resolves to <code><%= @dimension_warning[:model] %></code> at <%= @dimension_warning[:expected_dim] %> dims,
+        but the <code>pilot_assistant_responses.embedding</code> column is <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+        Write a migration to <code>ALTER COLUMN embedding TYPE vector(<%= @dimension_warning[:expected_dim] %>)</code>
+        and re-embed the corpus, or switch the model back.
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded mb-6 text-sm">
+    <strong>API keys are managed through environment variables.</strong>
+    This page only selects which configured providers and models are used. To enable a provider, set
+    <code class="font-mono text-xs">PILOT_LLM_&lt;SLUG&gt;_API_KEY</code> in the host environment and restart the rails container.
+    <details class="mt-2">
+      <summary class="cursor-pointer text-xs text-blue-800 underline">View required variables</summary>
+      <div class="mt-2 text-xs leading-relaxed">
+        Required per provider: <code>PILOT_LLM_&lt;SLUG&gt;_API_KEY</code>.<br>
+        Optional: <code>_ENDPOINT</code>, <code>_LABEL</code>, <code>_OPENAI_COMPATIBLE</code>, <code>_CAPABILITIES</code>.<br>
+        Account-level OpenAI integration keys override the chat slot's <code>api_key</code> only — embedding and audio always use the slot's system key.
+      </div>
+    </details>
+  </div>
+
+  <% if @test_results.present? %>
+    <h2 class="text-base font-semibold mb-1">Provider connectivity</h2>
+    <p class="text-xs text-slate-500 mb-3">
+      Checks whether each AI capability can reach its configured provider.
+    </p>
+    <div class="mb-6 border border-slate-200 rounded overflow-hidden">
+      <table class="w-full text-sm table-fixed">
+        <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wide">
+          <tr>
+            <th class="text-left !pl-5 pr-6 py-2 w-40">Capability</th>
+            <th class="text-left px-6 py-2 w-40">Status</th>
+            <th class="text-left px-6 py-2 !pr-5">Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @test_results.each do |slot, result| %>
+            <tr class="border-t border-slate-100">
+              <td class="!pl-5 pr-6 py-2 font-medium">
+                <%= SuperAdmin::LlmSettingsController::SLOT_PURPOSES.dig(slot, :label) %>
+              </td>
+              <td class="px-6 py-2">
+                <% case result[:state] %>
+                <% when :connected %>
+                  <span class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-medium">Connected</span>
+                <% when :not_configured %>
+                  <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-medium">Not configured</span>
+                <% else %>
+                  <span class="inline-block px-2 py-0.5 rounded bg-red-100 text-red-800 text-xs font-medium">Failed</span>
+                <% end %>
+              </td>
+              <td class="px-6 py-2 !pr-5 text-slate-600 text-xs break-words"><%= result[:message] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <%= form_with url: super_admin_llm_settings_path, method: :patch, local: true, id: 'llm-settings-form', html: { 'data-dirty-form': true } do |form| %>
+    <h2 class="text-base font-semibold mb-1">Choose a setup</h2>
+    <p class="text-xs text-slate-500 mb-3">
+      Presets fill all three slots at once. Pick <strong>Custom</strong> to configure each slot individually.
+    </p>
+
+    <div class="space-y-2 mb-6" id="preset-cards">
+      <% @presets.each do |preset| %>
+        <% selected = (@current_preset == preset[:slug]) %>
+        <label class="block p-4 border rounded cursor-pointer transition <%= selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 hover:border-slate-300' %> <%= 'opacity-60 cursor-not-allowed' unless preset[:applicable] %>">
+          <div class="flex items-start gap-3">
+            <%= form.radio_button :preset, preset[:slug],
+                checked: selected,
+                disabled: !preset[:applicable],
+                class: 'mt-1',
+                data: { 'llm-preset': true } %>
+            <div class="flex-1">
+              <div class="flex items-center justify-between">
+                <div class="font-medium text-slate-900 flex items-center gap-2">
+                  <span><%= preset[:label] %></span>
+                  <% if preset[:slug] == 'all-scaleway' %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium"
+                          title="Scaleway is a French cloud provider (Iliad Group) with EU-hosted infrastructure. GDPR-applicable, outside US CLOUD Act jurisdiction.">
+                      🇪🇺 EU digital sovereignty
+                    </span>
+                  <% end %>
+                  <% if preset[:slug] == 'all-openai' %>
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-medium"
+                          title="OpenAI is incorporated in the United States. Data processed via OpenAI is subject to the US CLOUD Act regardless of region.">
+                      🇺🇸 US CLOUD Act applies
+                    </span>
+                  <% end %>
+                </div>
+                <% unless preset[:applicable] %>
+                  <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">
+                    Missing: <%= preset[:missing_providers].join(', ') %>
+                  </span>
+                <% end %>
+              </div>
+              <div class="text-xs text-slate-600 mt-1.5 space-y-0.5">
+                <% Llm::Presets::SLOTS.each do |slot| %>
+                  <div>
+                    <span class="text-slate-400"><%= SuperAdmin::LlmSettingsController::SLOT_PURPOSES.dig(slot, :label) %>:</span>
+                    <% if preset[slot].nil? %>
+                      <span class="text-slate-400 italic">disabled</span>
+                    <% else %>
+                      <span class="font-medium"><%= preset[slot][:provider] %></span>
+                      <span class="text-slate-500">·</span>
+                      <span class="font-mono"><%= preset[slot][:model] %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+              <% if preset[:slug] == 'all-scaleway' %>
+                <div class="mt-2 text-xs text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-1.5 rounded">
+                  Operated by Iliad Group (France) with EU-hosted inference. Subject to GDPR;
+                  no US parent, so outside US CLOUD Act reach.
+                </div>
+              <% end %>
+              <% if preset[:slug] == 'all-openai' %>
+                <div class="mt-2 text-xs text-amber-900 bg-amber-50 border border-amber-200 px-2.5 py-1.5 rounded">
+                  OpenAI is a US company. Customer data — including prompts and uploads —
+                  is reachable by US authorities under the CLOUD Act, even when API traffic
+                  routes through EU regions.
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </label>
+      <% end %>
+
+      <% custom_selected = (@current_preset == Llm::Presets::CUSTOM_SLUG) %>
+      <div id="custom-card" class="border rounded transition overflow-hidden <%= custom_selected ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-200 hover:border-slate-300' %>">
+        <label class="block p-4 cursor-pointer">
+          <div class="flex items-start gap-3">
+            <%= form.radio_button :preset, Llm::Presets::CUSTOM_SLUG,
+                checked: custom_selected,
+                class: 'mt-1',
+                data: { 'llm-preset': true } %>
+            <div class="flex-1">
+              <div class="font-medium text-slate-900">Custom</div>
+              <div class="text-xs text-slate-600 mt-1">Configure each slot manually.</div>
+            </div>
+          </div>
+        </label>
+
+        <div id="advanced-section"
+             class="<%= 'hidden' unless custom_selected %> border-t border-blue-200 bg-white px-4 py-4"
+             data-model-dimensions='<%= Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.to_json %>'>
+          <table class="w-full text-sm">
+            <thead class="text-slate-500 text-xs uppercase tracking-wide">
+              <tr>
+                <th class="text-left pb-2 w-32">Slot</th>
+                <th class="text-left pb-2 w-48">Used for</th>
+                <th class="text-left pb-2">Provider</th>
+                <th class="text-left pb-2">Model</th>
+                <th class="text-left pb-2 w-28">Dimensions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% Llm::Presets::SLOTS.each do |slot| %>
+                <% purpose = SuperAdmin::LlmSettingsController::SLOT_PURPOSES[slot] %>
+                <tr class="border-t border-slate-100">
+                  <td class="py-3 pr-3 font-medium"><%= purpose[:label] %></td>
+                  <td class="py-3 pr-3 text-xs text-slate-600"><%= purpose[:used_for] %></td>
+                  <td class="py-3 pr-3">
+                    <% candidates = @slots[slot][:candidates] %>
+                    <% if candidates.empty? %>
+                      <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs">
+                        No available provider supports <%= slot %>
+                      </span>
+                    <% else %>
+                      <select name="slots[<%= slot %>][provider]" data-llm-slot="<%= slot %>"
+                              class="border border-slate-300 rounded px-2 py-1 text-sm w-full max-w-[12rem]">
+                        <% candidates.each do |slug| %>
+                          <option value="<%= slug %>" <%= 'selected' if @slots[slot][:provider] == slug %>><%= slug %></option>
+                        <% end %>
+                      </select>
+                    <% end %>
+                  </td>
+                  <td class="py-3 pr-3">
+                    <input type="text" name="slots[<%= slot %>][model]"
+                           value="<%= @slots[slot][:model] %>" data-llm-slot="<%= slot %>"
+                           data-llm-model-input="<%= slot %>"
+                           class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
+                    <% if slot == :embedding %>
+                      <p class="mt-1 text-xs text-yellow-700">
+                        Changing this model invalidates all stored vectors. Re-embed FAQs and documents manually after saving — there is no automatic reindex.
+                      </p>
+                    <% end %>
+                  </td>
+                  <td class="py-3">
+                    <% if slot == :embedding %>
+                      <% current_model = @slots[:embedding][:model] %>
+                      <% known_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[current_model] %>
+                      <% override = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', nil).to_s.strip %>
+                      <% initial_value = override.presence || known_dim&.to_s || '' %>
+                      <input type="text" name="slots[embedding][dimensions]"
+                             value="<%= initial_value %>"
+                             data-llm-embedding-dimensions
+                             <%= 'required' if known_dim.nil? %>
+                             class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
+                    <% else %>
+                      <span class="text-xs text-slate-400">—</span>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 mb-8">
+      <%= form.submit 'Save and test', class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600', data: { 'llm-submit-label': 'Saving and testing model availability…' } %>
+      <span id="dirty-indicator" class="hidden text-xs text-amber-700 font-medium ml-2">● Unsaved changes</span>
+      <span class="text-xs text-slate-500 ml-auto">Save runs a minimal round-trip per slot and renders pass/fail below.</span>
+    </div>
+  <% end %>
+
+  <div id="llm-saving-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl px-8 py-6 flex items-center gap-4 max-w-md">
+      <svg class="animate-spin h-8 w-8 text-blue-500 shrink-0" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+        <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75"></path>
+      </svg>
+      <div>
+        <div class="font-medium text-slate-900" id="llm-saving-title">Testing model availability…</div>
+        <div class="text-xs text-slate-500 mt-0.5">Pinging chat, embedding, and audio slots against the live provider. This can take a few seconds.</div>
+      </div>
+    </div>
+  </div>
+
+  <details class="border border-slate-200 rounded">
+    <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between">
+      <span>Provider availability</span>
+      <span class="text-xs font-normal text-slate-500">
+        <%= @provider_status_summary[:configured] %> configured
+        <% if @provider_status_summary[:missing].positive? %>
+          · <%= @provider_status_summary[:missing] %> missing key<%= 's' if @provider_status_summary[:missing] != 1 %>
+        <% end %>
+      </span>
+    </summary>
+    <table class="w-full text-sm border-t border-slate-200">
+      <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wide">
+        <tr>
+          <th class="text-left p-3">Slug</th>
+          <th class="text-left p-3">Label</th>
+          <th class="text-left p-3">Endpoint</th>
+          <th class="text-left p-3">Capabilities</th>
+          <th class="text-left p-3">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @providers.each do |provider| %>
+          <tr class="border-t border-slate-100">
+            <td class="p-3 font-mono text-xs"><%= provider[:slug] %></td>
+            <td class="p-3"><%= provider[:label] %></td>
+            <td class="p-3 font-mono text-xs text-slate-500"><%= provider[:endpoint].presence || '—' %></td>
+            <td class="p-3 text-xs">
+              <% provider[:capabilities].each do |cap| %>
+                <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 mr-1"><%= cap %></span>
+              <% end %>
+            </td>
+            <td class="p-3">
+              <% if provider[:available] %>
+                <span class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-medium">Configured</span>
+              <% else %>
+                <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">
+                  <% if provider[:misconfigured_reason] == 'Missing endpoint' %>
+                    Missing endpoint: PILOT_LLM_<%= provider[:slug].to_s.upcase %>_ENDPOINT
+                  <% else %>
+                    Missing key: PILOT_LLM_<%= provider[:slug].to_s.upcase %>_API_KEY
+                  <% end %>
+                </span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </details>
+
+  <script>
+    (function () {
+      var form = document.getElementById('llm-settings-form');
+      if (!form) return;
+
+      var customRadio = form.querySelector('input[name="preset"][value="custom"]');
+      var presetRadios = form.querySelectorAll('input[name="preset"]');
+      var advancedSection = document.getElementById('advanced-section');
+      var slotInputs = form.querySelectorAll('[data-llm-slot]');
+      var dirtyIndicator = document.getElementById('dirty-indicator');
+
+      function toggleAdvanced() {
+        if (!advancedSection) return;
+        if (customRadio && customRadio.checked) {
+          advancedSection.classList.remove('hidden');
+        } else {
+          advancedSection.classList.add('hidden');
+        }
+      }
+
+      function markDirty() {
+        if (dirtyIndicator) dirtyIndicator.classList.remove('hidden');
+      }
+
+      presetRadios.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+          toggleAdvanced();
+          markDirty();
+        });
+      });
+
+      form.addEventListener('submit', function (event) {
+        var overlay = document.getElementById('llm-saving-overlay');
+        var title = document.getElementById('llm-saving-title');
+        if (!overlay) return;
+        var label = event.submitter && event.submitter.dataset && event.submitter.dataset.llmSubmitLabel;
+        if (title && label) title.textContent = label;
+        overlay.classList.remove('hidden');
+      });
+
+      slotInputs.forEach(function (el) {
+        var handler = function () {
+          if (customRadio) customRadio.checked = true;
+          toggleAdvanced();
+          markDirty();
+        };
+        el.addEventListener('change', handler);
+        el.addEventListener('input', handler);
+      });
+
+      var advanced = document.getElementById('advanced-section');
+      var modelDimensions = {};
+      if (advanced && advanced.dataset.modelDimensions) {
+        try { modelDimensions = JSON.parse(advanced.dataset.modelDimensions); }
+        catch (e) { modelDimensions = {}; }
+      }
+      var embeddingModelInput = form.querySelector('[data-llm-model-input="embedding"]');
+      var dimensionsInput = form.querySelector('[data-llm-embedding-dimensions]');
+
+      function syncDimensions() {
+        if (!embeddingModelInput || !dimensionsInput) return;
+        var model = embeddingModelInput.value.trim();
+        var known = Object.prototype.hasOwnProperty.call(modelDimensions, model)
+          ? modelDimensions[model]
+          : null;
+        if (known !== null) {
+          dimensionsInput.value = String(known);
+          dimensionsInput.removeAttribute('required');
+        } else {
+          dimensionsInput.value = '';
+          dimensionsInput.setAttribute('required', 'required');
+        }
+      }
+
+      if (embeddingModelInput) {
+        embeddingModelInput.addEventListener('input', syncDimensions);
+        embeddingModelInput.addEventListener('change', syncDimensions);
+      }
+    })();
+  </script>
+</section>

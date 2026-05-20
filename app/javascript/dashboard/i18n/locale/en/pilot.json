@@ -1,0 +1,93 @@
+{
+  "PILOT": {
+    "COPILOT": {
+      "TITLE": "Copilot",
+      "DRAWER_TITLE": "Copilot",
+      "PANEL_TITLE": "Get started with Copilot",
+      "KICK_OFF_MESSAGE": "Your AI teammate for support workflows. Ask anything to get started.",
+      "CLOSE": "Close",
+      "RESET": "Reset conversation",
+      "SELECT_ASSISTANT": "Select an assistant",
+      "SEND": "Send",
+      "SEND_MESSAGE": "Send a message...",
+      "SHOW_STEPS": "Show steps",
+      "LOADER": "Copilot is thinking...",
+      "PENDING": "Thinking...",
+      "YOU": "You",
+      "USE": "Use",
+      "THREADS": "Threads",
+      "NEW_THREAD": "New thread",
+      "NEW_THREAD_PLACEHOLDER": "Ask Copilot anything...",
+      "REPLY_PLACEHOLDER": "Reply to Copilot...",
+      "NO_THREADS": "No threads yet",
+      "UNTITLED_THREAD": "Untitled thread",
+      "EMPTY_MESSAGE": "Nothing here yet",
+      "TRY_THESE_PROMPTS": "Try these prompts",
+      "BOUND_CONVERSATION_INTRO": "Bound to conversation #{id}",
+      "PROMPTS": {
+        "SUMMARIZE": {
+          "LABEL": "Summarize this conversation",
+          "CONTENT": "Give me a summary of this conversation so far."
+        },
+        "SUGGEST": {
+          "LABEL": "Suggest a reply",
+          "CONTENT": "Suggest a reply I can send to the customer."
+        },
+        "RATE": {
+          "LABEL": "Rate this conversation",
+          "CONTENT": "Rate the quality of this conversation and explain why."
+        },
+        "HIGH_PRIORITY": {
+          "LABEL": "High-priority conversations",
+          "CONTENT": "Show me the high-priority conversations that need attention right now."
+        },
+        "LIST_CONTACTS": {
+          "LABEL": "List recent contacts",
+          "CONTENT": "List the contacts that have reached out in the last 24 hours."
+        }
+      }
+    },
+    "FAQS": {
+      "PAGE_TITLE": "FAQs",
+      "KNOW_MORE": "Know more",
+      "KNOW_MORE_NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it.",
+      "SEARCH_PLACEHOLDER": "Search FAQs...",
+      "CREATE_NEW": "Create FAQ",
+      "EMPTY_TITLE": "No FAQs yet",
+      "EMPTY_BODY": "Build an FAQ knowledge base to help your assistant answer common questions.",
+      "EMPTY_CTA": "Create your first FAQ",
+      "PAGER_RANGE": "Showing {from} - {to} of {total} items",
+      "PAGER_OF": "Page {page} of {totalPages}",
+      "STATUS": {
+        "ALL": "All",
+        "APPROVED": "Approved",
+        "PENDING": "Pending"
+      },
+      "CARD": {
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "DELETE_CONFIRM": "Delete this FAQ? This cannot be undone.",
+        "EDITED_BADGE": "Edited",
+        "MENU_LABEL": "FAQ actions"
+      },
+      "DIALOG": {
+        "CREATE_TITLE": "Create new FAQ",
+        "EDIT_TITLE": "Edit FAQ",
+        "QUESTION_LABEL": "Question",
+        "QUESTION_PLACEHOLDER": "What is the refund window?",
+        "ANSWER_LABEL": "Answer",
+        "ANSWER_PLACEHOLDER": "Use markdown for **bold**, *italics*, links, and lists.",
+        "QUESTION_REQUIRED": "Question is required",
+        "ANSWER_REQUIRED": "Answer is required",
+        "SAVE": "Save",
+        "CANCEL": "Cancel"
+      },
+      "ERROR": {
+        "LOAD": "Failed to load FAQs",
+        "SAVE": "Failed to save FAQ",
+        "DELETE": "Failed to delete FAQ",
+        "RETRY": "Retry"
+      }
+    }
+  }
+}

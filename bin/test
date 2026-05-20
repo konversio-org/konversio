@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# Run RSpec inside the rails container with RAILS_ENV forced to "test".
+#
+# The container exports RAILS_ENV=development; rails_helper.rb's
+# `ENV['RAILS_ENV'] ||= 'test'` is then a no-op, so without this wrapper
+# specs boot in development mode and Sidekiq prints a loud warning.
+#
+# Usage:
+#   bin/test                                  # full suite
+#   bin/test spec/models/foo_spec.rb          # single file
+#   bin/test spec/models/foo_spec.rb:42       # single example
+#   bin/test --tag focus                      # any rspec flags pass through
+set -euo pipefail
+
+if [ -f /.dockerenv ]; then
+  exec bundle exec rspec "$@"
+else
+  exec docker compose exec -e RAILS_ENV=test rails bundle exec rspec "$@"
+fi
