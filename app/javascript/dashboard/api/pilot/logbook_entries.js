@@ -13,6 +13,14 @@ class PilotLogbookEntriesAPI extends ApiClient {
   create(contactId, content) {
     return axios.post(this.url, { contact_id: contactId, content });
   }
+
+  update(id, content) {
+    return axios.patch(`${this.url}/${id}`, { content });
+  }
+
+  destroy(id) {
+    return axios.delete(`${this.url}/${id}`);
+  }
 }
 
 export default new PilotLogbookEntriesAPI();
