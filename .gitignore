@@ -107,3 +107,7 @@ Procfile.worktree
 openspec/
 .mise.local.toml
 mise.local.toml
+
+# Local agent tool state (Antigravity, etc.)
+.agent/
+.antigravitycli/
