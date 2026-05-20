@@ -31,7 +31,7 @@ The modern customer support platform, an open-source alternative to Intercom, Ze
 
 Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license as Konversio v0.0.1. We've kept only the MIT-licensed core — Chatwoot's Enterprise overlay (including **Captain AI**) is not included or redistributed.
 
-On top of this foundation we're building **Pilot**, a fully open-source AI layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). If AI was your only reason for considering Chatwoot Enterprise, Pilot removes that need. *(Pilot does not replicate other Enterprise features such as SSO or advanced role management.)*
+On top of this foundation we're building **Pilot**, a fully open-source AI layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). Pilot was built clean-room — observed Captain's behavior as an end-user, wrote a spec, then implemented from the spec without ever reading Captain's source. See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full fork lineage and clean-room methodology. If AI was your only reason for considering Chatwoot Enterprise, Pilot removes that need. *(Pilot does not replicate other Enterprise features such as SSO or advanced role management.)*
 
 Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-processor** — you control where data lives and which providers touch it. This makes Konversio a suitable building block for **EU-sovereign, GDPR-compliant deployments**. The software enables compliance; the deployment achieves it.
 

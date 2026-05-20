@@ -141,6 +141,7 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 - The `enterprise/` overlay and Captain AI have been removed; there is no OSS/Enterprise split to preserve.
 - Captain has been renamed to `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
 - Edit core files freely — no `prepend_mod_with` dance, no mirror-edits, no `spec/enterprise`.
+- **Pilot was built clean-room.** See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full methodology. Critical rule for any work on Pilot: **do not resurrect deleted `enterprise/captain/*` files from git history to reference when extending Pilot.** No `git show 461d6ab36^:enterprise/captain/...`, no pasting that source into any tool. The Chinese Wall holds only if no protected expression flows in.
 
 ## Branding / White-labeling note
 
