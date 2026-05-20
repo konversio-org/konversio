@@ -413,6 +413,9 @@
       "DESCRIPTION": "Upload PDFs or add URLs to teach Pilot about your product. We'll extract the content and generate FAQs automatically.",
       "CTA": "Add your first document"
     },
+    "INFO_CARD": {
+      "BODY": "A document in Pilot is a knowledge source for the assistant. Add a URL or upload a PDF and Pilot will extract the content and generate FAQs your assistant can use to answer customer questions."
+    },
     "ERROR": {
       "GENERIC": "Something went wrong while loading documents.",
       "RETRY": "Retry"
@@ -465,6 +468,9 @@
       "CREATED": "Document added. We'll start processing it shortly.",
       "DELETED": "Document deleted.",
       "DELETE_FAILED": "Couldn't delete the document."
+    },
+    "CRAWL": {
+      "IN_PROGRESS_HINT": "Crawling… new pages will appear here as they're discovered."
     }
   },
   "PILOT_SETTINGS": {

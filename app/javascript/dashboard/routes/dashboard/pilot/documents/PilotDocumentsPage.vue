@@ -1,11 +1,12 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
 import DocumentList from './DocumentList.vue';
 import AddDocumentDialog from './AddDocumentDialog.vue';
 import DocumentsPagerFooter from './DocumentsPagerFooter.vue';
@@ -73,6 +74,36 @@ onMounted(async () => {
 watch(selectedAssistantId, () => fetchDocuments(1));
 watch(selectedStatus, () => fetchDocuments(1));
 
+// Auto-refresh while any visible document is still being crawled. Stops
+// once every row on the current page has settled (available/failed).
+const POLL_INTERVAL_MS = 5000;
+const pollTimer = ref(null);
+
+const hasInProgress = computed(() =>
+  records.value.some(r => r.status === 'in_progress')
+);
+
+const stopPolling = () => {
+  if (pollTimer.value) {
+    clearInterval(pollTimer.value);
+    pollTimer.value = null;
+  }
+};
+
+const startPolling = () => {
+  if (pollTimer.value) return;
+  pollTimer.value = setInterval(() => {
+    fetchDocuments(meta.value.current_page || 1);
+  }, POLL_INTERVAL_MS);
+};
+
+watch(hasInProgress, value => {
+  if (value) startPolling();
+  else stopPolling();
+});
+
+onUnmounted(stopPolling);
+
 const onAdd = () => addDialogRef.value?.open();
 
 const onDocumentCreated = async () => {
@@ -108,13 +139,14 @@ const isStatusActive = value => selectedStatus.value === value;
         <div
           class="flex items-center justify-between w-full h-20 gap-3 flex-wrap"
         >
-          <div class="flex items-center gap-4 min-w-0">
-            <h1 class="text-heading-1 text-n-slate-12 truncate">
-              {{ t('PILOT_DOCUMENTS.HEADER.TITLE') }}
-            </h1>
-            <div class="min-w-[12rem] max-w-xs">
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0">
+            <div class="min-w-48 max-w-64">
               <AssistantPicker v-model="selectedAssistantId" />
             </div>
+            <span aria-hidden="true" class="h-5 w-px bg-n-weak" />
+            <h1 class="text-heading-md font-medium text-n-slate-12 truncate">
+              {{ t('PILOT_DOCUMENTS.HEADER.TITLE') }}
+            </h1>
           </div>
           <Button
             :label="t('PILOT_DOCUMENTS.HEADER.ADD_BUTTON')"
@@ -146,6 +178,19 @@ const isStatusActive = value => selectedStatus.value === value;
     </header>
     <main class="flex-1 px-6 overflow-y-auto">
       <div class="w-full max-w-5xl mx-auto py-2 flex flex-col gap-3">
+        <aside
+          class="flex items-center gap-4 p-4 rounded-xl border border-dashed border-n-weak bg-n-alpha-1"
+        >
+          <span
+            class="flex items-center justify-center size-12 rounded-lg bg-n-amber-3 text-n-amber-11 shrink-0"
+          >
+            <Icon icon="i-lucide-book-open-text" class="size-6" />
+          </span>
+          <p class="text-sm text-n-slate-11 leading-relaxed">
+            {{ t('PILOT_DOCUMENTS.INFO_CARD.BODY') }}
+          </p>
+        </aside>
+
         <div
           v-if="errorMessage && !isLoading"
           class="flex items-start justify-between gap-3 p-3 rounded-lg bg-n-ruby-3 border border-n-ruby-6 text-sm text-n-ruby-11"

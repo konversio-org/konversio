@@ -43,8 +43,10 @@ class Pilot::Document < ApplicationRecord
            dependent: :destroy
   has_one_attached :pdf_file
 
-  enum :status, { in_progress: 0, available: 1 }
+  enum :status, { in_progress: 0, available: 1, failed: 2 }
   enum :sync_status, { syncing: 0, synced: 1, failed: 2 }, prefix: :sync
+
+  store_accessor :metadata, :crawl_job_id, :error_message
 
   validates :external_link, presence: true, unless: -> { pdf_file.attached? }
   validates :external_link, uniqueness: { scope: :assistant_id }, allow_blank: true
@@ -54,7 +56,10 @@ class Pilot::Document < ApplicationRecord
   before_validation :set_external_link_for_pdf
   before_validation :normalize_external_link
 
-  scope :ordered, -> { order(created_at: :desc) }
+  # Pin in_progress rows to the top (so an actively-crawling seed stays
+  # visible at the top of the list while child docs stream in below it),
+  # then newest-first within each status group.
+  scope :ordered, -> { order(Arel.sql("(status = #{statuses[:in_progress]}) DESC, created_at DESC")) }
   scope :for_account, ->(account_id) { where(account_id: account_id) }
   scope :for_assistant, ->(assistant_id) { where(assistant_id: assistant_id) }
 
@@ -88,9 +93,6 @@ class Pilot::Document < ApplicationRecord
   end
 
   def enqueue_crawl_job
-    # Crawl job lives in section 4 controller round; for now we just enqueue
-    # the response builder once content has been populated by another path.
-    return unless defined?(::Pilot::Documents::CrawlJob)
     return unless in_progress?
 
     ::Pilot::Documents::CrawlJob.perform_later(id)

@@ -467,6 +467,9 @@ Rails.application.routes.draw do
             end
           end
           namespace :pilot do
+            resources :assistants, only: [] do
+              resources :responses, only: [:index, :create, :update, :destroy]
+            end
             resources :briefings, only: [:create]
             resources :copilot_threads, only: [:index, :create] do
               resources :copilot_messages, only: [:index, :create]

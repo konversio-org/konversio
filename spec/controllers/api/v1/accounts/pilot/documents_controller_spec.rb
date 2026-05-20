@@ -7,13 +7,11 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
   let(:assistant) { create(:pilot_assistant, account: account) }
   let(:base_url) { "/api/v1/accounts/#{account.id}/pilot/documents" }
 
-  let(:successful_ingestion_result) do
-    Custom::Pilot::DocumentIngestionService::Result.new(success: true, content: 'Ingested body')
-  end
-
   before do
     account.update!(pilot_enabled: true, pilot_autopilot_enabled: true)
-    allow_any_instance_of(Custom::Pilot::DocumentIngestionService).to receive(:perform).and_return(successful_ingestion_result)
+    # Crawl runs async — stub the job so URL/PDF creates don't actually hit
+    # Firecrawl / pdf-reader during these tests.
+    allow(Pilot::Documents::CrawlJob).to receive(:perform_later)
   end
 
   describe 'GET /api/v1/accounts/:account_id/pilot/documents' do
@@ -101,9 +99,7 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
       expect(response).to have_http_status(:forbidden)
     end
 
-    it 'creates a document from an external_link and triggers ingestion' do
-      expect_any_instance_of(Custom::Pilot::DocumentIngestionService).to receive(:perform).and_return(successful_ingestion_result)
-
+    it 'creates a document from an external_link and enqueues the crawl job' do
       expect do
         post base_url,
              params: { document: { assistant_id: assistant.id, external_link: 'https://example.com/help' } },
@@ -114,8 +110,8 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
       expect(response).to have_http_status(:created)
       doc = Pilot::Document.last
       expect(doc.external_link).to eq('https://example.com/help')
-      expect(doc.status).to eq('available')
-      expect(doc.content).to eq('Ingested body')
+      expect(doc.status).to eq('in_progress')
+      expect(Pilot::Documents::CrawlJob).to have_received(:perform_later).with(doc.id)
     end
 
     it 'returns 422 when the external_link is malformed' do
@@ -136,7 +132,7 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it 'creates a document from a PDF upload' do
+    it 'creates a document from a PDF upload and enqueues the crawl job' do
       pdf = Tempfile.new(['sample', '.pdf'])
       pdf.binmode
       pdf.write("%PDF-1.4\n%%EOF\n")
@@ -153,6 +149,7 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
       expect(response).to have_http_status(:created)
       doc = Pilot::Document.last
       expect(doc.pdf_file).to be_attached
+      expect(Pilot::Documents::CrawlJob).to have_received(:perform_later).with(doc.id)
     ensure
       pdf&.close
       pdf&.unlink

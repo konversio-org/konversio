@@ -223,7 +223,9 @@ const onDelete = async row => {
 </script>
 
 <template>
-  <section class="flex flex-col flex-1 min-h-0 gap-4 p-6 overflow-y-auto">
+  <section
+    class="flex flex-col flex-1 min-h-0 gap-4 p-6 overflow-y-auto w-full max-w-5xl mx-auto"
+  >
     <PilotFaqsHeader
       :assistant-id="activeAssistantId"
       :search="searchTerm"
