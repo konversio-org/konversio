@@ -52,10 +52,18 @@ const statusLabel = computed(() =>
 const isExternalLink = computed(() => Boolean(props.document.external_link));
 const linkHref = computed(() => props.document.external_link || null);
 
-const excerpt = computed(() => {
-  const text = props.document.content_excerpt || '';
-  if (text.length <= 120) return text;
-  return `${text.slice(0, 120).trim()}...`;
+const isCrawling = computed(
+  () =>
+    props.document.status === 'in_progress' &&
+    Boolean(props.document.external_link) &&
+    !props.document.external_link.startsWith('PDF:')
+);
+
+const subtitle = computed(() => {
+  if (isCrawling.value) {
+    return t('PILOT_DOCUMENTS.CRAWL.IN_PROGRESS_HINT');
+  }
+  return props.document.external_link || '';
 });
 
 const responseCount = computed(
@@ -105,8 +113,8 @@ const onDelete = () => emit('delete', props.document.id);
             {{ statusLabel }}
           </span>
         </div>
-        <p v-if="excerpt" class="text-sm text-n-slate-11 line-clamp-2">
-          {{ excerpt }}
+        <p v-if="subtitle" class="text-sm text-n-slate-11 truncate">
+          {{ subtitle }}
         </p>
         <div class="flex items-center gap-2 text-xs text-n-slate-10 flex-wrap">
           <span

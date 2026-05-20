@@ -3,10 +3,15 @@ require 'uri'
 
 module Custom
   module Pilot
-    # Fetches the body of a `Pilot::Document` from its source — either an
-    # external URL (via Firecrawl when `PILOT_FIRECRAWL_API_KEY` is
-    # configured, otherwise an in-process HTTP fetch with HTML stripping)
-    # or an attached PDF (via `pdf-reader` if available).
+    # Fetches the body of a `Pilot::Document` from its source.
+    #
+    # Dispatch:
+    #   - PDF documents → `pdf-reader` extraction (single document in, single
+    #     document out).
+    #   - URL documents → in-process HTTP fetch with HTML stripping
+    #     (single-page fallback used when `PILOT_FIRECRAWL_API_KEY` is not
+    #     configured). The multi-page Firecrawl crawl path lives in
+    #     `Pilot::Documents::CrawlJob` + `Custom::Pilot::DocumentCrawlService`.
     #
     # Returns a Result struct describing success/failure and the fetched
     # content so the caller can persist it.
@@ -44,40 +49,7 @@ module Custom
         url = document.external_link.to_s
         return failure('ingestion.missing_url', 'No external_link to ingest') if url.blank?
 
-        if firecrawl_api_key.present?
-          ingest_via_firecrawl(url)
-        else
-          ingest_via_simple_http(url)
-        end
-      end
-
-      def ingest_via_firecrawl(url)
-        uri = URI.parse('https://api.firecrawl.dev/v1/scrape')
-        http = Net::HTTP.new(uri.host, uri.port)
-        http.use_ssl = true
-        http.read_timeout = DEFAULT_TIMEOUT_SECONDS
-
-        req = Net::HTTP::Post.new(uri.request_uri,
-                                  'Authorization' => "Bearer #{firecrawl_api_key}",
-                                  'Content-Type' => 'application/json')
-        req.body = { url: url, formats: ['markdown'] }.to_json
-
-        response = http.request(req)
-        return failure('ingestion.firecrawl_http_error', "Firecrawl HTTP #{response.code}") unless response.is_a?(Net::HTTPSuccess)
-
-        parsed = JSON.parse(response.body)
-        # Firecrawl historically returns { data: { markdown: ... } } or top-level keys.
-        # Per D23 tolerate unexpected key shapes — try a few.
-        content = parsed.dig('data', 'markdown').presence ||
-                  parsed.dig('data', 'content').presence ||
-                  parsed['markdown'].presence ||
-                  parsed['content'].presence
-
-        return failure('ingestion.firecrawl_empty', 'Firecrawl returned empty content') if content.blank?
-
-        Result.new(success: true, content: truncate(content))
-      rescue JSON::ParserError => e
-        failure('ingestion.firecrawl_parse_error', e.message)
+        ingest_via_simple_http(url)
       end
 
       def ingest_via_simple_http(url)
@@ -123,10 +95,6 @@ module Custom
 
       def failure(code, message)
         Result.new(success: false, error_code: code, error_message: message)
-      end
-
-      def firecrawl_api_key
-        GlobalConfigService.load('PILOT_FIRECRAWL_API_KEY', nil)
       end
     end
   end

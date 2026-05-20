@@ -6,7 +6,7 @@ RSpec.describe Custom::Pilot::DocumentIngestionService do
   let(:assistant) { create(:pilot_assistant, account: account) }
 
   describe '#perform' do
-    context 'URL ingestion via simple HTTP (no Firecrawl key)' do
+    context 'with URL ingestion via simple HTTP' do
       let(:document) { create(:pilot_document, assistant: assistant, account: account, external_link: 'https://example.com/help/refunds') }
 
       it 'returns success and stripped body content' do
@@ -29,36 +29,7 @@ RSpec.describe Custom::Pilot::DocumentIngestionService do
       end
     end
 
-    context 'URL ingestion via Firecrawl when PILOT_FIRECRAWL_API_KEY is set' do
-      let(:document) { create(:pilot_document, assistant: assistant, account: account, external_link: 'https://example.com/help/refunds') }
-
-      around do |example|
-        original = ENV.fetch('PILOT_FIRECRAWL_API_KEY', nil)
-        ENV['PILOT_FIRECRAWL_API_KEY'] = 'firecrawl-key'
-        example.run
-      ensure
-        ENV['PILOT_FIRECRAWL_API_KEY'] = original
-      end
-
-      it 'returns success with markdown content from the Firecrawl response' do
-        stub_request(:post, 'https://api.firecrawl.dev/v1/scrape')
-          .to_return(status: 200, body: { data: { markdown: '# Refunds\n\nWe refund within 30 days.' } }.to_json)
-
-        result = described_class.new(document: document).perform
-        expect(result.success?).to be true
-        expect(result.content).to include('Refunds')
-      end
-
-      it 'returns a failure result on Firecrawl HTTP error' do
-        stub_request(:post, 'https://api.firecrawl.dev/v1/scrape').to_return(status: 502)
-
-        result = described_class.new(document: document).perform
-        expect(result.success?).to be false
-        expect(result.error_code).to eq('ingestion.firecrawl_http_error')
-      end
-    end
-
-    context 'PDF ingestion' do
+    context 'with PDF ingestion' do
       let(:document) { create(:pilot_document, assistant: assistant, account: account, external_link: 'PDF: doc_20260517') }
 
       it 'returns a structured failure when pdf-reader is not installed' do
