@@ -43,7 +43,7 @@ const isActive = thread => String(thread.id) === String(props.activeThreadId);
       v-for="thread in threads"
       :key="thread.id"
       type="button"
-      class="text-left text-sm px-2 py-1.5 rounded-md truncate"
+      class="shrink-0 text-left text-sm px-2 py-1.5 rounded-md truncate"
       :class="
         isActive(thread)
           ? 'bg-n-violet-3 text-n-violet-12'

@@ -11,18 +11,18 @@
 #  limits                         :jsonb
 #  locale                         :integer          default("en")
 #  name                           :string           not null
-#  pilot_autopilot_enabled        :boolean          default(FALSE), not null
-#  pilot_autoresolve_enabled      :boolean          default(FALSE), not null
-#  pilot_briefing_enabled         :boolean          default(FALSE), not null
-#  pilot_copilot_enabled          :boolean          default(FALSE), not null
-#  pilot_csat_analysis_enabled    :boolean          default(FALSE), not null
-#  pilot_enabled                  :boolean          default(FALSE), not null
-#  pilot_follow_up_enabled        :boolean          default(FALSE), not null
-#  pilot_label_suggestion_enabled :boolean          default(FALSE), not null
-#  pilot_logbook_enabled          :boolean          default(FALSE), not null
-#  pilot_rewrite_enabled          :boolean          default(FALSE), not null
-#  pilot_summary_enabled          :boolean          default(FALSE), not null
-#  pilot_tools_enabled            :boolean          default(FALSE), not null
+#  pilot_autopilot_enabled        :boolean          default(TRUE), not null
+#  pilot_autoresolve_enabled      :boolean          default(TRUE), not null
+#  pilot_briefing_enabled         :boolean          default(TRUE), not null
+#  pilot_copilot_enabled          :boolean          default(TRUE), not null
+#  pilot_csat_analysis_enabled    :boolean          default(TRUE), not null
+#  pilot_enabled                  :boolean          default(TRUE), not null
+#  pilot_follow_up_enabled        :boolean          default(TRUE), not null
+#  pilot_label_suggestion_enabled :boolean          default(TRUE), not null
+#  pilot_logbook_enabled          :boolean          default(TRUE), not null
+#  pilot_rewrite_enabled          :boolean          default(TRUE), not null
+#  pilot_summary_enabled          :boolean          default(TRUE), not null
+#  pilot_tools_enabled            :boolean          default(TRUE), not null
 #  settings                       :jsonb
 #  status                         :integer          default("active")
 #  support_email                  :string(100)

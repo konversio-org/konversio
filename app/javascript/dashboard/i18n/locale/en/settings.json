@@ -320,6 +320,8 @@
     "PILOT_PLAYGROUND": "Playground",
     "PILOT_INBOXES": "Inboxes",
     "PILOT_SETTINGS": "Settings",
+    "PILOT_COPILOT": "Copilot",
+    "PILOT_PLACEHOLDER_BODY": "Coming soon — this Pilot surface is not implemented yet.",
     "HOME": "Home",
     "AGENTS": "Agents",
     "AGENT_BOTS": "Bots",
@@ -383,6 +385,87 @@
     "SECURITY": "Security",
     "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
+  },
+  "PILOT_ASSISTANT_PICKER": {
+    "LABEL_FALLBACK": "Select an assistant",
+    "EMPTY": "No assistants yet",
+    "ARIA_LABEL": "Switch assistant"
+  },
+  "PILOT_DOCUMENTS": {
+    "HEADER": {
+      "TITLE": "Documents",
+      "ADD_BUTTON": "Add document"
+    },
+    "STATUS_FILTER": {
+      "ARIA": "Filter documents by status",
+      "ALL": "All",
+      "AVAILABLE": "Available",
+      "IN_PROGRESS": "In progress",
+      "FAILED": "Failed"
+    },
+    "STATUS": {
+      "AVAILABLE": "Available",
+      "IN_PROGRESS": "In progress",
+      "FAILED": "Failed"
+    },
+    "EMPTY": {
+      "TITLE": "No documents yet",
+      "DESCRIPTION": "Upload PDFs or add URLs to teach Pilot about your product. We'll extract the content and generate FAQs automatically.",
+      "CTA": "Add your first document"
+    },
+    "ERROR": {
+      "GENERIC": "Something went wrong while loading documents.",
+      "RETRY": "Retry"
+    },
+    "ROW": {
+      "FAQS_GENERATED": "{count} FAQs generated",
+      "MENU_ARIA": "Document actions",
+      "MENU": {
+        "DELETE": "Delete document"
+      }
+    },
+    "DIALOG": {
+      "TITLE": "Add a document",
+      "DESCRIPTION": "Add a URL to crawl or upload a PDF. We'll extract its content and generate FAQs.",
+      "TABS": {
+        "URL": "URL",
+        "PDF": "PDF Upload"
+      },
+      "URL": {
+        "LABEL": "Source URL",
+        "PLACEHOLDER": "https://example.com/help/article",
+        "INVALID": "Enter a valid http(s) URL."
+      },
+      "PDF": {
+        "LABEL": "PDF file",
+        "DROPZONE": "Drag a PDF here, or click to browse",
+        "REMOVE": "Remove",
+        "INVALID": "Only .pdf files are supported."
+      },
+      "BUTTONS": {
+        "CANCEL": "Cancel",
+        "ADD_URL": "Add URL",
+        "UPLOAD": "Upload"
+      },
+      "ERRORS": {
+        "NO_ASSISTANT": "Select an assistant before adding a document.",
+        "SUBMIT_FAILED": "Couldn't add the document. Please try again."
+      }
+    },
+    "PAGER": {
+      "ARIA": "Documents pagination",
+      "RANGE": "Showing {start} - {end} of {total} items",
+      "PAGE_OF": "{page} of {total} pages",
+      "FIRST": "First page",
+      "PREV": "Previous page",
+      "NEXT": "Next page",
+      "LAST": "Last page"
+    },
+    "TOAST": {
+      "CREATED": "Document added. We'll start processing it shortly.",
+      "DELETED": "Document deleted.",
+      "DELETE_FAILED": "Couldn't delete the document."
+    }
   },
   "PILOT_SETTINGS": {
     "TITLE": "Pilot Settings",
