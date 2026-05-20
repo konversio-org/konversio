@@ -17,7 +17,6 @@ import { BUS_EVENTS } from 'shared/constants/busEvents';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import VoiceCallButton from 'dashboard/components-next/Contacts/VoiceCallButton.vue';
 import InlineInput from 'dashboard/components-next/inline-input/InlineInput.vue';
-import Logbook from './Logbook.vue';
 
 import {
   isAConversationRoute,
@@ -37,7 +36,6 @@ export default {
     ContactMergeModal,
     VoiceCallButton,
     InlineInput,
-    Logbook,
   },
   props: {
     contact: {
@@ -67,12 +65,7 @@ export default {
   computed: {
     ...mapGetters({
       uiFlags: 'contacts/getUIFlags',
-      currentAccount: 'getCurrentAccount',
     }),
-    logbookEnabled() {
-      const features = this.currentAccount?.features || {};
-      return Boolean(features.pilot && features.pilot_logbook);
-    },
     contactProfileLink() {
       return `/app/accounts/${this.$route.params.accountId}/contacts/${this.contact.id}`;
     },
@@ -424,7 +417,6 @@ export default {
         @cancel="toggleEditModal"
       />
       <ContactMergeModal ref="mergeModal" :primary-contact="contact" />
-      <Logbook v-if="logbookEnabled" :contact-id="contact.id" />
     </div>
     <woot-delete-modal
       v-if="showDeleteModal"

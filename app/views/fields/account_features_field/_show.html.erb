@@ -1,41 +1,97 @@
-<div class="field-unit">
-  <div class="field-unit__label">
-    Enabled Features
-  </div>
-  <div class="field-unit__field">
-    <h4 style="margin: 0 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Active Standard Features</h4>
-    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
-      <% standard_enabled = false %>
-      <% Featurable::FEATURE_LIST.each do |feature| %>
-        <% name = feature['name'].to_s %>
-        <% if field.data.include?(name.to_sym) %>
-          <% standard_enabled = true %>
-          <% display_name = feature['display_name'] || name.titleize %>
-          <span style="display: inline-block; padding: 4px 10px; background: #e2e8f0; color: #334155; border-radius: 12px; font-size: 12px; font-weight: 500;">
-            <%= display_name %>
-          </span>
-        <% end %>
-      <% end %>
-      <% unless standard_enabled %>
-        <span style="color: #64748b; font-style: italic; font-size: 13px;">None enabled</span>
-      <% end %>
-    </div>
+<% feature_groups = [
+  [t('super_admin.account_features.standard_features'), field.standard_features],
+  [t('super_admin.account_features.pilot_ai'), field.pilot_features]
+] %>
 
-    <h4 style="margin: 0 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Active Pilot Features</h4>
-    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-      <% pilot_enabled = false %>
-      <% Featurable::PILOT_FLAGS.each do |flag| %>
-        <% if field.data.include?(flag.to_sym) %>
-          <% pilot_enabled = true %>
-          <% display_name = flag.titleize.gsub('Pilot', 'Pilot:') %>
-          <span style="display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 12px; font-weight: 500; border: 1px solid #bfdbfe;">
-            <%= display_name %>
-          </span>
-        <% end %>
-      <% end %>
-      <% unless pilot_enabled %>
-        <span style="color: #64748b; font-style: italic; font-size: 13px;">None enabled</span>
-      <% end %>
+<form action="<%= super_admin_account_path(field.resource) %>" method="post" class="space-y-5">
+  <input type="hidden" name="_method" value="patch">
+  <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+  <input type="hidden" name="account[selected_feature_flags][]" value="__sentinel__">
+
+  <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
+    <div class="rounded-md border border-slate-200 bg-white px-4 py-3">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <%= t('super_admin.account_features.enabled') %>
+      </div>
+      <div class="mt-1 text-xl font-semibold text-slate-900">
+        <%= field.enabled_count %>
+      </div>
+    </div>
+    <div class="rounded-md border border-slate-200 bg-white px-4 py-3">
+      <div class="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <%= t('super_admin.account_features.disabled') %>
+      </div>
+      <div class="mt-1 text-xl font-semibold text-slate-900">
+        <%= field.disabled_count %>
+      </div>
+    </div>
+    <div class="rounded-md border border-blue-200 bg-blue-50 px-4 py-3">
+      <div class="text-xs font-medium uppercase tracking-wide text-blue-700">
+        <%= t('super_admin.account_features.pilot_ai') %>
+      </div>
+      <div class="mt-1 text-xl font-semibold text-blue-950">
+        <%= t(
+          'super_admin.account_features.group_count',
+          enabled: field.enabled_count(field.pilot_features),
+          total: field.pilot_features.count
+        ) %>
+      </div>
     </div>
   </div>
-</div>
+
+  <% feature_groups.each do |title, features| %>
+    <section class="overflow-hidden rounded-md border border-slate-200 bg-white">
+      <div class="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
+        <h4 class="text-sm font-semibold text-slate-900">
+          <%= title %>
+        </h4>
+        <span class="text-xs font-medium text-slate-500">
+          <%= t(
+            'super_admin.account_features.group_count',
+            enabled: field.enabled_count(features),
+            total: features.count
+          ) %>
+        </span>
+      </div>
+
+      <div class="divide-y divide-slate-100">
+        <% features.each do |feature| %>
+          <% enabled = field.feature_enabled?(feature) %>
+          <% status_key = enabled ? 'enabled' : 'disabled' %>
+          <% status_classes = enabled ? 'text-emerald-700' : 'text-slate-500' %>
+          <% row_classes = enabled ? 'bg-white' : 'bg-slate-50' %>
+
+          <label class="flex cursor-pointer items-center justify-between gap-4 px-4 py-3 <%= row_classes %>">
+            <span class="min-w-0">
+              <span class="block truncate text-sm font-medium <%= enabled ? 'text-slate-900' : 'text-slate-500' %>">
+                <%= field.feature_display_name(feature) %>
+              </span>
+              <span class="mt-0.5 block truncate font-mono text-[11px] text-slate-400">
+                <%= field.feature_name(feature) %>
+              </span>
+            </span>
+
+            <span class="inline-flex shrink-0 items-center gap-2">
+              <span class="text-xs font-medium <%= status_classes %>">
+                <%= t("super_admin.account_features.#{status_key}") %>
+              </span>
+              <input
+                type="checkbox"
+                name="account[selected_feature_flags][]"
+                value="<%= field.feature_name(feature) %>"
+                <%= 'checked' if enabled %>
+                class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+              >
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <div class="flex justify-end">
+    <button type="submit" class="button">
+      <%= t('super_admin.account_features.save_feature_access') %>
+    </button>
+  </div>
+</form>
