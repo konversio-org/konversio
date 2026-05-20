@@ -20,7 +20,16 @@ export default {
       newEntryContent: '',
       isLoading: false,
       isSubmitting: false,
+      editingId: null,
+      editingContent: '',
+      busyId: null,
+      pendingDeleteId: null,
     };
+  },
+  computed: {
+    showDeleteModal() {
+      return this.pendingDeleteId !== null;
+    },
   },
   watch: {
     contactId: {
@@ -31,6 +40,9 @@ export default {
   methods: {
     formatTime(isoString) {
       return dynamicTime(Math.floor(new Date(isoString).getTime() / 1000));
+    },
+    isEdited(entry) {
+      return entry.updated_at && entry.updated_at !== entry.created_at;
     },
     async fetchEntries() {
       if (!this.contactId) return;
@@ -61,6 +73,56 @@ export default {
         useAlert(this.$t('CONTACT_PANEL.LOGBOOK.ERROR_CREATE'));
       } finally {
         this.isSubmitting = false;
+      }
+    },
+    startEdit(entry) {
+      this.editingId = entry.id;
+      this.editingContent = entry.content;
+    },
+    cancelEdit() {
+      this.editingId = null;
+      this.editingContent = '';
+    },
+    async saveEdit() {
+      const content = this.editingContent.trim();
+      if (!content || this.busyId) return;
+
+      const id = this.editingId;
+      this.busyId = id;
+      try {
+        const response = await PilotLogbookEntriesAPI.update(id, content);
+        const idx = this.entries.findIndex(e => e.id === id);
+        if (idx !== -1) this.entries.splice(idx, 1, response.data);
+        this.editingId = null;
+        this.editingContent = '';
+        useAlert(this.$t('CONTACT_PANEL.LOGBOOK.SUCCESS_UPDATE'));
+      } catch (error) {
+        useAlert(this.$t('CONTACT_PANEL.LOGBOOK.ERROR_UPDATE'));
+      } finally {
+        this.busyId = null;
+      }
+    },
+    requestDelete(entry) {
+      this.pendingDeleteId = entry.id;
+    },
+    closeDeleteConfirm() {
+      this.pendingDeleteId = null;
+    },
+    async confirmDelete() {
+      const id = this.pendingDeleteId;
+      this.pendingDeleteId = null;
+      if (!id) return;
+
+      this.busyId = id;
+      try {
+        await PilotLogbookEntriesAPI.destroy(id);
+        this.entries = this.entries.filter(e => e.id !== id);
+        if (this.editingId === id) this.cancelEdit();
+        useAlert(this.$t('CONTACT_PANEL.LOGBOOK.SUCCESS_DELETE'));
+      } catch (error) {
+        useAlert(this.$t('CONTACT_PANEL.LOGBOOK.ERROR_DELETE'));
+      } finally {
+        this.busyId = null;
       }
     },
   },
@@ -99,13 +161,63 @@ export default {
         v-for="entry in entries"
         :key="entry.id"
         class="flex flex-col gap-1 p-2 rounded-lg bg-n-slate-2 border border-n-slate-3 group/entry"
+        :class="{ 'opacity-50 pointer-events-none': busyId === entry.id }"
       >
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-2">
           <span class="text-[10px] font-medium text-n-slate-10 uppercase">
-            {{ formatTime(entry.created_at) }}
+            {{ formatTime(entry.updated_at || entry.created_at) }}
+            <span v-if="isEdited(entry)" class="normal-case text-n-slate-9">
+              · {{ $t('CONTACT_PANEL.LOGBOOK.EDITED') }}
+            </span>
           </span>
+          <div
+            v-if="editingId !== entry.id"
+            class="flex gap-1 opacity-0 group-hover/entry:opacity-100 transition-opacity"
+          >
+            <button
+              type="button"
+              :title="$t('CONTACT_PANEL.LOGBOOK.EDIT')"
+              class="i-lucide-pencil text-n-slate-10 hover:text-n-slate-12 text-xs"
+              @click="startEdit(entry)"
+            />
+            <button
+              type="button"
+              :title="$t('CONTACT_PANEL.LOGBOOK.DELETE')"
+              class="i-lucide-trash-2 text-n-slate-10 hover:text-n-ruby-9 text-xs"
+              @click="requestDelete(entry)"
+            />
+          </div>
         </div>
-        <p class="text-sm text-n-slate-12 m-0 break-words leading-relaxed">
+        <template v-if="editingId === entry.id">
+          <textarea
+            v-model="editingContent"
+            class="w-full p-2 text-sm rounded-lg border border-n-slate-4 bg-n-alpha-3 text-n-slate-12 placeholder:text-n-slate-10 focus:border-n-brand focus:ring-1 focus:ring-n-brand outline-none transition-all resize-none min-h-[60px]"
+            @keydown.enter.meta.prevent="saveEdit"
+            @keydown.escape.prevent="cancelEdit"
+          />
+          <div class="flex justify-end gap-2 mt-1">
+            <NextButton
+              size="xs"
+              variant="ghost"
+              :disabled="busyId === entry.id"
+              @click="cancelEdit"
+            >
+              {{ $t('CONTACT_PANEL.LOGBOOK.CANCEL') }}
+            </NextButton>
+            <NextButton
+              size="xs"
+              :disabled="!editingContent.trim() || busyId === entry.id"
+              :loading="busyId === entry.id"
+              @click="saveEdit"
+            >
+              {{ $t('CONTACT_PANEL.LOGBOOK.SAVE') }}
+            </NextButton>
+          </div>
+        </template>
+        <p
+          v-else
+          class="text-sm text-n-slate-12 m-0 break-words leading-relaxed"
+        >
           {{ entry.content }}
         </p>
       </div>
@@ -129,6 +241,17 @@ export default {
         </NextButton>
       </div>
     </div>
+
+    <woot-delete-modal
+      v-if="showDeleteModal"
+      :show="showDeleteModal"
+      :on-close="closeDeleteConfirm"
+      :on-confirm="confirmDelete"
+      :title="$t('CONTACT_PANEL.LOGBOOK.DELETE_CONFIRM.TITLE')"
+      :message="$t('CONTACT_PANEL.LOGBOOK.DELETE_CONFIRM.MESSAGE')"
+      :confirm-text="$t('CONTACT_PANEL.LOGBOOK.DELETE_CONFIRM.YES')"
+      :reject-text="$t('CONTACT_PANEL.LOGBOOK.DELETE_CONFIRM.NO')"
+    />
   </div>
 </template>
 
