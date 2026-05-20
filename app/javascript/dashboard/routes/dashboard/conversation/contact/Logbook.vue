@@ -69,13 +69,18 @@ export default {
 
 <template>
   <div class="flex flex-col gap-4 p-4 border-t border-n-slate-3">
-    <div class="flex items-center justify-between">
-      <h4
-        class="text-xs font-semibold uppercase tracking-wider text-n-slate-11 my-0"
-      >
-        {{ $t('CONTACT_PANEL.LOGBOOK.TITLE') }}
-      </h4>
-      <span class="i-lucide-book-open text-n-slate-10 text-sm" />
+    <div class="flex flex-col gap-1">
+      <div class="flex items-center justify-between">
+        <h4
+          class="text-xs font-semibold uppercase tracking-wider text-n-slate-11 my-0"
+        >
+          {{ $t('CONTACT_PANEL.LOGBOOK.TITLE') }}
+        </h4>
+        <span class="i-lucide-book-open text-n-slate-10 text-sm" />
+      </div>
+      <p class="text-xs text-n-slate-10 m-0 leading-snug">
+        {{ $t('CONTACT_PANEL.LOGBOOK.SUBTITLE') }}
+      </p>
     </div>
 
     <div
