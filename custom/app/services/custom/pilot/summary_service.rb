@@ -3,7 +3,7 @@ module Custom
     # Generates a short summary of a conversation suitable for handover notes.
     #
     # Wraps the MIT `::Pilot::SummaryService` and adds:
-    #   * per-account feature-flag gating (`pilot_summary_enabled` + master `pilot_enabled`)
+    #   * per-account feature-flag gating (`pilot_summary` + master `pilot`)
     #   * Pilot-namespaced telemetry events
     #
     # Returns the summary text as a String, or raises

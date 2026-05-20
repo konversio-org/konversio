@@ -4,7 +4,7 @@ module Pilot
   #
   # Enqueued from `CsatSurveyResponse` after_create_commit when:
   #   * `feedback_message` is present, AND
-  #   * the account has `pilot_csat_analysis_enabled = true`.
+  #   * the account has the `pilot_csat_analysis` feature flag enabled.
   class CsatAnalysisJob < ApplicationJob
     queue_as :low
 
@@ -14,8 +14,8 @@ module Pilot
       return if response.feedback_message.blank?
 
       account = response.account
-      return unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
-      return unless account.respond_to?(:pilot_csat_analysis_enabled) && account.pilot_csat_analysis_enabled
+      return unless account.feature_enabled?('pilot')
+      return unless account.feature_enabled?('pilot_csat_analysis')
 
       result = Custom::Pilot::CsatAnalysisService.new(
         feedback_message: response.feedback_message,

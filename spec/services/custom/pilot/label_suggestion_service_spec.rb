@@ -9,20 +9,20 @@ RSpec.describe Custom::Pilot::LabelSuggestionService do
   let!(:other_label) { create(:label, account: account, title: 'spam') }
 
   before do
-    account.update!(pilot_enabled: true, pilot_label_suggestion_enabled: true)
+    account.enable_features!(:pilot, :pilot_label_suggestion)
   end
 
   describe '#perform' do
     it 'raises FeatureDisabledError when the label_suggestion flag is off' do
-      account.update!(pilot_label_suggestion_enabled: false)
+      account.disable_features!(:pilot_label_suggestion)
       service = described_class.new(conversation: conversation)
       expect { service.perform }.to raise_error(described_class::FeatureDisabledError)
     end
 
     it 'returns label ids matching the LLM-suggested titles' do
-      fake = instance_double(::Pilot::LabelSuggestionService,
+      fake = instance_double(Pilot::LabelSuggestionService,
                              perform: { message: 'billing, refund' })
-      allow(::Pilot::LabelSuggestionService).to receive(:new).and_return(fake)
+      allow(Pilot::LabelSuggestionService).to receive(:new).and_return(fake)
 
       service = described_class.new(conversation: conversation)
       result = service.perform
@@ -32,16 +32,16 @@ RSpec.describe Custom::Pilot::LabelSuggestionService do
     end
 
     it 'returns an empty array when the underlying service returns nil' do
-      allow(::Pilot::LabelSuggestionService).to receive(:new)
-        .and_return(instance_double(::Pilot::LabelSuggestionService, perform: nil))
+      allow(Pilot::LabelSuggestionService).to receive(:new)
+        .and_return(instance_double(Pilot::LabelSuggestionService, perform: nil))
 
       service = described_class.new(conversation: conversation)
       expect(service.perform).to eq([])
     end
 
     it 'dispatches label_suggestion_completed telemetry on success' do
-      fake = instance_double(::Pilot::LabelSuggestionService, perform: { message: 'billing' })
-      allow(::Pilot::LabelSuggestionService).to receive(:new).and_return(fake)
+      fake = instance_double(Pilot::LabelSuggestionService, perform: { message: 'billing' })
+      allow(Pilot::LabelSuggestionService).to receive(:new).and_return(fake)
 
       service = described_class.new(conversation: conversation)
       expect(service).to receive(:dispatch_event).with(:label_suggestion_started, anything)

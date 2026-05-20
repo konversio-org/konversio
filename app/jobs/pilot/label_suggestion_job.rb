@@ -12,8 +12,8 @@ module Pilot
       return if conversation.blank?
 
       account = conversation.account
-      return unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
-      return unless account.respond_to?(:pilot_label_suggestion_enabled) && account.pilot_label_suggestion_enabled
+      return unless account.feature_enabled?('pilot')
+      return unless account.feature_enabled?('pilot_label_suggestion')
 
       label_ids = Custom::Pilot::LabelSuggestionService.new(
         conversation: conversation,

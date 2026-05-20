@@ -23,7 +23,7 @@ class Api::V2::Accounts::Pilot::SummariesController < Api::V1::Accounts::BaseCon
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_summary_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_summary')
 
     render json: { error: 'Pilot Summary is not enabled for this account' }, status: :forbidden
   end

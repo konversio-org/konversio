@@ -15,7 +15,7 @@ import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/cons
 
 // Menu layout: rewrite actions (Improve / Change tone / Fix grammar) sit
 // above the Captain three-item layout (Suggest a reply / Summarize / Ask
-// Copilot). Rewrite items are gated on `pilot_rewrite_enabled` and a
+// Copilot). Rewrite items are gated on `features.pilot_rewrite` and a
 // non-empty draft. "Change tone" expands the menu inline to show the five
 // spec-defined Pilot tones; picking one closes the menu.
 

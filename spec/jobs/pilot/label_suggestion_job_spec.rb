@@ -7,7 +7,7 @@ RSpec.describe Pilot::LabelSuggestionJob, type: :job do
   let!(:billing_label) { create(:label, account: account, title: 'billing') }
 
   before do
-    account.update!(pilot_enabled: true, pilot_label_suggestion_enabled: true)
+    account.enable_features!(:pilot, :pilot_label_suggestion)
   end
 
   describe '#perform' do
@@ -21,7 +21,7 @@ RSpec.describe Pilot::LabelSuggestionJob, type: :job do
     end
 
     it 'no-ops when the feature flag is off' do
-      account.update!(pilot_label_suggestion_enabled: false)
+      account.disable_features!(:pilot_label_suggestion)
       expect(Custom::Pilot::LabelSuggestionService).not_to receive(:new)
       described_class.perform_now(conversation.id)
     end

@@ -1,9 +1,9 @@
 module Pilot
   # Triggered when an inbound customer message lands in an inbox that has
-  # a Pilot::Assistant attached AND the account has
-  # `pilot_autopilot_enabled = true`. Runs `AutopilotService` and either
-  # posts the reply as an outgoing message or transitions the conversation
-  # to `pending` for human follow-up.
+  # a Pilot::Assistant attached AND the account has the `pilot_autopilot`
+  # feature flag enabled. Runs `AutopilotService` and either posts the
+  # reply as an outgoing message or transitions the conversation to
+  # `pending` for human follow-up.
   class AutopilotInferenceJob < ApplicationJob
     include Events::Types
 
@@ -56,8 +56,8 @@ module Pilot
 
       account = message.account
       return false if account.blank?
-      return false unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
-      return false unless account.respond_to?(:pilot_autopilot_enabled) && account.pilot_autopilot_enabled
+      return false unless account.feature_enabled?('pilot')
+      return false unless account.feature_enabled?('pilot_autopilot')
 
       true
     end
