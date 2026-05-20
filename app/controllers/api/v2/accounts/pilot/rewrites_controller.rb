@@ -25,7 +25,7 @@ class Api::V2::Accounts::Pilot::RewritesController < Api::V1::Accounts::BaseCont
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_rewrite_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_rewrite')
 
     render json: { error: 'Pilot Rewrite is not enabled for this account' }, status: :forbidden
   end

@@ -8,7 +8,7 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
   let(:base_url) { "/api/v1/accounts/#{account.id}/pilot/documents" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_autopilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_autopilot)
     # Crawl runs async — stub the job so URL/PDF creates don't actually hit
     # Firecrawl / pdf-reader during these tests.
     allow(Pilot::Documents::CrawlJob).to receive(:perform_later)
@@ -24,7 +24,7 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
 
     context 'when the pilot_autopilot feature is disabled' do
       it 'returns 403' do
-        account.update!(pilot_autopilot_enabled: false)
+        account.disable_features!(:pilot_autopilot)
 
         get base_url, headers: admin.create_new_auth_token, as: :json
         expect(response).to have_http_status(:forbidden)

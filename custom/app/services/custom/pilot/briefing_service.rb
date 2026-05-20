@@ -4,8 +4,8 @@ module Custom
     #
     # This wraps `Pilot::ReplySuggestionService` per Pilot design D3/D4
     # and adds:
-    #   * per-account feature-flag gating (`pilot_briefing_enabled` + master
-    #     `pilot_enabled`)
+    #   * per-account feature-flag gating (`pilot_briefing` + master
+    #     `pilot`)
     #   * Pilot-namespaced telemetry events
     #   * optional Logbook context injection once the Logbook sub-feature
     #     lands (section 5 of the Pilot tasks)

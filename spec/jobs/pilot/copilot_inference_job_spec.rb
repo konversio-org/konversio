@@ -11,7 +11,7 @@ RSpec.describe Pilot::CopilotInferenceJob do
   let(:fake_runner) { instance_double(Agents::AgentRunner) }
 
   before do
-    account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_copilot)
     create(:pilot_copilot_message, copilot_thread: thread, account: account,
                                    message_type: :user, message: { content: 'hi' })
     allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
@@ -30,7 +30,7 @@ RSpec.describe Pilot::CopilotInferenceJob do
     expect do
       described_class.perform_now(thread_id: thread.id, conversation_id: nil)
     end.to change { thread.copilot_messages.assistant.count }.by(1)
-      .and change { thread.copilot_messages.assistant_thinking.count }.by(1)
+                                                             .and change { thread.copilot_messages.assistant_thinking.count }.by(1)
 
     last_assistant = thread.copilot_messages.assistant.order(:created_at).last
     expect(last_assistant.message['content']).to eq('Found two open tickets.')
@@ -88,6 +88,6 @@ RSpec.describe Pilot::CopilotInferenceJob do
 
     expect do
       described_class.perform_now(thread_id: thread.id)
-    end.not_to change { thread.copilot_messages.assistant.count }
+    end.not_to(change { thread.copilot_messages.assistant.count })
   end
 end

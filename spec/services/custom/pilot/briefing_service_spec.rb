@@ -7,12 +7,12 @@ RSpec.describe Custom::Pilot::BriefingService do
   let(:conversation) { create(:conversation, account: account, inbox: inbox) }
 
   before do
-    account.update!(pilot_enabled: true, pilot_briefing_enabled: true)
+    account.enable_features!(:pilot, :pilot_briefing)
   end
 
   describe '#perform' do
     it 'raises FeatureDisabledError when the briefing flag is off' do
-      account.update!(pilot_briefing_enabled: false)
+      account.disable_features!(:pilot_briefing)
 
       service = described_class.new(conversation: conversation, user: user)
 
@@ -20,7 +20,7 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'raises FeatureDisabledError when the master flag is off' do
-      account.update!(pilot_enabled: false)
+      account.disable_features!(:pilot)
 
       service = described_class.new(conversation: conversation, user: user)
 
@@ -28,8 +28,8 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'delegates to Pilot::ReplySuggestionService and returns the draft' do
-      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-      expect(::Pilot::ReplySuggestionService)
+      fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+      expect(Pilot::ReplySuggestionService)
         .to receive(:new)
         .with(account: account, conversation_display_id: conversation.display_id, user: user)
         .and_return(fake_suggestion)
@@ -40,8 +40,8 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'accepts a plain string response (back-compat for stubs)' do
-      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+      fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+      allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_return('Hello!')
 
       service = described_class.new(conversation: conversation, user: user)
@@ -49,8 +49,8 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'raises Custom::Pilot::BriefingService::Error when the pilot service returns an error hash' do
-      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+      fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+      allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_return({ error: 'upstream is down', error_code: 500 })
 
       service = described_class.new(conversation: conversation, user: user)
@@ -58,8 +58,8 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     it 'wraps StandardError from the pilot service in a Pilot::BriefingService::Error' do
-      fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-      allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+      fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+      allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
       allow(fake_suggestion).to receive(:perform).and_raise(StandardError, 'connection refused')
 
       service = described_class.new(conversation: conversation, user: user)
@@ -68,8 +68,8 @@ RSpec.describe Custom::Pilot::BriefingService do
 
     context 'with Logbook' do
       it 'skips Logbook context injection when pilot_logbook_enabled is false' do
-        fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-        allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+        allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)
@@ -80,12 +80,12 @@ RSpec.describe Custom::Pilot::BriefingService do
       end
 
       it 'invokes Logbook context injection when feature is on AND model is defined' do
-        account.update!(pilot_logbook_enabled: true)
+        account.enable_features!(:pilot_logbook)
 
-        stub_const('Pilot::LogbookEntry', Class.new) unless defined?(::Pilot::LogbookEntry)
+        stub_const('Pilot::LogbookEntry', Class.new) unless defined?(Pilot::LogbookEntry)
 
-        fake_suggestion = instance_double(::Pilot::ReplySuggestionService)
-        allow(::Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+        allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)

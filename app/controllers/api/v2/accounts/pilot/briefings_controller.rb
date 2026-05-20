@@ -24,7 +24,7 @@ class Api::V2::Accounts::Pilot::BriefingsController < Api::V1::Accounts::BaseCon
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_briefing_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_briefing')
 
     render json: { error: 'Pilot Briefing is not enabled for this account' }, status: :forbidden
   end

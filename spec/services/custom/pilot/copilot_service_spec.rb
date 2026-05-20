@@ -10,7 +10,7 @@ RSpec.describe Custom::Pilot::CopilotService do
   let(:fake_runner) { instance_double(Agents::AgentRunner) }
 
   before do
-    account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_copilot)
     create(:pilot_copilot_message, copilot_thread: thread, account: account,
                                    message_type: :user, message: { content: 'Refund question' })
     # Stub the runner factory so we can drive tool-start callbacks + final result manually.
@@ -40,13 +40,13 @@ RSpec.describe Custom::Pilot::CopilotService do
 
   describe '#perform' do
     it 'raises FeatureDisabledError when the copilot flag is off' do
-      account.update!(pilot_copilot_enabled: false)
+      account.disable_features!(:pilot_copilot)
       expect { described_class.new(thread: thread).perform }
         .to raise_error(described_class::FeatureDisabledError)
     end
 
     it 'raises FeatureDisabledError when the master pilot flag is off' do
-      account.update!(pilot_enabled: false)
+      account.disable_features!(:pilot)
       expect { described_class.new(thread: thread).perform }
         .to raise_error(described_class::FeatureDisabledError)
     end

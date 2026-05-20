@@ -30,7 +30,7 @@ class Api::V2::Accounts::Pilot::CopilotMessagesController < Api::V1::Accounts::B
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_copilot_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_copilot')
 
     render json: { error: 'Pilot Copilot is not enabled for this account' }, status: :forbidden
   end

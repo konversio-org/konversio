@@ -8,7 +8,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotMessages', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/copilot_threads/#{thread.id}/copilot_messages" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_copilot_enabled: true)
+    account.enable_features!(:pilot, :pilot_copilot)
   end
 
   describe 'POST .../copilot_messages' do
@@ -37,7 +37,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotMessages', type: :request do
     end
 
     it 'returns 403 when pilot_copilot is disabled' do
-      account.update!(pilot_copilot_enabled: false)
+      account.disable_features!(:pilot_copilot)
 
       post url, params: { message: 'hi' }, headers: agent.create_new_auth_token, as: :json
       expect(response).to have_http_status(:forbidden)
@@ -54,7 +54,9 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CopilotMessages', type: :request do
   end
 
   describe 'GET .../copilot_messages' do
-    let!(:user_message) { create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'first' }) }
+    let!(:user_message) do
+      create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :user, message: { content: 'first' })
+    end
     let!(:assistant_message) do
       create(:pilot_copilot_message, copilot_thread: thread, account: account, message_type: :assistant, message: { content: 'second' })
     end

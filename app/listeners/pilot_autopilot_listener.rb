@@ -1,9 +1,9 @@
 # Hooks the Pilot Autopilot inference into Chatwoot's MessageCreatedEvent
 # pipeline. Enqueues `Pilot::AutopilotInferenceJob` for every inbound
 # customer message in an inbox that has a `Pilot::Assistant` attached AND
-# the account has `pilot_autopilot_enabled = true`. The job itself
-# re-validates eligibility before talking to the LLM, so this listener is
-# best-effort and safe to over-trigger.
+# the account has the `pilot_autopilot` feature flag enabled. The job
+# itself re-validates eligibility before talking to the LLM, so this
+# listener is best-effort and safe to over-trigger.
 class PilotAutopilotListener < BaseListener
   def message_created(event)
     message, account = extract_message_and_account(event)
@@ -21,9 +21,10 @@ class PilotAutopilotListener < BaseListener
   end
 
   # Enqueues the Pilot Label Suggestion job for every new conversation
-  # when the account has `pilot_label_suggestion_enabled = true`. The
-  # job is non-destructive: it populates `conversation.suggested_label_ids`
-  # so the UI can offer one-click apply chips above the label selector.
+  # when the account has the `pilot_label_suggestion` feature flag
+  # enabled. The job is non-destructive: it populates
+  # `conversation.suggested_label_ids` so the UI can offer one-click
+  # apply chips above the label selector.
   def conversation_created(event)
     conversation = extract_conversation_and_account(event)[0]
     return if conversation.blank?
@@ -35,15 +36,15 @@ class PilotAutopilotListener < BaseListener
   private
 
   def label_suggestion_active?(account)
-    return false unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
-    return false unless account.respond_to?(:pilot_label_suggestion_enabled) && account.pilot_label_suggestion_enabled
+    return false unless account.feature_enabled?('pilot')
+    return false unless account.feature_enabled?('pilot_label_suggestion')
 
     true
   end
 
   def autopilot_active?(account, inbox)
-    return false unless account.respond_to?(:pilot_enabled) && account.pilot_enabled
-    return false unless account.respond_to?(:pilot_autopilot_enabled) && account.pilot_autopilot_enabled
+    return false unless account.feature_enabled?('pilot')
+    return false unless account.feature_enabled?('pilot_autopilot')
     return false if inbox.blank?
 
     ::Pilot::Inbox.exists?(inbox_id: inbox.id)

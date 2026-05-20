@@ -6,7 +6,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Rewrites', type: :request do
   let(:url) { "/api/v2/accounts/#{account.id}/pilot/rewrites" }
 
   before do
-    account.update!(pilot_enabled: true, pilot_rewrite_enabled: true)
+    account.enable_features!(:pilot, :pilot_rewrite)
   end
 
   describe 'POST /api/v2/accounts/:account_id/pilot/rewrites' do
@@ -50,7 +50,7 @@ RSpec.describe 'Api::V2::Accounts::Pilot::Rewrites', type: :request do
     end
 
     it 'returns 403 when the rewrite flag is off' do
-      account.update!(pilot_rewrite_enabled: false)
+      account.disable_features!(:pilot_rewrite)
 
       post url,
            params: { text: 'foo', operation: 'friendly' },

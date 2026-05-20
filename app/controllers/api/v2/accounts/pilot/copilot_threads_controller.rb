@@ -9,6 +9,10 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
     render json: { data: @threads.map { |thread| serialize_thread(thread) } }
   end
 
+  def show
+    render json: serialize_thread(@thread)
+  end
+
   def create
     raise ActionController::ParameterMissing, :message if params[:message].blank?
 
@@ -38,14 +42,10 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
     render json: { error: 'message is required' }, status: :bad_request
   end
 
-  def show
-    render json: serialize_thread(@thread)
-  end
-
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_copilot_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_copilot')
 
     render json: { error: 'Pilot Copilot is not enabled for this account' }, status: :forbidden
   end

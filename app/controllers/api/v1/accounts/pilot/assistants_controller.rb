@@ -45,7 +45,7 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   private
 
   def ensure_feature_enabled
-    return if Current.account.pilot_enabled && Current.account.pilot_autopilot_enabled
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_autopilot')
 
     render json: { error: 'Pilot Autopilot is not enabled for this account' }, status: :forbidden
   end

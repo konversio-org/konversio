@@ -8,7 +8,7 @@ RSpec.describe Pilot::CsatAnalysisJob, type: :job do
   let(:contact) { conversation.contact }
 
   before do
-    account.update!(pilot_enabled: true, pilot_csat_analysis_enabled: true)
+    account.enable_features!(:pilot, :pilot_csat_analysis)
   end
 
   describe '#perform' do
@@ -40,7 +40,7 @@ RSpec.describe Pilot::CsatAnalysisJob, type: :job do
     end
 
     it 'no-ops when the feature flag is off' do
-      account.update!(pilot_csat_analysis_enabled: false)
+      account.disable_features!(:pilot_csat_analysis)
       csat = create(:csat_survey_response, account: account, conversation: conversation,
                                            message: message, contact: contact,
                                            feedback_message: 'slow')
