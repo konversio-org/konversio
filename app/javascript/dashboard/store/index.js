@@ -39,7 +39,10 @@ import integrations from './modules/integrations';
 import labels from './modules/labels';
 import macros from './modules/macros';
 import notifications from './modules/notifications';
+import pilotAssistants from './pilot/assistants';
 import pilotCopilot from './pilot/copilot';
+import pilotDocuments from './pilot/documents';
+import pilotFaqs from './pilot/faqs';
 import portals from './modules/helpCenterPortals';
 import reports from './modules/reports';
 import sla from './modules/sla';
@@ -93,7 +96,10 @@ export default createStore({
     labels,
     macros,
     notifications,
+    'pilot/assistants': pilotAssistants,
     'pilot/copilot': pilotCopilot,
+    'pilot/documents': pilotDocuments,
+    'pilot/faqs': pilotFaqs,
     portals,
     reports,
     sla,

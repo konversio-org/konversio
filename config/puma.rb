@@ -36,3 +36,14 @@ preload_app!
 
 # Allow puma to be restarted by `rails restart` command.
 plugin :tmp_restart
+
+# Re-establish database connections after forking.
+# Without this, forked workers inherit stale connections from the master process,
+# causing "could not obtain a connection from the pool" errors.
+before_fork do
+  ActiveRecord::Base.connection_pool.disconnect! if defined?(ActiveRecord)
+end
+
+on_worker_boot do
+  ActiveRecord::Base.establish_connection if defined?(ActiveRecord)
+end

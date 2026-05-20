@@ -12,13 +12,13 @@ properties:
     description: Name of the sender when available
   avatar_url:
     type: string
-    description: Avatar URL of the sender. Present for senders of type user, agent_bot, and captain_assistant. Not present for contact senders (use thumbnail instead).
+    description: Avatar URL of the sender. Present for senders of type user, agent_bot, and pilot_assistant. Not present for contact senders (use thumbnail instead).
   thumbnail:
     type: string
     description: Avatar/thumbnail URL of the sender. Contact senders use this field; user senders may also include it.
   type:
     type: string
-    enum: ['contact', 'user', 'agent_bot', 'captain_assistant']
+    enum: ['contact', 'user', 'agent_bot', 'pilot_assistant']
     description: Type of the sender
   available_name:
     type:
@@ -62,9 +62,9 @@ properties:
     type:
       - string
       - 'null'
-    description: Description when the sender is a captain assistant
+    description: Description when the sender is a pilot assistant
   created_at:
     type:
       - string
       - 'null'
-    description: Created timestamp in ISO 8601 format when the sender is a captain assistant
+    description: Created timestamp in ISO 8601 format when the sender is a pilot assistant

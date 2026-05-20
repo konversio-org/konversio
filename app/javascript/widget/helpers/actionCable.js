@@ -3,7 +3,7 @@ import { playNewMessageNotificationInWidget } from 'widget/helpers/WidgetAudioNo
 import { ON_AGENT_MESSAGE_RECEIVED } from '../constants/widgetBusEvents';
 import { IFrameHelper } from 'widget/helpers/utils';
 import { shouldTriggerMessageUpdateEvent } from './IframeEventHelper';
-import { CHATWOOT_ON_MESSAGE } from '../constants/sdkEvents';
+import { KONVERSIO_ON_MESSAGE } from '../constants/sdkEvents';
 import { emitter } from '../../shared/helpers/mitt';
 
 const isMessageInActiveConversation = (getters, message) => {
@@ -64,7 +64,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 
     IFrameHelper.sendMessage({
       event: 'onEvent',
-      eventIdentifier: CHATWOOT_ON_MESSAGE,
+      eventIdentifier: KONVERSIO_ON_MESSAGE,
       data,
     });
     if (data.sender_type === 'User') {
@@ -80,7 +80,7 @@ class ActionCableConnector extends BaseActionCableConnector {
     if (shouldTriggerMessageUpdateEvent(data)) {
       IFrameHelper.sendMessage({
         event: 'onEvent',
-        eventIdentifier: CHATWOOT_ON_MESSAGE,
+        eventIdentifier: KONVERSIO_ON_MESSAGE,
         data,
       });
     }
@@ -108,8 +108,13 @@ class ActionCableConnector extends BaseActionCableConnector {
         .id;
     const isUserTypingOnAnotherConversation =
       data.conversation && data.conversation.id !== activeConversationId;
+    // The widget channel receives typing broadcasts for every participant,
+    // including the customer themselves. Without this filter, the customer's
+    // own keystrokes (rebroadcast back to their channel for the dashboard)
+    // render as "agent typing", leaving the indicator stuck.
+    const isSelfTyping = data.user && data.user.type === 'contact';
 
-    if (isUserTypingOnAnotherConversation || data.is_private) {
+    if (isUserTypingOnAnotherConversation || data.is_private || isSelfTyping) {
       return;
     }
     this.clearTimer();

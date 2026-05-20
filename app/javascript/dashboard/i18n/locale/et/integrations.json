@@ -22,11 +22,11 @@
     "LOADING": "Laaditakse integratsioone",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain ei ole teie kontol aktiveeritud.",
+    "PILOT": {
+      "DISABLED": "Pilot ei ole teie kontol aktiveeritud.",
       "CLICK_HERE_TO_CONFIGURE": "Klõpsake siin seadistamiseks",
-      "LOADING_CONSOLE": "Laaditakse Captain Console’i...",
-      "FAILED_TO_LOAD_CONSOLE": "Captain Console’i laadimine ebaõnnestus. Palun värskenda lehte ja proovi uuesti."
+      "LOADING_CONSOLE": "Laaditakse Pilot Console’i...",
+      "FAILED_TO_LOAD_CONSOLE": "Pilot Console’i laadimine ebaõnnestus. Palun värskenda lehte ja proovi uuesti."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Tellitud sündmused",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "Kapten",
     "HEADER_KNOW_MORE": "Lisateave",
     "ASSISTANT_SWITCHER": {
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "Vajad kiiret kokkuvõtet, soovid vaadata varasemaid vestlusi või koostada paremat vastust? Copilot aitab sul asju kiiremini teha.",
       "SEND_MESSAGE": "Saada sõnum...",
       "EMPTY_MESSAGE": "Vastus ei õnnestunud genereerida. Palun proovi uuesti.",
-      "LOADER": "Captain mõtleb",
+      "LOADER": "Pilot mõtleb",
       "YOU": "Sina",
       "USE": "Kasuta seda",
       "RESET": "Lähtesta",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Sisesta oma sõnum...",
       "HEADER": "Mänguväljak",
       "DESCRIPTION": "Kasuta seda mänguväljakut, et saata assistendile sõnumeid ja kontrollida, kas ta vastab täpselt, kiiresti ja soovitud tooniga.",
-      "CREDIT_NOTE": "Siin saadetud sõnumid arvestatakse Captaini krediitide hulka."
+      "CREDIT_NOTE": "Siin saadetud sõnumid arvestatakse Piloti krediitide hulka."
     },
     "PAYWALL": {
-      "TITLE": "Uuenda, et kasutada Captain AI-d",
-      "AVAILABLE_ON": "Captain ei ole tasuta plaanis saadaval.",
+      "TITLE": "Uuenda, et kasutada Pilot AI-d",
+      "AVAILABLE_ON": "Pilot ei ole tasuta plaanis saadaval.",
       "UPGRADE_PROMPT": "Uuendage oma plaani, et saada ligipääs meie assistentidele, copiloti ja muule.",
       "UPGRADE_NOW": "Uuenda kohe",
       "CANCEL_ANYTIME": "Saate oma plaani igal ajal muuta või tühistada"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI on saadaval ainult ettevõtte plaanides.",
+      "AVAILABLE_ON": "Pilot AI on saadaval ainult ettevõtte plaanides.",
       "UPGRADE_PROMPT": "Uuendage oma plaani, et saada ligipääs meie assistentidele, copiloti ja muule.",
       "ASK_ADMIN": "Palun pöörduge uuenduse saamiseks oma administraatori poole."
     },
     "BANNER": {
-      "RESPONSES": "Olete kasutanud üle 80% oma vastuste piirist. Captain AI kasutamise jätkamiseks palun uuendage.",
-      "DOCUMENTS": "Dokumendi limiit on täis. Captain AI kasutamise jätkamiseks uuendage."
+      "RESPONSES": "Olete kasutanud üle 80% oma vastuste piirist. Pilot AI kasutamise jätkamiseks palun uuendage.",
+      "DOCUMENTS": "Dokumendi limiit on täis. Pilot AI kasutamise jätkamiseks uuendage."
     },
     "FORM": {
       "CANCEL": "Tühista",
@@ -576,8 +576,8 @@
         "TITLE": "Assistente pole saadaval",
         "SUBTITLE": "Looge assistent, kes pakub teie kasutajatele kiireid ja täpseid vastuseid. See saab õppida teie abimaterjalidest ja varasematest vestlustest.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistent",
-          "NOTE": "Captain Assistent suhtleb otse klientidega, õpib teie abidokumentidest ja varasematest vestlustest ning pakub koheseid ja täpseid vastuseid. See käsitleb esialgseid päringuid, pakkudes kiireid lahendusi enne vajadusel agendile suunamist."
+          "TITLE": "Pilot Assistent",
+          "NOTE": "Pilot Assistent suhtleb otse klientidega, õpib teie abidokumentidest ja varasematest vestlustest ning pakub koheseid ja täpseid vastuseid. See käsitleb esialgseid päringuid, pakkudes kiireid lahendusi enne vajadusel agendile suunamist."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "Dokumente pole saadaval",
         "SUBTITLE": "Dokumente kasutab teie assistent KKK-de genereerimiseks. Saate dokumente importida, et pakkuda assistendile konteksti.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "Dokument Captainis on abimehe teadmiste allikas. Ühendades oma abikeskuse või juhendid, saab Captain sisu analüüsida ja pakkuda täpseid vastuseid kliendipäringutele."
+          "TITLE": "Pilot Document",
+          "NOTE": "Dokument Pilotis on abimehe teadmiste allikas. Ühendades oma abikeskuse või juhendid, saab Pilot sisu analüüsida ja pakkuda täpseid vastuseid kliendipäringutele."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Failed to delete custom tool"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "Kõik"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "Lisage küsimus ja sellele vastav vastus teadmistebaasi ning valige assistent, kellega see peaks olema seotud.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "KKK-d aitavad teie assistendil pakkuda klientide küsimustele kiireid ja täpseid vastuseid. Neid saab automaatselt teie sisu põhjal genereerida või käsitsi lisada.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain KKK",
-          "NOTE": "Captain KKK tuvastab levinud kliendiküsimused—nii need, mis puuduvad teadmistebaasist kui ka korduma kippuvad—ja loob asjakohased KKK-d toe parandamiseks. Saad iga ettepaneku üle vaadata ja otsustada, kas see kinnitada või tagasi lükata."
+          "TITLE": "Pilot KKK",
+          "NOTE": "Pilot KKK tuvastab levinud kliendiküsimused—nii need, mis puuduvad teadmistebaasist kui ka korduma kippuvad—ja loob asjakohased KKK-d toe parandamiseks. Saad iga ettepaneku üle vaadata ja otsustada, kas see kinnitada või tagasi lükata."
         }
       }
     },

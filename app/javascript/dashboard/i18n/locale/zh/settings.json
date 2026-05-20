@@ -310,15 +310,15 @@
     "ACTIVE": "状态",
     "COMPANIES": "公司",
     "ALL_COMPANIES": "All Companies",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "助手",
-    "CAPTAIN_DOCUMENTS": "文档",
-    "CAPTAIN_RESPONSES": "常见问题",
-    "CAPTAIN_TOOLS": "工具",
-    "CAPTAIN_SCENARIOS": "Scenarios",
-    "CAPTAIN_PLAYGROUND": "试验场",
-    "CAPTAIN_INBOXES": "收件箱",
-    "CAPTAIN_SETTINGS": "设置",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "助手",
+    "PILOT_DOCUMENTS": "文档",
+    "PILOT_RESPONSES": "常见问题",
+    "PILOT_TOOLS": "工具",
+    "PILOT_SCENARIOS": "Scenarios",
+    "PILOT_PLAYGROUND": "试验场",
+    "PILOT_INBOXES": "收件箱",
+    "PILOT_SETTINGS": "设置",
     "HOME": "首页",
     "AGENTS": "客服代理",
     "AGENT_BOTS": "机器人",
@@ -380,15 +380,15 @@
     },
     "DOCS": "阅读文档",
     "SECURITY": "安全",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Configure your AI models and features for Pilot. Pilot follows a credit based billing, you will be charged credits for every action Pilot takes based on the model selected.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot is not enabled for your account. Please upgrade your plan to access Pilot features.",
     "MODEL_CONFIG": {
       "TITLE": "Model Configuration",
       "DESCRIPTION": "Select AI models for different features.",
@@ -427,8 +427,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -446,13 +446,13 @@
       "DESCRIPTION": "查看您之前的发票，编辑您的账单详细信息或取消您的订阅。",
       "BUTTON_TXT": "前往账单门户"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "管理 Captain AI 的使用和积分。",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "管理 Pilot AI 的使用和积分。",
       "BUTTON_TXT": "购买更多积分",
       "DOCUMENTS": "文档",
       "RESPONSES": "常见问题",
-      "UPGRADE": "Captain 在免费计划中不可用，立即升级以获取助手、副驾驶等更多功能。",
+      "UPGRADE": "Pilot 在免费计划中不可用，立即升级以获取助手、副驾驶等更多功能。",
       "REFRESH_CREDITS": "刷新"
     },
     "CHAT_WITH_US": {
@@ -464,7 +464,7 @@
     "TOPUP": {
       "BUY_CREDITS": "购买更多积分",
       "MODAL_TITLE": "Buy AI Credits",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "one-time",
       "POPULAR": "Most Popular",

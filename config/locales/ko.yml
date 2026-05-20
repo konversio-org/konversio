@@ -219,7 +219,7 @@ ko:
     attachment: '첨부 파일'
     no_content: '내용 없음'
   conversations:
-    captain:
+    pilot:
       handoff: '추가 지원을 위해 다른 에이전트로 전환합니다.'
     messages:
       instagram_story_content: '%{story_sender}님이 스토리에서 회원님을 언급했습니다: '
@@ -232,7 +232,7 @@ ko:
       delivery_status:
         error_code: '오류 코드: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: '%{user_name}님이 비활성으로 인해 대화를 해결됨으로 표시했습니다'
         resolved_with_reason: '대화가 %{user_name}에 의해 해결됨으로 표시되었습니다 (%{reason})'
         resolved_by_tool: '대화가 %{user_name}에 의해 해결됨으로 표시되었습니다: %{reason}'
@@ -339,8 +339,8 @@ ko:
       description: '대화 창에서 직접 Linear에 이슈를 생성합니다. 또는 기존 Linear 이슈를 연결하여 더 효율적인 이슈 추적 프로세스를 구현할 수 있습니다.'
     notion:
       name: 'Notion'
-      short_description: '데이터베이스, 문서 및 페이지를 Captain과 직접 통합합니다.'
-      description: 'Notion 워크스페이스를 연결하여 Captain이 데이터베이스, 문서 및 페이지의 콘텐츠를 사용하여 지능적인 응답을 생성하고 더 맥락에 맞는 고객 지원을 제공할 수 있도록 합니다.'
+      short_description: '데이터베이스, 문서 및 페이지를 Pilot과 직접 통합합니다.'
+      description: 'Notion 워크스페이스를 연결하여 Pilot이 데이터베이스, 문서 및 페이지의 콘텐츠를 사용하여 지능적인 응답을 생성하고 더 맥락에 맞는 고객 지원을 제공할 수 있도록 합니다.'
     shopify:
       name: 'Shopify'
       short_description: 'Shopify 스토어에서 주문 정보와 고객 데이터에 접근합니다.'
@@ -349,13 +349,13 @@ ko:
       name: 'LeadSquared'
       short_description: '연락처와 대화를 LeadSquared CRM과 동기화합니다.'
       description: '연락처와 대화를 LeadSquared CRM과 동기화합니다. 이 통합은 새 연락처가 추가되면 자동으로 LeadSquared에 리드를 생성하고, 영업 팀에 완전한 컨텍스트를 제공하기 위해 대화 활동을 기록합니다.'
-  captain:
+  pilot:
     copilot_message_required: 메시지가 필요합니다
     copilot_error: '이 받은 메시지함에 어시스턴트를 연결하여 Copilot을 사용하십시오'
     copilot_limit: 'Copilot 크레딧이 부족합니다. 청구 섹션에서 추가 크레딧을 구매할 수 있습니다.'
-    upgrade: 'Captain AI를 활성화하려면 플랜을 업그레이드하십시오'
-    disabled: '이 계정에서 Captain AI가 비활성화되어 있습니다.'
-    api_key_missing: 'Captain AI API 키가 구성되지 않았습니다.'
+    upgrade: 'Pilot AI를 활성화하려면 플랜을 업그레이드하십시오'
+    disabled: '이 계정에서 Pilot AI가 비활성화되어 있습니다.'
+    api_key_missing: 'Pilot AI API 키가 구성되지 않았습니다.'
     copilot:
       using_tool: '도구 %{function_name} 사용 중'
       completed_tool_call: '%{function_name} 도구 호출 완료'

@@ -1,0 +1,41 @@
+# Pilot LLM preset bundles.
+#
+# Each preset assigns a provider + model to each of the three routing slots
+# (chat, embedding, audio). Selecting a preset in Super Admin > LLM Settings
+# writes the six PILOT_LLM_<SLOT>_* InstallationConfig rows atomically.
+#
+# Schema:
+#   slug:      Stable identifier (kebab-case, also persisted in PILOT_LLM_PRESET)
+#   label:     Human-readable name shown in the UI
+#   chat:      { provider: <slug>, model: <model id> }
+#   embedding: { provider: <slug>, model: <model id> }
+#   audio:     { provider: <slug>, model: <model id> }
+#
+# Validation runs at boot. Presets referencing an unknown provider or a
+# provider that doesn't declare the slot's capability are dropped with a
+# logged warning — they never raise.
+presets:
+  - slug: all-openai
+    label: All OpenAI
+    chat: { provider: openai, model: gpt-4.1-mini }
+    embedding: { provider: openai, model: text-embedding-3-small }
+    audio: { provider: openai, model: whisper-1 }
+
+  - slug: all-scaleway
+    label: All Scaleway (EU equivalent of the OpenAI defaults)
+    # Mistral Small 3.2: direct equivalent of gpt-4.1-mini — fast, cheap,
+    # vision-capable, explicit Dutch + English support, 128k context.
+    # €0.15 input / €0.35 output per million tokens (cheaper than OpenAI).
+    chat: { provider: scaleway, model: mistral-small-3.2-24b-instruct-2506 }
+    # BGE multilingual gemma2: tops MTEB multilingual; 3584 dims.
+    # Direct EU equivalent of text-embedding-3-small (different dim count).
+    embedding: { provider: scaleway, model: bge-multilingual-gemma2 }
+    # Whisper large v3: newer/larger variant of OpenAI's whisper-1.
+    # €0.003/audio minute (half OpenAI's price).
+    audio: { provider: scaleway, model: whisper-large-v3 }
+
+  - slug: all-nebius
+    label: All Nebius (open source, no audio)
+    chat: { provider: nebius, model: Qwen/Qwen2.5-72B-Instruct }
+    embedding: { provider: nebius, model: BAAI/bge-en-icl }
+    # audio omitted — Nebius has no transcription API

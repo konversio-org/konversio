@@ -15,6 +15,9 @@ import ReplyBottomPanel from 'dashboard/components/widgets/WootWriter/ReplyBotto
 import CopilotReplyBottomPanel from 'dashboard/components/widgets/WootWriter/CopilotReplyBottomPanel.vue';
 import ArticleSearchPopover from 'dashboard/routes/dashboard/helpcenter/components/ArticleSearch/SearchPopover.vue';
 import CopilotEditorSection from './CopilotEditorSection.vue';
+import PilotPreviewPanel from 'dashboard/components-next/pilot/PilotPreviewPanel.vue';
+import PilotBriefingsAPI from 'dashboard/api/pilot/briefings';
+import PilotSummariesAPI from 'dashboard/api/pilot/summaries';
 import MessageSignatureMissingAlert from './MessageSignatureMissingAlert.vue';
 import ReplyBoxBanner from './ReplyBoxBanner.vue';
 import QuotedEmailPreview from './QuotedEmailPreview.vue';
@@ -23,7 +26,6 @@ import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vu
 import AudioRecorder from 'dashboard/components/widgets/WootWriter/AudioRecorder.vue';
 import { AUDIO_FORMATS } from 'shared/constants/messages';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
-import { CMD_AI_ASSIST } from 'dashboard/helper/commandbar/events';
 import {
   getMessageVariables,
   getUndefinedVariablesInMessage,
@@ -42,7 +44,7 @@ import {
 } from 'dashboard/helper/quotedEmailHelper';
 import {
   CONVERSATION_EVENTS,
-  CAPTAIN_EVENTS,
+  PILOT_EVENTS,
 } from '../../../helper/AnalyticsHelper/events';
 import fileUploadMixin from 'dashboard/mixins/fileUploadMixin';
 import {
@@ -78,6 +80,7 @@ export default {
     WhatsappTemplates,
     WootMessageEditor,
     QuotedEmailPreview,
+    PilotPreviewPanel,
     CopilotEditorSection,
     CopilotReplyBottomPanel,
   },
@@ -138,6 +141,12 @@ export default {
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
       copilotAcceptedMessages: {},
+      // In-composer preview state for one-shot Pilot actions (Suggest a
+      // reply, Summarize). When non-null, PilotPreviewPanel replaces
+      // the WootMessageEditor; Accept inserts content + closes, Dismiss
+      // just closes. Mirrors Chatwoot Enterprise Captain's editor-swap
+      // UX, conceptually.
+      pilotPreview: null,
     };
   },
   computed: {
@@ -518,7 +527,14 @@ export default {
       this.onNewConversationModalActive
     );
     emitter.on(BUS_EVENTS.INSERT_INTO_NORMAL_EDITOR, this.addIntoEditor);
-    emitter.on(CMD_AI_ASSIST, this.executeCopilotAction);
+
+    // Pilot in-composer preview lifecycle. PilotActionsMenu fires
+    // START → READY/ERROR; ReplyBox renders the swap panel based on
+    // the resulting state. Close (Accept/Dismiss) happens via direct
+    // Vue events between PilotPreviewPanel and this component.
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_START, this.onPilotPreviewStart);
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_READY, this.onPilotPreviewReady);
+    emitter.on(BUS_EVENTS.PILOT_PREVIEW_ERROR, this.onPilotPreviewError);
   },
   unmounted() {
     document.removeEventListener('paste', this.onPaste);
@@ -529,7 +545,9 @@ export default {
       BUS_EVENTS.NEW_CONVERSATION_MODAL,
       this.onNewConversationModalActive
     );
-    emitter.off(CMD_AI_ASSIST, this.executeCopilotAction);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_START, this.onPilotPreviewStart);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_READY, this.onPilotPreviewReady);
+    emitter.off(BUS_EVENTS.PILOT_PREVIEW_ERROR, this.onPilotPreviewError);
   },
   methods: {
     getDraftKey(
@@ -834,7 +852,7 @@ export default {
       const normalizedEditorMessage = normalizeForComparison(editorMessage);
 
       if (normalizedAcceptedMessage && normalizedEditorMessage) {
-        useTrack(CAPTAIN_EVENTS.AI_ASSISTED_MESSAGE_SENT, {
+        useTrack(PILOT_EVENTS.AI_ASSISTED_MESSAGE_SENT, {
           conversationId: this.conversationIdByRoute,
           channelType: this.channelType,
           editedBeforeSend:
@@ -935,20 +953,103 @@ export default {
       this.updateEditorSelectionWith = content;
       this.onFocus();
     },
-    executeCopilotAction(action, data) {
-      if (action === 'ask_copilot') {
-        const account = this.$store.getters.getCurrentAccount || {};
-        if (account.pilot_enabled && account.pilot_copilot_enabled) {
-          this.pilotCopilotDrawer.openBoundToConversation(this.conversationId);
-          return;
-        }
-      }
-      this.copilot.execute(action, data);
-    },
     onBriefingDraft(draft) {
       if (!draft) return;
       this.message = draft;
       this.onFocus();
+    },
+    onPilotPreviewStart({ actionKey, targetMode }) {
+      this.pilotPreview = {
+        actionKey,
+        targetMode,
+        content: '',
+        isGenerating: true,
+        errorMessage: '',
+      };
+      // Switch the visible reply-mode tab to match where Accept will
+      // land. Summary always goes to Private Note; reply/rewrite stays
+      // on Reply. Done at START (not Accept) so the agent sees the
+      // correct destination tab highlighted while the preview is open.
+      if (targetMode && targetMode !== this.replyType) {
+        this.setReplyMode(targetMode);
+      }
+    },
+    onPilotPreviewReady({ content }) {
+      if (!this.pilotPreview) return;
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        content,
+        isGenerating: false,
+        errorMessage: '',
+      };
+    },
+    onPilotPreviewError({ errorMessage }) {
+      if (!this.pilotPreview) return;
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        isGenerating: false,
+        errorMessage: errorMessage || '',
+      };
+    },
+    onPilotPreviewAccept(editedContent) {
+      if (!this.pilotPreview) return;
+      const target = this.pilotPreview.targetMode;
+      // Close the panel first so the WootMessageEditor for the target
+      // mode is mounted and listening to INSERT_INTO_RICH_EDITOR before
+      // the bus emit fires.
+      this.pilotPreview = null;
+      this.setReplyMode(target);
+      // Wait for the replyType watcher to swap drafts (briefing fix
+      // db1010c88 documents the same race), then insert via callback —
+      // lint rule vue/next-tick-style requires callback over await.
+      this.$nextTick(() => {
+        emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, editedContent);
+        this.onFocus();
+      });
+    },
+    onPilotPreviewDismiss() {
+      this.pilotPreview = null;
+    },
+    async onPilotPreviewRefine({ instruction, draft }) {
+      if (!this.pilotPreview || !instruction) return;
+      const { actionKey } = this.pilotPreview;
+      // Switch panel to thinking state immediately so the agent sees
+      // feedback; preserve actionKey + targetMode through the refinement.
+      this.pilotPreview = {
+        ...this.pilotPreview,
+        isGenerating: true,
+        errorMessage: '',
+      };
+      const Api =
+        actionKey === 'summary' ? PilotSummariesAPI : PilotBriefingsAPI;
+      try {
+        const response = await Api.generate(this.conversationIdByRoute, {
+          previousOutput: draft,
+          refinementInstruction: instruction,
+        });
+        if (!this.pilotPreview) return;
+        const raw =
+          actionKey === 'summary'
+            ? response?.data?.summary || ''
+            : response?.data?.draft || '';
+        // Same leading-whitespace stripper Summary uses for its first-shot
+        // result (ProseMirror keeps a stray blank line as an empty para).
+        this.pilotPreview = {
+          ...this.pilotPreview,
+          content: raw.replace(/^\s+/, ''),
+          isGenerating: false,
+          errorMessage: '',
+        };
+      } catch (err) {
+        if (!this.pilotPreview) return;
+        const message =
+          err?.response?.data?.error || err?.message || 'Refinement failed';
+        this.pilotPreview = {
+          ...this.pilotPreview,
+          isGenerating: false,
+          errorMessage: message,
+        };
+      }
     },
     clearMessage() {
       this.message = '';
@@ -1244,6 +1345,7 @@ export default {
     <ReplyTopPanel
       :mode="replyType"
       :conversation-id="conversationId"
+      :editor-content="message"
       :is-reply-restricted="isReplyRestricted"
       :disabled="
         (copilot.isActive.value && copilot.isButtonDisabled.value) ||
@@ -1252,11 +1354,9 @@ export default {
       :is-editor-disabled="isEditorDisabled"
       :is-message-length-reaching-threshold="isMessageLengthReachingThreshold"
       :characters-remaining="charactersRemaining"
-      :editor-content="message"
       @set-reply-mode="setReplyMode"
       @toggle-editor-size="toggleEditorSize"
       @toggle-copilot="copilot.toggleEditor"
-      @execute-copilot-action="executeCopilotAction"
       @briefing-draft="onBriefingDraft"
     />
     <ArticleSearchPopover
@@ -1303,8 +1403,18 @@ export default {
           @play="recordingAudioState = 'playing'"
           @pause="recordingAudioState = 'paused'"
         />
+        <PilotPreviewPanel
+          v-if="pilotPreview && !showAudioRecorderEditor"
+          :action-key="pilotPreview.actionKey"
+          :is-generating="pilotPreview.isGenerating"
+          :initial-content="pilotPreview.content"
+          :error-message="pilotPreview.errorMessage"
+          @accept="onPilotPreviewAccept"
+          @dismiss="onPilotPreviewDismiss"
+          @refine="onPilotPreviewRefine"
+        />
         <CopilotEditorSection
-          v-if="copilot.isActive.value && !showAudioRecorderEditor"
+          v-else-if="copilot.isActive.value && !showAudioRecorderEditor"
           :show-copilot-editor="copilot.showEditor.value"
           :is-generating-content="copilot.isGenerating.value"
           :generated-content="copilot.generatedContent.value"
@@ -1342,7 +1452,6 @@ export default {
           @toggle-canned-menu="toggleCannedMenu"
           @toggle-variables-menu="toggleVariablesMenu"
           @clear-selection="clearEditorSelection"
-          @execute-copilot-action="executeCopilotAction"
         />
 
         <QuotedEmailPreview

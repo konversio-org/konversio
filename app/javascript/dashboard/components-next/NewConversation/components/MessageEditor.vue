@@ -24,12 +24,6 @@ const modelValue = defineModel({
 });
 
 const isCopilotActive = computed(() => props.copilot?.isActive?.value ?? false);
-
-const executeCopilotAction = (action, data) => {
-  if (props.copilot) {
-    props.copilot.execute(action, data);
-  }
-};
 </script>
 
 <template>
@@ -73,14 +67,13 @@ const executeCopilotAction = (action, data) => {
               : ''
           "
           enable-variables
-          enable-captain-tools
+          enable-pilot-tools
           :show-character-count="false"
           :signature="messageSignature"
           allow-signature
           :send-with-signature="sendWithSignature"
           :channel-type="channelType"
           :medium="medium"
-          @execute-copilot-action="executeCopilotAction"
         />
       </div>
     </Transition>

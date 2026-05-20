@@ -18,16 +18,14 @@
 #
 
 # Persistent Copilot thread between an account agent and the Pilot
-# assistant. Backed by the existing `copilot_threads` table (table name kept
-# `copilot_*` per minimal-fork doctrine; the Ruby class lives under
-# `Captain::` to mirror Captain V2 naming).
+# assistant. Backed by the existing `copilot_threads` table.
 class Pilot::CopilotThread < ApplicationRecord
   self.table_name = 'copilot_threads'
 
   belongs_to :account
   belongs_to :user
   # `assistant_id` is an optional integer column (no FK constraint at the DB
-  # level — the Captain::Assistant model lands in section 4 of the Pilot
+  # level — the Pilot::Assistant model lands in section 4 of the Pilot
   # rebuild). We model it as a loose attribute today and tighten it later
   # without changing this contract.
   attribute :assistant_id, :integer

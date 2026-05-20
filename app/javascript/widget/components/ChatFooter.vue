@@ -8,7 +8,7 @@ import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { sendEmailTranscript } from 'widget/api/conversation';
 import { useRouter } from 'vue-router';
 import { IFrameHelper } from '../helpers/utils';
-import { CHATWOOT_ON_START_CONVERSATION } from '../constants/sdkEvents';
+import { KONVERSIO_ON_START_CONVERSATION } from '../constants/sdkEvents';
 import { emitter } from 'shared/helpers/mitt';
 
 export default {
@@ -83,7 +83,7 @@ export default {
       this.router.replace({ name: 'prechat-form' });
       IFrameHelper.sendMessage({
         event: 'onEvent',
-        eventIdentifier: CHATWOOT_ON_START_CONVERSATION,
+        eventIdentifier: KONVERSIO_ON_START_CONVERSATION,
         data: { hasConversation: true },
       });
     },

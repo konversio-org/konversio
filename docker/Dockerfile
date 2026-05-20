@@ -34,6 +34,7 @@ RUN apk update && apk add --no-cache \
   git \
   curl \
   xz \
+  libffi-dev \
   && mkdir -p /var/app \
   && gem install bundler -v "$BUNDLER_VERSION"
 
@@ -128,6 +129,7 @@ RUN apk update && apk add --no-cache \
   imagemagick \
   git \
   vips \
+  libffi-dev \
   && gem install bundler -v "$BUNDLER_VERSION"
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/

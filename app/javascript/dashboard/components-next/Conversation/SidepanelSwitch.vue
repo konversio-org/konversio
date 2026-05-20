@@ -3,11 +3,16 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
+import PilotFaceIcon from 'dashboard/components-next/pilot/PilotFaceIcon.vue';
 
-const { updateUISettings } = useUISettings();
+const { uiSettings, updateUISettings } = useUISettings();
+const route = useRoute();
+const drawer = useCopilotDrawer();
 
 const currentAccountId = useMapGetter('getCurrentAccountId');
 const isFeatureEnabledonAccount = useMapGetter(
@@ -15,18 +20,19 @@ const isFeatureEnabledonAccount = useMapGetter(
 );
 
 const showCopilotTab = computed(() =>
-  isFeatureEnabledonAccount.value(currentAccountId.value, FEATURE_FLAGS.CAPTAIN)
+  isFeatureEnabledonAccount.value(currentAccountId.value, FEATURE_FLAGS.PILOT)
 );
 
-const { uiSettings } = useUISettings();
 const isContactSidebarOpen = computed(
   () => uiSettings.value.is_contact_sidebar_open
 );
-const isCopilotPanelOpen = computed(
-  () => uiSettings.value.is_copilot_panel_open
+const isCopilotPanelOpen = computed(() => drawer.isOpen.value);
+const conversationId = computed(
+  () => route.params.conversationId || route.params.conversation_id
 );
 
 const toggleConversationSidebarToggle = () => {
+  drawer.close();
   updateUISettings({
     is_contact_sidebar_open: !isContactSidebarOpen.value,
     is_copilot_panel_open: false,
@@ -34,6 +40,7 @@ const toggleConversationSidebarToggle = () => {
 };
 
 const handleConversationSidebarToggle = () => {
+  drawer.close();
   updateUISettings({
     is_contact_sidebar_open: true,
     is_copilot_panel_open: false,
@@ -43,8 +50,13 @@ const handleConversationSidebarToggle = () => {
 const handleCopilotSidebarToggle = () => {
   updateUISettings({
     is_contact_sidebar_open: false,
-    is_copilot_panel_open: true,
+    is_copilot_panel_open: false,
   });
+  if (drawer.isOpen.value) {
+    drawer.close();
+  } else {
+    drawer.openBoundToConversation(conversationId.value);
+  }
 };
 
 const keyboardEvents = {
@@ -82,8 +94,11 @@ useKeyboardEvents(keyboardEvents);
         'bg-n-alpha-2 !text-n-iris-9 active:!brightness-105 active:shadow-sm':
           isCopilotPanelOpen,
       }"
-      icon="i-woot-captain"
       @click="handleCopilotSidebarToggle"
-    />
+    >
+      <template #icon>
+        <PilotFaceIcon class="size-4" />
+      </template>
+    </Button>
   </ButtonGroup>
 </template>

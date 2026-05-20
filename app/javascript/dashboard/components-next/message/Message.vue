@@ -101,7 +101,7 @@ import { useBranding } from 'shared/composables/useBranding';
 
 // eslint-disable-next-line vue/define-macros-order
 const props = defineProps({
-  id: { type: Number, required: true },
+  id: { type: [Number, String], required: true },
   messageType: {
     type: Number,
     required: true,
@@ -211,9 +211,7 @@ const isBotOrAgentMessage = computed(() => {
   }
 
   if (
-    [SENDER_TYPES.AGENT_BOT, SENDER_TYPES.CAPTAIN_ASSISTANT].includes(
-      senderType
-    )
+    [SENDER_TYPES.AGENT_BOT, SENDER_TYPES.PILOT_ASSISTANT].includes(senderType)
   ) {
     return true;
   }
@@ -467,7 +465,7 @@ const avatarInfo = computed(() => {
   const { name, type, avatarUrl, thumbnail } = sender || {};
 
   // If sender type is agent bot, use avatarUrl
-  if ([SENDER_TYPES.AGENT_BOT, SENDER_TYPES.CAPTAIN_ASSISTANT].includes(type)) {
+  if ([SENDER_TYPES.AGENT_BOT, SENDER_TYPES.PILOT_ASSISTANT].includes(type)) {
     return {
       name: name ?? '',
       src: avatarUrl ?? '',

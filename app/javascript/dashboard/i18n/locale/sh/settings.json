@@ -311,15 +311,15 @@
     "ACTIVE": "Aktivan",
     "COMPANIES": "Tvrtke",
     "ALL_COMPANIES": "Sve tvrtke",
-    "CAPTAIN": "Kapetan",
-    "CAPTAIN_ASSISTANTS": "Pomoćnici",
-    "CAPTAIN_DOCUMENTS": "Dokumenti",
-    "CAPTAIN_RESPONSES": "Često postavljana pitanja",
-    "CAPTAIN_TOOLS": "Alati",
-    "CAPTAIN_SCENARIOS": "Scenariji",
-    "CAPTAIN_PLAYGROUND": "Igralište",
-    "CAPTAIN_INBOXES": "Ulazne pošte",
-    "CAPTAIN_SETTINGS": "Postavke",
+    "PILOT": "Kapetan",
+    "PILOT_ASSISTANTS": "Pomoćnici",
+    "PILOT_DOCUMENTS": "Dokumenti",
+    "PILOT_RESPONSES": "Često postavljana pitanja",
+    "PILOT_TOOLS": "Alati",
+    "PILOT_SCENARIOS": "Scenariji",
+    "PILOT_PLAYGROUND": "Igralište",
+    "PILOT_INBOXES": "Ulazne pošte",
+    "PILOT_SETTINGS": "Postavke",
     "HOME": "Početna",
     "AGENTS": "Agent | Agenti",
     "AGENT_BOTS": "Botovi",
@@ -381,15 +381,15 @@
     },
     "DOCS": "Pročitajte dokumentaciju",
     "SECURITY": "Sigurnost",
-    "CAPTAIN_AI": "Kapetan",
+    "PILOT_AI": "Kapetan",
     "CONVERSATION_WORKFLOW": "Tok razgovora"
   },
-  "CAPTAIN_SETTINGS": {
+  "PILOT_SETTINGS": {
     "TITLE": "Postavke Kapetana",
-    "DESCRIPTION": "Konfigurirajte svoje AI modele i značajke za Captain. Captain koristi naplatu temeljenu na kreditima, bit ćete naplaćeni kredite za svaku radnju koju Captain izvrši na temelju odabranog modela.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain nije omogućen za vaš račun. Molimo nadogradite svoj plan da biste pristupili značajkama Captaina.",
+    "DESCRIPTION": "Konfigurirajte svoje AI modele i značajke za Pilot. Pilot koristi naplatu temeljenu na kreditima, bit ćete naplaćeni kredite za svaku radnju koju Pilot izvrši na temelju odabranog modela.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot nije omogućen za vaš račun. Molimo nadogradite svoj plan da biste pristupili značajkama Pilota.",
     "MODEL_CONFIG": {
       "TITLE": "Konfiguracija modela",
       "DESCRIPTION": "Odaberite AI modele za različite značajke.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "Pogledajte svoje prethodne račune, uredite podatke za naplatu ili otkažite pretplatu.",
       "BUTTON_TXT": "Idi na portal za naplatu"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "Kapetan",
-      "DESCRIPTION": "Manage usage and credits for Captain AI.",
+      "DESCRIPTION": "Manage usage and credits for Pilot AI.",
       "BUTTON_TXT": "Kupi više kredita",
       "DOCUMENTS": "Dokumenti",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain nije dostupan na besplatnom planu, nadogradi sada da bi dobio pristup asistentima, copilot i više.",
+      "UPGRADE": "Pilot nije dostupan na besplatnom planu, nadogradi sada da bi dobio pristup asistentima, copilot i više.",
       "REFRESH_CREDITS": "Osvježi"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Kupi više kredita",
       "MODAL_TITLE": "Kupi AI kredite",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "KREDITI",
       "ONE_TIME": "jednokratno",
       "POPULAR": "Najpopularnije",

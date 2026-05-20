@@ -311,15 +311,15 @@
     "ACTIVE": "सक्रिय",
     "COMPANIES": "कम्पनीहरू",
     "ALL_COMPANIES": "सबै कम्पनीहरू",
-    "CAPTAIN": "क्याप्टेन",
-    "CAPTAIN_ASSISTANTS": "सहायकहरू",
-    "CAPTAIN_DOCUMENTS": "कागजातहरू",
-    "CAPTAIN_RESPONSES": "सोधिने प्रश्नहरू",
-    "CAPTAIN_TOOLS": "उपकरणहरू",
-    "CAPTAIN_SCENARIOS": "परिदृश्यहरू",
-    "CAPTAIN_PLAYGROUND": "प्लेग्राउन्ड",
-    "CAPTAIN_INBOXES": "इनबक्सहरू",
-    "CAPTAIN_SETTINGS": "सेटिङहरू",
+    "PILOT": "क्याप्टेन",
+    "PILOT_ASSISTANTS": "सहायकहरू",
+    "PILOT_DOCUMENTS": "कागजातहरू",
+    "PILOT_RESPONSES": "सोधिने प्रश्नहरू",
+    "PILOT_TOOLS": "उपकरणहरू",
+    "PILOT_SCENARIOS": "परिदृश्यहरू",
+    "PILOT_PLAYGROUND": "प्लेग्राउन्ड",
+    "PILOT_INBOXES": "इनबक्सहरू",
+    "PILOT_SETTINGS": "सेटिङहरू",
     "HOME": "गृहपृष्ठ",
     "AGENTS": "एजेन्टहरू",
     "AGENT_BOTS": "बोटहरू",
@@ -381,15 +381,15 @@
     },
     "DOCS": "डक्स पढ्नु",
     "SECURITY": "सुरक्षा",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "वार्ता कार्यप्रवाह"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain सेटिङहरू",
-    "DESCRIPTION": "Captain का लागि तपाईंका AI मोडेल र सुविधाहरू कन्फिगर गर्नुहोस्। Captain क्रेडिटमा आधारित बिलिङमा चल्छ, चयन गरिएको मोडेलअनुसार Captain ले प्रत्येक कार्य गर्दा तपाईंको क्रेडिट कटौती हुनेछ।",
-    "LOADING": "Captain कन्फिगरेसन लोड हुँदैछ...",
-    "LINK_TEXT": "Captain क्रेडिटबारे थप जान्नुहोस्",
-    "NOT_ENABLED": "तपाईंको खातामा Captain सक्षम गरिएको छैन। Captain सुविधाहरू प्रयोग गर्न योजना स्तरोन्नति गर्नुहोस्।",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot सेटिङहरू",
+    "DESCRIPTION": "Pilot का लागि तपाईंका AI मोडेल र सुविधाहरू कन्फिगर गर्नुहोस्। Pilot क्रेडिटमा आधारित बिलिङमा चल्छ, चयन गरिएको मोडेलअनुसार Pilot ले प्रत्येक कार्य गर्दा तपाईंको क्रेडिट कटौती हुनेछ।",
+    "LOADING": "Pilot कन्फिगरेसन लोड हुँदैछ...",
+    "LINK_TEXT": "Pilot क्रेडिटबारे थप जान्नुहोस्",
+    "NOT_ENABLED": "तपाईंको खातामा Pilot सक्षम गरिएको छैन। Pilot सुविधाहरू प्रयोग गर्न योजना स्तरोन्नति गर्नुहोस्।",
     "MODEL_CONFIG": {
       "TITLE": "मोडेल कन्फिगरेसन",
       "DESCRIPTION": "विभिन्न सुविधाहरूका लागि AI मोडेलहरू छान्नुहोस्।",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain सेटिङहरू सफलतापूर्वक अद्यावधिक गरियो।",
-      "ERROR": "Captain सेटिङहरू अद्यावधिक गर्न असफल। कृपया फेरि प्रयास गर्नुहोस्।"
+      "SUCCESS": "Pilot सेटिङहरू सफलतापूर्वक अद्यावधिक गरियो।",
+      "ERROR": "Pilot सेटिङहरू अद्यावधिक गर्न असफल। कृपया फेरि प्रयास गर्नुहोस्।"
     }
   },
   "BILLING_SETTINGS": {
@@ -447,7 +447,7 @@
       "DESCRIPTION": "तपाईंका अघिल्ला बिलहरू हेर्नुहोस्, बिलिङ विवरण सम्पादन गर्नुहोस्, वा सदस्यता रद्द गर्नुहोस्।",
       "BUTTON_TXT": "बिलिङ पोर्टलमा जानु"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "क्याप्टेन",
       "DESCRIPTION": "क्याप्टेन AI को प्रयोग र क्रेडिटहरू व्यवस्थापन गर्नुहोस्।",
       "BUTTON_TXT": "थप क्रेडिटहरू किन्नुहोस्",
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "थप क्रेडिट किन्नुहोस्",
       "MODAL_TITLE": "AI क्रेडिट किन्नुहोस्",
-      "MODAL_DESCRIPTION": "Captain AI का लागि थप क्रेडिट किन्नुहोस्।",
+      "MODAL_DESCRIPTION": "Pilot AI का लागि थप क्रेडिट किन्नुहोस्।",
       "CREDITS": "CREDITS",
       "ONE_TIME": "एक पटकको",
       "POPULAR": "सबैभन्दा लोकप्रिय",

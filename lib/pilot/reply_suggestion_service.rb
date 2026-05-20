@@ -1,17 +1,31 @@
 class Pilot::ReplySuggestionService < Pilot::BaseTaskService
-  pattr_initialize [:account!, :conversation_display_id!, :user!]
+  pattr_initialize [:account!, :conversation_display_id!, :user!, :previous_output, :refinement_instruction]
 
   def perform
     make_api_call(
       model: GPT_MODEL,
-      messages: [
-        { role: 'system', content: system_prompt },
-        { role: 'user', content: formatted_conversation }
-      ]
+      messages: build_messages
     )
   end
 
   private
+
+  # When the agent asks for a refinement ("make it shorter", "add the
+  # refund link"), append the previous draft as an assistant turn and
+  # the agent's instruction as the next user turn. The LLM treats the
+  # whole array as a conversation and refines accordingly. Empty
+  # refinement params fall through to the original single-shot flow.
+  def build_messages
+    messages = [
+      { role: 'system', content: system_prompt },
+      { role: 'user', content: formatted_conversation }
+    ]
+    if previous_output.present? && refinement_instruction.present?
+      messages << { role: 'assistant', content: previous_output }
+      messages << { role: 'user', content: refinement_instruction }
+    end
+    messages
+  end
 
   def system_prompt
     template = prompt_from_file('reply')

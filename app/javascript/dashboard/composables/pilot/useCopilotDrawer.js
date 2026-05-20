@@ -14,9 +14,20 @@ export function useCopilotDrawer() {
     'pilot/copilot/getBoundConversationId'
   );
 
-  const open = () => store.dispatch('pilot/copilot/openDrawer');
+  const clearBoundConversation = () =>
+    store.dispatch('pilot/copilot/setBoundConversation', null);
+
+  const open = () => {
+    clearBoundConversation();
+    return store.dispatch('pilot/copilot/openDrawer');
+  };
   const close = () => store.dispatch('pilot/copilot/closeDrawer');
-  const toggle = () => store.dispatch('pilot/copilot/toggleDrawer');
+  const toggle = () => {
+    if (!isOpen.value) {
+      clearBoundConversation();
+    }
+    return store.dispatch('pilot/copilot/toggleDrawer');
+  };
 
   /**
    * Open the drawer pre-bound to a customer conversation.

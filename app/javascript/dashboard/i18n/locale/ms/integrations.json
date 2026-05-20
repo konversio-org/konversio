@@ -22,11 +22,11 @@
     "LOADING": "Mengambil integrasi",
     "SEARCH_PLACEHOLDER": "Cari integrasi...",
     "NO_RESULTS": "Tiada integrasi ditemui yang sepadan dengan carian anda",
-    "CAPTAIN": {
-      "DISABLED": "Captain tidak diaktifkan pada akaun anda.",
+    "PILOT": {
+      "DISABLED": "Pilot tidak diaktifkan pada akaun anda.",
       "CLICK_HERE_TO_CONFIGURE": "Klik di sini untuk konfigurasi",
-      "LOADING_CONSOLE": "Memuatkan Konsol Captain...",
-      "FAILED_TO_LOAD_CONSOLE": "Gagal memuatkan Konsol Captain. Sila muat semula dan cuba lagi."
+      "LOADING_CONSOLE": "Memuatkan Konsol Pilot...",
+      "FAILED_TO_LOAD_CONSOLE": "Gagal memuatkan Konsol Pilot. Sila muat semula dan cuba lagi."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Acara Langganan",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "Kapten",
     "HEADER_KNOW_MORE": "Ketahui lebih lanjut",
     "ASSISTANT_SWITCHER": {
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Taip mesej anda...",
       "HEADER": "Tempat Permainan",
       "DESCRIPTION": "Gunakan ruang ujian ini untuk menghantar mesej kepada pembantu anda dan periksa sama ada ia memberi respons dengan tepat, pantas, dan dalam nada yang anda jangkakan.",
-      "CREDIT_NOTE": "Mesej yang dihantar di sini akan dikira ke arah kredit Captain anda."
+      "CREDIT_NOTE": "Mesej yang dihantar di sini akan dikira ke arah kredit Pilot anda."
     },
     "PAYWALL": {
-      "TITLE": "Tingkat taraf untuk menggunakan Captain AI",
-      "AVAILABLE_ON": "Captain tidak tersedia pada pelan percuma.",
+      "TITLE": "Tingkat taraf untuk menggunakan Pilot AI",
+      "AVAILABLE_ON": "Pilot tidak tersedia pada pelan percuma.",
       "UPGRADE_PROMPT": "Tingkatkan pelan anda untuk mendapatkan akses kepada pembantu kami, copilot dan banyak lagi.",
       "UPGRADE_NOW": "Tingkatkan sekarang",
       "CANCEL_ANYTIME": "Anda boleh menukar atau membatalkan pelan anda bila-bila masa"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI hanya tersedia dalam pelan Enterprise.",
+      "AVAILABLE_ON": "Pilot AI hanya tersedia dalam pelan Enterprise.",
       "UPGRADE_PROMPT": "Tingkatkan pelan anda untuk mendapatkan akses kepada pembantu kami, copilot dan banyak lagi.",
       "ASK_ADMIN": "Sila hubungi pentadbir anda untuk peningkatan."
     },
     "BANNER": {
-      "RESPONSES": "Anda telah menggunakan lebih daripada 80% had respons anda. Untuk terus menggunakan Captain AI, sila tingkatkan pelan anda.",
-      "DOCUMENTS": "Had dokumen telah dicapai. Tingkatkan pelan untuk terus menggunakan Captain AI."
+      "RESPONSES": "Anda telah menggunakan lebih daripada 80% had respons anda. Untuk terus menggunakan Pilot AI, sila tingkatkan pelan anda.",
+      "DOCUMENTS": "Had dokumen telah dicapai. Tingkatkan pelan untuk terus menggunakan Pilot AI."
     },
     "FORM": {
       "CANCEL": "Batalkan",
@@ -576,8 +576,8 @@
         "TITLE": "Tiada pembantu tersedia",
         "SUBTITLE": "Cipta pembantu untuk memberikan respons yang pantas dan tepat kepada pengguna anda. Ia boleh belajar daripada artikel bantuan dan perbualan lalu anda.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Pembantu Captain berinteraksi terus dengan pelanggan, belajar dari dokumen bantuan dan perbualan lalu anda, dan memberikan respons segera dan tepat. Ia mengendalikan pertanyaan awal, menyediakan penyelesaian pantas sebelum menyerahkan kepada ejen jika perlu."
+          "TITLE": "Pilot Assistant",
+          "NOTE": "Pembantu Pilot berinteraksi terus dengan pelanggan, belajar dari dokumen bantuan dan perbualan lalu anda, dan memberikan respons segera dan tepat. Ia mengendalikan pertanyaan awal, menyediakan penyelesaian pantas sebelum menyerahkan kepada ejen jika perlu."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "Tiada dokumen tersedia",
         "SUBTITLE": "Dokumen digunakan oleh pembantu anda untuk menjana Soalan Lazim. Anda boleh mengimport dokumen untuk memberikan konteks kepada pembantu anda.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "Dokumen dalam Captain berfungsi sebagai sumber pengetahuan untuk pembantu. Dengan menyambungkan pusat bantuan atau panduan anda, Captain boleh menganalisis kandungan dan memberikan respons tepat untuk pertanyaan pelanggan."
+          "TITLE": "Pilot Document",
+          "NOTE": "Dokumen dalam Pilot berfungsi sebagai sumber pengetahuan untuk pembantu. Dengan menyambungkan pusat bantuan atau panduan anda, Pilot boleh menganalisis kandungan dan memberikan respons tepat untuk pertanyaan pelanggan."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Gagal memadam alat tersuai"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "Semua"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain telah menemui beberapa FAQ yang dicari oleh pelanggan anda.",
+        "TITLE": "Pilot telah menemui beberapa FAQ yang dicari oleh pelanggan anda.",
         "ACTION": "Klik di sini untuk semak"
       },
       "FORM_DESCRIPTION": "Tambah soalan dan jawapan yang sepadan ke dalam pangkalan pengetahuan dan pilih pembantu yang sepatutnya dikaitkan dengannya.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "Soalan Lazim membantu pembantu anda memberikan jawapan yang cepat dan tepat kepada soalan daripada pelanggan anda. Ia boleh dijana secara automatik daripada kandungan anda atau boleh ditambah secara manual.",
         "CLEAR_SEARCH": "Kosongkan penapis aktif",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Soalan Lazim Captain mengesan soalan pelanggan yang biasa—sama ada yang tiada dalam pangkalan pengetahuan anda atau sering ditanya—dan menghasilkan Soalan Lazim yang berkaitan untuk meningkatkan sokongan. Anda boleh menyemak setiap cadangan dan memutuskan sama ada untuk meluluskan atau menolaknya."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Soalan Lazim Pilot mengesan soalan pelanggan yang biasa—sama ada yang tiada dalam pangkalan pengetahuan anda atau sering ditanya—dan menghasilkan Soalan Lazim yang berkaitan untuk meningkatkan sokongan. Anda boleh menyemak setiap cadangan dan memutuskan sama ada untuk meluluskan atau menolaknya."
         }
       }
     },

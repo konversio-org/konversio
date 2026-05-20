@@ -311,15 +311,15 @@
     "ACTIVE": "進行中",
     "COMPANIES": "公司",
     "ALL_COMPANIES": "所有公司",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "助理",
-    "CAPTAIN_DOCUMENTS": "文件",
-    "CAPTAIN_RESPONSES": "常見問答",
-    "CAPTAIN_TOOLS": "工具",
-    "CAPTAIN_SCENARIOS": "情境",
-    "CAPTAIN_PLAYGROUND": "練習場",
-    "CAPTAIN_INBOXES": "收件匣",
-    "CAPTAIN_SETTINGS": "設定",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "助理",
+    "PILOT_DOCUMENTS": "文件",
+    "PILOT_RESPONSES": "常見問答",
+    "PILOT_TOOLS": "工具",
+    "PILOT_SCENARIOS": "情境",
+    "PILOT_PLAYGROUND": "練習場",
+    "PILOT_INBOXES": "收件匣",
+    "PILOT_SETTINGS": "設定",
     "HOME": "首頁",
     "AGENTS": "客服人員",
     "AGENT_BOTS": "機器人",
@@ -381,15 +381,15 @@
     },
     "DOCS": "閱讀文件",
     "SECURITY": "安全性",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "對話工作流程"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain 設定",
-    "DESCRIPTION": "設定 Captain 的 AI 模型和功能。Captain 採用點數計費制，您將根據所選模型為 Captain 執行的每項操作支付點數。",
-    "LOADING": "正在載入 Captain 設定...",
-    "LINK_TEXT": "了解更多關於 Captain 點數",
-    "NOT_ENABLED": "您的帳戶尚未啟用 Captain。請升級您的方案以使用 Captain 功能。",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot 設定",
+    "DESCRIPTION": "設定 Pilot 的 AI 模型和功能。Pilot 採用點數計費制，您將根據所選模型為 Pilot 執行的每項操作支付點數。",
+    "LOADING": "正在載入 Pilot 設定...",
+    "LINK_TEXT": "了解更多關於 Pilot 點數",
+    "NOT_ENABLED": "您的帳戶尚未啟用 Pilot。請升級您的方案以使用 Pilot 功能。",
     "MODEL_CONFIG": {
       "TITLE": "模型設定",
       "DESCRIPTION": "為不同功能選擇 AI 模型。",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain 設定已成功更新。",
-      "ERROR": "更新 Captain 設定失敗，請再試一次。"
+      "SUCCESS": "Pilot 設定已成功更新。",
+      "ERROR": "更新 Pilot 設定失敗，請再試一次。"
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "查看過去的發票、編輯帳單資訊或取消訂閱。",
       "BUTTON_TXT": "前往帳單入口"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "管理 Captain AI 的用量和點數。",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "管理 Pilot AI 的用量和點數。",
       "BUTTON_TXT": "購買更多點數",
       "DOCUMENTS": "文件",
       "RESPONSES": "點數",
-      "UPGRADE": "Captain 在免費方案中不可用，立即升級以使用助理、Co-konversio 等功能。",
+      "UPGRADE": "Pilot 在免費方案中不可用，立即升級以使用助理、Co-konversio 等功能。",
       "REFRESH_CREDITS": "重新整理"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "購買更多點數",
       "MODAL_TITLE": "購買 AI 點數",
-      "MODAL_DESCRIPTION": "為 Captain AI 購買額外的點數。",
+      "MODAL_DESCRIPTION": "為 Pilot AI 購買額外的點數。",
       "CREDITS": "點數",
       "ONE_TIME": "一次性",
       "POPULAR": "最熱門",

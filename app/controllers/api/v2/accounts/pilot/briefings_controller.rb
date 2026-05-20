@@ -8,7 +8,9 @@ class Api::V2::Accounts::Pilot::BriefingsController < Api::V1::Accounts::BaseCon
     draft = Custom::Pilot::BriefingService.new(
       conversation: @conversation,
       user: Current.user,
-      account: Current.account
+      account: Current.account,
+      previous_output: params[:previous_output],
+      refinement_instruction: params[:refinement_instruction]
     ).perform
 
     render json: { draft: draft }, status: :ok

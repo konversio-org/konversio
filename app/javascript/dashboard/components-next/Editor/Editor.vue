@@ -20,7 +20,7 @@ const props = defineProps({
   },
   enableVariables: { type: Boolean, default: false },
   enableCannedResponses: { type: Boolean, default: true },
-  enableCaptainTools: { type: Boolean, default: false },
+  enablePilotTools: { type: Boolean, default: false },
   signature: { type: String, default: '' },
   allowSignature: { type: Boolean, default: false },
   sendWithSignature: { type: Boolean, default: false },
@@ -28,7 +28,7 @@ const props = defineProps({
   medium: { type: String, default: '' },
 });
 
-const emit = defineEmits(['update:modelValue', 'executeCopilotAction']);
+const emit = defineEmits(['update:modelValue']);
 
 const slots = useSlots();
 
@@ -104,7 +104,7 @@ watch(
         :disabled="disabled"
         :enable-variables="enableVariables"
         :enable-canned-responses="enableCannedResponses"
-        :enable-captain-tools="enableCaptainTools"
+        :enable-pilot-tools="enablePilotTools"
         :signature="signature"
         :allow-signature="allowSignature"
         :send-with-signature="sendWithSignature"
@@ -113,9 +113,6 @@ watch(
         @input="handleInput"
         @focus="handleFocus"
         @blur="handleBlur"
-        @execute-copilot-action="
-          (...args) => emit('executeCopilotAction', ...args)
-        "
       />
       <div
         v-if="showCharacterCount || slots.actions"

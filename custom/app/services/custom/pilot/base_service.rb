@@ -35,10 +35,8 @@ module Custom
 
       # Yields a RubyLLM chat context bound to the install-wide credentials,
       # with the cross-provider system-role flag set.
-      def chat_context
-        ::Llm::Config.with_api_key(::Llm::Config.api_key, api_base: ::Llm::Config.api_base) do |context|
-          yield context
-        end
+      def chat_context(&)
+        ::Llm::Config.with_api_key(::Llm::Config.api_key, api_base: ::Llm::Config.api_base, &)
       end
 
       # Dispatch a Pilot telemetry event. Today this just logs; the real
@@ -47,6 +45,19 @@ module Custom
       # later.
       def dispatch_event(name, payload = {})
         Rails.logger.info("[pilot.event] #{name} account=#{account&.id} payload=#{payload.except(:transcript, :raw_content).inspect}")
+      end
+
+      def logbook_context_for(contact)
+        return nil if contact.blank?
+        return nil unless feature_enabled?(:logbook)
+
+        entries = ::Pilot::LogbookEntry.where(contact: contact).order(created_at: :desc).limit(20)
+        return nil if entries.empty?
+
+        [
+          'Context — Logbook entries for this contact (use these to ground your response in customer history):',
+          entries.map { |e| "- [#{e.created_at.to_date}] #{e.content}" }.join("\n")
+        ].join("\n")
       end
     end
   end

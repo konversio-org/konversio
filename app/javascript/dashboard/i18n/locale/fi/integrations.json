@@ -22,11 +22,11 @@
     "LOADING": "Fetching integrations",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain is not enabled on your account.",
+    "PILOT": {
+      "DISABLED": "Pilot is not enabled on your account.",
       "CLICK_HERE_TO_CONFIGURE": "Click here to configure",
-      "LOADING_CONSOLE": "Loading Captain Console...",
-      "FAILED_TO_LOAD_CONSOLE": "Failed to load Captain Console. Please refresh and try again."
+      "LOADING_CONSOLE": "Loading Pilot Console...",
+      "FAILED_TO_LOAD_CONSOLE": "Failed to load Pilot Console. Please refresh and try again."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "Subscribed Events",
@@ -388,8 +388,8 @@
       }
     }
   },
-  "CAPTAIN": {
-    "NAME": "Captain",
+  "PILOT": {
+    "NAME": "Pilot",
     "HEADER_KNOW_MORE": "Lisätietoja",
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "Assistentit",
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "Tarvitsetko nopean yhteenvedon, haluatko tarkastella aiempia keskusteluja tai laatia paremman vastauksen? Copilot nopeuttaa asioita.",
       "SEND_MESSAGE": "Lähetä viesti...",
       "EMPTY_MESSAGE": "Vastetta ei voitu luoda, yritä uudelleen.",
-      "LOADER": "Captain ajattelee",
+      "LOADER": "Pilot ajattelee",
       "YOU": "Sinä",
       "USE": "Käytä tätä",
       "RESET": "Nollaa",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "Kirjoita viestisi...",
       "HEADER": "Leikkikenttä",
       "DESCRIPTION": "Käytä tätä leikkikenttää lähettääksesi viestejä assistentillesi ja tarkistaaksesi, vastaako se täsmällisesti, nopeasti ja odotetulla sävyllä.",
-      "CREDIT_NOTE": "Täällä lähetetyt viestit lasketaan Captain-krediitteihisi."
+      "CREDIT_NOTE": "Täällä lähetetyt viestit lasketaan Pilot-krediitteihisi."
     },
     "PAYWALL": {
-      "TITLE": "Päivitä käyttääksesi Captain AI:ta",
-      "AVAILABLE_ON": "Captain ei ole saatavilla ilmaisessa suunnitelmassa.",
+      "TITLE": "Päivitä käyttääksesi Pilot AI:ta",
+      "AVAILABLE_ON": "Pilot ei ole saatavilla ilmaisessa suunnitelmassa.",
       "UPGRADE_PROMPT": "Päivitä tilauksesi saadaksesi pääsyn assistentteihimme, Copilotiin ja muihin ominaisuuksiin.",
       "UPGRADE_NOW": "Upgrade now",
       "CANCEL_ANYTIME": "You can change or cancel your plan anytime"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI on saatavilla vain Enterprise-suunnitelmissa.",
+      "AVAILABLE_ON": "Pilot AI on saatavilla vain Enterprise-suunnitelmissa.",
       "UPGRADE_PROMPT": "Päivitä tilauksesi saadaksesi pääsyn assistentteihimme, Copilotiin ja muihin ominaisuuksiin.",
       "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
     },
     "BANNER": {
-      "RESPONSES": "Olet käyttänyt yli 80 % vastausrajastasi. Jatkaaksesi Captain AI:n käyttöä, päivitä tilauksesi.",
-      "DOCUMENTS": "Dokumenttiraja saavutettu. Päivitä jatkaaksesi Captain AI:n käyttöä."
+      "RESPONSES": "Olet käyttänyt yli 80 % vastausrajastasi. Jatkaaksesi Pilot AI:n käyttöä, päivitä tilauksesi.",
+      "DOCUMENTS": "Dokumenttiraja saavutettu. Päivitä jatkaaksesi Pilot AI:n käyttöä."
     },
     "FORM": {
       "CANCEL": "Peruuta",
@@ -576,8 +576,8 @@
         "TITLE": "No assistants available",
         "SUBTITLE": "Create an assistant to provide quick and accurate responses to your users. It can learn from your help articles and past conversations.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Captain Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
+          "TITLE": "Pilot Assistant",
+          "NOTE": "Pilot Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "No documents available",
         "SUBTITLE": "Documents are used by your assistant to generate FAQs. You can import documents to provide context for your assistant.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "A document in Captain serves as a knowledge resource for the assistant. By connecting your help center or guides, Captain can analyze the content and provide accurate responses for customer inquiries."
+          "TITLE": "Pilot Document",
+          "NOTE": "A document in Pilot serves as a knowledge resource for the assistant. By connecting your help center or guides, Pilot can analyze the content and provide accurate responses for customer inquiries."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Failed to delete custom tool"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "Kaikki"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "Add a question and its corresponding answer to the knowledge base and select the assistant it should be associated with.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "FAQs help your assistant provide quick and accurate answers to questions from your customers. They can be generated automatically from your content or can be added manually.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
         }
       }
     },

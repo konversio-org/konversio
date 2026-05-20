@@ -2,9 +2,8 @@ module Custom
   module Pilot
     # Generates a one-click reply draft for an agent on a given conversation.
     #
-    # This wraps the renamed MIT reply-suggestion service (now
-    # `Pilot::ReplySuggestionService`, formerly `Captain::ReplySuggestionService`)
-    # per Pilot design D3/D4 and adds:
+    # This wraps `Pilot::ReplySuggestionService` per Pilot design D3/D4
+    # and adds:
     #   * per-account feature-flag gating (`pilot_briefing_enabled` + master
     #     `pilot_enabled`)
     #   * Pilot-namespaced telemetry events
@@ -17,11 +16,13 @@ module Custom
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
 
-      attr_reader :conversation, :user
+      attr_reader :conversation, :user, :previous_output, :refinement_instruction
 
-      def initialize(conversation:, user: nil, account: nil)
+      def initialize(conversation:, user: nil, account: nil, previous_output: nil, refinement_instruction: nil)
         @conversation = conversation
         @user = user
+        @previous_output = previous_output
+        @refinement_instruction = refinement_instruction
         super(account: account || conversation&.account)
       end
 
@@ -53,7 +54,9 @@ module Custom
         suggestion_service = ::Pilot::ReplySuggestionService.new(
           account: account,
           conversation_display_id: conversation.display_id,
-          user: user
+          user: user,
+          previous_output: previous_output,
+          refinement_instruction: refinement_instruction
         )
 
         result = suggestion_service.perform

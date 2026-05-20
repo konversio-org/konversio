@@ -11,12 +11,12 @@ module AccountSettingsSchema
         'audio_transcriptions': { 'type': %w[boolean null] },
         'auto_resolve_label': { 'type': %w[string null] },
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
-        'captain_auto_resolve_mode': { 'type': %w[string null], 'enum': ['evaluated', 'legacy', 'disabled', nil] },
+        'pilot_auto_resolve_mode': { 'type': %w[string null], 'enum': ['evaluated', 'legacy', 'disabled', nil] },
         'conversation_required_attributes': {
           'type': %w[array null],
           'items': { 'type': 'string' }
         },
-        'captain_models': {
+        'pilot_models': {
           'type': %w[object null],
           'properties': {
             'editor': { 'type': %w[string null] },
@@ -28,7 +28,7 @@ module AccountSettingsSchema
           },
           'additionalProperties': false
         },
-        'captain_features': {
+        'pilot_features': {
           'type': %w[object null],
           'properties': {
             'editor': { 'type': %w[boolean null] },

@@ -1,7 +1,8 @@
-export const CHATWOOT_ERROR = 'chatwoot:error';
-export const CHATWOOT_ON_MESSAGE = 'chatwoot:on-message';
-export const CHATWOOT_ON_START_CONVERSATION = 'chatwoot:on-start-conversation';
-export const CHATWOOT_POSTBACK = 'chatwoot:postback';
-export const CHATWOOT_READY = 'chatwoot:ready';
-export const CHATWOOT_OPENED = 'chatwoot:opened';
-export const CHATWOOT_CLOSED = 'chatwoot:closed';
+export const KONVERSIO_ERROR = 'konversio:error';
+export const KONVERSIO_ON_MESSAGE = 'konversio:on-message';
+export const KONVERSIO_ON_START_CONVERSATION =
+  'konversio:on-start-conversation';
+export const KONVERSIO_POSTBACK = 'konversio:postback';
+export const KONVERSIO_READY = 'konversio:ready';
+export const KONVERSIO_OPENED = 'konversio:opened';
+export const KONVERSIO_CLOSED = 'konversio:closed';
