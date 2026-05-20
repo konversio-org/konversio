@@ -31,6 +31,21 @@
 
 en:
   hello: 'Hello world'
+  helpers:
+    label:
+      account:
+        selected_feature_flags: Feature Access
+      accounts:
+        selected_feature_flags: Feature Access
+  super_admin:
+    account_features:
+      disabled: Disabled
+      enabled: Enabled
+      feature_access: Feature Access
+      group_count: '%{enabled}/%{total} enabled'
+      pilot_ai: Pilot AI
+      save_feature_access: Save feature access
+      standard_features: Standard Features
   inbox:
     reauthorization:
       success: 'Channel reauthorized successfully'
