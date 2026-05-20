@@ -1,0 +1,15 @@
+<div class="field-unit__label">
+  <%= f.label :limits, "Account Limits" %>
+</div>
+<div class="field-unit__field">
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 5px;">Max Agents</label>
+      <input type="number" name="account[limits][agents]" value="<%= field.data.is_a?(Hash) ? field.data['agents'] : '' %>" class="text-input" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;" placeholder="Unlimited">
+    </div>
+    <div>
+      <label style="display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 5px;">Max Inboxes</label>
+      <input type="number" name="account[limits][inboxes]" value="<%= field.data.is_a?(Hash) ? field.data['inboxes'] : '' %>" class="text-input" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;" placeholder="Unlimited">
+    </div>
+  </div>
+</div>

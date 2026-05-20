@@ -1,0 +1,21 @@
+<div class="field-unit">
+  <div class="field-unit__label">
+    Account Limits
+  </div>
+  <div class="field-unit__field">
+    <div style="display: flex; gap: 20px;">
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 20px; text-align: center; min-width: 120px;">
+        <div style="font-size: 12px; color: #64748b; font-weight: 500; text-transform: uppercase;">Max Agents</div>
+        <div style="font-size: 24px; font-weight: 600; color: #0f172a; margin-top: 4px;">
+          <%= (field.data.is_a?(Hash) && field.data['agents'].present?) ? field.data['agents'] : "∞" %>
+        </div>
+      </div>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 20px; text-align: center; min-width: 120px;">
+        <div style="font-size: 12px; color: #64748b; font-weight: 500; text-transform: uppercase;">Max Inboxes</div>
+        <div style="font-size: 24px; font-weight: 600; color: #0f172a; margin-top: 4px;">
+          <%= (field.data.is_a?(Hash) && field.data['inboxes'].present?) ? field.data['inboxes'] : "∞" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

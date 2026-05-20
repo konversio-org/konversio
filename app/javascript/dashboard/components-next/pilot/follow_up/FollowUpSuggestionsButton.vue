@@ -27,7 +27,8 @@ const popoverOpen = ref(false);
 
 const isEnabled = computed(() => {
   const account = currentAccount.value || {};
-  return Boolean(account.pilot_enabled && account.pilot_follow_up_enabled);
+  const features = account.features || {};
+  return Boolean(features.pilot && features.pilot_follow_up);
 });
 
 const closePopover = () => {
