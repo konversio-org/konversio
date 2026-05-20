@@ -1,0 +1,32 @@
+<div class="field-unit__label">
+  <%= f.label :selected_feature_flags, "Enabled Features" %>
+</div>
+<div class="field-unit__field">
+  <%# Sentinel value to handle all checkboxes being unchecked %>
+  <input type="hidden" name="account[selected_feature_flags][]" value="__sentinel__">
+
+  <h4 style="margin: 20px 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Standard Features</h4>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <% Featurable::FEATURE_LIST.each do |feature| %>
+      <% name = feature['name'].to_s %>
+      <% display_name = feature['display_name'] || name.titleize %>
+      <% is_checked = field.data.include?(name.to_sym) %>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <input type="checkbox" name="account[selected_feature_flags][]" value="<%= name %>" <%= 'checked' if is_checked %> style="width: 16px; height: 16px;">
+        <span style="font-size: 14px; color: #334155;"><%= display_name %></span>
+      </label>
+    <% end %>
+  </div>
+
+  <h4 style="margin: 20px 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Pilot Features</h4>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; margin-bottom: 20px;">
+    <% Featurable::PILOT_FLAGS.each do |flag| %>
+      <% display_name = flag.titleize.gsub('Pilot', 'Pilot:') %>
+      <% is_checked = field.data.include?(flag.to_sym) %>
+      <label style="display: flex; align-items: center; gap: 8px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+        <input type="checkbox" name="account[selected_feature_flags][]" value="<%= flag %>" <%= 'checked' if is_checked %> style="width: 16px; height: 16px;">
+        <span style="font-size: 14px; color: #334155;"><%= display_name %></span>
+      </label>
+    <% end %>
+  </div>
+</div>

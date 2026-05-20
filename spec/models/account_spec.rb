@@ -349,4 +349,106 @@ RSpec.describe Account do
       end
     end
   end
+
+  describe 'Featurable concern (Unified JSONB Feature Flags)' do
+    let(:account) { create(:account) }
+
+    describe 'default values' do
+      it 'defaults pilot features to true' do
+        expect(account.feature_enabled?('pilot')).to be true
+        expect(account.feature_enabled?('pilot_briefing')).to be true
+        expect(account.pilot_enabled).to be true
+        expect(account.pilot_briefing_enabled).to be true
+      end
+
+      it 'returns false for non-existent or default-false keys' do
+        expect(account.feature_enabled?('non_existent_feature_flag')).to be false
+      end
+    end
+
+    describe 'getters and setters' do
+      it 'allows setting and getting individual features dynamically' do
+        account.feature_pilot = false
+        expect(account.feature_pilot).to be false
+        expect(account.feature_pilot?).to be false
+        expect(account.pilot_enabled).to be false
+        expect(account.pilot_enabled?).to be false
+
+        account.feature_pilot = true
+        expect(account.feature_pilot).to be true
+        expect(account.feature_pilot?).to be true
+        expect(account.pilot_enabled).to be true
+      end
+
+      it 'casts stringy or boolean-ish values to true/false correctly' do
+        account.feature_pilot = '0'
+        expect(account.feature_pilot).to be false
+
+        account.feature_pilot = '1'
+        expect(account.feature_pilot).to be true
+
+        account.feature_pilot = 'false'
+        expect(account.feature_pilot).to be false
+
+        account.feature_pilot = 'true'
+        expect(account.feature_pilot).to be true
+      end
+    end
+
+    describe 'bulk enabling and disabling' do
+      it 'enables and disables features in bulk' do
+        account.disable_features('pilot', 'pilot_briefing')
+        expect(account.pilot_enabled).to be false
+        expect(account.pilot_briefing_enabled).to be false
+
+        account.enable_features('pilot', 'pilot_briefing')
+        expect(account.pilot_enabled).to be true
+        expect(account.pilot_briefing_enabled).to be true
+      end
+
+      it 'saves state to database on bang methods' do
+        account.disable_features!('pilot')
+        expect(account.reload.pilot_enabled).to be false
+
+        account.enable_features!('pilot')
+        expect(account.reload.pilot_enabled).to be true
+      end
+    end
+
+    describe 'selected_feature_flags checkbox plumbing' do
+      it 'returns active features list as symbols' do
+        expect(account.selected_feature_flags).to include(:pilot, :pilot_briefing)
+      end
+
+      it 'correctly handles unchecked checkbox states via sentinel' do
+        account.selected_feature_flags = ['__sentinel__']
+        expect(account.feature_flags.values).to all(be false)
+        expect(account.pilot_enabled).to be false
+        expect(account.pilot_briefing_enabled).to be false
+      end
+
+      it 'overrides active features based on checkboxes' do
+        account.selected_feature_flags = %w[pilot pilot_briefing]
+        expect(account.pilot_enabled).to be true
+        expect(account.pilot_briefing_enabled).to be true
+        expect(account.feature_enabled?('pilot_copilot')).to be false
+      end
+    end
+
+    describe 'database dynamic scopes' do
+      before do
+        account.update!(feature_flags: { 'pilot' => false, 'pilot_briefing' => true })
+      end
+
+      it 'filters by negative default-true scope (pilot=false)' do
+        expect(Account.not_feature_pilot).to include(account)
+        expect(Account.feature_pilot).not_to include(account)
+      end
+
+      it 'filters by positive default-true scope (pilot_briefing=true)' do
+        expect(Account.feature_pilot_briefing).to include(account)
+        expect(Account.not_feature_pilot_briefing).not_to include(account)
+      end
+    end
+  end
 end

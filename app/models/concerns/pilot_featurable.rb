@@ -6,11 +6,13 @@ module PilotFeaturable
   included do
     validate :validate_pilot_models
 
+    # NOTE: `pilot_#{feature_key}_enabled?` is intentionally NOT defined here.
+    # That predicate name belongs to the unified feature flag system in
+    # `Featurable`, which reads `feature_flags['pilot_<feature>']`. Defining
+    # it here would shadow Featurable and silently route callers to a
+    # different storage (the `pilot_features` settings JSONB, which is for
+    # LLM-task model selection rather than feature enablement).
     Llm::Models.feature_keys.each do |feature_key|
-      define_method("pilot_#{feature_key}_enabled?") do
-        pilot_features_with_defaults[feature_key]
-      end
-
       define_method("pilot_#{feature_key}_model") do
         pilot_models_with_defaults[feature_key]
       end
