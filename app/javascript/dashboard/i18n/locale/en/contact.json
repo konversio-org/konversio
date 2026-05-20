@@ -68,7 +68,7 @@
       "DELETE": "Delete",
       "CANCEL": "Cancel",
       "SAVE": "Save",
-      "EDITED": "edited",
+      "EDITED": "· edited",
       "ERROR_FETCH": "Failed to fetch logbook entries",
       "SUCCESS_CREATE": "Logbook entry added",
       "ERROR_CREATE": "Failed to add logbook entry",

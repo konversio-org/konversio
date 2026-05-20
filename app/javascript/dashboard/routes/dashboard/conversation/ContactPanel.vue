@@ -14,6 +14,7 @@ import ContactConversations from './ContactConversations.vue';
 import ConversationAction from './ConversationAction.vue';
 import ConversationParticipant from './ConversationParticipant.vue';
 import ContactInfo from './contact/ContactInfo.vue';
+import Logbook from './contact/Logbook.vue';
 import ContactNotes from './contact/ContactNotes.vue';
 import ConversationInfo from './ConversationInfo.vue';
 import CustomAttributes from './customAttributes/CustomAttributes.vue';
@@ -54,11 +55,16 @@ const isShopifyFeatureEnabled = computed(
   () => shopifyIntegration.value.enabled
 );
 
-const { isCloudFeatureEnabled } = useAccount();
+const { currentAccount, isCloudFeatureEnabled } = useAccount();
 
 const isLinearFeatureEnabled = computed(() =>
   isCloudFeatureEnabled(FEATURE_FLAGS.LINEAR)
 );
+
+const logbookEnabled = computed(() => {
+  const features = currentAccount.value?.features || {};
+  return Boolean(features.pilot && features.pilot_logbook);
+});
 
 const linearIntegration = useFunctionGetter(
   'integrations/getIntegration',
@@ -138,6 +144,18 @@ onMounted(() => {
     />
     <ContactInfo :contact="contact" :channel-type="channelType" />
     <div class="px-2 pb-8 list-group">
+      <div v-if="logbookEnabled && contactId" class="mb-3">
+        <AccordionItem
+          :title="$t('CONTACT_PANEL.LOGBOOK.TITLE')"
+          :is-open="isContactSidebarItemOpen('is_pilot_logbook_open')"
+          compact
+          @toggle="
+            value => toggleSidebarUIState('is_pilot_logbook_open', value)
+          "
+        >
+          <Logbook :contact-id="contactId" />
+        </AccordionItem>
+      </div>
       <Draggable
         :list="conversationSidebarItems"
         animation="200"
