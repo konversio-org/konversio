@@ -29,7 +29,9 @@ export default {
     },
   },
   methods: {
-    dynamicTime,
+    formatTime(isoString) {
+      return dynamicTime(Math.floor(new Date(isoString).getTime() / 1000));
+    },
     async fetchEntries() {
       if (!this.contactId) return;
       this.isLoading = true;
@@ -95,7 +97,7 @@ export default {
       >
         <div class="flex items-center justify-between">
           <span class="text-[10px] font-medium text-n-slate-10 uppercase">
-            {{ dynamicTime(entry.created_at) }}
+            {{ formatTime(entry.created_at) }}
           </span>
         </div>
         <p class="text-sm text-n-slate-12 m-0 break-words leading-relaxed">
@@ -108,7 +110,7 @@ export default {
       <textarea
         v-model="newEntryContent"
         :placeholder="$t('CONTACT_PANEL.LOGBOOK.PLACEHOLDER')"
-        class="w-full p-2 text-sm rounded-lg border border-n-slate-4 bg-white focus:border-n-brand focus:ring-1 focus:ring-n-brand outline-none transition-all resize-none min-h-[60px]"
+        class="w-full p-2 text-sm rounded-lg border border-n-slate-4 bg-n-alpha-3 text-n-slate-12 placeholder:text-n-slate-10 focus:border-n-brand focus:ring-1 focus:ring-n-brand outline-none transition-all resize-none min-h-[60px]"
         @keydown.enter.meta.prevent="createEntry"
       />
       <div class="flex justify-end">
