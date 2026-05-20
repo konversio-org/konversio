@@ -6,11 +6,9 @@ import { useAccount } from 'dashboard/composables/useAccount';
 import { format } from 'date-fns';
 import sessionStorage from 'shared/helpers/sessionStorage';
 
-import BillingMeter from './components/BillingMeter.vue';
 import BillingCard from './components/BillingCard.vue';
 import BillingHeader from './components/BillingHeader.vue';
 import DetailItem from './components/DetailItem.vue';
-import PurchaseCreditsModal from './components/PurchaseCreditsModal.vue';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import SettingsLayout from '../SettingsLayout.vue';
 import ButtonV4 from 'next/button/Button.vue';
@@ -25,7 +23,6 @@ const BILLING_REFRESH_ATTEMPTED = 'billing_refresh_attempted';
 
 // State for handling refresh attempts and loading
 const isWaitingForBilling = ref(false);
-const purchaseCreditsModalRef = ref(null);
 
 const customAttributes = computed(() => {
   return currentAccount.value.custom_attributes || {};
@@ -37,11 +34,6 @@ const customAttributes = computed(() => {
  */
 const planName = computed(() => {
   return customAttributes.value.plan_name;
-});
-
-const canPurchaseCredits = computed(() => {
-  const plan = planName.value?.toLowerCase();
-  return plan && plan !== 'hacker';
 });
 
 /**
@@ -117,14 +109,6 @@ const onToggleChatWindow = () => {
   }
 };
 
-const openPurchaseCreditsModal = () => {
-  purchaseCreditsModalRef.value?.open();
-};
-
-const handleTopupSuccess = () => {
-  // No-op: limits feature removed in Konversio
-};
-
 onMounted(handleBillingPageLogic);
 </script>
 
@@ -179,48 +163,6 @@ onMounted(handleBillingPageLogic);
           </div>
         </BillingCard>
         <BillingCard
-          v-if="pilotEnabled"
-          :title="$t('BILLING_SETTINGS.PILOT.TITLE')"
-          :description="$t('BILLING_SETTINGS.PILOT.DESCRIPTION')"
-        >
-          <template #action>
-            <div class="flex gap-2">
-              <ButtonV4
-                sm
-                flushed
-                slate
-                icon="i-lucide-refresh-cw"
-                :is-loading="isFetchingLimits"
-                @click="fetchLimits"
-              >
-                {{ $t('BILLING_SETTINGS.PILOT.REFRESH_CREDITS') }}
-              </ButtonV4>
-              <ButtonV4
-                v-if="canPurchaseCredits"
-                sm
-                solid
-                blue
-                @click="openPurchaseCreditsModal"
-              >
-                {{ $t('BILLING_SETTINGS.TOPUP.BUY_CREDITS') }}
-              </ButtonV4>
-            </div>
-          </template>
-          <div v-if="pilotLimits && responseLimits" class="px-5">
-            <BillingMeter
-              :title="$t('BILLING_SETTINGS.PILOT.RESPONSES')"
-              v-bind="responseLimits"
-            />
-          </div>
-          <div v-if="pilotLimits && documentLimits" class="px-5">
-            <BillingMeter
-              :title="$t('BILLING_SETTINGS.PILOT.DOCUMENTS')"
-              v-bind="documentLimits"
-            />
-          </div>
-        </BillingCard>
-        <BillingCard
-          v-else
           :title="$t('BILLING_SETTINGS.PILOT.TITLE')"
           :description="$t('BILLING_SETTINGS.PILOT.UPGRADE')"
         >
@@ -247,10 +189,6 @@ onMounted(handleBillingPageLogic);
           </ButtonV4>
         </BillingHeader>
       </section>
-      <PurchaseCreditsModal
-        ref="purchaseCreditsModalRef"
-        @success="handleTopupSuccess"
-      />
     </template>
   </SettingsLayout>
 </template>
