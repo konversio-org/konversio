@@ -35,8 +35,11 @@ was used by the Phase 2b implementing agent.
 
 To rebuild the AI layer as MIT-licensed, EU-jurisdiction, self-hosted only.
 The original Captain feature is paid, US-hosted, and OpenAI-backed. Konversio's
-target is the opposite: free, self-hosted, with EU-sovereign LLM providers
-(Scaleway, Qwen3) so customer conversations stay inside EU jurisdiction.
+target is the opposite: free, self-hosted, with BYO-key, provider-free-choice LLM routing (Scaleway, Mistral,
+Nebius, Groq, Qwen3, Ollama, OpenAI, Anthropic, Gemini, and any
+OpenAI-compatible endpoint) so operators control their own data
+residency and can keep customer conversations inside EU jurisdiction
+when desired.
 
 ---
 
