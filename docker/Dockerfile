@@ -67,13 +67,15 @@ RUN apk update && apk add --no-cache build-base musl ruby-full ruby-dev gcc make
 RUN bundle config set --local force_ruby_platform true
 
 # Do not install development or test gems in production
-RUN if [ "$RAILS_ENV" = "production" ]; then \
+RUN --mount=type=cache,target=/gems/ruby/3.4.0/cache \
+  if [ "$RAILS_ENV" = "production" ]; then \
   bundle config set without 'development test'; bundle install -j 4 -r 3; \
   else bundle install -j 4 -r 3; \
   fi
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm i
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+  pnpm i
 
 COPY . /app
 
