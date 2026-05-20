@@ -1,0 +1,41 @@
+<div class="field-unit">
+  <div class="field-unit__label">
+    Enabled Features
+  </div>
+  <div class="field-unit__field">
+    <h4 style="margin: 0 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Active Standard Features</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+      <% standard_enabled = false %>
+      <% Featurable::FEATURE_LIST.each do |feature| %>
+        <% name = feature['name'].to_s %>
+        <% if field.data.include?(name.to_sym) %>
+          <% standard_enabled = true %>
+          <% display_name = feature['display_name'] || name.titleize %>
+          <span style="display: inline-block; padding: 4px 10px; background: #e2e8f0; color: #334155; border-radius: 12px; font-size: 12px; font-weight: 500;">
+            <%= display_name %>
+          </span>
+        <% end %>
+      <% end %>
+      <% unless standard_enabled %>
+        <span style="color: #64748b; font-style: italic; font-size: 13px;">None enabled</span>
+      <% end %>
+    </div>
+
+    <h4 style="margin: 0 0 10px 0; font-weight: 600; color: #1e293b; font-size: 14px;">Active Pilot Features</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <% pilot_enabled = false %>
+      <% Featurable::PILOT_FLAGS.each do |flag| %>
+        <% if field.data.include?(flag.to_sym) %>
+          <% pilot_enabled = true %>
+          <% display_name = flag.titleize.gsub('Pilot', 'Pilot:') %>
+          <span style="display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 12px; font-weight: 500; border: 1px solid #bfdbfe;">
+            <%= display_name %>
+          </span>
+        <% end %>
+      <% end %>
+      <% unless pilot_enabled %>
+        <span style="color: #64748b; font-style: italic; font-size: 13px;">None enabled</span>
+      <% end %>
+    </div>
+  </div>
+</div>

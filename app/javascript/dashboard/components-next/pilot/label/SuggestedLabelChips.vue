@@ -21,9 +21,8 @@ const dismissedLabelIds = ref(new Set());
 
 const isEnabled = computed(() => {
   const account = currentAccount.value || {};
-  return Boolean(
-    account.pilot_enabled && account.pilot_label_suggestion_enabled
-  );
+  const features = account.features || {};
+  return Boolean(features.pilot && features.pilot_label_suggestion);
 });
 
 const suggestedIds = computed(

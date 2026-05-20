@@ -6,8 +6,9 @@
 #  auto_resolve_duration          :integer
 #  custom_attributes              :jsonb
 #  domain                         :string(100)
-#  feature_flags                  :bigint           default(0), not null
+#  feature_flags                  :jsonb            not null
 #  internal_attributes            :jsonb            not null
+#  legacy_feature_flags           :bigint           default(0), not null
 #  limits                         :jsonb
 #  locale                         :integer          default("en")
 #  name                           :string           not null
@@ -31,8 +32,12 @@
 #
 # Indexes
 #
-#  index_accounts_on_pilot_enabled  (id) WHERE pilot_enabled
-#  index_accounts_on_status         (status)
+#  index_accounts_on_feature_flags_pilot                    (((feature_flags ->> 'pilot'::text)))
+#  index_accounts_on_feature_flags_pilot_briefing           (((feature_flags ->> 'pilot_briefing'::text)))
+#  index_accounts_on_feature_flags_pilot_briefing_coalesce  (COALESCE((feature_flags ->> 'pilot_briefing'::text), 'true'::text))
+#  index_accounts_on_feature_flags_pilot_coalesce           (COALESCE((feature_flags ->> 'pilot'::text), 'true'::text))
+#  index_accounts_on_pilot_enabled                          (id) WHERE pilot_enabled
+#  index_accounts_on_status                                 (status)
 #
 
 class Account < ApplicationRecord
@@ -164,8 +169,8 @@ class Account < ApplicationRecord
 
   def usage_limits
     {
-      agents: KonversioApp.max_limit.to_i,
-      inboxes: KonversioApp.max_limit.to_i
+      agents: limits.is_a?(Hash) && limits['agents'].presence ? limits['agents'].to_i : KonversioApp.max_limit.to_i,
+      inboxes: limits.is_a?(Hash) && limits['inboxes'].presence ? limits['inboxes'].to_i : KonversioApp.max_limit.to_i
     }
   end
 

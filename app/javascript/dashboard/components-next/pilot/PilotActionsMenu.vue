@@ -57,9 +57,10 @@ const toggleMenu = () => {
   else isOpen.value = true;
 };
 
-const isMasterEnabled = computed(() =>
-  Boolean(currentAccount.value?.pilot_enabled)
-);
+const isMasterEnabled = computed(() => {
+  const features = currentAccount.value?.features || {};
+  return Boolean(features.pilot);
+});
 
 const hasDraft = computed(() => (props.editorContent || '').trim().length > 0);
 
@@ -68,9 +69,10 @@ const hasDraft = computed(() => (props.editorContent || '').trim().length > 0);
 // grammar are always visible regardless of composer state. We disable
 // (rather than hide) them when there's no draft so the discoverability
 // stays consistent across empty / drafting / preview-active states.
-const rewriteAllowed = computed(() =>
-  Boolean(currentAccount.value?.pilot_rewrite_enabled)
-);
+const rewriteAllowed = computed(() => {
+  const features = currentAccount.value?.features || {};
+  return Boolean(features.pilot_rewrite);
+});
 
 const anyLoading = computed(
   () => briefing.loading.value || summary.loading.value || rewrite.loading.value
@@ -96,6 +98,7 @@ const runRewrite = async operation => {
 
 const actions = computed(() => {
   const account = currentAccount.value || {};
+  const features = account.features || {};
   const list = [];
 
   if (rewriteAllowed.value) {
@@ -126,7 +129,7 @@ const actions = computed(() => {
     });
   }
 
-  if (account.pilot_briefing_enabled) {
+  if (features.pilot_briefing) {
     list.push({
       key: 'briefing',
       label: t('PILOT.BRIEFING.BUTTON_LABEL'),
@@ -153,7 +156,7 @@ const actions = computed(() => {
     });
   }
 
-  if (account.pilot_summary_enabled) {
+  if (features.pilot_summary) {
     list.push({
       key: 'summary',
       label: t('PILOT.SUMMARY.BUTTON_LABEL'),
@@ -180,7 +183,7 @@ const actions = computed(() => {
     });
   }
 
-  if (account.pilot_copilot_enabled) {
+  if (features.pilot_copilot) {
     list.push({
       key: 'ask_copilot',
       label: t('PILOT.ACTIONS_MENU_ASK_COPILOT'),
