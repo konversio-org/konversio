@@ -20,13 +20,16 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
   def create
     @document = @assistant.documents.new(
       account: Current.account,
-      external_link: document_params[:external_link]
+      external_link: document_params[:external_link],
+      status: :in_progress
     )
     attach_pdf_if_present
     validate_source!
     @document.save!
 
-    ingest_document(@document)
+    # `after_create_commit :enqueue_crawl_job` on `Pilot::Document` enqueues
+    # `Pilot::Documents::CrawlJob`, which owns the full ingestion lifecycle
+    # (Firecrawl crawl for URLs, pdf-reader for PDFs).
     render :show, status: :created
   end
 
@@ -101,15 +104,6 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
     return false if pdf.size.to_i > MAX_PDF_BYTES
 
     true
-  end
-
-  def ingest_document(document)
-    result = Custom::Pilot::DocumentIngestionService.new(document: document, account: Current.account).perform
-    if result&.success?
-      document.update!(content: result.content, status: :available, sync_status: :synced)
-    else
-      document.update!(sync_status: :failed)
-    end
   end
 
   def current_page

@@ -3,32 +3,36 @@ import ApiClient from '../ApiClient';
 
 class PilotAssistantResponsesAPI extends ApiClient {
   constructor() {
-    super('pilot/assistant_responses', { accountScoped: true });
+    super('pilot/assistants', { accountScoped: true, apiVersion: 'v2' });
+  }
+
+  nestedUrl(assistantId) {
+    return `${this.url}/${assistantId}/responses`;
   }
 
   list({ assistantId, page = 1, search = '', status = '' } = {}) {
-    const params = { assistant_id: assistantId, page };
+    const params = { page };
     if (search) params.search = search;
     if (status) params.status = status;
-    return axios.get(this.url, { params });
+    return axios.get(this.nestedUrl(assistantId), { params });
   }
 
   create({ assistantId, question, answer, status } = {}) {
-    const payload = { assistant_id: assistantId, question, answer };
+    const payload = { question, answer };
     if (status) payload.status = status;
-    return axios.post(this.url, payload);
+    return axios.post(this.nestedUrl(assistantId), payload);
   }
 
-  update({ id, question, answer, status } = {}) {
+  update({ assistantId, id, question, answer, status } = {}) {
     const payload = {};
     if (question !== undefined) payload.question = question;
     if (answer !== undefined) payload.answer = answer;
     if (status !== undefined) payload.status = status;
-    return axios.patch(`${this.url}/${id}`, payload);
+    return axios.patch(`${this.nestedUrl(assistantId)}/${id}`, payload);
   }
 
-  destroy(id) {
-    return axios.delete(`${this.url}/${id}`);
+  destroy({ assistantId, id } = {}) {
+    return axios.delete(`${this.nestedUrl(assistantId)}/${id}`);
   }
 }
 

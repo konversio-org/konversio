@@ -106,11 +106,12 @@ export const actions = {
     }
   },
 
-  async updateRow({ commit }, { id, ...attrs }) {
+  async updateRow({ commit, state: _state }, { id, assistantId, ...attrs }) {
     commit(types.SET_UI_FLAG, { isUpdating: true });
     commit(types.SET_LAST_ERROR, null);
     try {
       const { data } = await PilotAssistantResponsesAPI.update({
+        assistantId: assistantId ?? _state.activeAssistantId,
         id,
         ...attrs,
       });
@@ -125,11 +126,16 @@ export const actions = {
     }
   },
 
-  async destroyRow({ commit }, id) {
+  async destroyRow({ commit, state: _state }, payload) {
+    const id = typeof payload === 'object' ? payload.id : payload;
+    const assistantId =
+      (typeof payload === 'object' ? payload.assistantId : null) ??
+      _state.activeAssistantId;
+
     commit(types.SET_UI_FLAG, { isDeleting: true });
     commit(types.SET_LAST_ERROR, null);
     try {
-      await PilotAssistantResponsesAPI.destroy(id);
+      await PilotAssistantResponsesAPI.destroy({ assistantId, id });
       commit(types.REMOVE_RECORD, id);
     } catch (err) {
       commit(types.SET_LAST_ERROR, err);
