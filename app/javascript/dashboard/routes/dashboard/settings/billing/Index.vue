@@ -112,8 +112,8 @@ const onClickBillingPortal = () => {
 };
 
 const onToggleChatWindow = () => {
-  if (window.$chatwoot) {
-    window.$chatwoot.toggle();
+  if (window.$konversio) {
+    window.$konversio.toggle();
   }
 };
 
@@ -179,9 +179,9 @@ onMounted(handleBillingPageLogic);
           </div>
         </BillingCard>
         <BillingCard
-          v-if="captainEnabled"
-          :title="$t('BILLING_SETTINGS.CAPTAIN.TITLE')"
-          :description="$t('BILLING_SETTINGS.CAPTAIN.DESCRIPTION')"
+          v-if="pilotEnabled"
+          :title="$t('BILLING_SETTINGS.PILOT.TITLE')"
+          :description="$t('BILLING_SETTINGS.PILOT.DESCRIPTION')"
         >
           <template #action>
             <div class="flex gap-2">
@@ -193,7 +193,7 @@ onMounted(handleBillingPageLogic);
                 :is-loading="isFetchingLimits"
                 @click="fetchLimits"
               >
-                {{ $t('BILLING_SETTINGS.CAPTAIN.REFRESH_CREDITS') }}
+                {{ $t('BILLING_SETTINGS.PILOT.REFRESH_CREDITS') }}
               </ButtonV4>
               <ButtonV4
                 v-if="canPurchaseCredits"
@@ -206,27 +206,27 @@ onMounted(handleBillingPageLogic);
               </ButtonV4>
             </div>
           </template>
-          <div v-if="captainLimits && responseLimits" class="px-5">
+          <div v-if="pilotLimits && responseLimits" class="px-5">
             <BillingMeter
-              :title="$t('BILLING_SETTINGS.CAPTAIN.RESPONSES')"
+              :title="$t('BILLING_SETTINGS.PILOT.RESPONSES')"
               v-bind="responseLimits"
             />
           </div>
-          <div v-if="captainLimits && documentLimits" class="px-5">
+          <div v-if="pilotLimits && documentLimits" class="px-5">
             <BillingMeter
-              :title="$t('BILLING_SETTINGS.CAPTAIN.DOCUMENTS')"
+              :title="$t('BILLING_SETTINGS.PILOT.DOCUMENTS')"
               v-bind="documentLimits"
             />
           </div>
         </BillingCard>
         <BillingCard
           v-else
-          :title="$t('BILLING_SETTINGS.CAPTAIN.TITLE')"
-          :description="$t('BILLING_SETTINGS.CAPTAIN.UPGRADE')"
+          :title="$t('BILLING_SETTINGS.PILOT.TITLE')"
+          :description="$t('BILLING_SETTINGS.PILOT.UPGRADE')"
         >
           <template #action>
             <ButtonV4 sm solid slate @click="onClickBillingPortal">
-              {{ $t('CAPTAIN.PAYWALL.UPGRADE_NOW') }}
+              {{ $t('PILOT.PAYWALL.UPGRADE_NOW') }}
             </ButtonV4>
           </template>
         </BillingCard>

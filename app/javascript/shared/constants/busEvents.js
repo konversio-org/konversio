@@ -13,4 +13,13 @@ export const BUS_EVENTS = {
   NEW_CONVERSATION_MODAL: 'newConversationModal',
   INSERT_INTO_RICH_EDITOR: 'insertIntoRichEditor',
   INSERT_INTO_NORMAL_EDITOR: 'insertIntoNormalEditor',
+  // Pilot in-composer preview surface. PilotActionsMenu fires START
+  // before the API call to render the thinking state immediately; then
+  // READY or ERROR once the API resolves. ReplyBox owns the preview
+  // state and swaps WootMessageEditor for PilotPreviewPanel while
+  // active. CLOSE is fired by the panel itself (Accept or Dismiss).
+  PILOT_PREVIEW_START: 'pilotPreviewStart',
+  PILOT_PREVIEW_READY: 'pilotPreviewReady',
+  PILOT_PREVIEW_ERROR: 'pilotPreviewError',
+  PILOT_PREVIEW_CLOSE: 'pilotPreviewClose',
 };

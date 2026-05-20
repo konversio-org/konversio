@@ -40,6 +40,15 @@ import whatsappTemplates from './whatsappTemplates.json';
 import contentTemplates from './contentTemplates.json';
 import mfa from './mfa.json';
 import yearInReview from './yearInReview.json';
+import pilot from './pilot.json';
+
+// The PILOT namespace lives in both integrations.json (existing Pilot menu/
+// actions keys) and pilot.json (new Pilot admin pages). Plain object spread
+// would clobber whichever came last, so we merge the two PILOT blocks
+// explicitly before the default export.
+const mergedPilot = {
+  PILOT: { ...(integrations.PILOT || {}), ...(pilot.PILOT || {}) },
+};
 
 export default {
   ...advancedFilters,
@@ -84,4 +93,5 @@ export default {
   ...contentTemplates,
   ...mfa,
   ...yearInReview,
+  ...mergedPilot,
 };

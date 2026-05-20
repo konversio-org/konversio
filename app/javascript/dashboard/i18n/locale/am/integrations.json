@@ -22,11 +22,11 @@
     "LOADING": "አገናኝቶችን እየሰበሰበ",
     "SEARCH_PLACEHOLDER": "አገናኞችን ፈልግ...",
     "NO_RESULTS": "የፈለጉትን አገናኝቶች አልተገኙም",
-    "CAPTAIN": {
-      "DISABLED": "Captain በአካውንትዎ ላይ አልተነሳም።",
+    "PILOT": {
+      "DISABLED": "Pilot በአካውንትዎ ላይ አልተነሳም።",
       "CLICK_HERE_TO_CONFIGURE": "ለማስተካከል እዚህ ጠቅ ያድርጉ",
-      "LOADING_CONSOLE": "Captain Console እየጫነ ነው...",
-      "FAILED_TO_LOAD_CONSOLE": "Captain Console ለመጫን አልተሳካም። እባክዎን ዳግም ያስመልክቱ እና ይሞክሩ።"
+      "LOADING_CONSOLE": "Pilot Console እየጫነ ነው...",
+      "FAILED_TO_LOAD_CONSOLE": "Pilot Console ለመጫን አልተሳካም። እባክዎን ዳግም ያስመልክቱ እና ይሞክሩ።"
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "ተመዝግቧል የሆኑ ክስተቶች",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "ካፕቴን",
     "HEADER_KNOW_MORE": "ተጨማሪ ያውቁ",
     "ASSISTANT_SWITCHER": {
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "ፈጣን ማጠቃለያ ይፈልጋሉ? ያለፉትን ውይይቶች ማረጋገጥ ይፈልጋሉ? ወይም የተሻለ መልስ ማዘጋጀት ይፈልጋሉ? Copilot እዚህ ነው ነገሮችን ለማሳካት።",
       "SEND_MESSAGE": "መልእክት ላክ...",
       "EMPTY_MESSAGE": "መልስ ለመፍጠር ስህተት ተከስቷል። እባክዎ እንደገና ይሞክሩ።",
-      "LOADER": "Captain እየሰራ ነው",
+      "LOADER": "Pilot እየሰራ ነው",
       "YOU": "አንተ",
       "USE": "ይጠቀሙበት",
       "RESET": "እንደገና ማስጀመር",
@@ -442,20 +442,20 @@
       "CREDIT_NOTE": "እዚህ የተላኩ መልእክቶች ወደ ካፕቴን ክሬዲቶችዎ ይቆጠራሉ።"
     },
     "PAYWALL": {
-      "TITLE": "Captain AI እንዲጠቀሙ ያሻሽሉ",
-      "AVAILABLE_ON": "Captain በነፃ እቅድ ላይ አይገኝም።",
+      "TITLE": "Pilot AI እንዲጠቀሙ ያሻሽሉ",
+      "AVAILABLE_ON": "Pilot በነፃ እቅድ ላይ አይገኝም።",
       "UPGRADE_PROMPT": "እርስዎ እቅድዎን ያሻሽሉ እንዲሁም እርዳኞቻችንን፣ ኮፒሎትን እና ተጨማሪ ነገሮችን ያግኙ።",
       "UPGRADE_NOW": "አሁን ያሻሽሉ",
       "CANCEL_ANYTIME": "እቅድዎን በማንኛውም ጊዜ መቀየር ወይም መሰረዝ ይችላሉ"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI በኢንተርፕራይዝ እቅዶች ብቻ ይገኛል።",
+      "AVAILABLE_ON": "Pilot AI በኢንተርፕራይዝ እቅዶች ብቻ ይገኛል።",
       "UPGRADE_PROMPT": "እባክዎ እቅድዎን ያሻሽሉ እንዲሁም እንደ አስማሚዎቻችን፣ ኮፓይሎት እና ተጨማሪ አገልግሎቶች ያግኙ።",
       "ASK_ADMIN": "እባክዎ ለእቅድ ማሻሻያ ከአስተዳደሩ ጋር ያግኙ።"
     },
     "BANNER": {
-      "RESPONSES": "የመልስ አገዛዝዎን ከ<b>80</b>% በላይ ተጠቅመዋል። Captain AI ለመቀጠል እባክዎ እቅድዎን ያሻሽሉ።",
-      "DOCUMENTS": "የሰነድ አገዛዝ ደረሰ። Captain AI ለመቀጠል እባክዎ እቅድዎን ያሻሽሉ።"
+      "RESPONSES": "የመልስ አገዛዝዎን ከ<b>80</b>% በላይ ተጠቅመዋል። Pilot AI ለመቀጠል እባክዎ እቅድዎን ያሻሽሉ።",
+      "DOCUMENTS": "የሰነድ አገዛዝ ደረሰ። Pilot AI ለመቀጠል እባክዎ እቅድዎን ያሻሽሉ።"
     },
     "FORM": {
       "CANCEL": "ሰርዝ",
@@ -577,7 +577,7 @@
         "SUBTITLE": "በተጠቃሚዎችዎ ፈጣና ትክክለኛ መልሶች ለማቅረብ አስማሚ ይፍጠሩ። ከእርስዎ የእርዳታ ሰነዶችና ያለፉ ውይይቶች ማማረር ይችላል።",
         "FEATURE_SPOTLIGHT": {
           "TITLE": "የካፕቴን አስማሪ",
-          "NOTE": "Captain Assistant በቀጥታ ከደንበኞች ጋር ይገናኛል፣ ከእርዳታ ሰነዶችዎና ከያለፈው ውይይቶች ይማራል፣ እና ፈጣን፣ ትክክለኛ ምላሾችን ይሰጣል። የመጀመሪያ ጥያቄዎችን ይከታተላል፣ ፈጣን መፍትሄዎችን ሰጥቶ ከዚያ በኋላ በፍላጎት ሲኖር ወደ ወኪል ይላካል።"
+          "NOTE": "Pilot Assistant በቀጥታ ከደንበኞች ጋር ይገናኛል፣ ከእርዳታ ሰነዶችዎና ከያለፈው ውይይቶች ይማራል፣ እና ፈጣን፣ ትክክለኛ ምላሾችን ይሰጣል። የመጀመሪያ ጥያቄዎችን ይከታተላል፣ ፈጣን መፍትሄዎችን ሰጥቶ ከዚያ በኋላ በፍላጎት ሲኖር ወደ ወኪል ይላካል።"
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "ሰነዶች አልተገኙም",
         "SUBTITLE": "ሰነዶች በእርስዎ አገልጋይ በተጠቃሚ ጥያቄዎች ላይ የሚሰጥ የተደጋጋሚ ጥያቄዎችን ለመፍጠር ይጠቀማሉ። ሰነዶችን ለአገልጋይዎ እውነተኛ እይታ ለማቅረብ ማስገባት ይችላሉ።",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain ሰነድ",
-          "NOTE": "በCaptain ውስጥ ሰነድ እንደ ለማድረግ ምንጭ እንደሚሰራ አገልግሎት አገልግሎት ነው። የእርዳታ ማዕከላችሁን ወይም መምሪያዎችን በመገናኘት፣ Captain ይዘቱን ማብራሪያ ማድረግ እና ለደንበኞች ጥያቄዎች ትክክለኛ ምላሾችን ማቅረብ ይችላል።"
+          "TITLE": "Pilot ሰነድ",
+          "NOTE": "በPilot ውስጥ ሰነድ እንደ ለማድረግ ምንጭ እንደሚሰራ አገልግሎት አገልግሎት ነው። የእርዳታ ማዕከላችሁን ወይም መምሪያዎችን በመገናኘት፣ Pilot ይዘቱን ማብራሪያ ማድረግ እና ለደንበኞች ጥያቄዎች ትክክለኛ ምላሾችን ማቅረብ ይችላል።"
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "ብልጽግና መሣሪያውን ማስወገድ አልተሳካም"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "ሁሉም"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain ደንበኞችዎ የሚፈልጉትን አንዳንድ የተደጋጋሚ ጥያቄዎች ተገናኝቷል።",
+        "TITLE": "Pilot ደንበኞችዎ የሚፈልጉትን አንዳንድ የተደጋጋሚ ጥያቄዎች ተገናኝቷል።",
         "ACTION": "እዚህ ይጫኑ ለማረጋገጥ"
       },
       "FORM_DESCRIPTION": "ጥያቄ እና ከዚያ ተዛማጅ መልስ ወደ እውቀት ቋት ያክሉ እና ከሚዛመደው አስማሪ ይምረጡ።",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "የተደጋጋሚ ጥያቄዎች አገልጋይዎን ከደንበኞችዎ ጥያቄዎች በፍጥነትና ትክክለኛ መልስ ለማቅረብ ይረዳሉ። እነዚህ ከይዘትዎ በራስሰር ሊፈጠሩ ወይም በእጅ ሊጨምሩ ይችላሉ።",
         "CLEAR_SEARCH": "እየሰሩ ያሉ አሰሳዎችን አጽዳ",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain ተደጋጋሚ ጥያቄዎች",
-          "NOTE": "Captain ተደጋጋሚ ጥያቄዎች በደንበኞች መካከል የተለመዱ ጥያቄዎችን ይገነባል—እነሱ ከእርዳታ መረጃ ቤትዎ ውስጥ እንኳን ከሌለው ወይም በተደጋጋሚ የሚጠየቁ ሆነው—እና የሚዛመዱ ተደጋጋሚ ጥያቄዎችን ለድጋፍ ማሻሻል ይፈጥራል። እያንዳንዱን ምክር ማስተካከል ወይም ማቋረጥ መወሰን ይችላሉ።"
+          "TITLE": "Pilot ተደጋጋሚ ጥያቄዎች",
+          "NOTE": "Pilot ተደጋጋሚ ጥያቄዎች በደንበኞች መካከል የተለመዱ ጥያቄዎችን ይገነባል—እነሱ ከእርዳታ መረጃ ቤትዎ ውስጥ እንኳን ከሌለው ወይም በተደጋጋሚ የሚጠየቁ ሆነው—እና የሚዛመዱ ተደጋጋሚ ጥያቄዎችን ለድጋፍ ማሻሻል ይፈጥራል። እያንዳንዱን ምክር ማስተካከል ወይም ማቋረጥ መወሰን ይችላሉ።"
         }
       }
     },

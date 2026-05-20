@@ -311,15 +311,15 @@
     "ACTIVE": "활성",
     "COMPANIES": "회사",
     "ALL_COMPANIES": "모든 회사",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "어시스턴트",
-    "CAPTAIN_DOCUMENTS": "문서",
-    "CAPTAIN_RESPONSES": "FAQ",
-    "CAPTAIN_TOOLS": "도구",
-    "CAPTAIN_SCENARIOS": "시나리오",
-    "CAPTAIN_PLAYGROUND": "플레이그라운드",
-    "CAPTAIN_INBOXES": "받은 메시지함",
-    "CAPTAIN_SETTINGS": "설정",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "어시스턴트",
+    "PILOT_DOCUMENTS": "문서",
+    "PILOT_RESPONSES": "FAQ",
+    "PILOT_TOOLS": "도구",
+    "PILOT_SCENARIOS": "시나리오",
+    "PILOT_PLAYGROUND": "플레이그라운드",
+    "PILOT_INBOXES": "받은 메시지함",
+    "PILOT_SETTINGS": "설정",
     "HOME": "홈",
     "AGENTS": "에이전트",
     "AGENT_BOTS": "봇",
@@ -381,15 +381,15 @@
     },
     "DOCS": "문서 읽기",
     "SECURITY": "보안",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "대화 워크플로"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain 설정",
-    "DESCRIPTION": "Captain의 AI 모델과 기능을 구성합니다. Captain은 크레딧 기반 청구를 따르며, 선택한 모델에 따라 Captain이 수행하는 모든 작업에 대해 크레딧이 청구됩니다.",
-    "LOADING": "Captain 구성 로딩 중...",
-    "LINK_TEXT": "Captain 크레딧에 대해 자세히 알아보기",
-    "NOT_ENABLED": "이 계정에서 Captain이 활성화되지 않았습니다. Captain 기능에 접근하려면 플랜을 업그레이드하십시오.",
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot 설정",
+    "DESCRIPTION": "Pilot의 AI 모델과 기능을 구성합니다. Pilot은 크레딧 기반 청구를 따르며, 선택한 모델에 따라 Pilot이 수행하는 모든 작업에 대해 크레딧이 청구됩니다.",
+    "LOADING": "Pilot 구성 로딩 중...",
+    "LINK_TEXT": "Pilot 크레딧에 대해 자세히 알아보기",
+    "NOT_ENABLED": "이 계정에서 Pilot이 활성화되지 않았습니다. Pilot 기능에 접근하려면 플랜을 업그레이드하십시오.",
     "MODEL_CONFIG": {
       "TITLE": "모델 구성",
       "DESCRIPTION": "다양한 기능에 대한 AI 모델을 선택합니다.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain 설정이 성공적으로 업데이트되었습니다.",
-      "ERROR": "Captain 설정 업데이트에 실패했습니다. 다시 시도하십시오."
+      "SUCCESS": "Pilot 설정이 성공적으로 업데이트되었습니다.",
+      "ERROR": "Pilot 설정 업데이트에 실패했습니다. 다시 시도하십시오."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "이전 청구서를 보거나, 청구 세부 정보를 수정하거나, 구독을 취소합니다.",
       "BUTTON_TXT": "청구 포털로 이동"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Captain AI의 사용량과 크레딧을 관리합니다.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Pilot AI의 사용량과 크레딧을 관리합니다.",
       "BUTTON_TXT": "크레딧 추가 구매",
       "DOCUMENTS": "문서",
       "RESPONSES": "크레딧",
-      "UPGRADE": "무료 플랜에서는 Captain을 사용할 수 없습니다. 지금 업그레이드하여 어시스턴트, Copilot 등에 접근하십시오.",
+      "UPGRADE": "무료 플랜에서는 Pilot을 사용할 수 없습니다. 지금 업그레이드하여 어시스턴트, Copilot 등에 접근하십시오.",
       "REFRESH_CREDITS": "새로고침"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "크레딧 추가 구매",
       "MODAL_TITLE": "AI 크레딧 구매",
-      "MODAL_DESCRIPTION": "Captain AI를 위한 추가 크레딧을 구매합니다.",
+      "MODAL_DESCRIPTION": "Pilot AI를 위한 추가 크레딧을 구매합니다.",
       "CREDITS": "크레딧",
       "ONE_TIME": "일회성",
       "POPULAR": "가장 인기",

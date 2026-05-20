@@ -22,7 +22,7 @@
     "LOADING": "Obtendo integrações",
     "SEARCH_PLACEHOLDER": "Pesquisar integrações...",
     "NO_RESULTS": "Nenhuma integração encontrada correspondente à sua busca",
-    "CAPTAIN": {
+    "PILOT": {
       "DISABLED": "O capitão não está ativado na sua conta.",
       "CLICK_HERE_TO_CONFIGURE": "Clique aqui para configurar",
       "LOADING_CONSOLE": "Carregando console do Capitão...",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "Capitão",
     "HEADER_KNOW_MORE": "Saiba mais",
     "ASSISTANT_SWITCHER": {

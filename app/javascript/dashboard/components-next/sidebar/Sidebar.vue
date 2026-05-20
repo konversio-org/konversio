@@ -2,7 +2,6 @@
 import { h, ref, computed, onMounted } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
-import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { useMapGetter } from 'dashboard/composables/store';
 import { useStore } from 'vuex';
@@ -39,17 +38,7 @@ const emit = defineEmits([
   'closeMobileSidebar',
 ]);
 
-const { accountScopedRoute, isOnKonversioCloud, currentAccount } = useAccount();
-const pilotCopilotDrawer = useCopilotDrawer();
-
-const isPilotCopilotEnabled = computed(() => {
-  const account = currentAccount.value || {};
-  return Boolean(account.pilot_enabled && account.pilot_copilot_enabled);
-});
-
-const handleOpenCopilot = () => {
-  pilotCopilotDrawer.open();
-};
+const { accountScopedRoute, isOnKonversioCloud } = useAccount();
 const store = useStore();
 const searchShortcut = useKbd([`$mod`, 'k']);
 const { t } = useI18n();
@@ -332,11 +321,6 @@ const menuItems = computed(() => {
         },
       ],
     },
-    // Captain sidebar entry removed during the Enterprise strip — the
-    // captain_assistants_* routes no longer exist in this MIT fork. The
-    // Pilot AI module (custom/app/services/custom/pilot/, openspec/changes/
-    // pilot-full) will replace this with a "Pilot" sidebar entry as
-    // Copilot/Autopilot/Tools ship.
     {
       name: 'Contacts',
       label: t('SIDEBAR.CONTACTS'),
@@ -531,10 +515,10 @@ const menuItems = computed(() => {
           to: accountScopedRoute('general_settings_index'),
         },
         // {
-        //   name: 'Settings Captain',
-        //   label: t('SIDEBAR.CAPTAIN_AI'),
-        //   icon: 'i-woot-captain',
-        //   to: accountScopedRoute('captain_settings_index'),
+        //   name: 'Settings Pilot',
+        //   label: t('SIDEBAR.PILOT_AI'),
+        //   icon: 'i-woot-pilot',
+        //   to: accountScopedRoute('pilot_settings_index'),
         // },
         {
           name: 'Settings Agents',
@@ -671,6 +655,61 @@ const menuItems = computed(() => {
         },
       ],
     },
+    {
+      name: 'Pilot',
+      label: t('SIDEBAR.PILOT'),
+      icon: 'i-ph-robot',
+      children: [
+        {
+          name: 'Pilot FAQs',
+          label: t('SIDEBAR.PILOT_RESPONSES'),
+          icon: 'i-lucide-message-circle-question',
+          to: accountScopedRoute('pilot_faqs'),
+        },
+        {
+          name: 'Pilot Documents',
+          label: t('SIDEBAR.PILOT_DOCUMENTS'),
+          icon: 'i-lucide-file-text',
+          to: accountScopedRoute('pilot_documents'),
+        },
+        {
+          name: 'Pilot Scenarios',
+          label: t('SIDEBAR.PILOT_SCENARIOS'),
+          icon: 'i-lucide-list-checks',
+          to: accountScopedRoute('pilot_scenarios'),
+        },
+        {
+          name: 'Pilot Playground',
+          label: t('SIDEBAR.PILOT_PLAYGROUND'),
+          icon: 'i-lucide-flask-conical',
+          to: accountScopedRoute('pilot_playground'),
+        },
+        {
+          name: 'Pilot Inboxes',
+          label: t('SIDEBAR.PILOT_INBOXES'),
+          icon: 'i-lucide-inbox',
+          to: accountScopedRoute('pilot_inboxes'),
+        },
+        {
+          name: 'Pilot Tools',
+          label: t('SIDEBAR.PILOT_TOOLS'),
+          icon: 'i-lucide-wrench',
+          to: accountScopedRoute('pilot_tools'),
+        },
+        {
+          name: 'Pilot Settings',
+          label: t('SIDEBAR.PILOT_SETTINGS'),
+          icon: 'i-lucide-bolt',
+          to: accountScopedRoute('pilot_settings_index'),
+        },
+        {
+          name: 'Pilot Copilot',
+          label: t('SIDEBAR.PILOT_COPILOT'),
+          icon: 'i-ph-robot',
+          to: accountScopedRoute('pilot_copilot'),
+        },
+      ],
+    },
   ];
 });
 </script>
@@ -779,32 +818,6 @@ const menuItems = computed(() => {
           :key="item.name"
           v-bind="item"
         />
-        <li
-          v-if="isPilotCopilotEnabled"
-          class="grid gap-1 text-sm cursor-pointer select-none min-w-0"
-        >
-          <button
-            v-if="isEffectivelyCollapsed"
-            type="button"
-            class="flex items-center justify-center size-10 rounded-lg text-n-slate-11 hover:bg-n-alpha-2"
-            :title="t('PILOT.COPILOT.OPEN')"
-            @click="handleOpenCopilot"
-          >
-            <span class="i-ph-robot size-4" />
-          </button>
-          <button
-            v-else
-            type="button"
-            class="flex items-center gap-2 px-1.5 py-1 rounded-lg h-8 min-w-0 text-n-slate-11 hover:bg-n-alpha-2 w-full"
-            :title="t('PILOT.COPILOT.OPEN')"
-            @click="handleOpenCopilot"
-          >
-            <span class="i-ph-robot size-4 flex-shrink-0" />
-            <span class="truncate text-body-main">
-              {{ t('PILOT.COPILOT.OPEN') }}
-            </span>
-          </button>
-        </li>
       </ul>
     </nav>
     <section

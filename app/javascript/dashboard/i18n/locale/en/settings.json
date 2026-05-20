@@ -311,15 +311,17 @@
     "ACTIVE": "Active",
     "COMPANIES": "Companies",
     "ALL_COMPANIES": "All Companies",
-    "CAPTAIN": "Captain",
-    "CAPTAIN_ASSISTANTS": "Assistants",
-    "CAPTAIN_DOCUMENTS": "Documents",
-    "CAPTAIN_RESPONSES": "FAQs",
-    "CAPTAIN_TOOLS": "Tools",
-    "CAPTAIN_SCENARIOS": "Scenarios",
-    "CAPTAIN_PLAYGROUND": "Playground",
-    "CAPTAIN_INBOXES": "Inboxes",
-    "CAPTAIN_SETTINGS": "Settings",
+    "PILOT": "Pilot",
+    "PILOT_ASSISTANTS": "Assistants",
+    "PILOT_DOCUMENTS": "Documents",
+    "PILOT_RESPONSES": "FAQs",
+    "PILOT_TOOLS": "Tools",
+    "PILOT_SCENARIOS": "Scenarios",
+    "PILOT_PLAYGROUND": "Playground",
+    "PILOT_INBOXES": "Inboxes",
+    "PILOT_SETTINGS": "Settings",
+    "PILOT_COPILOT": "Copilot",
+    "PILOT_PLACEHOLDER_BODY": "Coming soon — this Pilot surface is not implemented yet.",
     "HOME": "Home",
     "AGENTS": "Agents",
     "AGENT_BOTS": "Bots",
@@ -381,15 +383,102 @@
     },
     "DOCS": "Read docs",
     "SECURITY": "Security",
-    "CAPTAIN_AI": "Captain",
+    "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Conversation Workflow"
   },
-  "CAPTAIN_SETTINGS": {
-    "TITLE": "Captain Settings",
-    "DESCRIPTION": "Configure your AI models and features for Captain. Captain follows a credit based billing, you will be charged credits for every action Captain takes based on the model selected.",
-    "LOADING": "Loading Captain configuration...",
-    "LINK_TEXT": "Learn more about Captain Credits",
-    "NOT_ENABLED": "Captain is not enabled for your account. Please upgrade your plan to access Captain features.",
+  "PILOT_ASSISTANT_PICKER": {
+    "LABEL_FALLBACK": "Select an assistant",
+    "EMPTY": "No assistants yet",
+    "ARIA_LABEL": "Switch assistant"
+  },
+  "PILOT_DOCUMENTS": {
+    "HEADER": {
+      "TITLE": "Documents",
+      "ADD_BUTTON": "Add document"
+    },
+    "STATUS_FILTER": {
+      "ARIA": "Filter documents by status",
+      "ALL": "All",
+      "AVAILABLE": "Available",
+      "IN_PROGRESS": "In progress",
+      "FAILED": "Failed"
+    },
+    "STATUS": {
+      "AVAILABLE": "Available",
+      "IN_PROGRESS": "In progress",
+      "FAILED": "Failed"
+    },
+    "EMPTY": {
+      "TITLE": "No documents yet",
+      "DESCRIPTION": "Upload PDFs or add URLs to teach Pilot about your product. We'll extract the content and generate FAQs automatically.",
+      "CTA": "Add your first document"
+    },
+    "INFO_CARD": {
+      "BODY": "A document in Pilot is a knowledge source for the assistant. Add a URL or upload a PDF and Pilot will extract the content and generate FAQs your assistant can use to answer customer questions."
+    },
+    "ERROR": {
+      "GENERIC": "Something went wrong while loading documents.",
+      "RETRY": "Retry"
+    },
+    "ROW": {
+      "FAQS_GENERATED": "{count} FAQs generated",
+      "MENU_ARIA": "Document actions",
+      "MENU": {
+        "DELETE": "Delete document"
+      }
+    },
+    "DIALOG": {
+      "TITLE": "Add a document",
+      "DESCRIPTION": "Add a URL to crawl or upload a PDF. We'll extract its content and generate FAQs.",
+      "TABS": {
+        "URL": "URL",
+        "PDF": "PDF Upload"
+      },
+      "URL": {
+        "LABEL": "Source URL",
+        "PLACEHOLDER": "https://example.com/help/article",
+        "INVALID": "Enter a valid http(s) URL."
+      },
+      "PDF": {
+        "LABEL": "PDF file",
+        "DROPZONE": "Drag a PDF here, or click to browse",
+        "REMOVE": "Remove",
+        "INVALID": "Only .pdf files are supported."
+      },
+      "BUTTONS": {
+        "CANCEL": "Cancel",
+        "ADD_URL": "Add URL",
+        "UPLOAD": "Upload"
+      },
+      "ERRORS": {
+        "NO_ASSISTANT": "Select an assistant before adding a document.",
+        "SUBMIT_FAILED": "Couldn't add the document. Please try again."
+      }
+    },
+    "PAGER": {
+      "ARIA": "Documents pagination",
+      "RANGE": "Showing {start} - {end} of {total} items",
+      "PAGE_OF": "{page} of {total} pages",
+      "FIRST": "First page",
+      "PREV": "Previous page",
+      "NEXT": "Next page",
+      "LAST": "Last page"
+    },
+    "TOAST": {
+      "CREATED": "Document added. We'll start processing it shortly.",
+      "DELETED": "Document deleted.",
+      "DELETE_FAILED": "Couldn't delete the document."
+    },
+    "CRAWL": {
+      "IN_PROGRESS_HINT": "Crawling… new pages will appear here as they're discovered."
+    }
+  },
+  "PILOT_SETTINGS": {
+    "TITLE": "Pilot Settings",
+    "DESCRIPTION": "Configure your AI models and features for Pilot. Pilot follows a credit based billing, you will be charged credits for every action Pilot takes based on the model selected.",
+    "LOADING": "Loading Pilot configuration...",
+    "LINK_TEXT": "Learn more about Pilot Credits",
+    "NOT_ENABLED": "Pilot is not enabled for your account. Please upgrade your plan to access Pilot features.",
     "MODEL_CONFIG": {
       "TITLE": "Model Configuration",
       "DESCRIPTION": "Select AI models for different features.",
@@ -428,8 +517,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain settings updated successfully.",
-      "ERROR": "Failed to update Captain settings. Please try again."
+      "SUCCESS": "Pilot settings updated successfully.",
+      "ERROR": "Failed to update Pilot settings. Please try again."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +536,13 @@
       "DESCRIPTION": "View your previous invoices, edit your billing details, or cancel your subscription.",
       "BUTTON_TXT": "Go to the billing portal"
     },
-    "CAPTAIN": {
-      "TITLE": "Captain",
-      "DESCRIPTION": "Manage usage and credits for Captain AI.",
+    "PILOT": {
+      "TITLE": "Pilot",
+      "DESCRIPTION": "Manage usage and credits for Pilot AI.",
       "BUTTON_TXT": "Buy more credits",
       "DOCUMENTS": "Documents",
       "RESPONSES": "Credits",
-      "UPGRADE": "Captain is not available on the free plan, upgrade now to get access to assistants, copilot and more.",
+      "UPGRADE": "Pilot is not available on the free plan, upgrade now to get access to assistants, copilot and more.",
       "REFRESH_CREDITS": "Refresh"
     },
     "CHAT_WITH_US": {
@@ -465,7 +554,7 @@
     "TOPUP": {
       "BUY_CREDITS": "Buy more credits",
       "MODAL_TITLE": "Buy AI Credits",
-      "MODAL_DESCRIPTION": "Purchase additional credits for Captain AI.",
+      "MODAL_DESCRIPTION": "Purchase additional credits for Pilot AI.",
       "CREDITS": "CREDITS",
       "ONE_TIME": "one-time",
       "POPULAR": "Most Popular",

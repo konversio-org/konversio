@@ -219,7 +219,7 @@ pt:
     attachment: 'Anexo'
     no_content: 'Sem conteúdo'
   conversations:
-    captain:
+    pilot:
       handoff: 'A transferir para outro agente que lhe prestará assistência adicional.'
     messages:
       instagram_story_content: '%{story_sender} mencionou você na história: '
@@ -232,7 +232,7 @@ pt:
       delivery_status:
         error_code: 'Código de erro: %{error_code}'
     activity:
-      captain:
+      pilot:
         resolved: 'A conversa foi marcada como resolvida por %{user_name} devido à inatividade'
         resolved_with_reason: 'Conversation was marked resolved by %{user_name} (%{reason})'
         resolved_by_tool: 'Conversation was marked resolved by %{user_name}: %{reason}'
@@ -339,8 +339,8 @@ pt:
       description: 'Create issues in Linear directly from your conversation window. Alternatively, link existing Linear issues for a more streamlined and efficient issue tracking process.'
     notion:
       name: 'Noção'
-      short_description: 'Integrar bases de dados, documentos e páginas diretamente com o Captain.'
-      description: 'Conecte o seu workspace Notion para permitir que o Captain aceda e gere respostas inteligentes utilizando o conteúdo das suas base de dados, documentos e páginas para fornecer mais apoio contextual ao cliente.'
+      short_description: 'Integrar bases de dados, documentos e páginas diretamente com o Pilot.'
+      description: 'Conecte o seu workspace Notion para permitir que o Pilot aceda e gere respostas inteligentes utilizando o conteúdo das suas base de dados, documentos e páginas para fornecer mais apoio contextual ao cliente.'
     shopify:
       name: 'Shopify'
       short_description: 'Aceder a detalhes do pedido e dados de clientes da sua loja Shopify.'
@@ -349,13 +349,13 @@ pt:
       name: 'LeadSquared'
       short_description: 'Sincronize contatos e conversas com o seu LeadSquared CRM.'
       description: 'Sincronize contatos e conversas com o seu LeadSquared CRM. Essa integração cria automaticamente leads em LeadSquared quando novos contatos são adicionados, e regista a atividade das conversas para fornecer à sua equipa de vendas um contexto completo.'
-  captain:
+  pilot:
     copilot_message_required: A mensagem é obrigatória
     copilot_error: 'Please connect an assistant to this inbox to use Copilot'
     copilot_limit: 'You are out of Copilot credits. You can buy more credits from the billing section.'
-    upgrade: 'Faça upgrade do seu plano para ativar o Captain AI'
-    disabled: 'Captain AI está desativado para esta conta.'
-    api_key_missing: 'A chave API do Captain AI não está configurada.'
+    upgrade: 'Faça upgrade do seu plano para ativar o Pilot AI'
+    disabled: 'Pilot AI está desativado para esta conta.'
+    api_key_missing: 'A chave API do Pilot AI não está configurada.'
     copilot:
       using_tool: 'A usar a ferramenta %{function_name}'
       completed_tool_call: 'Chamada da ferramenta %{function_name} concluída'

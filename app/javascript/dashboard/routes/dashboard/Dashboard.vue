@@ -21,7 +21,6 @@ const FloatingCallWidget = defineAsyncComponent(
 );
 
 import CopilotLauncher from 'dashboard/components-next/copilot/CopilotLauncher.vue';
-import CopilotContainer from 'dashboard/components/copilot/CopilotContainer.vue';
 
 const PilotCopilotDrawer = defineAsyncComponent(
   () => import('dashboard/components-next/pilot/copilot/CopilotDrawer.vue')
@@ -38,7 +37,6 @@ export default {
     AddAccountModal,
     UpgradePage,
     CopilotLauncher,
-    CopilotContainer,
     PilotCopilotDrawer,
     FloatingCallWidget,
     MobileSidebarLauncher,
@@ -166,7 +164,6 @@ export default {
           :is-mobile-sidebar-open="isMobileSidebarOpen"
           @toggle="toggleMobileSidebar"
         />
-        <CopilotContainer />
         <PilotCopilotDrawer />
         <FloatingCallWidget v-if="hasActiveCall || hasIncomingCall" />
       </template>

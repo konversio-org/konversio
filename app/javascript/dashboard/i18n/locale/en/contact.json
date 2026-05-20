@@ -57,6 +57,15 @@
       "CONTACT_LABELS": "Contact Labels",
       "PREVIOUS_CONVERSATIONS": "Previous Conversations",
       "NO_RECORDS_FOUND": "No attributes found"
+    },
+    "LOGBOOK": {
+      "TITLE": "Pilot Logbook",
+      "NO_ENTRIES": "No entries yet. These help ground Pilot AI in history.",
+      "ADD_ENTRY": "Add Entry",
+      "PLACEHOLDER": "Add a logbook entry for Pilot...",
+      "ERROR_FETCH": "Failed to fetch logbook entries",
+      "SUCCESS_CREATE": "Logbook entry added",
+      "ERROR_CREATE": "Failed to add logbook entry"
     }
   },
   "EDIT_CONTACT": {

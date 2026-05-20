@@ -22,11 +22,11 @@
     "LOADING": "انضمام حاصل کیا جا رہا ہے",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain آپ کے اکاؤنٹ پر فعال نہیں ہے۔",
+    "PILOT": {
+      "DISABLED": "Pilot آپ کے اکاؤنٹ پر فعال نہیں ہے۔",
       "CLICK_HERE_TO_CONFIGURE": "ترتیب دینے کے لیے یہاں کلک کریں",
-      "LOADING_CONSOLE": "Captain Console لوڈ ہو رہا ہے...",
-      "FAILED_TO_LOAD_CONSOLE": "Captain Console لوڈ کرنے میں ناکامی۔ براہ کرم صفحہ تازہ کریں اور دوبارہ کوشش کریں۔"
+      "LOADING_CONSOLE": "Pilot Console لوڈ ہو رہا ہے...",
+      "FAILED_TO_LOAD_CONSOLE": "Pilot Console لوڈ کرنے میں ناکامی۔ براہ کرم صفحہ تازہ کریں اور دوبارہ کوشش کریں۔"
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "سبسکرائب شدہ واقعات",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "کپٹن",
     "HEADER_KNOW_MORE": "مزید جانیں",
     "ASSISTANT_SWITCHER": {
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "کیا آپ کو فوری خلاصہ چاہیے، پچھلی بات چیت چیک کرنا چاہتے ہیں، یا بہتر جواب تیار کرنا چاہتے ہیں؟ کوپائلٹ یہاں ہے تاکہ کام تیز ہو جائے۔",
       "SEND_MESSAGE": "پیغام بھیجیں...",
       "EMPTY_MESSAGE": "جواب تیار کرنے میں خرابی ہوئی۔ براہ کرم دوبارہ کوشش کریں۔",
-      "LOADER": "Captain سوچ رہا ہے",
+      "LOADER": "Pilot سوچ رہا ہے",
       "YOU": "آپ",
       "USE": "اسے استعمال کریں",
       "RESET": "ری سیٹ کریں",
@@ -442,20 +442,20 @@
       "CREDIT_NOTE": "یہاں بھیجے گئے پیغامات آپ کے کپٹن کریڈٹس میں شمار ہوں گے۔"
     },
     "PAYWALL": {
-      "TITLE": "Captain AI استعمال کرنے کے لیے اپ گریڈ کریں",
-      "AVAILABLE_ON": "Captain مفت پلان پر دستیاب نہیں ہے۔",
+      "TITLE": "Pilot AI استعمال کرنے کے لیے اپ گریڈ کریں",
+      "AVAILABLE_ON": "Pilot مفت پلان پر دستیاب نہیں ہے۔",
       "UPGRADE_PROMPT": "ہمارے اسسٹنٹس، کوپائلٹ اور مزید تک رسائی کے لیے اپنا پلان اپ گریڈ کریں۔",
       "UPGRADE_NOW": "ابھی اپ گریڈ کریں",
       "CANCEL_ANYTIME": "آپ کسی بھی وقت اپنا پلان تبدیل یا منسوخ کر سکتے ہیں"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI صرف انٹرپرائز پلانز میں دستیاب ہے۔",
+      "AVAILABLE_ON": "Pilot AI صرف انٹرپرائز پلانز میں دستیاب ہے۔",
       "UPGRADE_PROMPT": "ہمارے اسسٹنٹس، کوپائلٹ اور مزید تک رسائی کے لیے اپنا پلان اپ گریڈ کریں۔",
       "ASK_ADMIN": "براہ کرم اپ گریڈ کے لیے اپنے ایڈمنسٹریٹر سے رابطہ کریں۔"
     },
     "BANNER": {
-      "RESPONSES": "آپ نے اپنے جواب کی حد کا 80% سے زیادہ استعمال کر لیا ہے۔ Captain AI استعمال جاری رکھنے کے لیے براہ کرم اپ گریڈ کریں۔",
-      "DOCUMENTS": "دستاویز کی حد پوری ہو گئی ہے۔ Captain AI استعمال جاری رکھنے کے لیے اپ گریڈ کریں۔"
+      "RESPONSES": "آپ نے اپنے جواب کی حد کا 80% سے زیادہ استعمال کر لیا ہے۔ Pilot AI استعمال جاری رکھنے کے لیے براہ کرم اپ گریڈ کریں۔",
+      "DOCUMENTS": "دستاویز کی حد پوری ہو گئی ہے۔ Pilot AI استعمال جاری رکھنے کے لیے اپ گریڈ کریں۔"
     },
     "FORM": {
       "CANCEL": "منسوخ کریں",
@@ -576,8 +576,8 @@
         "TITLE": "کوئی اسسٹنٹ دستیاب نہیں",
         "SUBTITLE": "ایک اسسٹنٹ بنائیں جو آپ کے صارفین کو تیز اور درست جوابات فراہم کرے۔ یہ آپ کے مدد کے مضامین اور پچھلی گفتگوؤں سے سیکھ سکتا ہے۔",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain اسسٹنٹ",
-          "NOTE": "Captain اسسٹنٹ براہ راست صارفین سے بات چیت کرتا ہے، آپ کے مدد کے دستاویزات اور پچھلی گفتگوؤں سے سیکھتا ہے، اور فوری، درست جوابات فراہم کرتا ہے۔ یہ ابتدائی سوالات کو سنبھالتا ہے، تیز حل فراہم کرتا ہے اور ضرورت پڑنے پر ایجنٹ کو منتقل کر دیتا ہے۔"
+          "TITLE": "Pilot اسسٹنٹ",
+          "NOTE": "Pilot اسسٹنٹ براہ راست صارفین سے بات چیت کرتا ہے، آپ کے مدد کے دستاویزات اور پچھلی گفتگوؤں سے سیکھتا ہے، اور فوری، درست جوابات فراہم کرتا ہے۔ یہ ابتدائی سوالات کو سنبھالتا ہے، تیز حل فراہم کرتا ہے اور ضرورت پڑنے پر ایجنٹ کو منتقل کر دیتا ہے۔"
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "کوئی دستاویزات دستیاب نہیں",
         "SUBTITLE": "دستاویزات آپ کے اسسٹنٹ کے لیے FAQs تیار کرنے میں استعمال ہوتی ہیں۔ آپ دستاویزات درآمد کر کے اپنے اسسٹنٹ کے لیے سیاق و سباق فراہم کر سکتے ہیں۔",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain دستاویز",
-          "NOTE": "Captain میں ایک دستاویز اسسٹنٹ کے لیے علم کا ذریعہ ہوتی ہے۔ آپ کے مدد مرکز یا رہنما خطوط کو منسلک کر کے، Captain مواد کا تجزیہ کر سکتا ہے اور صارفین کی پوچھ گچھ کے لیے درست جوابات فراہم کر سکتا ہے۔"
+          "TITLE": "Pilot دستاویز",
+          "NOTE": "Pilot میں ایک دستاویز اسسٹنٹ کے لیے علم کا ذریعہ ہوتی ہے۔ آپ کے مدد مرکز یا رہنما خطوط کو منسلک کر کے، Pilot مواد کا تجزیہ کر سکتا ہے اور صارفین کی پوچھ گچھ کے لیے درست جوابات فراہم کر سکتا ہے۔"
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Failed to delete custom tool"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "تمام"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "ایک سوال اور اس کا متعلقہ جواب علم کے ذخیرے میں شامل کریں اور اس اسسٹنٹ کا انتخاب کریں جس سے یہ منسلک ہونا چاہیے۔",

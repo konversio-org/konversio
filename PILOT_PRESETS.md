@@ -11,9 +11,21 @@ checks the process environment first and falls back to the
 `installation_configs` table. The first read of an ENV-only value also writes
 it back to the DB so the Super Admin UI surfaces the effective value.
 
-> **Note:** Pilot does NOT read `CAPTAIN_*` environment variables. If your
-> install previously ran the Captain enterprise module, the `CAPTAIN_*` keys
+> **Note:** Pilot does NOT read `PILOT_*` environment variables. If your
+> install previously ran the Pilot enterprise module, the `PILOT_*` keys
 > are inert from Pilot's perspective.
+
+---
+
+## Picking a provider
+
+| Provider | Briefing | Copilot (tool calls) | Autopilot (agentic) | EU residency | Cost |
+|---|---|---|---|---|---|
+| **OpenAI** (`gpt-4o-mini`) | ✅ | ✅ | ✅ | ❌ (US) | $$ |
+| **Scaleway** (Mistral Small 3.2) | ✅ fast (~0.5s) | ⚠️ tool calls mostly work, prompt-sensitive | ⚠️ partial | ✅ | $ |
+| **Nebius** (Qwen / Llama) | ✅ | ⚠️ same caveats as Scaleway | ⚠️ partial | ✅ | $ |
+
+**Rule of thumb:** if Pilot just needs a one-shot reply draft (Briefing, Summary, Rewrite, Follow-up), any EU-residency preset works fine and is cheaper. If Pilot needs to invoke tools mid-conversation (Copilot, Autopilot, Logbook extraction with tool calls), strict-JSON / tool-call compliance matters and OpenAI's GPT-4 family is the safest bet today. Mixed mode is supported — set `PILOT_OPEN_AI_<FEATURE>_MODEL` to override per sub-feature (see "Per-feature model overrides" below).
 
 ---
 
@@ -49,7 +61,48 @@ heroku config:set -a konversio \
 
 ---
 
+## OpenAI (recommended for Copilot / Autopilot)
+
+Most reliable for tool-calling and strict-JSON response schemas. Use this
+preset when Copilot, Autopilot, or any Pilot sub-feature that calls tools
+mid-conversation needs to work end-to-end. Validated against the Pilot V1
+prompt format: `gpt-4o-mini` returns clean 3-key JSON (`reasoning`,
+`content`, `reply_suggestion`) without leaking tool function names into the
+response — open-source models on other providers tend to leak.
+
+```sh
+export PILOT_OPEN_AI_API_KEY="<openai api key>"
+export PILOT_OPEN_AI_ENDPOINT="https://api.openai.com"
+export PILOT_OPEN_AI_MODEL="gpt-4o-mini"
+# Leave PILOT_OPEN_AI_API_PROVIDER unset (or set to "openai") so RubyLLM's
+# model registry validates the model name.
+
+export PILOT_EMBEDDING_MODEL="text-embedding-3-small"
+export PILOT_EMBEDDING_DIMENSIONS="1536"
+```
+
+For Heroku:
+
+```sh
+heroku config:set -a konversio \
+  PILOT_OPEN_AI_API_KEY=sk-... \
+  PILOT_OPEN_AI_ENDPOINT=https://api.openai.com \
+  PILOT_OPEN_AI_MODEL=gpt-4o-mini \
+  PILOT_EMBEDDING_MODEL=text-embedding-3-small \
+  PILOT_EMBEDDING_DIMENSIONS=1536
+```
+
+> **EU residency trade-off:** OpenAI processes inference outside the EU
+> (US-based by default). If GDPR data residency is a hard requirement, use
+> Scaleway or Nebius for the EU-resident path and override the model just for
+> Copilot/Autopilot via `PILOT_OPEN_AI_COPILOT_MODEL` etc.
+
+---
+
 ## Mistral La Plateforme
+
+Tool calling works for simple cases; the larger models (`mistral-large-latest`)
+are more reliable than `mistral-small-latest` for Copilot.
 
 ```sh
 export PILOT_OPEN_AI_API_KEY="<mistral api key>"
@@ -79,9 +132,9 @@ export PILOT_EMBEDDING_DIMENSIONS="1536"
 
 ## Groq
 
-Fast inference at low latency. Useful for Briefing and Copilot where the
-agent is waiting on the response in real time. Not ideal for Autopilot
-because Groq's models lack robust tool-calling support.
+Fast inference at low latency. Useful for Briefing where the agent is
+waiting on the response in real time. Not ideal for Copilot or Autopilot
+because Groq's hosted models lack robust tool-calling support.
 
 ```sh
 export PILOT_OPEN_AI_API_KEY="<groq api key>"
@@ -91,21 +144,6 @@ export PILOT_OPEN_AI_API_PROVIDER="openai_compatible"
 
 # Groq does not host embedding models — point embeddings at a separate
 # provider (OpenAI, Mistral, Scaleway) when using Groq for chat.
-```
-
----
-
-## OpenAI
-
-```sh
-export PILOT_OPEN_AI_API_KEY="<openai api key>"
-export PILOT_OPEN_AI_ENDPOINT="https://api.openai.com"
-export PILOT_OPEN_AI_MODEL="gpt-4o-mini"
-# Leave PILOT_OPEN_AI_API_PROVIDER unset (or set to "openai") so RubyLLM's
-# model registry validates the model name.
-
-export PILOT_EMBEDDING_MODEL="text-embedding-3-small"
-export PILOT_EMBEDDING_DIMENSIONS="1536"
 ```
 
 ---

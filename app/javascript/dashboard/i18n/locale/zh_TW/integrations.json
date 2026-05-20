@@ -22,11 +22,11 @@
     "LOADING": "正在取得整合資訊",
     "SEARCH_PLACEHOLDER": "搜尋整合...",
     "NO_RESULTS": "找不到符合搜尋條件的整合",
-    "CAPTAIN": {
-      "DISABLED": "您的帳戶尚未啟用 Captain。",
+    "PILOT": {
+      "DISABLED": "您的帳戶尚未啟用 Pilot。",
       "CLICK_HERE_TO_CONFIGURE": "點此進行設定",
-      "LOADING_CONSOLE": "正在載入 Captain 控制台...",
-      "FAILED_TO_LOAD_CONSOLE": "無法載入 Captain 控制台。請重新整理頁面後再試一次。"
+      "LOADING_CONSOLE": "正在載入 Pilot 控制台...",
+      "FAILED_TO_LOAD_CONSOLE": "無法載入 Pilot 控制台。請重新整理頁面後再試一次。"
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "已訂閱的事件",
@@ -388,8 +388,8 @@
       }
     }
   },
-  "CAPTAIN": {
-    "NAME": "Captain",
+  "PILOT": {
+    "NAME": "Pilot",
     "HEADER_KNOW_MORE": "瞭解更多",
     "ASSISTANT_SWITCHER": {
       "ASSISTANTS": "助理",
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "需要快速摘要、想查看過去的對話，或草擬更好的回覆？Copilot 在此幫您加速處理。",
       "SEND_MESSAGE": "傳送訊息...",
       "EMPTY_MESSAGE": "生成回應時發生錯誤，請重試。",
-      "LOADER": "Captain 正在思考",
+      "LOADER": "Pilot 正在思考",
       "YOU": "您",
       "USE": "使用此內容",
       "RESET": "重設",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "輸入您的訊息...",
       "HEADER": "Playground",
       "DESCRIPTION": "使用此 Playground 向您的助理傳送訊息，檢查其回應是否準確、快速且符合您期望的語氣。",
-      "CREDIT_NOTE": "在此傳送的訊息將計入您的 Captain 額度。"
+      "CREDIT_NOTE": "在此傳送的訊息將計入您的 Pilot 額度。"
     },
     "PAYWALL": {
-      "TITLE": "升級以使用 Captain AI",
-      "AVAILABLE_ON": "免費方案不提供 Captain。",
+      "TITLE": "升級以使用 Pilot AI",
+      "AVAILABLE_ON": "免費方案不提供 Pilot。",
       "UPGRADE_PROMPT": "升級您的方案以取得助理、Copilot 等功能的存取權限。",
       "UPGRADE_NOW": "立即升級",
       "CANCEL_ANYTIME": "您可以隨時更改或取消方案"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI 僅在企業方案中提供。",
+      "AVAILABLE_ON": "Pilot AI 僅在企業方案中提供。",
       "UPGRADE_PROMPT": "升級您的方案以取得助理、Copilot 等功能的存取權限。",
       "ASK_ADMIN": "請聯繫您的管理員進行升級。"
     },
     "BANNER": {
-      "RESPONSES": "您已使用超過 80% 的回應額度。若要繼續使用 Captain AI，請升級方案。",
-      "DOCUMENTS": "文件額度已用完。請升級以繼續使用 Captain AI。"
+      "RESPONSES": "您已使用超過 80% 的回應額度。若要繼續使用 Pilot AI，請升級方案。",
+      "DOCUMENTS": "文件額度已用完。請升級以繼續使用 Pilot AI。"
     },
     "FORM": {
       "CANCEL": "取消",
@@ -576,8 +576,8 @@
         "TITLE": "沒有可用的助理",
         "SUBTITLE": "建立助理來為您的使用者提供快速且準確的回應。它可以從您的幫助文章和過去的對話中學習。",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain 助理",
-          "NOTE": "Captain 助理可直接與客戶互動、從您的幫助文件和過往對話中學習，並提供即時、準確的回應。它會處理初始查詢，提供快速解決方案，必要時再轉接給客服人員。"
+          "TITLE": "Pilot 助理",
+          "NOTE": "Pilot 助理可直接與客戶互動、從您的幫助文件和過往對話中學習，並提供即時、準確的回應。它會處理初始查詢，提供快速解決方案，必要時再轉接給客服人員。"
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "沒有可用的文件",
         "SUBTITLE": "文件可供助理生成常見問答。您可以匯入文件為助理提供知識來源。",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain 文件",
-          "NOTE": "Captain 中的文件可作為助理的知識資源。透過連接您的幫助中心或指南，Captain 能分析內容並為客戶詢問提供準確的回應。"
+          "TITLE": "Pilot 文件",
+          "NOTE": "Pilot 中的文件可作為助理的知識資源。透過連接您的幫助中心或指南，Pilot 能分析內容並為客戶詢問提供準確的回應。"
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "刪除自訂工具失敗"
       },
       "PAYWALL": {
-        "TITLE": "升級以在 Captain 中使用工具",
-        "AVAILABLE_ON": "Captain 工具僅適用於 Business 與 Enterprise 方案。請升級至 Business 方案以使用此功能。",
+        "TITLE": "升級以在 Pilot 中使用工具",
+        "AVAILABLE_ON": "Pilot 工具僅適用於 Business 與 Enterprise 方案。請升級至 Business 方案以使用此功能。",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "開啟帳單",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain 工具僅適用於付費方案。",
+        "AVAILABLE_ON": "Pilot 工具僅適用於付費方案。",
         "UPGRADE_PROMPT": "請升級至付費方案以使用此功能。",
         "ASK_ADMIN": "請聯繫您的管理員進行升級。"
       },
@@ -975,7 +975,7 @@
         "ALL": "全部"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain 發現了一些客戶正在尋找的常見問答。",
+        "TITLE": "Pilot 發現了一些客戶正在尋找的常見問答。",
         "ACTION": "點此檢視"
       },
       "FORM_DESCRIPTION": "新增問題及其對應的答案至知識庫，並選擇要關聯的助理。",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "常見問答可幫助助理為客戶的問題提供快速且準確的回答。它們可以從您的內容自動生成，也可以手動新增。",
         "CLEAR_SEARCH": "清除篩選條件",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain 常見問答",
-          "NOTE": "Captain 常見問答會偵測常見的客戶問題——無論是知識庫中缺少的還是經常被問到的——並生成相關的常見問答以改善支援服務。您可以檢視每個建議並決定是否核准或拒絕。"
+          "TITLE": "Pilot 常見問答",
+          "NOTE": "Pilot 常見問答會偵測常見的客戶問題——無論是知識庫中缺少的還是經常被問到的——並生成相關的常見問答以改善支援服務。您可以檢視每個建議並決定是否核准或拒絕。"
         }
       }
     },

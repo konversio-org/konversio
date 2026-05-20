@@ -14,7 +14,7 @@ import { mapGetters } from 'vuex';
 // utils & constants
 import { LocalStorage } from 'shared/helpers/localStorage';
 import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
-import { CAPTAIN_EVENTS } from '../../../../helper/AnalyticsHelper/events';
+import { PILOT_EVENTS } from '../../../../helper/AnalyticsHelper/events';
 
 export default {
   name: 'LabelSuggestion',
@@ -116,7 +116,7 @@ export default {
 
       // dismiss this once the values are set
       this.isDismissed = true;
-      this.trackLabelEvent(CAPTAIN_EVENTS.LABEL_SUGGESTION_DISMISSED);
+      this.trackLabelEvent(PILOT_EVENTS.LABEL_SUGGESTION_DISMISSED);
     },
     isConversationDismissed() {
       return LocalStorage.getFlag(
@@ -134,7 +134,7 @@ export default {
         conversationId: this.conversationId,
         labels: labelsToAdd,
       });
-      this.trackLabelEvent(CAPTAIN_EVENTS.LABEL_SUGGESTION_APPLIED);
+      this.trackLabelEvent(PILOT_EVENTS.LABEL_SUGGESTION_APPLIED);
     },
     trackLabelEvent(event) {
       const payload = {

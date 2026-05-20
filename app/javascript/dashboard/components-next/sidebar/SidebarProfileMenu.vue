@@ -52,7 +52,7 @@ const menuItems = computed(() => {
       label: t('SIDEBAR_ITEMS.CONTACT_SUPPORT'),
       icon: 'i-lucide-life-buoy',
       click: () => {
-        window.$chatwoot.toggle();
+        window.$konversio.toggle();
       },
     },
     {

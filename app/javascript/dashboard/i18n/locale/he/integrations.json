@@ -22,11 +22,11 @@
     "LOADING": "מאחזר אינטגרציות",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "Captain אינו מופעל בחשבונך.",
+    "PILOT": {
+      "DISABLED": "Pilot אינו מופעל בחשבונך.",
       "CLICK_HERE_TO_CONFIGURE": "לחץ כאן כדי להגדיר",
-      "LOADING_CONSOLE": "טוען את קונסולת Captain...",
-      "FAILED_TO_LOAD_CONSOLE": "הטעינה של קונסולת Captain נכשלה. אנא רענן ונסה שוב."
+      "LOADING_CONSOLE": "טוען את קונסולת Pilot...",
+      "FAILED_TO_LOAD_CONSOLE": "הטעינה של קונסולת Pilot נכשלה. אנא רענן ונסה שוב."
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "אירועים מנויים",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "קפטן",
     "HEADER_KNOW_MORE": "דע יותר",
     "ASSISTANT_SWITCHER": {
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "הקלד הודעה...",
       "HEADER": "מגרש משחקים",
       "DESCRIPTION": "השתמש במגרש משחקים זה כדי לשלוח הודעות לעוזר שלך ולבדוק אם הוא מגיב בצורה מדויקת, מהירה ובטון שאתה מצפה לו.",
-      "CREDIT_NOTE": "הודעות שנשלחות כאן ייספרו למכסת הזיכויים של Captain שלך."
+      "CREDIT_NOTE": "הודעות שנשלחות כאן ייספרו למכסת הזיכויים של Pilot שלך."
     },
     "PAYWALL": {
-      "TITLE": "שדרג כדי להשתמש ב-Captain AI",
-      "AVAILABLE_ON": "Captain אינו זמין בתוכנית החינמית.",
+      "TITLE": "שדרג כדי להשתמש ב-Pilot AI",
+      "AVAILABLE_ON": "Pilot אינו זמין בתוכנית החינמית.",
       "UPGRADE_PROMPT": "שדרג את התוכנית שלך כדי לקבל גישה לעוזרים שלנו, ל-Copilot ועוד.",
       "UPGRADE_NOW": "שדרג עכשיו",
       "CANCEL_ANYTIME": "תוכל לשנות או לבטל את התוכנית שלך בכל עת"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI זמין רק בתכניות הארגוניות.",
+      "AVAILABLE_ON": "Pilot AI זמין רק בתכניות הארגוניות.",
       "UPGRADE_PROMPT": "שדרג את התוכנית שלך כדי לקבל גישה לעוזרים שלנו, ל-Copilot ועוד.",
       "ASK_ADMIN": "אנא פנה למנהל המערכת שלך לצורך השדרוג."
     },
     "BANNER": {
-      "RESPONSES": "ניצלת יותר מ-80% ממגבלת התגובות שלך. כדי להמשיך להשתמש ב-Captain AI, אנא שדרג.",
-      "DOCUMENTS": "מגבלת המסמכים הושגה. שדרג כדי להמשיך להשתמש ב-Captain AI."
+      "RESPONSES": "ניצלת יותר מ-80% ממגבלת התגובות שלך. כדי להמשיך להשתמש ב-Pilot AI, אנא שדרג.",
+      "DOCUMENTS": "מגבלת המסמכים הושגה. שדרג כדי להמשיך להשתמש ב-Pilot AI."
     },
     "FORM": {
       "CANCEL": "ביטול",
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "מחיקת הכלי המותאם אישית נכשלה"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "פתח חיוב",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "אנא פנה למנהל המערכת שלך לצורך השדרוג."
       },
@@ -1014,7 +1014,7 @@
         "CLEAR_SEARCH": "נקה מסננים פעילים",
         "FEATURE_SPOTLIGHT": {
           "TITLE": "שאלות נפוצות של קפטן",
-          "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
+          "NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
         }
       }
     },

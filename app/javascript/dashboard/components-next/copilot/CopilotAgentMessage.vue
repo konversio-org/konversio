@@ -9,7 +9,7 @@ defineProps({
 
 <template>
   <div class="space-y-1 text-n-slate-12">
-    <div class="font-medium">{{ $t('CAPTAIN.COPILOT.YOU') }}</div>
+    <div class="font-medium">{{ $t('PILOT.COPILOT.YOU') }}</div>
     <div class="break-words">
       {{ message.content }}
     </div>

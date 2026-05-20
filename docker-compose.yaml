@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   base: &base
     build:
@@ -38,6 +36,7 @@ services:
     env_file: .env
     environment:
       - VITE_DEV_SERVER_HOST=vite
+      - VITE_RUBY_HOST=vite
       - NODE_ENV=development
       - RAILS_ENV=development
     entrypoint: docker/entrypoints/rails.sh
@@ -79,6 +78,8 @@ services:
       - VITE_DEV_SERVER_HOST=0.0.0.0
       - NODE_ENV=development
       - RAILS_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - CHOKIDAR_INTERVAL=1000
     entrypoint: docker/entrypoints/vite.sh
     command: bin/vite dev
 
@@ -93,6 +94,7 @@ services:
       - POSTGRES_DB=konversio
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=
+      - POSTGRES_HOST_AUTH_METHOD=trust
 
   redis:
     image: redis:alpine

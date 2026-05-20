@@ -11,18 +11,18 @@
 #  limits                         :jsonb
 #  locale                         :integer          default("en")
 #  name                           :string           not null
-#  pilot_autopilot_enabled        :boolean          default(FALSE), not null
-#  pilot_autoresolve_enabled      :boolean          default(FALSE), not null
-#  pilot_briefing_enabled         :boolean          default(FALSE), not null
-#  pilot_copilot_enabled          :boolean          default(FALSE), not null
-#  pilot_csat_analysis_enabled    :boolean          default(FALSE), not null
-#  pilot_enabled                  :boolean          default(FALSE), not null
-#  pilot_follow_up_enabled        :boolean          default(FALSE), not null
-#  pilot_label_suggestion_enabled :boolean          default(FALSE), not null
-#  pilot_logbook_enabled          :boolean          default(FALSE), not null
-#  pilot_rewrite_enabled          :boolean          default(FALSE), not null
-#  pilot_summary_enabled          :boolean          default(FALSE), not null
-#  pilot_tools_enabled            :boolean          default(FALSE), not null
+#  pilot_autopilot_enabled        :boolean          default(TRUE), not null
+#  pilot_autoresolve_enabled      :boolean          default(TRUE), not null
+#  pilot_briefing_enabled         :boolean          default(TRUE), not null
+#  pilot_copilot_enabled          :boolean          default(TRUE), not null
+#  pilot_csat_analysis_enabled    :boolean          default(TRUE), not null
+#  pilot_enabled                  :boolean          default(TRUE), not null
+#  pilot_follow_up_enabled        :boolean          default(TRUE), not null
+#  pilot_label_suggestion_enabled :boolean          default(TRUE), not null
+#  pilot_logbook_enabled          :boolean          default(TRUE), not null
+#  pilot_rewrite_enabled          :boolean          default(TRUE), not null
+#  pilot_summary_enabled          :boolean          default(TRUE), not null
+#  pilot_tools_enabled            :boolean          default(TRUE), not null
 #  settings                       :jsonb
 #  status                         :integer          default("active")
 #  support_email                  :string(100)
@@ -61,10 +61,10 @@ class Account < ApplicationRecord
   store_accessor :settings, :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting
 
   store_accessor :settings, :audio_transcriptions, :auto_resolve_label
-  store_accessor :settings, :captain_models, :captain_features
+  store_accessor :settings, :pilot_models, :pilot_features
   store_accessor :settings, :reporting_timezone
   store_accessor :settings, :keep_pending_on_bot_failure
-  store_accessor :settings, :captain_auto_resolve_mode
+  store_accessor :settings, :pilot_auto_resolve_mode
   include AccountPilotAutoResolve
 
   has_many :account_users, dependent: :destroy_async
@@ -109,6 +109,13 @@ class Account < ApplicationRecord
   has_many :webhooks, dependent: :destroy_async
   has_many :whatsapp_channels, dependent: :destroy_async, class_name: '::Channel::Whatsapp'
   has_many :working_hours, dependent: :destroy_async
+  has_many :pilot_logbook_entries, dependent: :destroy_async, class_name: 'Pilot::LogbookEntry'
+
+  has_many :pilot_assistants, class_name: 'Pilot::Assistant', dependent: :destroy_async
+  has_many :pilot_assistant_responses, class_name: 'Pilot::AssistantResponse', dependent: :destroy_async
+  has_many :pilot_documents, class_name: 'Pilot::Document', dependent: :destroy_async
+  has_many :pilot_scenarios, class_name: 'Pilot::Scenario', dependent: :destroy_async
+  has_many :pilot_custom_tools, class_name: 'Pilot::CustomTool', dependent: :destroy_async
 
   has_one_attached :contacts_export
 

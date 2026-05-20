@@ -522,8 +522,8 @@ const actions = {
     commit(types.SET_CONTEXT_MENU_CHAT_ID, chatId);
   },
 
-  getInboxCaptainAssistantById: async ({ commit }) => {
-    commit(types.SET_INBOX_CAPTAIN_ASSISTANT, null);
+  getInboxPilotAssistantById: async ({ commit }) => {
+    commit(types.SET_INBOX_PILOT_ASSISTANT, null);
   },
 
   ...messageReadActions,

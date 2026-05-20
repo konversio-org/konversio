@@ -34,7 +34,7 @@ watch(
         class="w-4 h-4 transition-transform duration-200 group-hover:scale-110"
       />
       <span class="flex items-center gap-2">
-        {{ t('CAPTAIN.COPILOT.SHOW_STEPS') }}
+        {{ t('PILOT.COPILOT.SHOW_STEPS') }}
         <span
           class="inline-flex items-center justify-center h-4 min-w-4 px-1 text-xs font-medium rounded-full bg-n-solid-3 text-n-slate-11"
         >

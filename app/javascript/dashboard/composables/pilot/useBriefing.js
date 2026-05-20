@@ -30,7 +30,7 @@ export function useBriefing() {
     draft.value = null;
   };
 
-  const generate = async conversationId => {
+  const generate = async (conversationId, opts = {}) => {
     if (!conversationId) return null;
 
     loading.value = true;
@@ -38,7 +38,7 @@ export function useBriefing() {
     draft.value = null;
 
     try {
-      const response = await PilotBriefingsAPI.generate(conversationId);
+      const response = await PilotBriefingsAPI.generate(conversationId, opts);
       draft.value = response?.data?.draft || '';
       return draft.value;
     } catch (err) {

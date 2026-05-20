@@ -311,15 +311,15 @@
     "ACTIVE": "فعال",
     "COMPANIES": "کمپنیاں",
     "ALL_COMPANIES": "تمام کمپنیاں",
-    "CAPTAIN": "کپتان",
-    "CAPTAIN_ASSISTANTS": "اسسٹنٹس",
-    "CAPTAIN_DOCUMENTS": "دستاویزات",
-    "CAPTAIN_RESPONSES": "اکثر پوچھے جانے والے سوالات",
-    "CAPTAIN_TOOLS": "ٹولز",
-    "CAPTAIN_SCENARIOS": "مناظر",
-    "CAPTAIN_PLAYGROUND": "پلے گراؤنڈ",
-    "CAPTAIN_INBOXES": "ان باکسز",
-    "CAPTAIN_SETTINGS": "ترتیبات",
+    "PILOT": "کپتان",
+    "PILOT_ASSISTANTS": "اسسٹنٹس",
+    "PILOT_DOCUMENTS": "دستاویزات",
+    "PILOT_RESPONSES": "اکثر پوچھے جانے والے سوالات",
+    "PILOT_TOOLS": "ٹولز",
+    "PILOT_SCENARIOS": "مناظر",
+    "PILOT_PLAYGROUND": "پلے گراؤنڈ",
+    "PILOT_INBOXES": "ان باکسز",
+    "PILOT_SETTINGS": "ترتیبات",
     "HOME": "ہوم",
     "AGENTS": "ایجنٹس",
     "AGENT_BOTS": "بوٹس",
@@ -381,15 +381,15 @@
     },
     "DOCS": "دستاویزات پڑھیں",
     "SECURITY": "سیکیورٹی",
-    "CAPTAIN_AI": "کپتان",
+    "PILOT_AI": "کپتان",
     "CONVERSATION_WORKFLOW": "گفتگو کا ورک فلو"
   },
-  "CAPTAIN_SETTINGS": {
+  "PILOT_SETTINGS": {
     "TITLE": "کپتان کی ترتیبات",
-    "DESCRIPTION": "Captain کے لیے اپنے AI ماڈلز اور فیچرز کو ترتیب دیں۔ Captain کریڈٹ پر مبنی بلنگ پر عمل کرتا ہے، آپ کو منتخب کردہ ماڈل کی بنیاد پر ہر ایکشن کے لیے کریڈٹس چارج کیے جائیں گے۔.",
+    "DESCRIPTION": "Pilot کے لیے اپنے AI ماڈلز اور فیچرز کو ترتیب دیں۔ Pilot کریڈٹ پر مبنی بلنگ پر عمل کرتا ہے، آپ کو منتخب کردہ ماڈل کی بنیاد پر ہر ایکشن کے لیے کریڈٹس چارج کیے جائیں گے۔.",
     "LOADING": "کپتان کی ترتیب لوڈ ہو رہی ہے...",
     "LINK_TEXT": "کپتان کریڈٹس کے بارے میں مزید جانیں",
-    "NOT_ENABLED": "آپ کے اکاؤنٹ کے لیے Captain فعال نہیں ہے۔ Captain فیچرز تک رسائی کے لیے اپنا پلان اپ گریڈ کریں۔.",
+    "NOT_ENABLED": "آپ کے اکاؤنٹ کے لیے Pilot فعال نہیں ہے۔ Pilot فیچرز تک رسائی کے لیے اپنا پلان اپ گریڈ کریں۔.",
     "MODEL_CONFIG": {
       "TITLE": "ماڈل کی ترتیب",
       "DESCRIPTION": "مختلف فیچرز کے لیے AI ماڈلز منتخب کریں۔.",
@@ -428,8 +428,8 @@
       }
     },
     "API": {
-      "SUCCESS": "Captain کی ترتیبات کامیابی سے اپ ڈیٹ ہو گئیں۔.",
-      "ERROR": "Captain کی ترتیبات کو اپ ڈیٹ کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔."
+      "SUCCESS": "Pilot کی ترتیبات کامیابی سے اپ ڈیٹ ہو گئیں۔.",
+      "ERROR": "Pilot کی ترتیبات کو اپ ڈیٹ کرنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔."
     }
   },
   "BILLING_SETTINGS": {
@@ -447,13 +447,13 @@
       "DESCRIPTION": "اپنے پچھلے انوائسز دیکھیں، بلنگ کی تفصیلات میں ترمیم کریں، یا اپنی سبسکرپشن منسوخ کریں۔.",
       "BUTTON_TXT": "بلنگ پورٹل پر جائیں"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "کپتان",
-      "DESCRIPTION": "Captain AI کے استعمال اور کریڈٹس کا انتظام کریں۔.",
+      "DESCRIPTION": "Pilot AI کے استعمال اور کریڈٹس کا انتظام کریں۔.",
       "BUTTON_TXT": "مزید کریڈٹس خریدیں",
       "DOCUMENTS": "دستاویزات",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain مفت پلان پر دستیاب نہیں ہے، اسسٹنٹس، کوپائلٹ اور مزید تک رسائی کے لیے ابھی اپ گریڈ کریں۔.",
+      "UPGRADE": "Pilot مفت پلان پر دستیاب نہیں ہے، اسسٹنٹس، کوپائلٹ اور مزید تک رسائی کے لیے ابھی اپ گریڈ کریں۔.",
       "REFRESH_CREDITS": "تازہ کریں"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "مزید کریڈٹس خریدیں",
       "MODAL_TITLE": "AI کریڈٹس خریدیں",
-      "MODAL_DESCRIPTION": "Captain AI کے لیے اضافی کریڈٹس خریدیں۔.",
+      "MODAL_DESCRIPTION": "Pilot AI کے لیے اضافی کریڈٹس خریدیں۔.",
       "CREDITS": "کریڈٹس",
       "ONE_TIME": "ایک بار",
       "POPULAR": "سب سے زیادہ مقبول",

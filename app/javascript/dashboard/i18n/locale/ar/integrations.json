@@ -22,7 +22,7 @@
     "LOADING": "جاري جلب التكاملات",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
+    "PILOT": {
       "DISABLED": "لم يتم تمكين الكابتن على حسابك.",
       "CLICK_HERE_TO_CONFIGURE": "انقر هنا للتهيئة",
       "LOADING_CONSOLE": "جار جلب وحدة التحكم بالكابتن...",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "قائد",
     "HEADER_KNOW_MORE": "اعرف المزيد",
     "ASSISTANT_SWITCHER": {
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "هل تحتاج إلى ملخص سريع، ترغب في مراجعة المحادثات السابقة، أو صياغة رد أفضل؟ Copilot هنا لتسريع الأمور.",
       "SEND_MESSAGE": "إرسال الرسالة...",
       "EMPTY_MESSAGE": "حدث خطأ أثناء توليد الاستجابة. يرجى المحاولة مرة أخرى.",
-      "LOADER": "يقوم Captain بالتفكير",
+      "LOADER": "يقوم Pilot بالتفكير",
       "YOU": "أنت",
       "USE": "استخدام هذا",
       "RESET": "إعادة تعيين",
@@ -439,11 +439,11 @@
       "MESSAGE_PLACEHOLDER": "أكتب رسالتك...",
       "HEADER": "ساحة اللعب",
       "DESCRIPTION": "استخدم هذه الساحة لإرسال رسائل إلى مساعدك والتحقق مما إذا كان يرد بدقة وسرعة وبالنغمة التي تتوقعها.",
-      "CREDIT_NOTE": "الرسائل المرسلة هنا ستُحتسب ضمن رصيد Captain الخاص بك."
+      "CREDIT_NOTE": "الرسائل المرسلة هنا ستُحتسب ضمن رصيد Pilot الخاص بك."
     },
     "PAYWALL": {
-      "TITLE": "قم بالترقية لاستخدام Captain AI",
-      "AVAILABLE_ON": "Captain غير متاح على الخطة المجانية.",
+      "TITLE": "قم بالترقية لاستخدام Pilot AI",
+      "AVAILABLE_ON": "Pilot غير متاح على الخطة المجانية.",
       "UPGRADE_PROMPT": "قم بترقية خطتك للحصول على الوصول إلى مساعدينا، وcopilot، والمزيد.",
       "UPGRADE_NOW": "Upgrade now",
       "CANCEL_ANYTIME": "You can change or cancel your plan anytime"
@@ -454,8 +454,8 @@
       "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
     },
     "BANNER": {
-      "RESPONSES": "لقد استخدمت أكثر من 80٪ من حد الاستجابات الخاص بك. للاستمرار في استخدام Captain AI، يرجى الترقية.",
-      "DOCUMENTS": "تم الوصول إلى حد المستندات. قم بالترقية للاستمرار في استخدام Captain AI."
+      "RESPONSES": "لقد استخدمت أكثر من 80٪ من حد الاستجابات الخاص بك. للاستمرار في استخدام Pilot AI، يرجى الترقية.",
+      "DOCUMENTS": "تم الوصول إلى حد المستندات. قم بالترقية للاستمرار في استخدام Pilot AI."
     },
     "FORM": {
       "CANCEL": "إلغاء",
@@ -576,8 +576,8 @@
         "TITLE": "No assistants available",
         "SUBTITLE": "Create an assistant to provide quick and accurate responses to your users. It can learn from your help articles and past conversations.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Assistant",
-          "NOTE": "Captain Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
+          "TITLE": "Pilot Assistant",
+          "NOTE": "Pilot Assistant engages directly with customers, learns from your help docs and past conversations, and delivers instant, accurate responses. It handles the initial queries, providing quick resolutions before  transferring to an agent when needed."
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "No documents available",
         "SUBTITLE": "Documents are used by your assistant to generate FAQs. You can import documents to provide context for your assistant.",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain Document",
-          "NOTE": "A document in Captain serves as a knowledge resource for the assistant. By connecting your help center or guides, Captain can analyze the content and provide accurate responses for customer inquiries."
+          "TITLE": "Pilot Document",
+          "NOTE": "A document in Pilot serves as a knowledge resource for the assistant. By connecting your help center or guides, Pilot can analyze the content and provide accurate responses for customer inquiries."
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "Failed to delete custom tool"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "فتح الفواتير",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "الكل"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "Add a question and its corresponding answer to the knowledge base and select the assistant it should be associated with.",
@@ -1013,8 +1013,8 @@
         "SUBTITLE": "FAQs help your assistant provide quick and accurate answers to questions from your customers. They can be generated automatically from your content or can be added manually.",
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain FAQ",
-          "NOTE": "Captain FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
+          "TITLE": "Pilot FAQ",
+          "NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it."
         }
       }
     },

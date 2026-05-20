@@ -1,4 +1,4 @@
-FROM pilot:development
+FROM konversio:development
 
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"

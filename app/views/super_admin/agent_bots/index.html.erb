@@ -1,0 +1,31 @@
+<%=
+  render("index_header",
+    resources: resources,
+    search_term: search_term,
+    page: page,
+    show_search_bar: show_search_bar,
+  )
+%>
+
+<section class="main-content__body main-content__body--flush">
+  <div class="bg-yellow-50 border border-yellow-300 text-yellow-900 px-4 py-3 mx-4 mt-4 rounded text-sm flex items-start gap-2">
+    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM9.25 9a.75.75 0 000 1.5h.5v3.25a.75.75 0 001.5 0V9.75a.75.75 0 00-.75-.75h-1.25z" clip-rule="evenodd" />
+    </svg>
+    <div class="space-y-2">
+      <p>Agent Bots are scriptable webhook bots, not AI (unless your webhook is itself AI-powered, of course).</p>
+      <p><strong>Pilot's Autopilot</strong> is Konversio's own AI conversation agent. While both can respond to customers and hand off to humans when needed, they are mutually exclusive.</p>
+    </div>
+  </div>
+
+  <%= render(
+    "collection",
+    collection_presenter: page,
+    collection_field_name: resource_name,
+    page: page,
+    resources: resources,
+    table_title: "page-title"
+  ) %>
+
+  <%= render("pagination", resources: resources) %>
+</section>

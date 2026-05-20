@@ -168,6 +168,35 @@ export class DashboardAudioNotificationHelper {
     return shouldPlayAudio.some(Boolean);
   };
 
+  onAssigneeChanged = conversation => {
+    // Triggered when ActionCable broadcasts `assignee.changed`. The
+    // canonical "now you must notice this" moment for bot→human handoffs:
+    // the customer-facing message that prompted the handoff is suppressed
+    // by the `pending` filter in onNewMessage, so without this hook the
+    // assigned agent would never get a favicon badge or audio cue.
+    if (!this.currentUser) return;
+    const assigneeId =
+      conversation?.meta?.assignee?.id ?? conversation?.assignee_id;
+    if (assigneeId !== this.currentUser.id) return;
+
+    // Show favicon badge when the agent's tab is backgrounded
+    if (!WindowVisibilityHelper.isWindowVisible()) {
+      showBadgeOnFavicon();
+    }
+
+    // Audio only when window is hidden or foreground alerts enabled
+    if (!this.shouldPlayAlert()) return;
+
+    const { audioAlertType } = this.notificationConfig;
+    const assignmentAlertsEnabled =
+      audioAlertType.includes('all') ||
+      audioAlertType.includes(EVENT_TYPES.ASSIGNED) ||
+      audioAlertType.includes('mine');
+    if (assignmentAlertsEnabled) {
+      this.playAudioAlert();
+    }
+  };
+
   onNewMessage = message => {
     // If the user does not have the permission to view the conversation, then dismiss the alert
     // FIX ME: There shouldn't be a new message if the user has no access to the conversation.
@@ -186,10 +215,6 @@ export class DashboardAudioNotificationHelper {
       return;
     }
 
-    if (!this.shouldNotifyOnMessage(message)) {
-      return;
-    }
-
     // If the message type is not incoming or private, then dismiss the alert
     const { message_type: messageType, private: isPrivate } = message;
     if (messageType !== MESSAGE_TYPE.INCOMING && !isPrivate) {
@@ -201,15 +226,24 @@ export class DashboardAudioNotificationHelper {
       if (this.store.isMessageFromCurrentConversation(message)) {
         return;
       }
+    }
 
-      // If the user has disabled alerts when active on the dashboard, the dismiss the alert
-      if (this.notificationConfig.playAlertOnlyWhenHidden) {
-        return;
-      }
+    // Always show favicon badge for valid incoming messages
+    showBadgeOnFavicon();
+
+    // Audio alerts respect user preferences
+    if (!this.shouldNotifyOnMessage(message)) {
+      return;
+    }
+
+    if (
+      WindowVisibilityHelper.isWindowVisible() &&
+      this.notificationConfig.playAlertOnlyWhenHidden
+    ) {
+      return;
     }
 
     this.playAudioAlert();
-    showBadgeOnFavicon();
     this.playAudioEvery30Seconds();
   };
 }

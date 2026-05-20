@@ -57,7 +57,7 @@ Rails.application.routes.draw do
           resources :agents, only: [:index, :create, :update, :destroy] do
             post :bulk_create, on: :collection
           end
-          namespace :captain do
+          namespace :pilot do
             resource :preferences, only: [:show, :update]
             resources :assistants do
               member do
@@ -79,7 +79,6 @@ Rails.application.routes.draw do
             end
             resources :documents, only: [:index, :show, :create, :destroy]
             resource :tasks, only: [], controller: 'tasks' do
-              post :rewrite
               post :summarize
               post :reply_suggestion
               post :label_suggestion
@@ -468,10 +467,17 @@ Rails.application.routes.draw do
             end
           end
           namespace :pilot do
+            resources :assistants, only: [] do
+              resources :responses, only: [:index, :create, :update, :destroy]
+            end
             resources :briefings, only: [:create]
             resources :copilot_threads, only: [:index, :create] do
               resources :copilot_messages, only: [:index, :create]
             end
+            resources :summaries, only: [:create]
+            resources :follow_ups, only: [:create]
+            resources :rewrites, only: [:create]
+            resources :logbook_entries, only: [:index, :create, :destroy]
           end
         end
       end
@@ -655,6 +661,8 @@ Rails.application.routes.draw do
       resource :settings, only: [:show] do
         get :refresh, on: :collection
       end
+
+      resource :llm_settings, only: [:show, :update], controller: 'llm_settings'
 
       # resources that doesn't appear in primary navigation in super admin
       resources :account_users, only: [:new, :create, :show, :destroy]

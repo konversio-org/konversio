@@ -22,8 +22,6 @@ export function useCopilotReply() {
 
   const setContentReady = () => {};
 
-  const execute = async () => {};
-
   const sendFollowUp = async () => {};
 
   const accept = () => {
@@ -44,7 +42,6 @@ export function useCopilotReply() {
     reset,
     toggleEditor,
     setContentReady,
-    execute,
     sendFollowUp,
     accept,
   };

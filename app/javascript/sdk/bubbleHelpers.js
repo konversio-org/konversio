@@ -2,8 +2,8 @@ import { addClasses, removeClasses, toggleClass } from './DOMHelpers';
 import { IFrameHelper } from './IFrameHelper';
 import { isExpandedView } from './settingsHelper';
 import {
-  CHATWOOT_CLOSED,
-  CHATWOOT_OPENED,
+  KONVERSIO_CLOSED,
+  KONVERSIO_OPENED,
 } from '../widget/constants/sdkEvents';
 import { dispatchWindowEvent } from 'shared/helpers/CustomEventHelper';
 
@@ -19,14 +19,14 @@ export const closeBubble = document.createElement('button');
 export const notificationBubble = document.createElement('span');
 
 export const setBubbleText = bubbleText => {
-  if (isExpandedView(window.$chatwoot.type)) {
+  if (isExpandedView(window.$konversio.type)) {
     const textNode = document.getElementById('woot-widget--expanded__text');
     textNode.innerText = bubbleText;
   }
 };
 
 export const createBubbleIcon = ({ className, path, target }) => {
-  let bubbleClassName = `${className} woot-elements--${window.$chatwoot.position}`;
+  let bubbleClassName = `${className} woot-elements--${window.$konversio.position}`;
   const bubbleIcon = document.createElementNS(
     'http://www.w3.org/2000/svg',
     'svg'
@@ -48,7 +48,7 @@ export const createBubbleIcon = ({ className, path, target }) => {
   bubbleIcon.appendChild(bubblePath);
   target.appendChild(bubbleIcon);
 
-  if (isExpandedView(window.$chatwoot.type)) {
+  if (isExpandedView(window.$konversio.type)) {
     const textNode = document.createElement('div');
     textNode.id = 'woot-widget--expanded__text';
     textNode.innerText = '';
@@ -75,20 +75,20 @@ const handleBubbleToggle = newIsOpen => {
   IFrameHelper.events.onBubbleToggle(newIsOpen);
 
   if (newIsOpen) {
-    dispatchWindowEvent({ eventName: CHATWOOT_OPENED });
+    dispatchWindowEvent({ eventName: KONVERSIO_OPENED });
   } else {
-    dispatchWindowEvent({ eventName: CHATWOOT_CLOSED });
+    dispatchWindowEvent({ eventName: KONVERSIO_CLOSED });
     chatBubble.focus();
   }
 };
 
 export const onBubbleClick = (props = {}) => {
   const { toggleValue } = props;
-  const { isOpen } = window.$chatwoot;
+  const { isOpen } = window.$konversio;
   if (isOpen === toggleValue) return;
 
   const newIsOpen = toggleValue === undefined ? !isOpen : toggleValue;
-  window.$chatwoot.isOpen = newIsOpen;
+  window.$konversio.isOpen = newIsOpen;
 
   toggleClass(chatBubble, 'woot--hide');
   toggleClass(closeBubble, 'woot--hide');

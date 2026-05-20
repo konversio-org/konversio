@@ -311,15 +311,15 @@
     "ACTIVE": "সক্রিয়",
     "COMPANIES": "কোম্পানি",
     "ALL_COMPANIES": "সমস্ত কোম্পানি",
-    "CAPTAIN": "ক্যাপ্টেন",
-    "CAPTAIN_ASSISTANTS": "সহকারী",
-    "CAPTAIN_DOCUMENTS": "ডকুমেন্ট",
-    "CAPTAIN_RESPONSES": "প্রশ্নাবলী",
-    "CAPTAIN_TOOLS": "টুলস",
-    "CAPTAIN_SCENARIOS": "পরিস্থিতি",
-    "CAPTAIN_PLAYGROUND": "খেলার মাঠ",
-    "CAPTAIN_INBOXES": "ইনবক্স",
-    "CAPTAIN_SETTINGS": "সেটিংস",
+    "PILOT": "ক্যাপ্টেন",
+    "PILOT_ASSISTANTS": "সহকারী",
+    "PILOT_DOCUMENTS": "ডকুমেন্ট",
+    "PILOT_RESPONSES": "প্রশ্নাবলী",
+    "PILOT_TOOLS": "টুলস",
+    "PILOT_SCENARIOS": "পরিস্থিতি",
+    "PILOT_PLAYGROUND": "খেলার মাঠ",
+    "PILOT_INBOXES": "ইনবক্স",
+    "PILOT_SETTINGS": "সেটিংস",
     "HOME": "প্রধান পৃষ্ঠা",
     "AGENTS": "এজেন্ট",
     "AGENT_BOTS": "বট",
@@ -381,10 +381,10 @@
     },
     "DOCS": "ডকস পড়ুন",
     "SECURITY": "নিরাপত্তা",
-    "CAPTAIN_AI": "ক্যাপ্টেন",
+    "PILOT_AI": "ক্যাপ্টেন",
     "CONVERSATION_WORKFLOW": "কথোপকথন ওয়ার্কফ্লো"
   },
-  "CAPTAIN_SETTINGS": {
+  "PILOT_SETTINGS": {
     "TITLE": "ক্যাপ্টেন সেটিংস",
     "DESCRIPTION": "ক্যাপ্টেনের জন্য আপনার AI মডেল এবং বৈশিষ্ট্যগুলি কনফিগার করুন। ক্যাপ্টেন একটি ক্রেডিট ভিত্তিক বিলিং অনুসরণ করে, নির্বাচিত মডেলের উপর ভিত্তি করে ক্যাপ্টেন যে প্রতিটি ক্রিয়া গ্রহণ করে তার জন্য আপনাকে ক্রেডিট চার্জ করা হবে।.",
     "LOADING": "ক্যাপ্টেন কনফিগারেশন লোড হচ্ছে...",
@@ -447,13 +447,13 @@
       "DESCRIPTION": "আপনার পূর্ববর্তী ইনভয়েস দেখুন, আপনার বিলিং বিবরণ সম্পাদনা করুন, অথবা আপনার সাবস্ক্রিপশন বাতিল করুন।.",
       "BUTTON_TXT": "বিলিং পোর্টালে যান"
     },
-    "CAPTAIN": {
+    "PILOT": {
       "TITLE": "ক্যাপ্টেন",
-      "DESCRIPTION": "Captain AI-এর জন্য ব্যবহার এবং ক্রেডিট পরিচালনা করুন।.",
+      "DESCRIPTION": "Pilot AI-এর জন্য ব্যবহার এবং ক্রেডিট পরিচালনা করুন।.",
       "BUTTON_TXT": "আরও ক্রেডিট কিনুন",
       "DOCUMENTS": "নথিপত্র",
       "RESPONSES": "Responses",
-      "UPGRADE": "Captain ফ্রি প্ল্যানে উপলব্ধ নয়, সহকারী, কপাইলট এবং আরও অনেক কিছু অ্যাক্সেস পেতে এখনই আপগ্রেড করুন.",
+      "UPGRADE": "Pilot ফ্রি প্ল্যানে উপলব্ধ নয়, সহকারী, কপাইলট এবং আরও অনেক কিছু অ্যাক্সেস পেতে এখনই আপগ্রেড করুন.",
       "REFRESH_CREDITS": "রিফ্রেশ"
     },
     "CHAT_WITH_US": {
@@ -465,7 +465,7 @@
     "TOPUP": {
       "BUY_CREDITS": "আরও ক্রেডিট কিনুন",
       "MODAL_TITLE": "AI ক্রেডিট কিনুন",
-      "MODAL_DESCRIPTION": "Captain AI-এর জন্য অতিরিক্ত ক্রেডিট কিনুন।.",
+      "MODAL_DESCRIPTION": "Pilot AI-এর জন্য অতিরিক্ত ক্রেডিট কিনুন।.",
       "CREDITS": "ক্রেডিট",
       "ONE_TIME": "এককালীন",
       "POPULAR": "সর্বাধিক জনপ্রিয়",

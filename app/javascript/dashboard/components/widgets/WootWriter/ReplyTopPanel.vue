@@ -35,6 +35,10 @@ export default {
       type: Number,
       default: null,
     },
+    editorContent: {
+      type: String,
+      default: '',
+    },
     isMessageLengthReachingThreshold: {
       type: Boolean,
       default: () => false,
@@ -43,12 +47,8 @@ export default {
       type: Number,
       default: () => 0,
     },
-    editorContent: {
-      type: String,
-      default: undefined,
-    },
   },
-  emits: ['setReplyMode', 'toggleEditorSize', 'briefingDraft'],
+  emits: ['setReplyMode', 'briefingDraft', 'toggleEditorSize'],
   setup(props, { emit }) {
     const setReplyMode = mode => {
       emit('setReplyMode', mode);
@@ -81,6 +81,7 @@ export default {
     useKeyboardEvents(keyboardEvents);
 
     return {
+      setReplyMode,
       handleModeToggle,
       handleReplyClick,
       handleNoteClick,
@@ -127,10 +128,24 @@ export default {
         </span>
       </div>
     </div>
-    <PilotActionsMenu
-      :conversation-id="conversationId"
-      :disabled="disabled || isEditorDisabled"
-      @draft="payload => $emit('briefingDraft', payload)"
-    />
+    <div class="flex items-center gap-1">
+      <!-- Pilot AI actions: sparkle menu (rewrite, briefing, summary, ask copilot) -->
+      <PilotActionsMenu
+        :conversation-id="conversationId"
+        :editor-content="editorContent"
+        :disabled="disabled || isEditorDisabled"
+        @draft="payload => $emit('briefingDraft', payload)"
+        @request-reply-mode="setReplyMode"
+      />
+      <button
+        type="button"
+        class="flex items-center justify-center size-8 rounded text-n-slate-11 hover:enabled:bg-n-slate-3 hover:enabled:text-n-slate-12 disabled:opacity-40 disabled:cursor-not-allowed"
+        :disabled="disabled || isEditorDisabled"
+        :aria-label="$t('CONVERSATION.REPLYBOX.TOGGLE_EDITOR_SIZE')"
+        @click="$emit('toggleEditorSize')"
+      >
+        <span class="inline-block size-5 i-ph-arrows-out" />
+      </button>
+    </div>
   </div>
 </template>

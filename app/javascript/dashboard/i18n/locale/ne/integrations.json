@@ -22,11 +22,11 @@
     "LOADING": "एकीकरणहरू ल्याउँदैछ",
     "SEARCH_PLACEHOLDER": "Search integrations...",
     "NO_RESULTS": "No integrations found matching your search",
-    "CAPTAIN": {
-      "DISABLED": "तपाईंको खातामा Captain सक्षम गरिएको छैन।",
+    "PILOT": {
+      "DISABLED": "तपाईंको खातामा Pilot सक्षम गरिएको छैन।",
       "CLICK_HERE_TO_CONFIGURE": "कन्फिगर गर्न यहाँ क्लिक गर्नुहोस्",
-      "LOADING_CONSOLE": "Captain कन्सोल लोड हुँदैछ...",
-      "FAILED_TO_LOAD_CONSOLE": "Captain कन्सोल लोड गर्न असफल भयो। कृपया रिफ्रेश गरेर पुन: प्रयास गर्नुहोस्।"
+      "LOADING_CONSOLE": "Pilot कन्सोल लोड हुँदैछ...",
+      "FAILED_TO_LOAD_CONSOLE": "Pilot कन्सोल लोड गर्न असफल भयो। कृपया रिफ्रेश गरेर पुन: प्रयास गर्नुहोस्।"
     },
     "WEBHOOK": {
       "SUBSCRIBED_EVENTS": "सदस्यता लिएका घटनाहरू",
@@ -388,7 +388,7 @@
       }
     }
   },
-  "CAPTAIN": {
+  "PILOT": {
     "NAME": "कप्तान",
     "HEADER_KNOW_MORE": "थप जान्नु",
     "ASSISTANT_SWITCHER": {
@@ -404,7 +404,7 @@
       "KICK_OFF_MESSAGE": "छिटो सारांश चाहिन्छ, विगतका कुराकानीहरू जाँच गर्न चाहनुहुन्छ, वा राम्रो जवाफ तयार पार्न चाहनुहुन्छ? कोपाइलट यहाँ छ छिटो बनाउन।",
       "SEND_MESSAGE": "सन्देश पठाउनुहोस्...",
       "EMPTY_MESSAGE": "प्रतिक्रिया सिर्जना गर्दा त्रुटि भयो। कृपया पुन: प्रयास गर्नुहोस्।",
-      "LOADER": "Captain सोच्दैछ",
+      "LOADER": "Pilot सोच्दैछ",
       "YOU": "तपाईं",
       "USE": "यो प्रयोग गर्नुहोस्",
       "RESET": "रिसेट गर्नुहोस्",
@@ -439,23 +439,23 @@
       "MESSAGE_PLACEHOLDER": "सन्देश टाइप गर्नुहोस्...",
       "HEADER": "प्लेलगाउँड",
       "DESCRIPTION": "यस प्लेलगाउँडलाई तपाईंको सहायकलाई सन्देश पठाउन र यसले कत्तिको सही, छिटो र अपेक्षित स्वरमा प्रतिक्रिया दिन्छ जाँच गर्न प्रयोग गर्नुहोस्।",
-      "CREDIT_NOTE": "यहाँ पठाइएका सन्देशहरू तपाईंको Captain क्रेडिटहरूमा गणना गरिनेछ।"
+      "CREDIT_NOTE": "यहाँ पठाइएका सन्देशहरू तपाईंको Pilot क्रेडिटहरूमा गणना गरिनेछ।"
     },
     "PAYWALL": {
-      "TITLE": "Captain AI प्रयोग गर्न अपग्रेड गर्नुहोस्",
-      "AVAILABLE_ON": "Captain निःशुल्क योजनामा उपलब्ध छैन।",
+      "TITLE": "Pilot AI प्रयोग गर्न अपग्रेड गर्नुहोस्",
+      "AVAILABLE_ON": "Pilot निःशुल्क योजनामा उपलब्ध छैन।",
       "UPGRADE_PROMPT": "हाम्रो सहायकहरू, कोपाइलट र थप सुविधाहरू पहुँच गर्न आफ्नो योजना अपग्रेड गर्नुहोस्।",
       "UPGRADE_NOW": "अहिले अपग्रेड गर्नुहोस्",
       "CANCEL_ANYTIME": "तपाईं आफ्नो योजना कुनै पनि समयमा परिवर्तन वा रद्द गर्न सक्नुहुन्छ"
     },
     "ENTERPRISE_PAYWALL": {
-      "AVAILABLE_ON": "Captain AI केवल Enterprise योजनाहरूमा उपलब्ध छ।",
+      "AVAILABLE_ON": "Pilot AI केवल Enterprise योजनाहरूमा उपलब्ध छ।",
       "UPGRADE_PROMPT": "हाम्रो सहायकहरू, कोपाइलट र थप सुविधाहरू पहुँच गर्न आफ्नो योजना अपग्रेड गर्नुहोस्।",
       "ASK_ADMIN": "कृपया अपग्रेडका लागि आफ्नो प्रशासकलाई सम्पर्क गर्नुहोस्।"
     },
     "BANNER": {
-      "RESPONSES": "तपाईंले आफ्नो प्रतिक्रिया सीमा <b>80</b>% भन्दा बढी प्रयोग गर्नुभएको छ। Captain AI प्रयोग जारी राख्न कृपया अपग्रेड गर्नुहोस्।",
-      "DOCUMENTS": "कागजात सीमा पुगेको छ। Captain AI प्रयोग जारी राख्न अपग्रेड गर्नुहोस्।"
+      "RESPONSES": "तपाईंले आफ्नो प्रतिक्रिया सीमा <b>80</b>% भन्दा बढी प्रयोग गर्नुभएको छ। Pilot AI प्रयोग जारी राख्न कृपया अपग्रेड गर्नुहोस्।",
+      "DOCUMENTS": "कागजात सीमा पुगेको छ। Pilot AI प्रयोग जारी राख्न अपग्रेड गर्नुहोस्।"
     },
     "FORM": {
       "CANCEL": "रद्द गर्नुहोस्",
@@ -576,8 +576,8 @@
         "TITLE": "कुनै सहायक उपलब्ध छैन",
         "SUBTITLE": "छिटो र सही उत्तर दिन सहायक बनाउन एक सहायक सिर्जना गर्नुहोस्। यसले तपाईंका सहायता लेख र विगतका कुराकानीहरूबाट सिक्न सक्छ।",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain सहायक",
-          "NOTE": "Captain सहायकले सिधा ग्राहकसँग संवाद गर्छ, तपाईंका सहायता कागजात र विगतका कुराकानीबाट सिक्छ, र छिटो र सही उत्तर दिन्छ। यसले प्रारम्भिक प्रश्नहरू सम्हाल्छ र आवश्यक परे एजेन्टलाई स्थानान्तरण गर्छ।"
+          "TITLE": "Pilot सहायक",
+          "NOTE": "Pilot सहायकले सिधा ग्राहकसँग संवाद गर्छ, तपाईंका सहायता कागजात र विगतका कुराकानीबाट सिक्छ, र छिटो र सही उत्तर दिन्छ। यसले प्रारम्भिक प्रश्नहरू सम्हाल्छ र आवश्यक परे एजेन्टलाई स्थानान्तरण गर्छ।"
         }
       },
       "GUARDRAILS": {
@@ -798,8 +798,8 @@
         "TITLE": "कुनै कागजात उपलब्ध छैन",
         "SUBTITLE": "कागजातहरू तपाईंको सहायकलाई FAQ उत्पन्न गर्न प्रयोग गरिन्छ। तपाईं कागजातहरू आयात गरेर सहायकलाई सन्दर्भ प्रदान गर्न सक्नुहुन्छ।",
         "FEATURE_SPOTLIGHT": {
-          "TITLE": "Captain कागजात",
-          "NOTE": "Captain मा कागजात सहायकको लागि ज्ञान स्रोतको रूपमा काम गर्छ। तपाईंको सहायता केन्द्र वा मार्गनिर्देशनहरू जडान गरेर, Captain सामग्री विश्लेषण गरी ग्राहक प्रश्नहरूको लागि सही उत्तर दिन सक्छ।"
+          "TITLE": "Pilot कागजात",
+          "NOTE": "Pilot मा कागजात सहायकको लागि ज्ञान स्रोतको रूपमा काम गर्छ। तपाईंको सहायता केन्द्र वा मार्गनिर्देशनहरू जडान गरेर, Pilot सामग्री विश्लेषण गरी ग्राहक प्रश्नहरूको लागि सही उत्तर दिन सक्छ।"
         }
       }
     },
@@ -838,14 +838,14 @@
         "ERROR_MESSAGE": "कस्टम टुल मेटाउन असफल भयो"
       },
       "PAYWALL": {
-        "TITLE": "Upgrade to use tools with Captain",
-        "AVAILABLE_ON": "Captain Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
+        "TITLE": "Upgrade to use tools with Pilot",
+        "AVAILABLE_ON": "Pilot Tools are only available in Business and Enterprise plans. Please upgrade to Business plan to use the feature.",
         "UPGRADE_PROMPT": "",
         "UPGRADE_NOW": "Open billing",
         "CANCEL_ANYTIME": ""
       },
       "ENTERPRISE_PAYWALL": {
-        "AVAILABLE_ON": "Captain Tools are only available in the paid plans.",
+        "AVAILABLE_ON": "Pilot Tools are only available in the paid plans.",
         "UPGRADE_PROMPT": "Please upgrade to a paid plan to use this feature.",
         "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
       },
@@ -975,7 +975,7 @@
         "ALL": "सबै"
       },
       "PENDING_BANNER": {
-        "TITLE": "Captain has found some FAQs your customers were looking for.",
+        "TITLE": "Pilot has found some FAQs your customers were looking for.",
         "ACTION": "Click here to review"
       },
       "FORM_DESCRIPTION": "ज्ञान आधारमा प्रश्न र यसको सम्बन्धित उत्तर थप्नुहोस् र सम्बन्धित सहायक चयन गर्नुहोस्।",
@@ -1014,7 +1014,7 @@
         "CLEAR_SEARCH": "Clear active filters",
         "FEATURE_SPOTLIGHT": {
           "TITLE": "क्याप्टेन FAQ",
-          "NOTE": "Captain FAQs ले सामान्य ग्राहक प्रश्नहरू पत्ता लगाउँछ—तपाईंको ज्ञान आधारमा नभएका वा बारम्बार सोधिने—र समर्थन सुधार गर्न सम्बन्धित FAQs सिर्जना गर्छ। तपाईं प्रत्येक सुझाव समीक्षा गर्न सक्नुहुन्छ र स्वीकृत वा अस्वीकृत गर्ने निर्णय लिन सक्नुहुन्छ।"
+          "NOTE": "Pilot FAQs ले सामान्य ग्राहक प्रश्नहरू पत्ता लगाउँछ—तपाईंको ज्ञान आधारमा नभएका वा बारम्बार सोधिने—र समर्थन सुधार गर्न सम्बन्धित FAQs सिर्जना गर्छ। तपाईं प्रत्येक सुझाव समीक्षा गर्न सक्नुहुन्छ र स्वीकृत वा अस्वीकृत गर्ने निर्णय लिन सक्नुहुन्छ।"
         }
       }
     },

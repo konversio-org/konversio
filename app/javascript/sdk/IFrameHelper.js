@@ -23,9 +23,9 @@ import {
 import { isWidgetColorLighter } from 'shared/helpers/colorHelper';
 import { dispatchWindowEvent } from 'shared/helpers/CustomEventHelper';
 import {
-  CHATWOOT_ERROR,
-  CHATWOOT_POSTBACK,
-  CHATWOOT_READY,
+  KONVERSIO_ERROR,
+  KONVERSIO_POSTBACK,
+  KONVERSIO_READY,
 } from '../widget/constants/sdkEvents';
 import { SET_USER_ERROR } from '../widget/constants/errorTypes';
 import { getUserCookieName, setCookieWithDomain } from './cookieHelpers';
@@ -72,11 +72,11 @@ export const IFrameHelper = {
     iframe.id = 'chatwoot_live_chat_widget';
     iframe.style.visibility = 'hidden';
 
-    let holderClassName = `woot-widget-holder woot--hide woot-elements--${window.$chatwoot.position}`;
-    if (window.$chatwoot.hideMessageBubble) {
+    let holderClassName = `woot-widget-holder woot--hide woot-elements--${window.$konversio.position}`;
+    if (window.$konversio.hideMessageBubble) {
       holderClassName += ` woot-widget--without-bubble`;
     }
-    if (isFlatWidgetStyle(window.$chatwoot.widgetStyle)) {
+    if (isFlatWidgetStyle(window.$konversio.widgetStyle)) {
       holderClassName += ` woot-widget-holder--flat`;
     }
 
@@ -140,7 +140,7 @@ export const IFrameHelper = {
   },
 
   setupAudioListeners: () => {
-    const { baseUrl = '' } = window.$chatwoot;
+    const { baseUrl = '' } = window.$konversio;
     getAlertAudio(baseUrl, { type: 'widget', alertTone: 'ding' }).then(() =>
       initOnEvents.forEach(event => {
         document.removeEventListener(
@@ -154,33 +154,33 @@ export const IFrameHelper = {
 
   events: {
     loaded: message => {
-      updateAuthCookie(message.config.authToken, window.$chatwoot.baseDomain);
-      window.$chatwoot.hasLoaded = true;
+      updateAuthCookie(message.config.authToken, window.$konversio.baseDomain);
+      window.$konversio.hasLoaded = true;
       const campaignsSnoozedTill = Cookies.get('cw_snooze_campaigns_till');
       IFrameHelper.sendMessage('config-set', {
-        locale: window.$chatwoot.locale,
-        position: window.$chatwoot.position,
-        hideMessageBubble: window.$chatwoot.hideMessageBubble,
-        showPopoutButton: window.$chatwoot.showPopoutButton,
-        widgetStyle: window.$chatwoot.widgetStyle,
-        darkMode: window.$chatwoot.darkMode,
-        showUnreadMessagesDialog: window.$chatwoot.showUnreadMessagesDialog,
+        locale: window.$konversio.locale,
+        position: window.$konversio.position,
+        hideMessageBubble: window.$konversio.hideMessageBubble,
+        showPopoutButton: window.$konversio.showPopoutButton,
+        widgetStyle: window.$konversio.widgetStyle,
+        darkMode: window.$konversio.darkMode,
+        showUnreadMessagesDialog: window.$konversio.showUnreadMessagesDialog,
         campaignsSnoozedTill,
-        welcomeTitle: window.$chatwoot.welcomeTitle,
-        welcomeDescription: window.$chatwoot.welcomeDescription,
-        availableMessage: window.$chatwoot.availableMessage,
-        unavailableMessage: window.$chatwoot.unavailableMessage,
-        enableFileUpload: window.$chatwoot.enableFileUpload,
-        enableEmojiPicker: window.$chatwoot.enableEmojiPicker,
-        enableEndConversation: window.$chatwoot.enableEndConversation,
+        welcomeTitle: window.$konversio.welcomeTitle,
+        welcomeDescription: window.$konversio.welcomeDescription,
+        availableMessage: window.$konversio.availableMessage,
+        unavailableMessage: window.$konversio.unavailableMessage,
+        enableFileUpload: window.$konversio.enableFileUpload,
+        enableEmojiPicker: window.$konversio.enableEmojiPicker,
+        enableEndConversation: window.$konversio.enableEndConversation,
       });
       IFrameHelper.onLoad({
         widgetColor: message.config.channelConfig.widgetColor,
       });
       IFrameHelper.toggleCloseButton();
 
-      if (window.$chatwoot.user) {
-        IFrameHelper.sendMessage('set-user', window.$chatwoot.user);
+      if (window.$konversio.user) {
+        IFrameHelper.sendMessage('set-user', window.$konversio.user);
       }
 
       window.playAudioAlert = () => {};
@@ -189,12 +189,12 @@ export const IFrameHelper = {
         document.addEventListener(e, IFrameHelper.setupAudioListeners, false);
       });
 
-      if (!window.$chatwoot.resetTriggered) {
-        dispatchWindowEvent({ eventName: CHATWOOT_READY });
+      if (!window.$konversio.resetTriggered) {
+        dispatchWindowEvent({ eventName: KONVERSIO_READY });
       }
     },
     error: ({ errorType, data }) => {
-      dispatchWindowEvent({ eventName: CHATWOOT_ERROR, data: data });
+      dispatchWindowEvent({ eventName: KONVERSIO_ERROR, data: data });
 
       if (errorType === SET_USER_ERROR) {
         Cookies.remove(getUserCookieName());
@@ -204,20 +204,20 @@ export const IFrameHelper = {
       dispatchWindowEvent({ eventName, data });
     },
     setBubbleLabel(message) {
-      setBubbleText(window.$chatwoot.launcherTitle || message.label);
+      setBubbleText(window.$konversio.launcherTitle || message.label);
     },
 
     setAuthCookie({ data: { widgetAuthToken } }) {
-      updateAuthCookie(widgetAuthToken, window.$chatwoot.baseDomain);
+      updateAuthCookie(widgetAuthToken, window.$konversio.baseDomain);
     },
 
     setCampaignReadOn() {
-      updateCampaignReadStatus(window.$chatwoot.baseDomain);
+      updateCampaignReadStatus(window.$konversio.baseDomain);
     },
 
     postback(data) {
       dispatchWindowEvent({
-        eventName: CHATWOOT_POSTBACK,
+        eventName: KONVERSIO_POSTBACK,
         data,
       });
     },
@@ -235,7 +235,7 @@ export const IFrameHelper = {
 
     popoutChatWindow: ({ baseUrl, websiteToken, locale }) => {
       const cwCookie = Cookies.get('cw_conversation');
-      window.$chatwoot.toggle('close');
+      window.$konversio.toggle('close');
       popoutChatWindow(baseUrl, websiteToken, locale, cwCookie);
     },
 
@@ -269,7 +269,7 @@ export const IFrameHelper = {
 
     resetUnreadMode: () => removeUnreadClass(),
     handleNotificationDot: event => {
-      if (window.$chatwoot.hideMessageBubble) {
+      if (window.$konversio.hideMessageBubble) {
         return;
       }
 
@@ -304,13 +304,13 @@ export const IFrameHelper = {
     if (IFrameHelper.getBubbleHolder().length) {
       return;
     }
-    createBubbleHolder(window.$chatwoot.hideMessageBubble);
+    createBubbleHolder(window.$konversio.hideMessageBubble);
     onLocationChangeListener();
 
     let className = 'woot-widget-bubble';
-    let closeBtnClassName = `woot-elements--${window.$chatwoot.position} woot-widget-bubble woot--close woot--hide`;
+    let closeBtnClassName = `woot-elements--${window.$konversio.position} woot-widget-bubble woot--close woot--hide`;
 
-    if (isFlatWidgetStyle(window.$chatwoot.widgetStyle)) {
+    if (isFlatWidgetStyle(window.$konversio.widgetStyle)) {
       className += ' woot-widget-bubble--flat';
       closeBtnClassName += ' woot-widget-bubble--flat';
     }

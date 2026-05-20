@@ -26,6 +26,17 @@ import vue from '@vitejs/plugin-vue';
 const isLibraryMode = process.env.BUILD_MODE === 'library';
 const isTestMode = process.env.TEST === 'true';
 
+// Both @chatwoot/ninja-keys and @material/mwc-icon depend on lit@2.2.6.
+// pnpm stores a single copy but Vite's dev server serves each symlink path
+// as a separate module, triggering Lit's "Multiple versions" console warning.
+// Aliasing forces all 'lit' imports to a single canonical path.
+// The version is pinned in pnpm-lock.yaml; update if a renovate/dependabot
+// PR bumps lit or ninja-keys.
+const litPath = path.resolve(
+  __dirname,
+  'node_modules/.pnpm/lit@2.2.6/node_modules/lit'
+);
+
 const vueOptions = {
   template: {
     compilerOptions: {
@@ -44,6 +55,26 @@ if (isLibraryMode) {
 
 export default defineConfig({
   plugins: plugins,
+  css: {
+    preprocessorOptions: {
+      // Opt into Sass's modern compiler API. The legacy JS API was
+      // deprecated in Dart Sass 1.79 and will be removed in 2.0.0;
+      // switching now silences the per-file warning and keeps the build
+      // forward-compatible. Same sass package, just a newer entrypoint.
+      scss: { api: 'modern-compiler' },
+    },
+  },
+  server: {
+    // Vite 5 default-denies requests whose Host header isn't on this
+    // allowlist. Inside docker compose, Rails proxies to http://vite:3036
+    // so the Host header reaches Vite as "vite". Localhost is the host
+    // header when the browser hits Vite directly on the published port.
+    allowedHosts: ['vite', 'localhost'],
+    watch: {
+      usePolling: true,
+      interval: 1000,
+    },
+  },
   build: {
     rollupOptions: {
       output: {
@@ -73,6 +104,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      lit: litPath,
       vue: 'vue/dist/vue.esm-bundler.js',
       components: path.resolve('./app/javascript/dashboard/components'),
       next: path.resolve('./app/javascript/dashboard/components-next'),
