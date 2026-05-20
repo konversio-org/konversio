@@ -17,6 +17,11 @@
 #  index_pilot_logbook_entries_on_account_id  (account_id)
 #  index_pilot_logbook_entries_on_contact_id  (contact_id)
 #
+# Foreign Keys
+#
+#  fk_rails_...  (account_id => accounts.id)
+#  fk_rails_...  (contact_id => contacts.id)
+#
 
 class Pilot::LogbookEntry < ApplicationRecord
   self.table_name = 'pilot_logbook_entries'

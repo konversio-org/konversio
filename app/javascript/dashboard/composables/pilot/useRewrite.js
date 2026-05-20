@@ -20,7 +20,8 @@ export function useRewrite() {
 
   const rewriteEnabled = () => {
     const account = currentAccount.value || {};
-    return Boolean(account.pilot_enabled && account.pilot_rewrite_enabled);
+    const features = account.features || {};
+    return Boolean(features.pilot && features.pilot_rewrite);
   };
 
   const reset = () => {
