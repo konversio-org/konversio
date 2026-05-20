@@ -43,7 +43,8 @@ module Llm::Config
     end
 
     # Resolved config for a single slot. Returns a hash with :provider, :endpoint,
-    # :api_key, :model, :openai_compatible.
+    # :api_key, :model, :openai_compatible. The embedding slot additionally
+    # carries :dimensions when an explicit override is set.
     def for_slot(slot)
       slot = slot.to_sym
       slug = Llm::ProviderRegistry.slot_provider(slot)
@@ -51,13 +52,15 @@ module Llm::Config
       return blank_slot(slot, model) if slug.nil?
 
       data = Llm::ProviderRegistry.provider(slug)
-      {
+      config = {
         provider: slug,
         endpoint: strip_v1_suffix(data[:endpoint].presence || DEFAULT_API_ENDPOINT),
         api_key: data[:api_key],
         model: model,
         openai_compatible: data[:openai_compatible] ? true : false
       }
+      config[:dimensions] = embedding_dimensions_override if slot == :embedding && embedding_dimensions_override
+      config
     end
 
     # Base endpoint with any trailing `/v1` stripped. Code paths that need the
@@ -100,6 +103,17 @@ module Llm::Config
 
     def blank_slot(_slot, model)
       { provider: nil, endpoint: DEFAULT_API_ENDPOINT, api_key: nil, model: model, openai_compatible: false }
+    end
+
+    # Reads PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE (the Custom-mode operator
+    # input). Returns the integer value, or nil when unset/zero/blank so the
+    # slot config omits the key entirely.
+    def embedding_dimensions_override
+      raw = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', nil).to_s.strip
+      return nil if raw.blank?
+
+      value = raw.to_i
+      value.positive? ? value : nil
     end
 
     def strip_v1_suffix(endpoint)

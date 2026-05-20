@@ -6,7 +6,7 @@
 #  answer            :text             not null
 #  documentable_type :string
 #  edited            :boolean          default(FALSE), not null
-#  embedding         :vector(1536)
+#  embedding         :vector(3584)
 #  question          :string           not null
 #  status            :integer          default("approved"), not null
 #  created_at        :datetime         not null
@@ -21,7 +21,6 @@
 #  index_pilot_assistant_responses_on_account_id    (account_id)
 #  index_pilot_assistant_responses_on_assistant_id  (assistant_id)
 #  index_pilot_assistant_responses_on_status        (status)
-#  vector_idx_knowledge_entries_embedding           (embedding) USING ivfflat
 #
 
 # Searchable knowledge entry for a Pilot assistant. Embedding lives in the
