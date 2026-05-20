@@ -17,6 +17,7 @@ import { BUS_EVENTS } from 'shared/constants/busEvents';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import VoiceCallButton from 'dashboard/components-next/Contacts/VoiceCallButton.vue';
 import InlineInput from 'dashboard/components-next/inline-input/InlineInput.vue';
+import Logbook from './Logbook.vue';
 
 import {
   isAConversationRoute,
@@ -36,6 +37,7 @@ export default {
     ContactMergeModal,
     VoiceCallButton,
     InlineInput,
+    Logbook,
   },
   props: {
     contact: {
@@ -415,6 +417,7 @@ export default {
         @cancel="toggleEditModal"
       />
       <ContactMergeModal ref="mergeModal" :primary-contact="contact" />
+      <Logbook :contact-id="contact.id" />
     </div>
     <woot-delete-modal
       v-if="showDeleteModal"
