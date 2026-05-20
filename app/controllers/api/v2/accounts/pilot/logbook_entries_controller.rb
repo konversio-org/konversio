@@ -2,7 +2,8 @@
 
 class Api::V2::Accounts::Pilot::LogbookEntriesController < Api::V1::Accounts::BaseController
   before_action :ensure_feature_enabled
-  before_action :set_contact
+  before_action :set_contact, only: [:index, :create]
+  before_action :set_entry, only: [:update, :destroy]
 
   def index
     @entries = @contact.pilot_logbook_entries.latest
@@ -14,8 +15,12 @@ class Api::V2::Accounts::Pilot::LogbookEntriesController < Api::V1::Accounts::Ba
     render json: serialize_entry(@entry), status: :created
   end
 
+  def update
+    @entry.update!(logbook_entry_params)
+    render json: serialize_entry(@entry)
+  end
+
   def destroy
-    @entry = @contact.pilot_logbook_entries.find(params[:id])
     @entry.destroy!
     head :ok
   end
@@ -30,6 +35,10 @@ class Api::V2::Accounts::Pilot::LogbookEntriesController < Api::V1::Accounts::Ba
 
   def set_contact
     @contact = Current.account.contacts.find(params[:contact_id])
+  end
+
+  def set_entry
+    @entry = Current.account.pilot_logbook_entries.find(params[:id])
   end
 
   def logbook_entry_params
