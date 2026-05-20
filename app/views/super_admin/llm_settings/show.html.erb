@@ -23,10 +23,18 @@
 
   <% if @dimension_warning %>
     <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded mb-4">
-      <strong>Embedding dimension mismatch.</strong>
-      The embedding slot is set to <code><%= @dimension_warning[:model] %></code> (<%= @dimension_warning[:new_dim] %> dims),
-      but stored vectors were generated at <%= @dimension_warning[:stored_dim] %> dims. Switching will break pgvector queries
-      against existing rows. Re-embed your corpus or revert the model.
+      <% if @dimension_warning[:kind] == :unknown_model %>
+        <strong>Embedding model dimension not declared.</strong>
+        The embedding slot uses <code><%= @dimension_warning[:model] %></code>, which is not in the built-in catalog.
+        Set the <strong>Dimensions</strong> field below (Custom mode) so the system knows what to expect from the provider.
+        The <code>pilot_assistant_responses.embedding</code> column is currently <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+      <% else %>
+        <strong>Embedding dimension mismatch.</strong>
+        The embedding slot resolves to <code><%= @dimension_warning[:model] %></code> at <%= @dimension_warning[:expected_dim] %> dims,
+        but the <code>pilot_assistant_responses.embedding</code> column is <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+        Write a migration to <code>ALTER COLUMN embedding TYPE vector(<%= @dimension_warning[:expected_dim] %>)</code>
+        and re-embed the corpus, or switch the model back.
+      <% end %>
     </div>
   <% end %>
 
@@ -168,14 +176,17 @@
           </div>
         </label>
 
-        <div id="advanced-section" class="<%= 'hidden' unless custom_selected %> border-t border-blue-200 bg-white px-4 py-4">
+        <div id="advanced-section"
+             class="<%= 'hidden' unless custom_selected %> border-t border-blue-200 bg-white px-4 py-4"
+             data-model-dimensions='<%= Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.to_json %>'>
           <table class="w-full text-sm">
             <thead class="text-slate-500 text-xs uppercase tracking-wide">
               <tr>
-                <th class="text-left pb-2 w-40">Slot</th>
-                <th class="text-left pb-2 w-56">Used for</th>
+                <th class="text-left pb-2 w-32">Slot</th>
+                <th class="text-left pb-2 w-48">Used for</th>
                 <th class="text-left pb-2">Provider</th>
                 <th class="text-left pb-2">Model</th>
+                <th class="text-left pb-2 w-28">Dimensions</th>
               </tr>
             </thead>
             <tbody>
@@ -199,10 +210,31 @@
                       </select>
                     <% end %>
                   </td>
-                  <td class="py-3">
+                  <td class="py-3 pr-3">
                     <input type="text" name="slots[<%= slot %>][model]"
                            value="<%= @slots[slot][:model] %>" data-llm-slot="<%= slot %>"
+                           data-llm-model-input="<%= slot %>"
                            class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
+                    <% if slot == :embedding %>
+                      <p class="mt-1 text-xs text-yellow-700">
+                        Changing this model invalidates all stored vectors. Re-embed FAQs and documents manually after saving — there is no automatic reindex.
+                      </p>
+                    <% end %>
+                  </td>
+                  <td class="py-3">
+                    <% if slot == :embedding %>
+                      <% current_model = @slots[:embedding][:model] %>
+                      <% known_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[current_model] %>
+                      <% override = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', nil).to_s.strip %>
+                      <% initial_value = override.presence || known_dim&.to_s || '' %>
+                      <input type="text" name="slots[embedding][dimensions]"
+                             value="<%= initial_value %>"
+                             data-llm-embedding-dimensions
+                             <%= 'required' if known_dim.nil? %>
+                             class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
+                    <% else %>
+                      <span class="text-xs text-slate-400">—</span>
+                    <% end %>
                   </td>
                 </tr>
               <% end %>
@@ -213,14 +245,9 @@
     </div>
 
     <div class="flex items-center gap-2 mb-8">
-      <%= form.submit 'Save changes', class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600', data: { 'llm-submit-label': 'Saving and testing model availability…' } %>
-      <button type="submit" formaction="<%= test_super_admin_llm_settings_path %>" formmethod="post"
-              data-llm-submit-label="Testing all slots…"
-              class="bg-white text-slate-700 border border-slate-300 px-4 py-2 rounded font-medium hover:bg-slate-50">
-        Test all slots
-      </button>
+      <%= form.submit 'Save and test', class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600', data: { 'llm-submit-label': 'Saving and testing model availability…' } %>
       <span id="dirty-indicator" class="hidden text-xs text-amber-700 font-medium ml-2">● Unsaved changes</span>
-      <span class="text-xs text-slate-500 ml-auto">Tests issue a minimal round-trip per slot. Nothing is persisted.</span>
+      <span class="text-xs text-slate-500 ml-auto">Save runs a minimal round-trip per slot and renders pass/fail below.</span>
     </div>
   <% end %>
 
@@ -336,6 +363,35 @@
         el.addEventListener('change', handler);
         el.addEventListener('input', handler);
       });
+
+      var advanced = document.getElementById('advanced-section');
+      var modelDimensions = {};
+      if (advanced && advanced.dataset.modelDimensions) {
+        try { modelDimensions = JSON.parse(advanced.dataset.modelDimensions); }
+        catch (e) { modelDimensions = {}; }
+      }
+      var embeddingModelInput = form.querySelector('[data-llm-model-input="embedding"]');
+      var dimensionsInput = form.querySelector('[data-llm-embedding-dimensions]');
+
+      function syncDimensions() {
+        if (!embeddingModelInput || !dimensionsInput) return;
+        var model = embeddingModelInput.value.trim();
+        var known = Object.prototype.hasOwnProperty.call(modelDimensions, model)
+          ? modelDimensions[model]
+          : null;
+        if (known !== null) {
+          dimensionsInput.value = String(known);
+          dimensionsInput.removeAttribute('required');
+        } else {
+          dimensionsInput.value = '';
+          dimensionsInput.setAttribute('required', 'required');
+        }
+      }
+
+      if (embeddingModelInput) {
+        embeddingModelInput.addEventListener('input', syncDimensions);
+        embeddingModelInput.addEventListener('change', syncDimensions);
+      }
     })();
   </script>
 </section>
