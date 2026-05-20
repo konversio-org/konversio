@@ -112,13 +112,6 @@ module Custom
       # Stubbed until the Logbook sub-feature lands (section 5). Forward-
       # compatible: returns nil today so the system prompt simply doesn't
       # include logbook context.
-      def logbook_context_for(contact)
-        return nil if contact.blank?
-        return nil unless feature_enabled?(:logbook)
-        return nil unless defined?(::Pilot::LogbookEntry)
-
-        nil
-      end
     end
   end
 end
