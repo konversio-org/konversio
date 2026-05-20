@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_20_163000) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_20_170000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -66,31 +66,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_163000) do
     t.integer "locale", default: 0
     t.string "domain", limit: 100
     t.string "support_email", limit: 100
-    t.bigint "legacy_feature_flags", default: 0, null: false
     t.integer "auto_resolve_duration"
     t.jsonb "limits", default: {}
     t.jsonb "custom_attributes", default: {}
     t.integer "status", default: 0
     t.jsonb "internal_attributes", default: {}, null: false
     t.jsonb "settings", default: {}
-    t.boolean "pilot_enabled", default: true, null: false
-    t.boolean "pilot_briefing_enabled", default: true, null: false
-    t.boolean "pilot_copilot_enabled", default: true, null: false
-    t.boolean "pilot_autopilot_enabled", default: true, null: false
-    t.boolean "pilot_logbook_enabled", default: true, null: false
-    t.boolean "pilot_tools_enabled", default: true, null: false
-    t.boolean "pilot_autoresolve_enabled", default: true, null: false
-    t.boolean "pilot_summary_enabled", default: true, null: false
-    t.boolean "pilot_csat_analysis_enabled", default: true, null: false
-    t.boolean "pilot_follow_up_enabled", default: true, null: false
-    t.boolean "pilot_rewrite_enabled", default: true, null: false
-    t.boolean "pilot_label_suggestion_enabled", default: true, null: false
     t.jsonb "feature_flags", default: {}, null: false
     t.index "((feature_flags ->> 'pilot'::text))", name: "index_accounts_on_feature_flags_pilot"
     t.index "((feature_flags ->> 'pilot_briefing'::text))", name: "index_accounts_on_feature_flags_pilot_briefing"
     t.index "COALESCE((feature_flags ->> 'pilot'::text), 'true'::text)", name: "index_accounts_on_feature_flags_pilot_coalesce"
     t.index "COALESCE((feature_flags ->> 'pilot_briefing'::text), 'true'::text)", name: "index_accounts_on_feature_flags_pilot_briefing_coalesce"
-    t.index ["id"], name: "index_accounts_on_pilot_enabled", where: "pilot_enabled"
     t.index ["status"], name: "index_accounts_on_status"
   end
 
