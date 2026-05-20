@@ -259,7 +259,7 @@
   enabled: true
 - name: pilot_logbook
   display_name: Pilot Logbook
-  enabled: true
+  enabled: false
 - name: pilot_tools
   display_name: Pilot Tools
   enabled: true
