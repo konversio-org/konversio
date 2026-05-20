@@ -472,6 +472,7 @@ Rails.application.routes.draw do
             resources :copilot_threads, only: [:index, :create] do
               resources :copilot_messages, only: [:index, :create]
             end
+            resources :logbook_entries, only: [:index, :create, :destroy]
           end
         end
       end
