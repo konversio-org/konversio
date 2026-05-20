@@ -65,7 +65,14 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({ uiFlags: 'contacts/getUIFlags' }),
+    ...mapGetters({
+      uiFlags: 'contacts/getUIFlags',
+      currentAccount: 'getCurrentAccount',
+    }),
+    logbookEnabled() {
+      const features = this.currentAccount?.features || {};
+      return Boolean(features.pilot && features.pilot_logbook);
+    },
     contactProfileLink() {
       return `/app/accounts/${this.$route.params.accountId}/contacts/${this.contact.id}`;
     },
@@ -417,7 +424,7 @@ export default {
         @cancel="toggleEditModal"
       />
       <ContactMergeModal ref="mergeModal" :primary-contact="contact" />
-      <Logbook :contact-id="contact.id" />
+      <Logbook v-if="logbookEnabled" :contact-id="contact.id" />
     </div>
     <woot-delete-modal
       v-if="showDeleteModal"
