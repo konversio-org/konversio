@@ -39,6 +39,8 @@ Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-pro
 
 Pilot is Konversio's open-source AI layer for customer support — the open alternative to closed AI add-ons. Pilot is **bring-your-own-key**: you supply credentials for OpenAI, Anthropic, Mistral, or point it at a local model via Ollama. No customer data is routed through a vendor's AI sub-processor, making Pilot a fit for EU-sovereign deployments and regulated industries.
 
+- **Pilot Logbook**: Agents can record key context about contacts to ground AI responses in customer history, ensuring Pilot has the most relevant background information.
+
 ### 💬 Omnichannel Support Desk
 
 Konversio centralizes all customer conversations into one powerful inbox, no matter where your customers reach out from. It supports live chat on your website, email, Facebook, Instagram, Twitter, WhatsApp, Telegram, Line, SMS etc.
@@ -65,6 +67,7 @@ Publish help articles, FAQs, and guides through the built-in Help Center Portal.
 #### Customer Data & Segmentation
 - Contact Management with profiles and interaction history.
 - Contact Segments and Notes for targeted communication.
+- Pilot Logbook for grounding AI in customer history.
 - Campaigns to proactively engage customers.
 - Custom Attributes for storing additional customer data.
 - Pre-Chat Forms to collect user information before starting conversations.

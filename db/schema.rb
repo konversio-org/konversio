@@ -1079,6 +1079,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_021743) do
     t.index ["pilot_assistant_id"], name: "index_pilot_inboxes_on_pilot_assistant_id"
   end
 
+  create_table "pilot_logbook_entries", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "contact_id", null: false
+    t.text "content", null: false
+    t.jsonb "metadata", default: {}
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_pilot_logbook_entries_on_account_id"
+    t.index ["contact_id"], name: "index_pilot_logbook_entries_on_contact_id"
+  end
+
   create_table "pilot_scenarios", force: :cascade do |t|
     t.string "title"
     t.text "description"
@@ -1336,6 +1347,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_021743) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "pilot_logbook_entries", "accounts"
+  add_foreign_key "pilot_logbook_entries", "contacts"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

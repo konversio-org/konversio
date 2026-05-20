@@ -477,6 +477,7 @@ Rails.application.routes.draw do
             resources :summaries, only: [:create]
             resources :follow_ups, only: [:create]
             resources :rewrites, only: [:create]
+            resources :logbook_entries, only: [:index, :create, :destroy]
           end
         end
       end

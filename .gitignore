@@ -105,3 +105,5 @@ CLAUDE.local.md
 local/
 Procfile.worktree
 openspec/
+.mise.local.toml
+mise.local.toml
