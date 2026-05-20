@@ -60,6 +60,7 @@
     },
     "LOGBOOK": {
       "TITLE": "Pilot Logbook",
+      "SUBTITLE": "What Pilot AI remembers about this customer.",
       "NO_ENTRIES": "No entries yet. These help ground Pilot AI in history.",
       "ADD_ENTRY": "Add Entry",
       "PLACEHOLDER": "Add a logbook entry for Pilot...",
