@@ -65,7 +65,7 @@ export default {
     showAudioTranscriptionConfig() {
       return this.isFeatureEnabledonAccount(
         this.accountId,
-        FEATURE_FLAGS.PILOT
+        FEATURE_FLAGS.PILOT_MASTER
       );
     },
     languagesSortedByCode() {

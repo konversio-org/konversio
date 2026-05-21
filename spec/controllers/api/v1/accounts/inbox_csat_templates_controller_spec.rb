@@ -394,9 +394,9 @@ RSpec.describe Api::V1::Accounts::InboxCsatTemplatesController, type: :request d
       }
     end
 
-    context 'when pilot_integration feature is disabled' do
+    context 'when pilot feature is disabled' do
       before do
-        account.disable_features!('pilot_integration')
+        account.disable_features!('pilot', 'pilot_csat_analysis')
       end
 
       it 'returns forbidden' do
@@ -410,9 +410,27 @@ RSpec.describe Api::V1::Accounts::InboxCsatTemplatesController, type: :request d
       end
     end
 
-    context 'when pilot_integration feature is enabled' do
+    context 'when pilot_csat_analysis feature is disabled' do
       before do
-        account.enable_features!('pilot_integration')
+        account.enable_features!('pilot')
+        account.disable_features!('pilot_csat_analysis')
+        account.reload
+      end
+
+      it 'returns forbidden' do
+        post "/api/v1/accounts/#{account.id}/inboxes/#{whatsapp_inbox.id}/csat_template/analyze",
+             headers: admin.create_new_auth_token,
+             params: valid_template_params,
+             as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(response.parsed_body['error']).to eq('Pilot is required for template analysis')
+      end
+    end
+
+    context 'when pilot and pilot_csat_analysis features are enabled' do
+      before do
+        account.enable_features!('pilot', 'pilot_csat_analysis')
         account.reload
       end
 

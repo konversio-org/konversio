@@ -90,10 +90,19 @@ const shouldShowCopilotPanel = computed(() => {
   }
   const isPilotEnabled = isFeatureEnabledonAccount.value(
     currentAccountId.value,
-    FEATURE_FLAGS.PILOT
+    FEATURE_FLAGS.PILOT_MASTER
+  );
+  const isPilotCopilotEnabled = isFeatureEnabledonAccount.value(
+    currentAccountId.value,
+    FEATURE_FLAGS.PILOT_COPILOT
   );
   const { is_copilot_panel_open: isCopilotPanelOpen } = uiSettings.value;
-  return isPilotEnabled && isCopilotPanelOpen && !uiFlags.value.fetchingList;
+  return (
+    isPilotEnabled &&
+    isPilotCopilotEnabled &&
+    isCopilotPanelOpen &&
+    !uiFlags.value.fetchingList
+  );
 });
 
 const handleReset = () => {
