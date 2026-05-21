@@ -1,3 +1,4 @@
+# rubocop:disable RSpec/VerifiedDoubles
 require 'rails_helper'
 
 RSpec.describe Custom::Pilot::AutopilotService do
@@ -31,7 +32,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
     it 'runs the agents runner and returns a non-handover result for a normal answer' do
       service = described_class.new(assistant: assistant, message: 'How big is the box?')
 
-      fake_result = double('RunResult', output: 'The box is 30cm wide.')
+      fake_result = double('RunResult', output: 'The box is 30cm wide.', failed?: false, error: nil)
       fake_runner = double('AgentRunner')
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(fake_runner).to receive(:on_tool_start).and_yield('search_documentation')
@@ -47,7 +48,8 @@ RSpec.describe Custom::Pilot::AutopilotService do
     it 'flags handover when the reply contains the sentinel' do
       service = described_class.new(assistant: assistant, message: 'Where is my refund?')
 
-      fake_result = double('RunResult', output: "I cannot help here. #{Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL}")
+      sentinel = Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
+      fake_result = double('RunResult', output: "I cannot help here. #{sentinel}", failed?: false, error: nil)
       fake_runner = double('AgentRunner', on_tool_start: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
@@ -60,7 +62,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
     it 'flags handover when the customer asks for a human' do
       service = described_class.new(assistant: assistant, message: 'I want to speak to a human, please.')
 
-      fake_result = double('RunResult', output: 'Sure.')
+      fake_result = double('RunResult', output: 'Sure.', failed?: false, error: nil)
       fake_runner = double('AgentRunner', on_tool_start: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
@@ -89,3 +91,5 @@ RSpec.describe Custom::Pilot::AutopilotService do
     end
   end
 end
+
+# rubocop:enable RSpec/VerifiedDoubles
