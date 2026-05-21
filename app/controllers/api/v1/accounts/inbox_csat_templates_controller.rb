@@ -65,7 +65,7 @@ class Api::V1::Accounts::InboxCsatTemplatesController < Api::V1::Accounts::BaseC
   end
 
   def validate_pilot_enabled
-    return if Current.account.feature_enabled?('pilot_integration')
+    return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_csat_analysis')
 
     render json: { error: 'Pilot is required for template analysis' }, status: :forbidden
   end
