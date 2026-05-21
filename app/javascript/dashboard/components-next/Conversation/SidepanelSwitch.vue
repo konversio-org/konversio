@@ -19,8 +19,16 @@ const isFeatureEnabledonAccount = useMapGetter(
   'accounts/isFeatureEnabledonAccount'
 );
 
-const showCopilotTab = computed(() =>
-  isFeatureEnabledonAccount.value(currentAccountId.value, FEATURE_FLAGS.PILOT)
+const showCopilotTab = computed(
+  () =>
+    isFeatureEnabledonAccount.value(
+      currentAccountId.value,
+      FEATURE_FLAGS.PILOT_MASTER
+    ) &&
+    isFeatureEnabledonAccount.value(
+      currentAccountId.value,
+      FEATURE_FLAGS.PILOT_COPILOT
+    )
 );
 
 const isContactSidebarOpen = computed(
