@@ -31,7 +31,7 @@ RSpec.describe Custom::Pilot::BriefingService do
       fake_suggestion = instance_double(Pilot::ReplySuggestionService)
       expect(Pilot::ReplySuggestionService)
         .to receive(:new)
-        .with(account: account, conversation_display_id: conversation.display_id, user: user)
+        .with(account: account, conversation_display_id: conversation.display_id, user: user, previous_output: nil, refinement_instruction: nil)
         .and_return(fake_suggestion)
       expect(fake_suggestion).to receive(:perform).and_return({ message: 'Hi there!' })
 
