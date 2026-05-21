@@ -35,6 +35,40 @@ On top of this foundation we're building **Pilot**, a fully open-source AI layer
 
 Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-processor** — you control where data lives and which providers touch it. This makes Konversio a suitable building block for **EU-sovereign, GDPR-compliant deployments**. The software enables compliance; the deployment achieves it.
 
+---
+
+## 🚀 Quick Start with Docker
+
+The easiest way to run Konversio locally is using Docker Compose, which automatically starts PostgreSQL, Redis, Mailhog, the Rails backend, and the Vite frontend.
+
+### 1. Copy Environment Template
+```bash
+cp .env.example .env
+```
+
+### 2. Boot the Containers
+```bash
+docker compose up -d
+```
+*(Wait for the `postgres` and `redis` healthchecks to pass.)*
+
+### 3. Initialize the Database
+```bash
+docker compose exec rails bundle exec rails db:chatwoot_prepare
+```
+
+### 4. Access the App
+Once started, the services are available at:
+* **Frontend Dashboard**: [http://localhost:3000](http://localhost:3000)
+* **Vite Dev Server (HMR)**: [http://localhost:3036](http://localhost:3036)
+* **Mailhog Web Interface**: [http://localhost:8025](http://localhost:8025)
+
+#### Default Development Credentials:
+* **Email**: `john@acme.inc`
+* **Password**: `Password1!`
+
+---
+
 ### ✨ Pilot – Open-Source BYOK AI Layer
 
 Pilot is Konversio's open-source AI layer for customer support — the open alternative to closed AI add-ons. Pilot is **bring-your-own-key**: you supply credentials for OpenAI, Anthropic, Mistral, or point it at a local model via Ollama. No customer data is routed through a vendor's AI sub-processor, making Pilot a fit for EU-sovereign deployments and regulated industries.
