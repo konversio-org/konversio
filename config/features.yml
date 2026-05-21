@@ -133,10 +133,6 @@
 - name: linear_integration
   display_name: Linear Integration
   enabled: false
-- name: pilot_integration
-  display_name: Pilot
-  enabled: false
-  premium: true
 - name: custom_roles
   display_name: Custom Roles
   enabled: false
@@ -173,10 +169,6 @@
 - name: notion_integration
   display_name: Notion Integration
   enabled: false
-- name: pilot_integration_v2
-  display_name: Pilot V2
-  enabled: false
-  premium: true
 - name: whatsapp_embedded_signup
   display_name: WhatsApp Embedded Signup
   enabled: false
