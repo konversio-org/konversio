@@ -26,11 +26,16 @@ services:
       - cache:/app/tmp/cache
       - bundle:/usr/local/bundle
     depends_on:
-      - postgres
-      - redis
-      - vite
-      - mailhog
-      - sidekiq
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      vite:
+        condition: service_started
+      mailhog:
+        condition: service_started
+      sidekiq:
+        condition: service_started
     ports:
       - 3000:3000
     env_file: .env
@@ -39,6 +44,9 @@ services:
       - VITE_RUBY_HOST=vite
       - NODE_ENV=development
       - RAILS_ENV=development
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379
+      - SMTP_ADDRESS=mailhog
     entrypoint: docker/entrypoints/rails.sh
     command: ["bundle", "exec", "rails", "s", "-p", "3000", "-b", "0.0.0.0"]
 
@@ -52,12 +60,18 @@ services:
       - cache:/app/tmp/cache
       - bundle:/usr/local/bundle
     depends_on:
-      - postgres
-      - redis
-      - mailhog
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
     environment:
       - NODE_ENV=development
       - RAILS_ENV=development
+      - POSTGRES_HOST=postgres
+      - REDIS_URL=redis://redis:6379
+      - SMTP_ADDRESS=mailhog
     command: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
 
   vite:
@@ -95,6 +109,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=
       - POSTGRES_HOST_AUTH_METHOD=trust
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -105,6 +124,11 @@ services:
       - redis:/data/redis
     ports:
       - '6379:6379'
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping || redis-cli -a \"$$REDIS_PASSWORD\" ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   mailhog:
     image: mailhog/mailhog
