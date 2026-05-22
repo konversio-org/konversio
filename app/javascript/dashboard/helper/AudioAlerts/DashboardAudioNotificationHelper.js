@@ -107,14 +107,18 @@ export class DashboardAudioNotificationHelper {
       this.storeSubscription = this.store.store.subscribe(mutation => {
         if (
           [
-            'updateConversation',
-            'addConversation',
-            'addMessage',
-            'setAllConversations',
-            'deleteConversation',
+            'UPDATE_CONVERSATION',
+            'ADD_CONVERSATION',
+            'ADD_MESSAGE',
+            'DELETE_CONVERSATION',
+            'UPDATE_MESSAGE_UNREAD_COUNT',
+            'SET_ALL_CONVERSATION',
+            'RECEIVE_CHAT_LIST',
           ].includes(mutation.type)
         ) {
-          if (!this.store.hasUnreadConversation()) {
+          if (this.store.hasUnreadConversation()) {
+            showBadgeOnFavicon();
+          } else {
             resetFavicon();
           }
         }
