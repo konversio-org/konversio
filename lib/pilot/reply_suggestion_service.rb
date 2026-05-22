@@ -2,13 +2,24 @@ class Pilot::ReplySuggestionService < Pilot::BaseTaskService
   pattr_initialize [:account!, :conversation_display_id!, :user!, :previous_output, :refinement_instruction]
 
   def perform
+    tools = []
+    if doc_search_available?
+      raw_tool = ::Custom::Pilot::Tools::SearchDocumentation.new
+      tools << ::Pilot::RubyLlmToolAdapter.new(raw_tool, account: account)
+    end
+
     make_api_call(
       model: GPT_MODEL,
-      messages: build_messages
+      messages: build_messages,
+      tools: tools
     )
   end
 
   private
+
+  def doc_search_available?
+    !!(defined?(::Custom::Pilot::Tools::SearchDocumentation) && ::Custom::Pilot::Tools::SearchDocumentation.available?)
+  end
 
   # When the agent asks for a refinement ("make it shorter", "add the
   # refund link"), append the previous draft as an assistant turn and
@@ -36,7 +47,8 @@ class Pilot::ReplySuggestionService < Pilot::BaseTaskService
     {
       'channel_type' => conversation.inbox.channel_type,
       'agent_name' => user.name,
-      'agent_signature' => user.message_signature.presence
+      'agent_signature' => user.message_signature.presence,
+      'has_search_tool' => doc_search_available?
     }
   end
 
