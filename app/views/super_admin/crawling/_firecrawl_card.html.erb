@@ -1,0 +1,31 @@
+<div class="border border-slate-200 rounded p-4 bg-white">
+  <div class="font-medium text-slate-900 mb-3">Firecrawl</div>
+  <dl class="text-sm space-y-1.5">
+    <div class="flex items-baseline gap-3">
+      <dt class="font-mono text-xs text-slate-500 w-72 shrink-0">PILOT_FIRECRAWL_API_KEY</dt>
+      <dd>
+        <% if firecrawl[:api_key_set] %>
+          <% if firecrawl[:masked_key] %>
+            <span class="font-mono text-xs text-slate-700"
+                  title="Masked preview — only the first 3 and last 4 characters are shown.">
+              <%= firecrawl[:masked_key] %>
+            </span>
+          <% end %>
+        <% else %>
+          <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">✗ not set</span>
+        <% end %>
+      </dd>
+    </div>
+    <div class="flex items-baseline gap-3">
+      <dt class="font-mono text-xs text-slate-500 w-72 shrink-0">Endpoint</dt>
+      <dd class="font-mono text-xs text-slate-700"><%= firecrawl[:endpoint] %></dd>
+    </div>
+  </dl>
+
+  <% unless firecrawl[:api_key_set] %>
+    <p class="mt-3 text-xs text-slate-500">
+      Without an API key, document ingestion falls back to single-page fetch.
+      Set <code class="font-mono">PILOT_FIRECRAWL_API_KEY</code> in your environment and restart the application to enable multi-page crawling.
+    </p>
+  <% end %>
+</div>
