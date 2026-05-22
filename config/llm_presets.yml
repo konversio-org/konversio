@@ -23,10 +23,10 @@ presets:
 
   - slug: all-scaleway
     label: All Scaleway (EU equivalent of the OpenAI defaults)
-    # Mistral Small 3.2: direct equivalent of gpt-4.1-mini — fast, cheap,
+    # Gemma 4 26B-a4b-it: MoE (4B active) direct equivalent of gpt-4.1-mini — fast, cheap,
     # vision-capable, explicit Dutch + English support, 128k context.
-    # €0.15 input / €0.35 output per million tokens (cheaper than OpenAI).
-    chat: { provider: scaleway, model: mistral-small-3.2-24b-instruct-2506 }
+    # €0.25 input / €0.50 output per million tokens. Highly reliable tool-calling.
+    chat: { provider: scaleway, model: gemma-4-26b-a4b-it }
     # BGE multilingual gemma2: tops MTEB multilingual; 3584 dims.
     # Direct EU equivalent of text-embedding-3-small (different dim count).
     embedding: { provider: scaleway, model: bge-multilingual-gemma2 }
