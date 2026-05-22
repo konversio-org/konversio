@@ -44,6 +44,7 @@ export class DashboardAudioNotificationHelper {
     };
 
     this.currentUser = null;
+    this.faviconSwitcherInitialized = false;
   }
 
   intializeAudio = () => {
@@ -95,7 +96,10 @@ export class DashboardAudioNotificationHelper {
       this.intializeAudio();
     }
 
-    initFaviconSwitcher();
+    if (!this.faviconSwitcherInitialized) {
+      initFaviconSwitcher(() => !this.store.hasUnreadConversation());
+      this.faviconSwitcherInitialized = true;
+    }
     this.clearRecurringTimer();
     this.playAudioEvery30Seconds();
 
