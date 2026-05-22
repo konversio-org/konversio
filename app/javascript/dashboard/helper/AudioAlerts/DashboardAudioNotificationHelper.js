@@ -1,6 +1,9 @@
 import { MESSAGE_TYPE } from 'shared/constants/messages';
-import { showBadgeOnFavicon } from './faviconHelper';
-import { initFaviconSwitcher } from './faviconHelper';
+import {
+  showBadgeOnFavicon,
+  resetFavicon,
+  initFaviconSwitcher,
+} from './faviconHelper';
 
 import { EVENT_TYPES } from 'dashboard/routes/dashboard/settings/profile/constants.js';
 import GlobalStore from 'dashboard/store';
@@ -95,6 +98,24 @@ export class DashboardAudioNotificationHelper {
     initFaviconSwitcher();
     this.clearRecurringTimer();
     this.playAudioEvery30Seconds();
+
+    if (!this.storeSubscription && this.store?.store?.subscribe) {
+      this.storeSubscription = this.store.store.subscribe(mutation => {
+        if (
+          [
+            'updateConversation',
+            'addConversation',
+            'addMessage',
+            'setAllConversations',
+            'deleteConversation',
+          ].includes(mutation.type)
+        ) {
+          if (!this.store.hasUnreadConversation()) {
+            resetFavicon();
+          }
+        }
+      });
+    }
   };
 
   shouldPlayAlert = () => {
