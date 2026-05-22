@@ -14,49 +14,34 @@ module Custom
 
       HANDOVER_SENTINEL = '[handover]'.freeze
 
-      # English defaults; can be overridden per-account via account settings
-      # later. We compare lowercased substrings; phrase order doesn't matter.
-      DEFAULT_HUMAN_REQUEST_PHRASES = [
-        'speak to a human',
-        'talk to a human',
-        'real person',
-        'human agent',
-        'talk to someone',
-        'speak to someone',
-        'human being',
-        'live agent',
-        'live person',
-        'real human'
-      ].freeze
-
-      def initialize(human_request_phrases: nil)
-        @phrases = human_request_phrases.presence || DEFAULT_HUMAN_REQUEST_PHRASES
-      end
+      # Matches common ways a user asks for a human across preposition / article
+      # variants ("speak to a human", "speak with a human", "talk to someone",
+      # "real person", "live agent", "human being", "I need a human").
+      HUMAN_REQUEST_PATTERN = /
+        \b(?:
+          (?:speak|talk|chat|connect)\s+(?:to|with)\s+(?:an?\s+|the\s+)?(?:human|person|agent|someone|operator|representative)
+          |
+          (?:real|live|actual)\s+(?:human|person|agent)
+          |
+          human\s+(?:being|agent)
+          |
+          (?:need|want|get)\s+(?:a\s+|an\s+)?(?:human|real\s+person|live\s+agent)
+        )\b
+      /ix
 
       # @param assistant_reply [String, nil] the LLM-produced reply text
       # @param customer_message [String, nil] the most recent customer message
       # @param invoked_tool_names [Array<String>] names of tools that fired
       def evaluate(assistant_reply: nil, customer_message: nil, invoked_tool_names: [])
-        if assistant_reply.to_s.downcase.include?(HANDOVER_SENTINEL)
-          return Result.new(handover?: true, reason: 'sentinel')
-        end
+        return Result.new(handover?: true, reason: 'sentinel') if assistant_reply.to_s.downcase.include?(HANDOVER_SENTINEL)
 
-        if customer_message.present? && matches_human_request?(customer_message)
+        if customer_message.present? && HUMAN_REQUEST_PATTERN.match?(customer_message.to_s)
           return Result.new(handover?: true, reason: 'customer_request')
         end
 
-        if Array(invoked_tool_names).any? { |name| name.to_s.start_with?('handoff_') }
-          return Result.new(handover?: true, reason: 'handoff_tool')
-        end
+        return Result.new(handover?: true, reason: 'handoff_tool') if Array(invoked_tool_names).any? { |name| name.to_s.start_with?('handoff_') }
 
         Result.new(handover?: false, reason: nil)
-      end
-
-      private
-
-      def matches_human_request?(message)
-        normalized = message.to_s.downcase
-        @phrases.any? { |phrase| normalized.include?(phrase.downcase) }
       end
     end
   end

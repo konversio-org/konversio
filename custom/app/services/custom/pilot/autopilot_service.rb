@@ -126,14 +126,19 @@ module Custom
       def handover_policy
         sentinel = ::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
         <<~HANDOVER.strip
-          Handover policy — read carefully:
+          Handover policy — follow exactly:
 
-          When you do not have a confident, source-backed answer (search_documentation returned nothing useful, or the question is outside your knowledge), AND when the user explicitly asks for a human:
+          Trigger a handover whenever EITHER of these is true:
+            1. The user asks for a human, agent, operator, or live person — directly or indirectly (e.g. "speak to a human", "speak with a human", "real person", "I need a human", "talk to someone").
+            2. You cannot answer confidently from `search_documentation` results and the user needs a real answer.
 
-          - DO append the handover sentinel `#{sentinel}` to your reply. This is the ONLY way to bring in a human; the system reads this sentinel and transitions the conversation.
-          - DO keep that reply to one short sentence, e.g. "Let me get a human to help with that.".
-          - DO NOT invent generic fallbacks. Specifically: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", or any URL, email, phone number, or category name that did not come from a tool result. Inventing these is hallucination and confuses customers.
-          - DO NOT apologise at length or list topics you might cover. Just hand over.
+          To trigger a handover you MUST end your reply with the literal token `#{sentinel}`. The system parses this token and transitions the conversation to a human. Without it, your reply is sent as a normal bot message and the user stays stuck with the bot — this is a critical failure.
+
+          Format the handover reply as ONE short sentence followed by the token. Examples:
+            Let me get a human to help with that. #{sentinel}
+            Connecting you with a teammate now. #{sentinel}
+
+          Never invent fallbacks: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", URL, email, phone number, or category that did not come from a tool result. Do not apologise at length or list topics. Just hand over with the token.
         HANDOVER
       end
 
