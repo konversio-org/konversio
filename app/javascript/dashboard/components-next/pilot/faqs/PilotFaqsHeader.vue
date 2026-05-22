@@ -8,15 +8,22 @@ import FaqSearchInput from './FaqSearchInput.vue';
 const props = defineProps({
   assistantId: { type: [Number, String, null], default: null },
   search: { type: String, default: '' },
+  isPending: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:assistantId', 'update:search', 'create']);
+const emit = defineEmits([
+  'update:assistantId',
+  'update:search',
+  'create',
+  'back',
+]);
 
 const { t } = useI18n();
 
 const onAssistantChange = id => emit('update:assistantId', id);
 const onSearchChange = value => emit('update:search', value);
 const onCreate = () => emit('create');
+const onBack = () => emit('back');
 </script>
 
 <template>
@@ -26,6 +33,16 @@ const onCreate = () => emit('create');
     <div
       class="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0 flex-shrink"
     >
+      <!-- Back button in pending mode -->
+      <Button
+        v-if="isPending"
+        icon="i-lucide-arrow-left"
+        variant="ghost"
+        color="slate"
+        class="flex-shrink-0 !p-1.5"
+        @click="onBack"
+      />
+
       <div class="min-w-48 max-w-64">
         <AssistantPicker
           :model-value="props.assistantId"
@@ -34,9 +51,10 @@ const onCreate = () => emit('create');
       </div>
       <span aria-hidden="true" class="h-5 w-px bg-n-weak" />
       <h1 class="text-heading-md font-medium text-n-slate-12">
-        {{ t('PILOT.FAQS.PAGE_TITLE') }}
+        {{ isPending ? 'Pending FAQs' : t('PILOT.FAQS.PAGE_TITLE') }}
       </h1>
       <FeatureSpotlightPopover
+        v-if="!isPending"
         :button-label="t('PILOT.FAQS.KNOW_MORE')"
         :note="t('PILOT.FAQS.KNOW_MORE_NOTE')"
         hide-actions
@@ -50,7 +68,9 @@ const onCreate = () => emit('create');
         class="min-w-0 flex-1 sm:max-w-xs"
         @update:search="onSearchChange"
       />
+      <!-- Create button is only shown in approved mode -->
       <Button
+        v-if="!isPending"
         :label="t('PILOT.FAQS.CREATE_NEW')"
         icon="i-lucide-plus"
         color="blue"
