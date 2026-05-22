@@ -1,0 +1,75 @@
+<% content_for(:title) do %>
+  Crawling &amp; Indexing
+<% end %>
+
+<header class="main-content__header" role="banner">
+  <h1 class="main-content__page-title" id="page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body max-w-4xl">
+  <% if flash[:notice] %>
+    <div class="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded mb-4">
+      <%= flash[:notice] %>
+    </div>
+  <% end %>
+
+  <% if @error.present? %>
+    <div class="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded mb-4">
+      <strong>Couldn't save:</strong> <%= @error %>
+    </div>
+  <% end %>
+
+  <div class="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded mb-6 text-sm">
+    Firecrawl powers multi-page web crawling for Pilot's Documents feature.
+    Without the API key, ingestion falls back to single-page fetch.
+    The crawl limits below cap how far each ingestion run goes — keep them conservative to avoid
+    runaway crawl bills or accidentally walking off the target domain.
+  </div>
+
+  <section class="mb-8">
+    <h2 class="text-base font-semibold mb-3">Firecrawl API key</h2>
+    <%= render partial: 'firecrawl_card', locals: { firecrawl: @firecrawl } %>
+  </section>
+
+  <%= form_with url: super_admin_crawling_path, method: :patch, local: true do |form| %>
+    <h2 class="text-base font-semibold mb-3">Crawl limits</h2>
+
+    <div class="border border-slate-200 rounded p-4 bg-white space-y-4">
+      <div class="flex items-baseline gap-4">
+        <label for="crawling_limit" class="font-mono text-xs text-slate-700 w-72 shrink-0">
+          PILOT_FIRECRAWL_CRAWL_LIMIT
+        </label>
+        <input id="crawling_limit"
+               type="number"
+               min="1"
+               name="crawling[PILOT_FIRECRAWL_CRAWL_LIMIT]"
+               value="<%= @crawl_limit %>"
+               class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-32" />
+        <span class="text-xs text-slate-500">Maximum number of pages fetched per crawl.</span>
+      </div>
+
+      <div class="flex items-baseline gap-4">
+        <label for="crawling_max_depth" class="font-mono text-xs text-slate-700 w-72 shrink-0">
+          PILOT_FIRECRAWL_CRAWL_MAX_DEPTH
+        </label>
+        <input id="crawling_max_depth"
+               type="number"
+               min="1"
+               name="crawling[PILOT_FIRECRAWL_CRAWL_MAX_DEPTH]"
+               value="<%= @crawl_max_depth %>"
+               class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-32" />
+        <span class="text-xs text-slate-500">Maximum link depth traversed during a crawl.</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2 mt-6">
+      <%= form.submit 'Save',
+            class: 'bg-woot-500 text-white px-4 py-2 rounded font-medium hover:bg-woot-600' %>
+      <span class="text-xs text-slate-500 ml-auto">
+        Values shown reflect environment overrides if set; saving writes to the database for the rest.
+      </span>
+    </div>
+  <% end %>
+</section>

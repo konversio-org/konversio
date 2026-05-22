@@ -11,6 +11,22 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     load_view_state
   end
 
+  def test
+    slug = params[:slug].to_s.strip
+    if slug.blank?
+      # rubocop:disable Rails/I18nLocaleTexts
+      flash[:error] = 'No provider specified.'
+      # rubocop:enable Rails/I18nLocaleTexts
+      redirect_to super_admin_llm_settings_path
+      return
+    end
+
+    @last_test_slug = slug.to_sym
+    @last_test_result = Llm::SanityTester.test_provider(slug.to_sym)
+    load_view_state
+    render :show
+  end
+
   def update
     if params[:preset].present? && params[:preset] != Llm::Presets::CUSTOM_SLUG
       apply_preset(params[:preset])
@@ -123,13 +139,12 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
   end
 
   def render_with_slot_tests
-    @test_results = SLOTS.index_with { |slot| run_slot_test(slot) }
+    @test_results = SLOTS.index_with { |slot| Llm::SanityTester.test_slot(slot) }
     load_view_state
     render :show
   end
 
   def load_view_state
-    @providers = Llm::ProviderRegistry.known_slugs.map { |slug| Llm::ProviderRegistry.provider(slug) }
     @slots = SLOTS.index_with do |slot|
       {
         provider: Llm::ProviderRegistry.slot_provider(slot),
@@ -137,14 +152,12 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
         candidates: Llm::ProviderRegistry.providers_for(slot)
       }
     end
+    @providers = Llm::ProviderRegistry.known_slugs.map { |slug| Llm::ProviderRegistry.provider(slug) }
     @presets = Llm::Presets.applicable
     @current_preset = GlobalConfigService.load(Llm::Presets::PRESET_CONFIG_KEY, nil).presence ||
                       Llm::Presets.matching_current_config ||
                       Llm::Presets::CUSTOM_SLUG
     @dimension_warning = embedding_dimension_warning
-    configured_count = @providers.count { |p| p[:available] }
-    missing_count = @providers.length - configured_count
-    @provider_status_summary = { configured: configured_count, missing: missing_count }
   end
 
   # Compares the resolved expected dimension (from slot config) against the
@@ -193,63 +206,5 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     row.value = value
     row.locked = false if row.new_record?
     row.save!
-  end
-
-  def run_slot_test(slot)
-    config = Llm::Config.for_slot(slot)
-    return { state: :not_configured, message: 'No provider is configured for this capability.' } if config[:api_key].blank?
-
-    case slot
-    when :chat then run_chat_test(config)
-    when :embedding then run_embedding_test(config)
-    when :audio then run_audio_test(config)
-    end
-  rescue StandardError => e
-    { state: :failed, message: e.message }
-  end
-
-  def run_chat_test(config)
-    Llm::Config.reset!
-    Llm::Config.initialize!
-
-    agent = ::Agents::Agent.new(
-      name: 'llm_settings_test',
-      instructions: 'Respond with the single word: pong.',
-      model: config[:model],
-      temperature: 0.0,
-      tools: []
-    )
-    result = ::Agents::Runner.with_agents(agent).run('ping', max_turns: 1)
-    return { state: :failed, message: result.error&.message.presence || 'Provider returned a failure with no error message.' } if result.failed?
-
-    { state: :connected, message: 'Provider responded successfully.' }
-  end
-
-  def run_embedding_test(config)
-    client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
-    response = client.embeddings(parameters: { model: config[:model], input: 'ping' })
-    vector = response.dig('data', 0, 'embedding')
-    return { state: :failed, message: 'Provider returned no embedding vector.' } if vector.blank?
-
-    begin
-      expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
-    rescue Custom::Pilot::EmbeddingService::UnknownModelDimensionError => e
-      return { state: :failed, message: e.message }
-    end
-
-    if vector.length != expected
-      return {
-        state: :failed,
-        message: "Model returned #{vector.length}-dim vectors but you declared #{expected}-dim. " \
-                 'Update the Dimensions field or pick a model whose native dimension is ' \
-                 "#{expected}."
-      }
-    end
-
-    { state: :connected, message: "Provider responded successfully — #{vector.length} dimensions." }
-  end
-
-  def run_audio_test(_config)
-    { state: :not_configured, message: 'Audio transcription is not enabled for this build.' }
   end
 end
