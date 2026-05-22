@@ -23,6 +23,12 @@ export const routes = [
     meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_RESPONSES' },
   },
   {
+    path: frontendURL('accounts/:accountId/pilot/faqs/pending'),
+    name: 'pilot_faqs_pending',
+    component: PilotFaqsPage,
+    meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_RESPONSES' },
+  },
+  {
     path: frontendURL('accounts/:accountId/pilot/documents'),
     name: 'pilot_documents',
     component: PilotDocumentsPage,
