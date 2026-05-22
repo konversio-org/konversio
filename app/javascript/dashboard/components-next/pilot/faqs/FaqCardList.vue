@@ -8,9 +8,20 @@ defineProps({
   isLoading: { type: Boolean, default: false },
   hasError: { type: Boolean, default: false },
   skeletonCount: { type: Number, default: 10 },
+  showMenu: { type: Boolean, default: true },
+  showActions: { type: Boolean, default: false },
+  selectable: { type: Boolean, default: false },
+  selectedIds: { type: Set, default: () => new Set() },
 });
 
-const emit = defineEmits(['edit', 'delete', 'retry', 'create']);
+const emit = defineEmits([
+  'edit',
+  'delete',
+  'retry',
+  'create',
+  'approve',
+  'select',
+]);
 
 const { t } = useI18n();
 
@@ -18,6 +29,8 @@ const onEdit = row => emit('edit', row);
 const onDelete = row => emit('delete', row);
 const onRetry = () => emit('retry');
 const onCreate = () => emit('create');
+const onApprove = row => emit('approve', row);
+const onSelect = (id, checked) => emit('select', id, checked);
 </script>
 
 <template>
@@ -83,8 +96,14 @@ const onCreate = () => emit('create');
         v-for="row in rows"
         :key="row.id"
         :row="row"
+        :show-menu="showMenu"
+        :show-actions="showActions"
+        :selectable="selectable"
+        :is-selected="selectedIds.has(row.id)"
         @edit="onEdit"
         @delete="onDelete"
+        @approve="onApprove"
+        @select="onSelect"
       />
     </template>
   </section>

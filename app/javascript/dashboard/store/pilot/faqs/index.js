@@ -1,4 +1,5 @@
 import PilotAssistantResponsesAPI from 'dashboard/api/pilot/assistantResponses';
+import PilotBulkActionsAPI from 'dashboard/api/pilot/bulkActions';
 
 const types = {
   SET_UI_FLAG: 'pilot/faqs/SET_UI_FLAG',
@@ -11,6 +12,8 @@ const types = {
   SET_SEARCH: 'pilot/faqs/SET_SEARCH',
   SET_STATUS: 'pilot/faqs/SET_STATUS',
   SET_LAST_ERROR: 'pilot/faqs/SET_LAST_ERROR',
+  SET_PENDING_COUNT: 'pilot/faqs/SET_PENDING_COUNT',
+  UPDATE_BULK_RESPONSES: 'pilot/faqs/UPDATE_BULK_RESPONSES',
 };
 
 const DEFAULT_META = {
@@ -27,6 +30,7 @@ export const state = {
   search: '',
   statusFilter: '',
   lastError: null,
+  pendingCount: 0,
   uiFlags: {
     isFetching: false,
     isCreating: false,
@@ -43,6 +47,7 @@ export const getters = {
   getStatus: _state => _state.statusFilter,
   getUIFlags: _state => _state.uiFlags,
   getLastError: _state => _state.lastError,
+  getPendingCount: _state => _state.pendingCount,
 };
 
 export const actions = {
@@ -144,6 +149,42 @@ export const actions = {
       commit(types.SET_UI_FLAG, { isDeleting: false });
     }
   },
+
+  async fetchPendingCount({ commit, state: _state }, payload = {}) {
+    const assistantId = payload.assistantId ?? _state.activeAssistantId;
+    if (!assistantId) return 0;
+    try {
+      const { data } = await PilotAssistantResponsesAPI.list({
+        assistantId,
+        page: 1,
+        status: 'pending',
+      });
+      const count = data?.meta?.total_count || 0;
+      commit(types.SET_PENDING_COUNT, count);
+      return count;
+    } catch (err) {
+      return 0;
+    }
+  },
+
+  async bulkApprove({ commit }, ids) {
+    commit(types.SET_UI_FLAG, { isUpdating: true });
+    commit(types.SET_LAST_ERROR, null);
+    try {
+      const { data } = await PilotBulkActionsAPI.create({
+        type: 'AssistantResponse',
+        ids,
+        fields: { status: 'approve' },
+      });
+      commit(types.UPDATE_BULK_RESPONSES, data);
+      return data;
+    } catch (err) {
+      commit(types.SET_LAST_ERROR, err);
+      throw err;
+    } finally {
+      commit(types.SET_UI_FLAG, { isUpdating: false });
+    }
+  },
 };
 
 export const mutations = {
@@ -195,6 +236,21 @@ export const mutations = {
 
   [types.SET_LAST_ERROR]($state, err) {
     $state.lastError = err;
+  },
+
+  [types.SET_PENDING_COUNT]($state, count) {
+    $state.pendingCount = count;
+  },
+
+  [types.UPDATE_BULK_RESPONSES]($state, approvedList) {
+    const list = Array.isArray(approvedList)
+      ? approvedList
+      : approvedList?.data || [];
+    const map = {};
+    list.forEach(r => {
+      map[r.id] = r;
+    });
+    $state.records = $state.records.map(r => map[r.id] ?? r);
   },
 };
 

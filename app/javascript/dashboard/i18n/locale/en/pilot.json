@@ -49,6 +49,8 @@
     },
     "FAQS": {
       "PAGE_TITLE": "FAQs",
+      "PENDING_BANNER": "You have pending FAQs to review",
+      "PENDING_BANNER_ACTION": "Review",
       "KNOW_MORE": "Know more",
       "KNOW_MORE_NOTE": "Pilot FAQs detects common customer questions—whether missing from your knowledge base or frequently asked—and generates relevant FAQs to improve support. You can review each suggestion and decide whether to approve or reject it.",
       "SEARCH_PLACEHOLDER": "Search FAQs...",
@@ -64,6 +66,7 @@
         "PENDING": "Pending"
       },
       "CARD": {
+        "APPROVE": "Approve",
         "EDIT": "Edit",
         "DELETE": "Delete",
         "DELETE_CONFIRM": "Delete this FAQ? This cannot be undone.",
