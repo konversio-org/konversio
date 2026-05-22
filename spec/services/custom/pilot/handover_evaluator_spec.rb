@@ -23,7 +23,7 @@ RSpec.describe Custom::Pilot::HandoverEvaluator do
     it 'flags handover when an invoked tool starts with handoff_' do
       result = evaluator.evaluate(assistant_reply: 'Routing now.',
                                   customer_message: 'Where is my order?',
-                                  invoked_tool_names: ['search_documentation', 'handoff_to_scenario_42_billing_agent'])
+                                  invoked_tool_names: %w[search_documentation handoff_to_scenario_42_billing_agent])
 
       expect(result.handover?).to be true
       expect(result.reason).to eq('handoff_tool')
@@ -42,6 +42,19 @@ RSpec.describe Custom::Pilot::HandoverEvaluator do
       result = evaluator.evaluate(customer_message: 'I want to TALK TO A HUMAN now.')
 
       expect(result.handover?).to be true
+    end
+
+    it 'matches preposition-agnostic variants like "speak with a human"' do
+      result = evaluator.evaluate(customer_message: 'I need to speak with a human please')
+      expect(result.handover?).to be true
+    end
+
+    it 'matches other preposition-agnostic and colloquial variations' do
+      expect(evaluator.evaluate(customer_message: 'chat with someone').handover?).to be true
+      expect(evaluator.evaluate(customer_message: 'talk with a human').handover?).to be true
+      expect(evaluator.evaluate(customer_message: 'I need a human').handover?).to be true
+      expect(evaluator.evaluate(customer_message: 'real person').handover?).to be true
+      expect(evaluator.evaluate(customer_message: 'live agent').handover?).to be true
     end
   end
 end
