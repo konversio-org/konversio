@@ -70,14 +70,16 @@ export const resetFavicon = () => {
   }
 };
 
-export const initFaviconSwitcher = () => {
+export const initFaviconSwitcher = (shouldReset = () => true) => {
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') {
+    if (document.visibilityState === 'visible' && shouldReset()) {
       resetFavicon();
     }
   });
 
   window.addEventListener('focus', () => {
-    resetFavicon();
+    if (shouldReset()) {
+      resetFavicon();
+    }
   });
 };
