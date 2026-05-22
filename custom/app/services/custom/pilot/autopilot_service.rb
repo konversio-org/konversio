@@ -119,8 +119,22 @@ module Custom
         end
 
         sections << 'Use the `search_documentation` tool whenever the user asks a factual or product question.'
-        sections << "If you cannot answer or the user explicitly asks for a human, append the handover sentinel `#{::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL}` to your reply."
+        sections << handover_policy
         sections.join("\n\n")
+      end
+
+      def handover_policy
+        sentinel = ::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
+        <<~HANDOVER.strip
+          Handover policy — read carefully:
+
+          When you do not have a confident, source-backed answer (search_documentation returned nothing useful, or the question is outside your knowledge), AND when the user explicitly asks for a human:
+
+          - DO append the handover sentinel `#{sentinel}` to your reply. This is the ONLY way to bring in a human; the system reads this sentinel and transitions the conversation.
+          - DO keep that reply to one short sentence, e.g. "Let me get a human to help with that.".
+          - DO NOT invent generic fallbacks. Specifically: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", or any URL, email, phone number, or category name that did not come from a tool result. Inventing these is hallucination and confuses customers.
+          - DO NOT apologise at length or list topics you might cover. Just hand over.
+        HANDOVER
       end
 
       def assistant_tools
