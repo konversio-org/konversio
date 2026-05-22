@@ -45,6 +45,29 @@ export class DashboardAudioNotificationHelper {
 
     this.currentUser = null;
     this.faviconSwitcherInitialized = false;
+
+    try {
+      this.syncChannel = new BroadcastChannel('konversio_conversation_sync');
+      this.syncChannel.onmessage = event => {
+        if (event.data?.type === 'CONVERSATION_READ') {
+          const { id, lastSeen } = event.data;
+          store.commit('UPDATE_MESSAGE_UNREAD_COUNT', {
+            id,
+            lastSeen,
+            unreadCount: 0,
+          });
+        } else if (event.data?.type === 'CONVERSATION_UNREAD') {
+          const { id, lastSeen, unreadCount } = event.data;
+          store.commit('UPDATE_MESSAGE_UNREAD_COUNT', {
+            id,
+            lastSeen,
+            unreadCount,
+          });
+        }
+      };
+    } catch (e) {
+      // Ignore channel creation failures in sandboxed/unsupported environments
+    }
   }
 
   intializeAudio = () => {
