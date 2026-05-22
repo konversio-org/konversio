@@ -22,23 +22,23 @@ it back to the DB so the Super Admin UI surfaces the effective value.
 | Provider | Briefing | Copilot (tool calls) | Autopilot (agentic) | EU residency | Cost |
 |---|---|---|---|---|---|
 | **OpenAI** (`gpt-4o-mini`) | ✅ | ✅ | ✅ | ❌ (US) | $$ |
-| **Scaleway** (Mistral Small 3.2) | ✅ fast (~0.5s) | ⚠️ tool calls mostly work, prompt-sensitive | ⚠️ partial | ✅ | $ |
+| **Scaleway** (`gemma-4-26b-a4b-it`) | ✅ fast (~0.4s) | ✅ highly reliable | ✅ | ✅ | $ |
 | **Nebius** (Qwen / Llama) | ✅ | ⚠️ same caveats as Scaleway | ⚠️ partial | ✅ | $ |
 
-**Rule of thumb:** if Pilot just needs a one-shot reply draft (Briefing, Summary, Rewrite, Follow-up), any EU-residency preset works fine and is cheaper. If Pilot needs to invoke tools mid-conversation (Copilot, Autopilot, Logbook extraction with tool calls), strict-JSON / tool-call compliance matters and OpenAI's GPT-4 family is the safest bet today. Mixed mode is supported — set `PILOT_OPEN_AI_<FEATURE>_MODEL` to override per sub-feature (see "Per-feature model overrides" below).
+**Rule of thumb:** if Pilot just needs a one-shot reply draft (Briefing, Summary, Rewrite, Follow-up), any EU-residency preset works fine and is cheaper. If Pilot needs to invoke tools mid-conversation (Copilot, Autopilot, Logbook extraction with tool calls), strict-JSON / tool-call compliance matters and OpenAI's GPT-4 family or Scaleway's Gemma 4 MoE preset is the safest bet today. Mixed mode is supported — set `PILOT_OPEN_AI_<FEATURE>_MODEL` to override per sub-feature (see "Per-feature model overrides" below).
 
 ---
 
 ## Scaleway (EU-residency default)
 
 Recommended for any Konversio install that needs European data residency or
-GDPR-clean hosting. Validated end-to-end at ~0.5 s round-trip on Mistral
-Small 3.2 24B with fluent Dutch responses.
+GDPR-clean hosting. Validated end-to-end using Gemma 4 26B-a4b-it, which delivers
+exceptional tool-calling, natural Dutch and English responses, and very low MoE latency.
 
 ```sh
 export PILOT_OPEN_AI_API_KEY="<scaleway secret key>"
 export PILOT_OPEN_AI_ENDPOINT="https://api.scaleway.ai"
-export PILOT_OPEN_AI_MODEL="mistral-small-3.2-24b-instruct-2506"
+export PILOT_OPEN_AI_MODEL="gemma-4-26b-a4b-it"
 export PILOT_OPEN_AI_API_PROVIDER="openai_compatible"
 
 # Embeddings — Scaleway hosts BGE multilingual at 768 dims natively; we ask
@@ -53,7 +53,7 @@ For Heroku:
 heroku config:set -a konversio \
   PILOT_OPEN_AI_API_KEY=... \
   PILOT_OPEN_AI_ENDPOINT=https://api.scaleway.ai \
-  PILOT_OPEN_AI_MODEL=mistral-small-3.2-24b-instruct-2506 \
+  PILOT_OPEN_AI_MODEL=gemma-4-26b-a4b-it \
   PILOT_OPEN_AI_API_PROVIDER=openai_compatible \
   PILOT_EMBEDDING_MODEL=bge-multilingual-gemma2 \
   PILOT_EMBEDDING_DIMENSIONS=1536
