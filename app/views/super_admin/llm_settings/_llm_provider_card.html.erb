@@ -1,0 +1,71 @@
+<% slug = provider[:slug] %>
+<% slug_upper = slug.to_s.upcase %>
+<% api_key_var = "PILOT_LLM_#{slug_upper}_API_KEY" %>
+<% endpoint_var = "PILOT_LLM_#{slug_upper}_ENDPOINT" %>
+<% raw_key = provider[:api_key].to_s %>
+<% key_set = raw_key.present? %>
+<% masked_key = key_set && raw_key.length >= 8 ? "#{raw_key[0, 3]}…#{raw_key[-4, 4]}" : nil %>
+<% test_result = last_test_slug == slug ? last_test_result : nil %>
+
+<div class="border border-slate-200 rounded p-4 bg-white">
+  <div class="flex items-start justify-between mb-3">
+    <div>
+      <div class="font-medium text-slate-900"><%= provider[:label] %></div>
+      <div class="mt-1 flex flex-wrap gap-1">
+        <% provider[:capabilities].each do |cap| %>
+          <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-xs"><%= cap %></span>
+        <% end %>
+      </div>
+    </div>
+    <%= form_with url: test_super_admin_llm_settings_path, method: :post, local: true, class: 'shrink-0' do |form| %>
+      <%= form.hidden_field :slug, value: slug %>
+      <button type="submit"
+              <%= 'disabled' unless key_set %>
+              class="!inline-block text-xs font-medium px-3 py-1.5 rounded border <%= key_set ? '!bg-slate-100 !border-slate-300 !text-slate-800 hover:!bg-slate-200 cursor-pointer' : '!bg-slate-50 !border-slate-200 !text-slate-400 cursor-not-allowed' %>">
+        Run test
+      </button>
+    <% end %>
+  </div>
+
+  <dl class="text-sm space-y-1.5">
+    <div class="flex items-baseline gap-3">
+      <dt class="font-mono text-xs text-slate-500 w-72 shrink-0"><%= api_key_var %></dt>
+      <dd class="flex items-center gap-2">
+        <% if key_set %>
+          <% if masked_key %>
+            <span class="font-mono text-xs text-slate-700"
+                  title="Masked preview — only the first 3 and last 4 characters are shown.">
+              <%= masked_key %>
+            </span>
+          <% end %>
+        <% else %>
+          <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">✗ not set</span>
+        <% end %>
+      </dd>
+    </div>
+    <div class="flex items-baseline gap-3">
+      <dt class="font-mono text-xs text-slate-500 w-72 shrink-0"><%= endpoint_var %></dt>
+      <dd class="font-mono text-xs text-slate-700 break-all"><%= provider[:endpoint].presence || '—' %></dd>
+    </div>
+  </dl>
+
+  <% unless key_set %>
+    <p class="mt-3 text-xs text-slate-500">
+      Set <code class="font-mono"><%= api_key_var %></code> in your environment and restart the application to enable this provider.
+    </p>
+  <% end %>
+
+  <% if test_result %>
+    <div class="mt-3 pt-3 border-t border-slate-100 text-xs">
+      <% case test_result[:state] %>
+      <% when :connected %>
+        <span class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-800 font-medium mr-2">Connected</span>
+      <% when :not_configured %>
+        <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium mr-2">Not configured</span>
+      <% else %>
+        <span class="inline-block px-2 py-0.5 rounded bg-red-100 text-red-800 font-medium mr-2">Failed</span>
+      <% end %>
+      <span class="text-slate-600"><%= test_result[:message] %></span>
+    </div>
+  <% end %>
+</div>

@@ -3,6 +3,10 @@ module SuperAdmin::NavigationHelper
     params[:controller].in? %w[super_admin/settings super_admin/app_configs]
   end
 
+  def pilot_open?
+    params[:controller].in? %w[super_admin/pilot super_admin/llm_settings super_admin/crawling]
+  end
+
   def settings_pages
     features = SuperAdmin::FeaturesHelper.available_features.select do |_feature, attrs|
       attrs['config_key'].present? && attrs['enabled']

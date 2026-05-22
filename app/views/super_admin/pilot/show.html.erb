@@ -1,0 +1,61 @@
+<% content_for(:title) do %>
+  Pilot
+<% end %>
+
+<header class="main-content__header" role="banner">
+  <h1 class="main-content__page-title" id="page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body max-w-4xl">
+  <div class="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-4 rounded mb-6 text-sm leading-relaxed flex items-start gap-4">
+    <div class="shrink-0 bg-slate-200 rounded-lg p-3 flex items-center justify-center">
+      <%= image_tag '/brand-assets/pilot-face.svg', alt: 'Pilot', class: 'w-16 h-16' %>
+    </div>
+    <div>
+      <p class="font-medium mb-1">Pilot is Konversio's open-source AI layer.</p>
+      <p>
+        It powers agent-assist (Copilot), automated responses (Autopilot), FAQ &amp; document retrieval,
+        and conversation summaries. Pilot reads its configuration from environment variables so that
+        secrets stay on the host and never land in a database dump.
+        The three pages below let you inspect what's currently wired up and adjust the parts that are
+        safe to change at runtime.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid gap-3">
+    <%= link_to super_admin_llm_settings_path, class: 'block border border-slate-200 rounded p-4 bg-white hover:border-slate-300 transition' do %>
+      <div class="flex items-center justify-between mb-1">
+        <div class="font-medium text-slate-900">LLM Models</div>
+        <div class="text-xs text-slate-500">
+          <%= @llm_providers_configured %> / <%= @llm_providers_total %> providers configured
+        </div>
+      </div>
+      <p class="text-sm text-slate-600">
+        Pick which configured provider and model handle each capability — chat, embeddings,
+        and audio transcription. Also lists every known provider with its API key status,
+        masked key preview, endpoint, and a per-provider Run test button.
+      </p>
+    <% end %>
+
+    <%= link_to super_admin_crawling_path, class: 'block border border-slate-200 rounded p-4 bg-white hover:border-slate-300 transition' do %>
+      <div class="flex items-center justify-between mb-1">
+        <div class="font-medium text-slate-900">Crawling</div>
+        <div class="text-xs text-slate-500">
+          Firecrawl API key
+          <% if @firecrawl_set %>
+            <span class="text-green-700">✓ set</span>
+          <% else %>
+            <span class="text-yellow-700">missing</span>
+          <% end %>
+        </div>
+      </div>
+      <p class="text-sm text-slate-600">
+        Firecrawl API key status plus the per-crawl page limit and link depth.
+        Conservative values keep ingestion bills predictable and stop crawls from wandering off the target domain.
+      </p>
+    <% end %>
+  </div>
+</section>

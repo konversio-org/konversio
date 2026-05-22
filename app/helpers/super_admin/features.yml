@@ -41,9 +41,9 @@ help_center:
   description: 'Allow agents to create help center articles and publish them in a portal.'
   enabled: true
   icon: 'icon-book-2-line'
-# Pilot is managed via the dedicated /super_admin/llm_settings page
-# (top-level sidebar entry), not through the Settings → Administrate
-# key-value editor. Keeping it here would duplicate the menu item.
+# Pilot is managed via the Pilot sidebar group (Pilot landing page with
+# API Keys / LLM Models / Crawling children), not through the Settings →
+# Administrate key-value editor. Keeping it here would duplicate the menu item.
 
 # ------- Communication Channels ------- #
 live_chat:

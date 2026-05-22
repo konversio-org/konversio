@@ -1,5 +1,5 @@
 <% content_for(:title) do %>
-  LLM Settings
+  LLM Models
 <% end %>
 
 <header class="main-content__header" role="banner">
@@ -39,17 +39,15 @@
   <% end %>
 
   <div class="bg-blue-50 border border-blue-200 text-blue-900 px-4 py-3 rounded mb-6 text-sm">
-    <strong>API keys are managed through environment variables.</strong>
-    This page only selects which configured providers and models are used. To enable a provider, set
-    <code class="font-mono text-xs">PILOT_LLM_&lt;SLUG&gt;_API_KEY</code> in the host environment and restart the rails container.
-    <details class="mt-2">
-      <summary class="cursor-pointer text-xs text-blue-800 underline">View required variables</summary>
-      <div class="mt-2 text-xs leading-relaxed">
-        Required per provider: <code>PILOT_LLM_&lt;SLUG&gt;_API_KEY</code>.<br>
-        Optional: <code>_ENDPOINT</code>, <code>_LABEL</code>, <code>_OPENAI_COMPATIBLE</code>, <code>_CAPABILITIES</code>.<br>
-        Account-level OpenAI integration keys override the chat slot's <code>api_key</code> only — embedding and audio always use the slot's system key.
-      </div>
-    </details>
+    Configure which provider and model handles each capability (chat, embeddings, audio),
+    plus inspect every LLM provider this install knows about.
+    Provider API keys come from environment variables —
+    set <code class="font-mono text-xs">PILOT_LLM_&lt;SLUG&gt;_API_KEY</code> on the host and restart the application.
+    Key values are masked here; only the first 3 and last 4 characters are shown so you can verify which key is loaded without exposing the full secret.
+    <span class="block mt-1 text-xs text-blue-800">
+      Account-level OpenAI integration keys override the chat slot's API key only —
+      embedding and audio always use the slot's system key.
+    </span>
   </div>
 
   <% if @test_results.present? %>
@@ -264,55 +262,34 @@
     </div>
   </div>
 
-  <details class="border border-slate-200 rounded">
-    <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between">
-      <span>Provider availability</span>
-      <span class="text-xs font-normal text-slate-500">
-        <%= @provider_status_summary[:configured] %> configured
-        <% if @provider_status_summary[:missing].positive? %>
-          · <%= @provider_status_summary[:missing] %> missing key<%= 's' if @provider_status_summary[:missing] != 1 %>
-        <% end %>
-      </span>
-    </summary>
-    <table class="w-full text-sm border-t border-slate-200">
-      <thead class="bg-slate-50 text-slate-600 text-xs uppercase tracking-wide">
-        <tr>
-          <th class="text-left p-3">Slug</th>
-          <th class="text-left p-3">Label</th>
-          <th class="text-left p-3">Endpoint</th>
-          <th class="text-left p-3">Capabilities</th>
-          <th class="text-left p-3">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @providers.each do |provider| %>
-          <tr class="border-t border-slate-100">
-            <td class="p-3 font-mono text-xs"><%= provider[:slug] %></td>
-            <td class="p-3"><%= provider[:label] %></td>
-            <td class="p-3 font-mono text-xs text-slate-500"><%= provider[:endpoint].presence || '—' %></td>
-            <td class="p-3 text-xs">
-              <% provider[:capabilities].each do |cap| %>
-                <span class="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-700 mr-1"><%= cap %></span>
-              <% end %>
-            </td>
-            <td class="p-3">
-              <% if provider[:available] %>
-                <span class="inline-block px-2 py-0.5 rounded bg-green-100 text-green-800 text-xs font-medium">Configured</span>
-              <% else %>
-                <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-medium">
-                  <% if provider[:misconfigured_reason] == 'Missing endpoint' %>
-                    Missing endpoint: PILOT_LLM_<%= provider[:slug].to_s.upcase %>_ENDPOINT
-                  <% else %>
-                    Missing key: PILOT_LLM_<%= provider[:slug].to_s.upcase %>_API_KEY
-                  <% end %>
-                </span>
-              <% end %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </details>
+  <% configured = @providers.count { |p| p[:available] } %>
+  <% missing = @providers.length - configured %>
+  <div class="flex items-baseline justify-between mt-8 mb-2">
+    <h2 class="text-base font-semibold">Providers</h2>
+    <span class="text-xs text-slate-500">
+      <%= configured %> configured
+      <% if missing.positive? %>
+        · <%= missing %> missing
+      <% end %>
+    </span>
+  </div>
+  <p class="text-xs text-slate-500 mb-3">
+    Every LLM provider this install knows about. Each provider is enabled by setting
+    <code class="font-mono">PILOT_LLM_&lt;SLUG&gt;_API_KEY</code>. Optional companions:
+    <code class="font-mono">_ENDPOINT</code> and <code class="font-mono">_LABEL</code>.
+    Use Run test to verify credentials with the provider's <code class="font-mono">/v1/models</code> endpoint.
+  </p>
+
+  <div class="space-y-3 mb-6">
+    <% @providers.each do |provider| %>
+      <%= render partial: 'llm_provider_card',
+                 locals: {
+                   provider: provider,
+                   last_test_slug: @last_test_slug,
+                   last_test_result: @last_test_result
+                 } %>
+    <% end %>
+  </div>
 
   <script>
     (function () {

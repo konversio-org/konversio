@@ -219,6 +219,16 @@
   description: 'The FireCrawl API key for the Pilot AI service'
   locked: false
   type: secret
+- name: PILOT_FIRECRAWL_CRAWL_LIMIT
+  display_title: 'FireCrawl Crawl Page Limit'
+  value: 500
+  description: 'Maximum number of pages fetched per Firecrawl crawl. Managed via Super Admin > Crawling.'
+  locked: false
+- name: PILOT_FIRECRAWL_CRAWL_MAX_DEPTH
+  display_title: 'FireCrawl Crawl Max Depth'
+  value: 50
+  description: 'Maximum link depth traversed by Firecrawl during a crawl. Managed via Super Admin > Crawling.'
+  locked: false
 # End of Pilot Config
 
 # ------- Context.dev Config ------- #
