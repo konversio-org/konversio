@@ -50,7 +50,7 @@ class Api::V2::Accounts::Pilot::CopilotMessagesController < Api::V1::Accounts::B
     {
       id: message.id,
       copilot_thread_id: message.copilot_thread_id,
-      message_type: message.message_type_before_type_cast,
+      message_type: message.message_type,
       message: message.message,
       created_at: message.created_at,
       updated_at: message.updated_at

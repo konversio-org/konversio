@@ -6,15 +6,24 @@ RSpec.describe Pilot::UpdateEmbeddingJob do
   let(:response) { create(:pilot_assistant_response, assistant: assistant, account: account, question: 'Q?', answer: 'A.') }
 
   describe '#perform' do
+    # Embedding column is vector(3584); pull the canonical dimension from the
+    # service so the test follows the default-model change rather than the
+    # raw width.
+    let(:vector_dim) do
+      Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.fetch(
+        Custom::Pilot::EmbeddingService::DEFAULT_EMBEDDING_MODEL
+      )
+    end
+
     it 'calls EmbeddingService with the combined question and answer text' do
-      embedding = Array.new(1536) { 0.001 }
+      embedding = Array.new(vector_dim) { 0.001 }
       fake_service = instance_double(Custom::Pilot::EmbeddingService, embed: embedding)
       expect(Custom::Pilot::EmbeddingService).to receive(:new).with(account: account).and_return(fake_service)
       expect(fake_service).to receive(:embed).with("Q?\n\nA.").and_return(embedding)
 
       described_class.perform_now(response.id)
       response.reload
-      expect(response.embedding.to_a.length).to eq(1536)
+      expect(response.embedding.to_a.length).to eq(vector_dim)
     end
 
     it 'does nothing when embedding service returns nil' do

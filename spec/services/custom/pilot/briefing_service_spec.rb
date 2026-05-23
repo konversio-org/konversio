@@ -68,6 +68,8 @@ RSpec.describe Custom::Pilot::BriefingService do
 
     context 'with Logbook' do
       it 'skips Logbook context injection when pilot_logbook_enabled is false' do
+        account.disable_features!(:pilot_logbook)
+
         fake_suggestion = instance_double(Pilot::ReplySuggestionService)
         allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })

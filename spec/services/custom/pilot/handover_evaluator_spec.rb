@@ -56,5 +56,47 @@ RSpec.describe Custom::Pilot::HandoverEvaluator do
       expect(evaluator.evaluate(customer_message: 'real person').handover?).to be true
       expect(evaluator.evaluate(customer_message: 'live agent').handover?).to be true
     end
+
+    describe 'precedence (scenario tool > sentinel > customer phrase)' do
+      it 'prefers handoff_tool when a scenario tool also fires with the sentinel' do
+        result = evaluator.evaluate(
+          assistant_reply: "Connecting you now. #{described_class::HANDOVER_SENTINEL}",
+          customer_message: 'How big is the box?',
+          invoked_tool_names: %w[handoff_to_billing]
+        )
+        expect(result.handover?).to be true
+        expect(result.reason).to eq('handoff_tool')
+      end
+
+      it 'prefers the sentinel over a customer-phrase match when no scenario tool fired' do
+        result = evaluator.evaluate(
+          assistant_reply: "Let me grab a teammate. #{described_class::HANDOVER_SENTINEL}",
+          customer_message: 'Please let me speak to a human',
+          invoked_tool_names: []
+        )
+        expect(result.handover?).to be true
+        expect(result.reason).to eq('sentinel')
+      end
+
+      it 'falls back to customer-phrase when neither the scenario tool nor the sentinel fired' do
+        result = evaluator.evaluate(
+          assistant_reply: 'Here is the answer.',
+          customer_message: 'I want to speak to a human',
+          invoked_tool_names: %w[search_documentation]
+        )
+        expect(result.handover?).to be true
+        expect(result.reason).to eq('customer_request')
+      end
+
+      it 'returns a single Result even when all three signals fire (no double-firing)' do
+        result = evaluator.evaluate(
+          assistant_reply: "Sure. #{described_class::HANDOVER_SENTINEL}",
+          customer_message: 'speak to a human',
+          invoked_tool_names: %w[handoff_to_billing]
+        )
+        expect(result.handover?).to be true
+        expect(result.reason).to eq('handoff_tool')
+      end
+    end
   end
 end

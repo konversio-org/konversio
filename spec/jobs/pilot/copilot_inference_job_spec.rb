@@ -56,6 +56,10 @@ RSpec.describe Pilot::CopilotInferenceJob do
     allow(fake_runner).to receive(:run).and_return(
       Agents::RunResult.new(output: 'Hello, agent.', messages: [], usage: nil, context: {})
     )
+    # Other dispatcher events (pilot.copilot.inference.started/completed) also fire
+    # via the Pilot EventDispatcher — `allow ... and_call_original` lets them through
+    # while the strict expectation below pins the COPILOT_MESSAGE_CREATED dispatch.
+    allow(Rails.configuration.dispatcher).to receive(:dispatch).and_call_original
     expect(Rails.configuration.dispatcher).to receive(:dispatch)
       .with('copilot.message.created', anything, hash_including(:copilot_message))
       .at_least(:once)

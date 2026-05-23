@@ -17,19 +17,20 @@ module Custom
 
       Result = Struct.new(:reply, :invoked_tool_names, :handover, keyword_init: true)
 
-      attr_reader :assistant, :conversation, :customer_message, :message_history
+      attr_reader :assistant, :conversation, :customer_message, :message_history, :source
 
-      def initialize(assistant:, conversation: nil, message: nil, message_history: nil, account: nil)
+      def initialize(assistant:, conversation: nil, message: nil, message_history: nil, account: nil, source: 'production')
         @assistant = assistant
         @conversation = conversation
         @customer_message = message
         @message_history = message_history
+        @source = source.to_s
         super(account: account || assistant&.account)
       end
 
       def perform
         raise FeatureDisabledError, 'Pilot Autopilot is not enabled for this account' unless feature_enabled?(:autopilot)
-        raise Error, 'Assistant required' if assistant.blank?
+        return ::Custom::Pilot::AutopilotNoAssistantSkip.new(account: account, conversation: conversation).call if assistant.blank?
 
         dispatch_event(:autopilot_inference_started, assistant_id: assistant.id, conversation_id: conversation&.display_id)
         result = run_runner
@@ -57,7 +58,11 @@ module Custom
         runner = build_runner(invoked_tool_names)
         context = build_context(history_without_last_user(history))
 
-        run_result = runner.run(last_user, context: context, max_turns: max_turns)
+        run_result = ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.autopilot.inference', attributes: span_attributes) do |span|
+          result = runner.run(last_user, context: context, max_turns: max_turns)
+          span.set_attribute('invoked_tools', invoked_tool_names.join(',')) if invoked_tool_names.any?
+          result
+        end
         raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
 
         reply = extract_reply(run_result)
@@ -69,6 +74,19 @@ module Custom
         )
 
         Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover)
+      end
+
+      def span_attributes
+        {
+          account_id: account&.id,
+          assistant_id: assistant&.id,
+          conversation_id: conversation&.id,
+          conversation_display_id: conversation&.display_id,
+          channel_type: conversation&.inbox&.channel_type,
+          source: source,
+          model: model_for(:autopilot),
+          credit_used: source != 'playground'
+        }
       end
 
       def build_runner(invoked_tool_names)

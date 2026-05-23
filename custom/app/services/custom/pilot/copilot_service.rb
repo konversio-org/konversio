@@ -69,14 +69,39 @@ module Custom
       end
 
       def run_agent
-        agent = build_agent
-        runner = ::Agents::Runner.with_agents(agent)
-        register_callbacks(runner)
+        ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.copilot.inference', attributes: span_attributes) do |span|
+          agent = build_agent
+          runner = ::Agents::Runner.with_agents(agent)
+          register_callbacks(runner)
 
-        user_input, history = split_history
-        context = build_runner_context(history)
+          user_input, history = split_history
+          context = build_runner_context(history)
 
-        runner.run(user_input, context: context, max_turns: MAX_AGENT_STEPS)
+          result = runner.run(user_input, context: context, max_turns: MAX_AGENT_STEPS)
+          span.set_attribute('output_length', result&.output.to_s.length)
+          result
+        end
+      end
+
+      def span_attributes
+        {
+          account_id: account&.id,
+          assistant_id: bound_assistant&.id,
+          conversation_id: bound_conversation&.id,
+          conversation_display_id: conversation_id,
+          channel_type: bound_conversation&.inbox&.channel_type,
+          source: 'production',
+          model: model_for(:copilot),
+          credit_used: true
+        }
+      end
+
+      def bound_conversation
+        return @bound_conversation if defined?(@bound_conversation)
+        return @bound_conversation = nil if conversation_id.blank? || account.blank?
+
+        @bound_conversation = account.conversations.find_by(display_id: conversation_id) ||
+                              account.conversations.find_by(id: conversation_id)
       end
 
       def finalize_result(result)
@@ -113,7 +138,16 @@ module Custom
         else
           Rails.logger.debug('[pilot.copilot] search_documentation tool skipped — Pilot::AssistantResponse not loaded yet')
         end
-        tools
+        ::Custom::Pilot::CopilotToolPermissionFilter
+          .new(account: account, user: thread&.user, assistant: bound_assistant)
+          .call(tools)
+      end
+
+      def bound_assistant
+        return @bound_assistant if defined?(@bound_assistant)
+        return @bound_assistant = nil if thread&.assistant_id.blank?
+
+        @bound_assistant = ::Pilot::Assistant.find_by(id: thread.assistant_id, account_id: account&.id)
       end
 
       def register_callbacks(runner)

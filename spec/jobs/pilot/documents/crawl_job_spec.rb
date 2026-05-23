@@ -146,6 +146,87 @@ RSpec.describe Pilot::Documents::CrawlJob do
       expect(document.content).to eq('fallback body')
     end
 
+    it 'retries transient ingestion errors with the configured backoff and finally marks sync_status failed' do
+      # No Firecrawl key → fallback path which goes through DocumentIngestionService.
+      allow(GlobalConfigService).to receive(:load).with('PILOT_FIRECRAWL_API_KEY', nil).and_return(nil)
+
+      transient = Custom::Pilot::DocumentIngestionService::TransientFetchError.new(
+        'HTTP 503', error_code: 'ingestion.http_503'
+      )
+      ingestion = instance_double(Custom::Pilot::DocumentIngestionService)
+      allow(Custom::Pilot::DocumentIngestionService).to receive(:new).and_return(ingestion)
+      allow(ingestion).to receive(:perform).and_raise(transient)
+
+      # ActiveJob's retry_on issues `perform` four times total
+      # (initial + 3 retries). We exercise the path by performing
+      # synchronously via the test adapter and counting the calls.
+      perform_enqueued_jobs do
+        described_class.perform_later(document.id)
+      end
+
+      expect(ingestion).to have_received(:perform).at_least(4).times
+      document.reload
+      expect(document.sync_status).to eq('failed')
+      expect(document.metadata['error']).to eq('ingestion.http_503')
+      expect(document.status).to eq('in_progress')
+    end
+
+    it 'marks sync_status failed immediately on a permanent ingestion failure (no retry)' do
+      allow(GlobalConfigService).to receive(:load).with('PILOT_FIRECRAWL_API_KEY', nil).and_return(nil)
+
+      permanent_result = Custom::Pilot::DocumentIngestionService::Result.new(
+        success: false, error_code: 'ingestion.http_404', error_message: 'HTTP 404'
+      )
+      ingestion = instance_double(Custom::Pilot::DocumentIngestionService, perform: permanent_result)
+      allow(Custom::Pilot::DocumentIngestionService).to receive(:new).and_return(ingestion)
+
+      described_class.perform_now(document.id)
+
+      # Single invocation — a returned (non-raising) permanent Result does
+      # NOT trigger retry_on, so the LLM service isn't called a second
+      # time.
+      expect(ingestion).to have_received(:perform).once
+      document.reload
+      expect(document.sync_status).to eq('failed')
+      expect(document.metadata['error']).to eq('ingestion.http_404')
+      expect(document.status).to eq('in_progress')
+    end
+
+    it 'retries timeouts as transient failures' do
+      allow(GlobalConfigService).to receive(:load).with('PILOT_FIRECRAWL_API_KEY', nil).and_return(nil)
+
+      timeout_err = Custom::Pilot::DocumentIngestionService::TransientFetchError.new(
+        'timeout', error_code: 'ingestion.timeout'
+      )
+      ingestion = instance_double(Custom::Pilot::DocumentIngestionService)
+      allow(Custom::Pilot::DocumentIngestionService).to receive(:new).and_return(ingestion)
+      allow(ingestion).to receive(:perform).and_raise(timeout_err)
+
+      perform_enqueued_jobs do
+        described_class.perform_later(document.id)
+      end
+
+      expect(ingestion).to have_received(:perform).at_least(4).times
+      document.reload
+      expect(document.sync_status).to eq('failed')
+      expect(document.metadata['error']).to eq('ingestion.timeout')
+    end
+
+    it 'captures unexpected exceptions via the StandardError safety net' do
+      allow(GlobalConfigService).to receive(:load).with('PILOT_FIRECRAWL_API_KEY', nil).and_return(nil)
+
+      ingestion = instance_double(Custom::Pilot::DocumentIngestionService)
+      allow(Custom::Pilot::DocumentIngestionService).to receive(:new).and_return(ingestion)
+      allow(ingestion).to receive(:perform).and_raise(ArgumentError, 'parser crashed')
+
+      described_class.perform_now(document.id)
+
+      document.reload
+      expect(document.sync_status).to eq('failed')
+      expect(document.metadata['error']).to include('ArgumentError')
+      expect(document.metadata['error']).to include('parser crashed')
+    end
+
     it 'ingests PDF documents synchronously without hitting Firecrawl' do
       pdf_doc = create(:pilot_document, assistant: assistant, account: account, external_link: 'PDF: doc',
                                         status: :in_progress, content: nil)
@@ -165,4 +246,13 @@ RSpec.describe Pilot::Documents::CrawlJob do
       expect(pdf_doc.content).to eq('pdf body')
     end
   end
+
+  # §13 follow-up: webhook signature verification on the inbound bulk-crawl
+  # webhook is not covered. The routes table declares
+  # `post 'webhooks/firecrawl'` but no controller exists yet. When that
+  # controller lands, add a request-spec context that drives the endpoint
+  # with (a) a valid signature, (b) a tampered signature, (c) a payload
+  # whose assistant_id does not belong to the signing account — asserting
+  # 401/403 on the negative paths and no Pilot::Document rows created.
+  pending 'TODO: webhooks/firecrawl signature + assistant scoping coverage when the controller lands'
 end

@@ -14,8 +14,22 @@ module Custom
     #     `Pilot::Documents::CrawlJob` + `Custom::Pilot::DocumentCrawlService`.
     #
     # Returns a Result struct describing success/failure and the fetched
-    # content so the caller can persist it.
+    # content so the caller can persist it. Transient failures (HTTP 5xx,
+    # 408, 429, timeouts, connection errors) are surfaced via
+    # `TransientFetchError` so the caller (`Pilot::Documents::CrawlJob`) can
+    # raise + retry. Permanent failures (other 4xx, parse, malformed URL)
+    # return a Result with `success: false` so the caller marks the document
+    # `sync_status = "failed"` without retrying.
     class DocumentIngestionService < BaseService
+      class TransientFetchError < StandardError
+        attr_reader :error_code
+
+        def initialize(message, error_code:)
+          super(message)
+          @error_code = error_code
+        end
+      end
+
       Result = Struct.new(:success, :content, :error_code, :error_message, keyword_init: true) do
         def success?
           success == true
@@ -24,6 +38,11 @@ module Custom
 
       DEFAULT_TIMEOUT_SECONDS = 30
       MAX_CONTENT_BYTES = 500_000
+
+      # HTTP status codes that should retry. Everything else in the 4xx
+      # range is considered permanent (the upstream told us "no" with
+      # finality; retrying won't change the answer).
+      TRANSIENT_HTTP_STATUSES = [408, 429].freeze
 
       attr_reader :document
 
@@ -38,6 +57,9 @@ module Custom
         else
           ingest_url
         end
+      rescue TransientFetchError
+        # Propagate so `Pilot::Documents::CrawlJob` can hit ActiveJob retries.
+        raise
       rescue StandardError => e
         Rails.logger.error("[pilot.document_ingestion] #{e.class}: #{e.message}")
         Result.new(success: false, error_code: 'ingestion.unexpected', error_message: e.message)
@@ -53,17 +75,41 @@ module Custom
       end
 
       def ingest_via_simple_http(url)
-        uri = URI.parse(url)
-        return failure('ingestion.invalid_url', "Cannot parse URL: #{url}") unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+        uri = parse_uri(url)
+        return failure('ingestion.invalid_url', "Cannot parse URL: #{url}") if uri.nil?
 
+        response = http_get(uri)
+        return classify_http_failure(response) unless response.is_a?(Net::HTTPSuccess)
+
+        Result.new(success: true, content: truncate(strip_html(response.body.to_s)))
+      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ETIMEDOUT => e
+        raise TransientFetchError.new("Timeout fetching URL: #{e.message}", error_code: 'ingestion.timeout')
+      rescue Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, Errno::ENETUNREACH, SocketError => e
+        raise TransientFetchError.new("Connection error: #{e.message}", error_code: 'ingestion.connection_error')
+      end
+
+      def http_get(uri)
         http = Net::HTTP.new(uri.host, uri.port)
         http.use_ssl = uri.scheme == 'https'
         http.read_timeout = DEFAULT_TIMEOUT_SECONDS
+        http.open_timeout = DEFAULT_TIMEOUT_SECONDS
+        http.get(uri.request_uri)
+      end
 
-        response = http.get(uri.request_uri)
-        return failure('ingestion.http_error', "HTTP #{response.code}") unless response.is_a?(Net::HTTPSuccess)
+      def parse_uri(url)
+        uri = URI.parse(url)
+        return nil unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
 
-        Result.new(success: true, content: truncate(strip_html(response.body.to_s)))
+        uri
+      rescue URI::InvalidURIError
+        nil
+      end
+
+      def classify_http_failure(response)
+        code = response.code.to_i
+        raise TransientFetchError.new("HTTP #{code}", error_code: "ingestion.http_#{code}") if code >= 500 || TRANSIENT_HTTP_STATUSES.include?(code)
+
+        failure("ingestion.http_#{code}", "HTTP #{code}")
       end
 
       def ingest_pdf
