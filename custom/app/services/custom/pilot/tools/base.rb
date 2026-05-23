@@ -18,6 +18,25 @@ module Custom
       # return a short user-friendly string rather than raising — the runner
       # treats raised exceptions as fatal and aborts the whole turn.
       class Base < ::Agents::Tool
+        # Optional declarative role gate. A subclass may call
+        # `required_role :administrator` at the class level; CopilotService's
+        # permission filter will drop the tool from the runner for any user
+        # whose AccountUser role is below the declared one.
+        #
+        # Default: nil (any account user may invoke the tool).
+        def self.required_role(role = nil)
+          @required_role = role.to_s if role
+          @required_role
+        end
+
+        # Subclasses backed by a `Pilot::CustomTool` record (account-defined
+        # HTTP tools) override this to return `true`. The CopilotService
+        # permission filter uses it to drop ALL custom tools when the
+        # account's `pilot_tools` feature flag is off.
+        def custom?
+          false
+        end
+
         private
 
         # Look up the Account record for the currently-running tool call. The

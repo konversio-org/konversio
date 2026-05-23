@@ -1,0 +1,14 @@
+json.id custom_tool.id
+json.title custom_tool.title
+json.description custom_tool.description
+json.slug custom_tool.slug
+json.endpoint_url custom_tool.endpoint_url
+json.http_method custom_tool.http_method
+json.auth_type custom_tool.auth_type
+json.auth_config custom_tool.auth_config
+json.param_schema custom_tool.param_schema
+json.request_template custom_tool.request_template
+json.response_template custom_tool.response_template
+json.enabled custom_tool.enabled
+json.created_at custom_tool.created_at.to_i
+json.updated_at custom_tool.updated_at.to_i

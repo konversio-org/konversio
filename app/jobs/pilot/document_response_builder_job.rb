@@ -37,6 +37,14 @@ module Pilot
       # in sync with the latest document content.
       document.responses.destroy_all
 
+      created = persist_faqs(document, faqs)
+      dispatch_responses_generated(document, created)
+    end
+
+    private
+
+    def persist_faqs(document, faqs)
+      created = 0
       faqs.each do |faq|
         next if faq['question'].blank? || faq['answer'].blank?
 
@@ -47,12 +55,12 @@ module Pilot
           answer: faq['answer'].to_s,
           status: :pending
         )
+        created += 1
       rescue ActiveRecord::RecordInvalid => e
         Rails.logger.warn("[pilot.document_response_builder] invalid faq for doc=#{document.id}: #{e.message}")
       end
+      created
     end
-
-    private
 
     def generate_faqs(document)
       content = call_llm(document)
@@ -84,6 +92,21 @@ module Pilot
     def sanitize_json(content)
       # Strip a leading ```json fence and trailing ``` if the model wrapped its output.
       content.sub(/\A```(?:json)?\s*/m, '').sub(/```\s*\z/m, '').strip
+    end
+
+    def dispatch_responses_generated(document, count)
+      ::Custom::Pilot::EventDispatcher.dispatch(
+        'pilot.autopilot.document.responses_generated',
+        {
+          account_id: document.account_id,
+          assistant_id: document.assistant_id,
+          document_id: document.id,
+          response_count: count
+        },
+        account: document.account
+      )
+    rescue StandardError => e
+      Rails.logger.warn("[pilot.document_response_builder] dispatch failed: #{e.class}: #{e.message}")
     end
   end
 end

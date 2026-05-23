@@ -29,17 +29,14 @@ class Pilot::Assistant < ApplicationRecord
 
   has_many :documents,
            class_name: 'Pilot::Document',
-           foreign_key: :assistant_id,
            inverse_of: :assistant,
            dependent: :destroy_async
   has_many :responses,
            class_name: 'Pilot::AssistantResponse',
-           foreign_key: :assistant_id,
            inverse_of: :assistant,
            dependent: :destroy_async
   has_many :scenarios,
            class_name: 'Pilot::Scenario',
-           foreign_key: :assistant_id,
            inverse_of: :assistant,
            dependent: :destroy_async
   has_many :pilot_inboxes,
@@ -56,6 +53,7 @@ class Pilot::Assistant < ApplicationRecord
                  :feature_memory,
                  :feature_contact_attributes,
                  :feature_citation,
+                 :citation_behavior,
                  :welcome_message,
                  :handoff_message,
                  :resolution_message,
@@ -64,6 +62,13 @@ class Pilot::Assistant < ApplicationRecord
 
   validates :name, presence: true
   validates :account_id, presence: true
+
+  # Documentation-search citation toggle (default "on"). When "off", the
+  # documentation-search tool MUST suppress `Source: <file>` lines for
+  # PDF-origin matches; URL-origin matches always surface the URL.
+  def citation_behavior
+    config&.dig('citation_behavior').presence || 'on'
+  end
 
   scope :ordered, -> { order(created_at: :desc) }
   scope :for_account, ->(account_id) { where(account_id: account_id) }

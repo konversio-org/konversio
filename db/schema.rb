@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_20_180000) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_22_120100) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -73,10 +73,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_180000) do
     t.jsonb "internal_attributes", default: {}, null: false
     t.jsonb "settings", default: {}
     t.jsonb "feature_flags", default: {}, null: false
+    t.boolean "pilot_enabled", default: false, null: false
+    t.boolean "pilot_briefing_enabled", default: false, null: false
+    t.boolean "pilot_copilot_enabled", default: false, null: false
+    t.boolean "pilot_autopilot_enabled", default: false, null: false
+    t.boolean "pilot_logbook_enabled", default: false, null: false
+    t.boolean "pilot_tools_enabled", default: false, null: false
+    t.boolean "pilot_autoresolve_enabled", default: false, null: false
+    t.boolean "pilot_summary_enabled", default: false, null: false
+    t.boolean "pilot_csat_analysis_enabled", default: false, null: false
+    t.boolean "pilot_follow_up_enabled", default: false, null: false
+    t.boolean "pilot_rewrite_enabled", default: false, null: false
+    t.boolean "pilot_label_suggestion_enabled", default: false, null: false
     t.index "((feature_flags ->> 'pilot'::text))", name: "index_accounts_on_feature_flags_pilot"
     t.index "((feature_flags ->> 'pilot_briefing'::text))", name: "index_accounts_on_feature_flags_pilot_briefing"
     t.index "COALESCE((feature_flags ->> 'pilot'::text), 'true'::text)", name: "index_accounts_on_feature_flags_pilot_coalesce"
     t.index "COALESCE((feature_flags ->> 'pilot_briefing'::text), 'true'::text)", name: "index_accounts_on_feature_flags_pilot_briefing_coalesce"
+    t.index ["id"], name: "index_accounts_on_pilot_enabled", where: "pilot_enabled"
     t.index ["status"], name: "index_accounts_on_status"
   end
 
@@ -1060,6 +1073,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_180000) do
     t.index ["status"], name: "index_pilot_documents_on_status"
   end
 
+  create_table "pilot_events", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.string "event_name", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.string "related_entity_type"
+    t.bigint "related_entity_id"
+    t.datetime "created_at", null: false
+    t.index ["account_id", "created_at"], name: "index_pilot_events_on_account_id_and_created_at_desc", order: { created_at: :desc }
+    t.index ["account_id"], name: "index_pilot_events_on_account_id"
+    t.index ["event_name"], name: "index_pilot_events_on_event_name"
+    t.index ["related_entity_type", "related_entity_id"], name: "index_pilot_events_on_related_entity"
+  end
+
   create_table "pilot_inboxes", force: :cascade do |t|
     t.bigint "pilot_assistant_id", null: false
     t.bigint "inbox_id", null: false
@@ -1079,6 +1105,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_180000) do
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_pilot_logbook_entries_on_account_id"
     t.index ["contact_id"], name: "index_pilot_logbook_entries_on_contact_id"
+  end
+
+  create_table "pilot_reporting_events", force: :cascade do |t|
+    t.string "name", null: false
+    t.float "value"
+    t.float "value_in_business_hours"
+    t.bigint "account_id", null: false
+    t.bigint "inbox_id"
+    t.bigint "user_id"
+    t.bigint "conversation_id"
+    t.datetime "event_start_at"
+    t.datetime "event_end_at"
+    t.datetime "created_at", null: false
+    t.index ["account_id", "name", "event_start_at"], name: "index_pilot_reporting_events_on_account_name_start"
+    t.index ["account_id"], name: "index_pilot_reporting_events_on_account_id"
+    t.index ["conversation_id"], name: "index_pilot_reporting_events_on_conversation_id"
+    t.index ["inbox_id"], name: "index_pilot_reporting_events_on_inbox_id"
   end
 
   create_table "pilot_scenarios", force: :cascade do |t|
@@ -1338,8 +1381,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_20_180000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "pilot_events", "accounts"
   add_foreign_key "pilot_logbook_entries", "accounts"
   add_foreign_key "pilot_logbook_entries", "contacts"
+  add_foreign_key "pilot_reporting_events", "accounts"
   create_trigger("accounts_after_insert_row_tr", :generated => true, :compatibility => 1).
       on("accounts").
       after(:insert).

@@ -18,6 +18,7 @@ class AsyncDispatcher < BaseDispatcher
       NotificationListener.instance,
       ParticipationListener.instance,
       PilotAutopilotListener.instance,
+      PilotResolveListener.instance,
       ReportingEventListener.instance,
       WebhookListener.instance
     ]

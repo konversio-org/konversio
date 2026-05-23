@@ -36,14 +36,71 @@ module Custom
         ::Llm::Config.with_api_key(::Llm::Config.api_key, api_base: ::Llm::Config.api_base, &)
       end
 
-      # Dispatch a Pilot telemetry event. Today this just logs; the real
-      # EventDispatcher (`Custom::Pilot::EventDispatcher`) lands with section 7
-      # of the Pilot tasks. Service code can already call this without rework
-      # later.
-      def dispatch_event(name, payload = {})
-        Rails.logger.info("[pilot.event] #{name} account=#{account&.id} payload=#{payload.except(:transcript, :raw_content).inspect}")
+      # Dispatch a Pilot telemetry event through `Custom::Pilot::EventDispatcher`.
+      # Translates the symbolic event name passed by legacy callers (e.g.
+      # `:briefing_started`) into the canonical dotted form
+      # (`pilot.briefing.started`) and routes through the dispatcher so
+      # webhooks, ActionCable, and the activity store all see the event.
+      #
+      # Accepts either a positional payload hash:
+      #   dispatch_event(:briefing_completed, { conversation_id: 12 })
+      # or trailing kwargs (legacy style preserved for in-flight callers):
+      #   dispatch_event(:briefing_completed, conversation_id: 12)
+      #
+      # An explicit `time:` keyword threads through to listeners — callers at
+      # a state-transition site should capture it before they call here so
+      # downstream consumers can rely on race-free ordering.
+      def dispatch_event(name, payload = nil, time: nil, **kwargs)
+        merged_payload = payload.is_a?(Hash) ? payload.merge(kwargs) : kwargs
+        canonical = canonicalize_event_name(name)
+        payload_with_account = merged_payload.merge(account_id: account&.id).compact
+        ::Custom::Pilot::EventDispatcher.dispatch(canonical, payload_with_account, time: time, account: account)
       end
 
+      # Maps the legacy underscore names (`:briefing_started`,
+      # `:autopilot_inference_completed`) to their dotted dispatcher form.
+      # Keeps callers free to use either symbol or string.
+      def canonicalize_event_name(name)
+        str = name.to_s
+        return str if str.include?('.')
+
+        prefix_match = ::Custom::Pilot::BaseService::EVENT_NAME_MAP.find { |k, _| str.start_with?(k) }
+        return "pilot.#{str.tr('_', '.')}" if prefix_match.nil?
+
+        suffix = str.delete_prefix(prefix_match.first).delete_prefix('_')
+        suffix.empty? ? prefix_match.last : "#{prefix_match.last}.#{suffix.tr('_', '.')}"
+      end
+
+      # Symbolic-prefix → dotted-prefix translation table. Ordered longest-
+      # first so e.g. `autopilot_inference_completed` matches the autopilot
+      # prefix and not just `pilot.*`.
+      EVENT_NAME_MAP = {
+        'briefing' => 'pilot.briefing',
+        'copilot_inference' => 'pilot.copilot.inference',
+        'copilot_message' => 'pilot.copilot.message',
+        'autopilot_inference' => 'pilot.autopilot.inference',
+        'autopilot_handover' => 'pilot.autopilot.handover',
+        'autopilot_skipped' => 'pilot.autopilot.skipped',
+        'autopilot_document' => 'pilot.autopilot.document',
+        'logbook_extraction' => 'pilot.logbook.extraction',
+        'logbook_entry' => 'pilot.logbook.entry',
+        'tool' => 'pilot.tool'
+      }.freeze
+
+      # Renders the contact's Logbook entries as a system-role message body
+      # per the pilot-logbook "Logbook context injection format" requirement.
+      #
+      # Shape:
+      #   "Known facts about this contact:\n- <fact>\n- <fact>"
+      #
+      # Order: reverse-chronological (newest first). Only the fact strings
+      # are emitted — no entry ids, no source-message ids, no timestamps —
+      # so the LLM treats them as durable knowledge rather than transcript
+      # artifacts.
+      #
+      # Returns `nil` when the feature is off, the contact has no entries,
+      # or the contact is blank — callers should skip adding any system
+      # message when this returns nil.
       def logbook_context_for(contact)
         return nil if contact.blank?
         return nil unless feature_enabled?(:logbook)
@@ -51,10 +108,8 @@ module Custom
         entries = ::Pilot::LogbookEntry.where(contact: contact).order(created_at: :desc).limit(20)
         return nil if entries.empty?
 
-        [
-          'Context — Logbook entries for this contact (use these to ground your response in customer history):',
-          entries.map { |e| "- [#{e.created_at.to_date}] #{e.content}" }.join("\n")
-        ].join("\n")
+        bullets = entries.map { |e| "- #{e.content}" }.join("\n")
+        "Known facts about this contact:\n#{bullets}"
       end
     end
   end

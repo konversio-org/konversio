@@ -62,3 +62,20 @@ remove_orphan_conversations_job:
   cron: '0 */12 * * *'
   class: 'Internal::RemoveOrphanConversationsJob'
   queue: housekeeping
+
+# executed daily at 0300 UTC
+# purges pilot_events rows older than 30 days (Activity view retention)
+pilot_events_retention_job:
+  cron: '0 3 * * *'
+  class: 'Pilot::EventsRetentionJob'
+  queue: scheduled_jobs
+
+# executed hourly
+# Pilot document sync: re-fetches eligible URL-backed Pilot::Document rows
+# whose refresh window has elapsed. Per-account cap 50, global cap 1000;
+# stuck-state recovery at 2h. Eligibility three-branch disjunction over
+# (sync_status, last_attempt_at). See Pilot::Documents::SyncSchedulerJob.
+pilot_documents_sync_scheduler_job:
+  cron: '0 * * * *'
+  class: 'Pilot::Documents::SyncSchedulerJob'
+  queue: scheduled_jobs
