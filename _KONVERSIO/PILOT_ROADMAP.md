@@ -13,7 +13,7 @@ High-level status of the Captain → Pilot port. One row per scoped feature, not
 | FAQ knowledge base | ✅ DONE | — |
 | Document ingestion (PDF + URL + Firecrawl) | ✅ DONE | — |
 | Scenarios (admin playbooks) | ✅ DONE | — |
-| Custom tools | 🟡 PARTIAL | Backend complete (executor, SSRF guard, Liquid templates, structured errors). **Admin UI tools panel not built.** |
+| Custom tools | 🟡 PARTIAL | Backend incomplete (executor/guard are ready, but V1 controller is missing entirely). **Admin UI tools panel not built.** |
 | Briefing / reply suggestion | ✅ DONE | — |
 | Conversation utilities (Summary / Rewrite / Follow-up / Label suggestion / CSAT) | 🟡 PARTIAL | API + services done. **No composer/timeline UI affordances** — agents cannot click "Summarize" or "Rewrite" from the dashboard. |
 | Autopilot admin surface (manage assistants / documents / scenarios / tools) | 🟡 PARTIAL | FAQs page (V2) ships. **Other admin pages and Pilot sidebar group not built** — operators currently cannot manage assistants/scenarios/documents/tools through the dashboard. V1 controllers exist (API works), V2 admin UI does not. |
@@ -25,7 +25,7 @@ High-level status of the Captain → Pilot port. One row per scoped feature, not
 
 Three real Captain features are partially shipped — all backend, no UI:
 
-1. **Custom tools admin UI** — the panel that lets admins CRUD custom HTTP tools
+1. **Custom tools V1 controller + admin UI** — the API endpoints and control panel that lets admins CRUD custom HTTP tools
 2. **Conversation utilities UI affordances** — the composer sparkle buttons (Summarize / Rewrite / Follow-ups / Suggested labels) and CSAT report enhancements
 3. **Autopilot admin pages + Pilot sidebar group** — the dashboard surface for managing assistants / documents / scenarios / tools (only FAQs page exists in V2 today)
 
@@ -41,6 +41,7 @@ These are features Pilot ships that Captain does not. All are intentional and re
 - **Copilot validator tolerance + ai-agents SDK tool execution** — fixes Captain crashes when LLMs return unexpected JSON keys or emit tool calls that need executing.
 - **Provider connection-test functionality + env-pre-configured detection** — fold into Super Admin LLM Settings; necessary because providers are configurable in Pilot but not in Captain.
 - **Logbook (contact memory)** — experimental Konversio-original feature by Matt. Built on its own infrastructure (`pilot_logbook_entries` table, `Pilot::LogbookExtractionJob`, dedicated viewer tab, cross-feature injection into Briefing/Copilot/Autopilot prompts).
+- **Pilot Activity view (telemetry dashboard)** — operator-debugging audit trail. Necessary for viewing emitted events, tracking tool execution results, and troubleshooting prompt/LLM issues.
 
 ## Cuts agreed (Pilot-invented features being removed)
 
@@ -48,10 +49,6 @@ These were built during the autonomous session but lack Captain prior art and la
 
 - **Onboarding wizard** (entire pilot-onboarding capability) — Vue components, controller, routes, `pilot_onboarding_state` JSONB, `OnboardingState`, `WebsiteWidgetSeeder`, `WidgetTaglineService`, i18n. The provider connection-test + env-detection plumbing is preserved and folded into Super Admin → LLM Settings.
 - **AI auto-resolve evaluator** (Pilot's half of pilot-autoresolve) — `Custom::Pilot::AutoResolveEvaluator`, mode toggle, business-hours toggle, `/pilot/settings` panel, `pilot_autoresolve_config` JSONB, the Pilot `AutoResolveJob` / `AutoResolveConversationJob`. Host's time-based auto-resolve stays unchanged.
-
-## Open question
-
-- **Pilot Activity view** (telemetry dashboard for browsing emitted events) — no Captain analog. Cut for rule consistency or keep as a small operator-useful UI? Pending decision.
 
 ## Other open polish (filed, not started)
 
