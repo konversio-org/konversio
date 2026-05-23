@@ -3,7 +3,9 @@ require 'rails_helper'
 RSpec.describe Pilot::DocumentResponseBuilderJob do
   let(:account) { create(:account) }
   let(:assistant) { create(:pilot_assistant, account: account) }
-  let(:document) { create(:pilot_document, assistant: assistant, account: account, content: 'Refunds are processed within 30 days. Shipping takes 5 days.') }
+  let(:document) do
+    create(:pilot_document, assistant: assistant, account: account, content: 'Refunds are processed within 30 days. Shipping takes 5 days.')
+  end
 
   describe '#perform' do
     it 'persists AssistantResponse rows with status pending for each LLM-emitted FAQ' do
@@ -21,8 +23,8 @@ RSpec.describe Pilot::DocumentResponseBuilderJob do
 
       fake_context = double('context')
       allow(fake_context).to receive(:chat).and_return(fake_chat)
-      allow(::Llm::Config).to receive(:with_api_key).and_yield(fake_context)
-      allow(::Llm::Config).to receive(:api_key).and_return('test-key')
+      allow(Llm::Config).to receive(:with_api_key).and_yield(fake_context)
+      allow(Llm::Config).to receive(:api_key).and_return('test-key')
 
       expect { described_class.perform_now(document.id) }
         .to change { Pilot::AssistantResponse.where(documentable: document).count }.by(2)
@@ -46,11 +48,21 @@ RSpec.describe Pilot::DocumentResponseBuilderJob do
 
       fake_context = double('context')
       allow(fake_context).to receive(:chat).and_return(fake_chat)
-      allow(::Llm::Config).to receive(:with_api_key).and_yield(fake_context)
-      allow(::Llm::Config).to receive(:api_key).and_return('test-key')
+      allow(Llm::Config).to receive(:with_api_key).and_yield(fake_context)
+      allow(Llm::Config).to receive(:api_key).and_return('test-key')
 
       expect { described_class.perform_now(document.id) }
         .to change { Pilot::AssistantResponse.where(documentable: document).count }.by(1)
     end
   end
+
+  # §13 follow-up: cross-source paginated FAQ dedup is not currently
+  # exercised. Dedup is asserted inside one generation pass, but no spec
+  # asserts that a second source re-introducing the same Q/A is detected
+  # against pre-existing AssistantResponse rows. Add a context that creates
+  # two documents on the same assistant where document #2 produces a Q/A
+  # already present from document #1, and assert no second response row is
+  # created. Only meaningful once the paginated/cross-source generator
+  # actually exists.
+  pending 'TODO: cross-source FAQ dedup against pre-existing AssistantResponse rows'
 end

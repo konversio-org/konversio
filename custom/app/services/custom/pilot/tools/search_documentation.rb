@@ -32,7 +32,7 @@ module Custom
                                .limit(DEFAULT_LIMIT)
           return 'No matching documentation found.' if results.empty?
 
-          format_results(results)
+          format_results(results, assistant_for(tool_context))
         rescue StandardError => e
           Rails.logger.error("[pilot.tools.search_documentation] #{e.class}: #{e.message}")
           "[BACKEND_ERROR] Documentation search failed: #{e.class.name}: #{e.message}. " \
@@ -57,10 +57,50 @@ module Custom
           "[#{vector.join(',')}]"
         end
 
-        def format_results(results)
-          results.map do |r|
-            "Q: #{r.try(:question)}\nA: #{r.try(:answer)}"
-          end.join("\n---\n")
+        def assistant_for(tool_context)
+          assistant_id = tool_context.context[:assistant_id]
+          return nil if assistant_id.blank?
+          return nil unless defined?(::Pilot::Assistant)
+
+          ::Pilot::Assistant.find_by(id: assistant_id)
+        end
+
+        def format_results(results, assistant)
+          citation_off = assistant&.citation_behavior.to_s == 'off'
+          results.map { |r| format_single(r, citation_off: citation_off) }.join("\n---\n")
+        end
+
+        def format_single(result, citation_off:)
+          lines = ["Q: #{result.try(:question)}", "A: #{result.try(:answer)}"]
+          source_line = source_line_for(result, citation_off: citation_off)
+          lines << source_line if source_line
+          lines.join("\n")
+        end
+
+        # Returns the "Source: ..." line to append, or nil to suppress it.
+        # PDF-origin matches honor the citation_behavior toggle; URL-origin
+        # matches always surface the URL regardless of the toggle (per
+        # pilot-autopilot "URL citation always visible" scenario).
+        def source_line_for(result, citation_off:)
+          doc = result.try(:documentable)
+          return nil if doc.blank?
+          return nil unless doc.respond_to?(:external_link)
+
+          if pdf_origin?(doc)
+            return nil if citation_off
+
+            "Source: #{doc.try(:name).presence || doc.external_link}"
+          else
+            "Source: #{doc.external_link}"
+          end
+        end
+
+        def pdf_origin?(document)
+          link = document.external_link.to_s
+          return true if link.start_with?('PDF:') || link.downcase.end_with?('.pdf')
+          return document.pdf_document? if document.respond_to?(:pdf_document?)
+
+          false
         end
       end
     end

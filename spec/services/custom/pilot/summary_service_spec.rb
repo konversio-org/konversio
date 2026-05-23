@@ -26,12 +26,37 @@ RSpec.describe Custom::Pilot::SummaryService do
       fake = instance_double(Pilot::SummaryService)
       expect(Pilot::SummaryService)
         .to receive(:new)
-        .with(account: account, conversation_display_id: conversation.display_id)
+        .with(
+          account: account,
+          conversation_display_id: conversation.display_id,
+          previous_output: nil,
+          refinement_instruction: nil
+        )
         .and_return(fake)
       expect(fake).to receive(:perform).and_return({ message: 'A short summary.' })
 
       service = described_class.new(conversation: conversation)
       expect(service.perform).to eq('A short summary.')
+    end
+
+    it 'forwards refinement kwargs through to Pilot::SummaryService' do
+      fake = instance_double(Pilot::SummaryService, perform: { message: 'refined' })
+      expect(Pilot::SummaryService)
+        .to receive(:new)
+        .with(
+          account: account,
+          conversation_display_id: conversation.display_id,
+          previous_output: 'older summary text',
+          refinement_instruction: 'shorten it'
+        )
+        .and_return(fake)
+
+      service = described_class.new(
+        conversation: conversation,
+        previous_output: 'older summary text',
+        refinement_instruction: 'shorten it'
+      )
+      expect(service.perform).to eq('refined')
     end
 
     it 'dispatches summary_completed telemetry on success' do

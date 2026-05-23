@@ -74,9 +74,6 @@ Rails.application.routes.draw do
             resources :copilot_threads, only: [:index, :create] do
               resources :copilot_messages, only: [:index, :create]
             end
-            resources :custom_tools do
-              post :test, on: :collection
-            end
             resources :documents, only: [:index, :show, :create, :destroy]
             resource :tasks, only: [], controller: 'tasks' do
               post :summarize
@@ -478,6 +475,9 @@ Rails.application.routes.draw do
             resources :follow_ups, only: [:create]
             resources :rewrites, only: [:create]
             resources :logbook_entries, only: [:index, :create, :update, :destroy]
+            resources :custom_tools do
+              post :test, on: :collection
+            end
           end
         end
       end
@@ -589,6 +589,7 @@ Rails.application.routes.draw do
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'
   post 'webhooks/shopify', to: 'webhooks/shopify#events'
+  post 'webhooks/pilot/bulk_crawl/:assistant_id/:token', to: 'webhooks/pilot/bulk_crawl#create', as: :pilot_bulk_crawl_webhook
 
   # Resend ActionMailbox ingress
   mount ActionMailbox::Resend::Engine, at: '/rails/action_mailbox/resend'

@@ -34,11 +34,43 @@ class Pilot::LogbookEntry < ApplicationRecord
 
   before_validation :ensure_account_id
 
+  after_commit :dispatch_entry_created_event, on: :create
+  after_commit :dispatch_entry_deleted_event, on: :destroy
+
   scope :latest, -> { order(created_at: :desc) }
 
   private
 
   def ensure_account_id
     self.account_id = contact&.account_id if account_id.blank?
+  end
+
+  def dispatch_entry_created_event
+    ::Custom::Pilot::EventDispatcher.dispatch(
+      'pilot.logbook.entry.created',
+      {
+        account_id: account_id,
+        contact_id: contact_id,
+        entry_id: id,
+        content_length: content.to_s.length
+      },
+      account: account
+    )
+  rescue StandardError => e
+    Rails.logger.warn("[pilot.logbook_entry] dispatch entry.created failed: #{e.class}: #{e.message}")
+  end
+
+  def dispatch_entry_deleted_event
+    ::Custom::Pilot::EventDispatcher.dispatch(
+      'pilot.logbook.entry.deleted',
+      {
+        account_id: account_id,
+        contact_id: contact_id,
+        entry_id: id
+      },
+      account: account
+    )
+  rescue StandardError => e
+    Rails.logger.warn("[pilot.logbook_entry] dispatch entry.deleted failed: #{e.class}: #{e.message}")
   end
 end

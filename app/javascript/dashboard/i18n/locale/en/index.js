@@ -46,8 +46,10 @@ import pilot from './pilot.json';
 // actions keys) and pilot.json (new Pilot admin pages). Plain object spread
 // would clobber whichever came last, so we merge the two PILOT blocks
 // explicitly before the default export.
+const { PILOT: pilotMain, ...pilotRest } = pilot;
 const mergedPilot = {
-  PILOT: { ...(integrations.PILOT || {}), ...(pilot.PILOT || {}) },
+  PILOT: { ...(integrations.PILOT || {}), ...(pilotMain || {}) },
+  ...pilotRest,
 };
 
 export default {

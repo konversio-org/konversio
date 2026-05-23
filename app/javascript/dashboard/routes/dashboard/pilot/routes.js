@@ -38,7 +38,6 @@ export const routes = [
   section('playground', 'pilot_playground', 'SIDEBAR.PILOT_PLAYGROUND'),
   section('inboxes', 'pilot_inboxes', 'SIDEBAR.PILOT_INBOXES'),
   section('tools', 'pilot_tools', 'SIDEBAR.PILOT_TOOLS'),
-  section('settings', 'pilot_settings_index', 'SIDEBAR.PILOT_SETTINGS'),
   {
     path: frontendURL('accounts/:accountId/pilot/copilot'),
     name: 'pilot_copilot',

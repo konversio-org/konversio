@@ -27,7 +27,8 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
       assistant: @assistant,
       message: params[:message_content],
       message_history: parsed_message_history,
-      account: Current.account
+      account: Current.account,
+      source: 'playground'
     ).perform
 
     render json: { reply: result.reply }, status: :ok

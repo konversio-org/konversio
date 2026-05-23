@@ -33,14 +33,27 @@ module Pilot
         [60, 20]   # next 20 minutes — total cap 30 minutes
       ].freeze
 
+      # Retry transient ingestion failures with the spec'd backoff
+      # schedule: 30s, 2m, 5m (3 retries beyond the initial attempt).
+      RETRY_WAITS = [30.seconds, 2.minutes, 5.minutes].freeze
+
+      retry_on ::Custom::Pilot::DocumentIngestionService::TransientFetchError,
+               attempts: RETRY_WAITS.length + 1,
+               wait: ->(executions) { RETRY_WAITS[executions - 1] || RETRY_WAITS.last } do |job, error|
+        # All retries exhausted — mark the document failed via sync_status
+        # (the document remains in_progress per the "Crawl failure leaves
+        # status unchanged" spec scenario).
+        job.send(:mark_sync_failed_after_retries, error)
+      end
+
       sidekiq_retries_exhausted do |msg, _exception|
         document_id = msg['args'].first
         document = ::Pilot::Document.find_by(id: document_id)
         next if document.blank?
 
         document.update_columns(
-          status: ::Pilot::Document.statuses[:failed],
-          metadata: (document.metadata || {}).merge('error_message' => 'crawl_retries_exhausted')
+          sync_status: ::Pilot::Document.sync_statuses[:failed],
+          metadata: (document.metadata || {}).merge('error' => 'crawl_retries_exhausted')
         )
       end
 
@@ -56,6 +69,18 @@ module Pilot
         return ingest_via_fallback if firecrawl_api_key.blank?
 
         run_crawl
+      rescue ::Custom::Pilot::DocumentIngestionService::TransientFetchError
+        # Let ActiveJob's retry_on handle this — propagate so the wait
+        # schedule kicks in.
+        raise
+      rescue StandardError => e
+        # Safety net per spec: any other exception marks the document
+        # failed and records the exception class + message so operators can
+        # diagnose later. We intentionally swallow rather than re-raise so
+        # the user-visible row reflects the failure instead of a stuck
+        # syncing row.
+        Rails.logger.error("[pilot.crawl_job] unexpected #{e.class}: #{e.message}")
+        mark_sync_failed("#{e.class.name}: #{e.message}") if @document
       end
 
       private
@@ -126,6 +151,23 @@ module Pilot
 
           upsert_child_document(page)
         end
+
+        dispatch_crawled(pages.size)
+      end
+
+      def dispatch_crawled(page_count)
+        ::Custom::Pilot::EventDispatcher.dispatch(
+          'pilot.autopilot.document.crawled',
+          {
+            account_id: @document.account_id,
+            assistant_id: @document.assistant_id,
+            document_id: @document.id,
+            page_count: page_count
+          },
+          account: @document.account
+        )
+      rescue StandardError => e
+        Rails.logger.warn("[pilot.crawl_job] dispatch failed: #{e.class}: #{e.message}")
       end
 
       def update_seed_row(seed_page)
@@ -193,7 +235,8 @@ module Pilot
         if result&.success?
           @document.update!(content: result.content, status: :available, sync_status: :synced)
         else
-          mark_failed(result&.error_code || 'pdf_ingestion_failed')
+          # PDF errors are permanent (pdf-reader missing, malformed PDF, etc.).
+          mark_sync_failed(result&.error_code || 'pdf_ingestion_failed')
         end
       end
 
@@ -202,7 +245,10 @@ module Pilot
         if result&.success?
           @document.update!(content: result.content, status: :available, sync_status: :synced)
         else
-          mark_failed(result&.error_code || 'ingestion_failed')
+          # A returned Result with success=false is a permanent failure
+          # (transient cases raise TransientFetchError which the job-level
+          # retry_on catches before we reach here).
+          mark_sync_failed(result&.error_code || 'ingestion_failed')
         end
       end
 
@@ -211,6 +257,28 @@ module Pilot
           status: :failed,
           metadata: (@document.metadata || {}).merge('error_message' => error_message)
         )
+      end
+
+      # Permanent / out-of-retries failure: only sync_status flips to
+      # `failed`. `status` stays put so the row remains usable (e.g. an
+      # existing `available` document retains its previously-crawled
+      # content even though the latest re-sync attempt failed).
+      def mark_sync_failed(error_message)
+        @document.update!(
+          sync_status: :failed,
+          metadata: (@document.metadata || {}).merge('error' => error_message.to_s)
+        )
+      end
+
+      def mark_sync_failed_after_retries(error)
+        # retry_on's block does not re-invoke `perform`, so we may not have
+        # `@document` set if the job was deserialized fresh on the final
+        # tick. Fall back to looking it up via `arguments`.
+        @document ||= ::Pilot::Document.find_by(id: arguments.first)
+        return if @document.blank?
+
+        code = error.respond_to?(:error_code) ? error.error_code : "#{error.class.name}: #{error.message}"
+        mark_sync_failed(code)
       end
 
       def normalize_url(url)

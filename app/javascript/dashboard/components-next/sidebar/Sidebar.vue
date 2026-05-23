@@ -697,12 +697,6 @@ const menuItems = computed(() => {
           to: accountScopedRoute('pilot_tools'),
         },
         {
-          name: 'Pilot Settings',
-          label: t('SIDEBAR.PILOT_SETTINGS'),
-          icon: 'i-lucide-bolt',
-          to: accountScopedRoute('pilot_settings_index'),
-        },
-        {
           name: 'Pilot Copilot',
           label: t('SIDEBAR.PILOT_COPILOT'),
           icon: 'i-ph-robot',

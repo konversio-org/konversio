@@ -103,6 +103,89 @@ RSpec.describe Custom::Pilot::CopilotService do
       expect { service.perform }.to raise_error(described_class::Error, /No user message/)
     end
 
+    describe 'permission-aware tool filtering' do
+      # A built-in tool that requires administrator role. Defined here (not in
+      # production tool code) because no real built-in needs role-gating today
+      # — but the filter contract must support it for future tools.
+      let(:admin_only_tool_class) do
+        Class.new(Custom::Pilot::Tools::Base) do
+          required_role :administrator
+          description 'admin-only'
+          def self.tool_name = 'admin_only'
+          def name = 'admin_only'
+          def perform(_ctx, **_args) = 'ok'
+        end
+      end
+
+      # A "custom" tool — backed by Pilot::CustomTool — gated by the
+      # `pilot_tools` account flag.
+      let(:fake_custom_tool_class) do
+        Class.new(Custom::Pilot::Tools::Base) do
+          description 'fake custom tool'
+          def name = 'fake_custom'
+          def custom? = true
+          def perform(_ctx, **_args) = 'ok'
+        end
+      end
+
+      def configured_tools(service)
+        service.send(:registered_tools)
+      end
+
+      it 'excludes ALL custom tools when account.pilot_tools_enabled is off' do
+        account.disable_features!(:pilot_tools)
+        service = described_class.new(thread: thread)
+        # Inject a fake custom tool into the list by stubbing registered_tools'
+        # base so the filter has something to drop.
+        allow(Custom::Pilot::Tools::SearchConversation).to receive(:new).and_return(fake_custom_tool_class.new)
+
+        tools = configured_tools(service)
+
+        expect(tools.map(&:name)).not_to include('fake_custom')
+      end
+
+      it 'still includes built-in (non-custom) tools when account.pilot_tools_enabled is off' do
+        account.disable_features!(:pilot_tools)
+        service = described_class.new(thread: thread)
+
+        tools = configured_tools(service)
+
+        expect(tools.map(&:name)).to include('search_conversation', 'get_conversation', 'get_contact')
+      end
+
+      it 'excludes role-gated tools for users whose role does not match' do
+        # Thread.user is an `agent`; admin_only_tool requires `administrator`.
+        service = described_class.new(thread: thread)
+        allow(Custom::Pilot::Tools::GetContact).to receive(:new).and_return(admin_only_tool_class.new)
+
+        tools = configured_tools(service)
+
+        expect(tools.map(&:name)).not_to include('admin_only')
+      end
+
+      it 'includes role-gated tools for users whose role matches' do
+        account.account_users.find_by(user: agent).update!(role: :administrator)
+        service = described_class.new(thread: thread)
+        allow(Custom::Pilot::Tools::GetContact).to receive(:new).and_return(admin_only_tool_class.new)
+
+        tools = configured_tools(service)
+
+        expect(tools.map(&:name)).to include('admin_only')
+      end
+
+      it 'excludes tools that the bound assistant disables via config[disabled_tools]' do
+        assistant = create(:pilot_assistant, account: account,
+                                             config: { 'disabled_tools' => ['search_conversation'] })
+        thread.update!(assistant_id: assistant.id)
+
+        service = described_class.new(thread: thread)
+        tools = configured_tools(service)
+
+        expect(tools.map(&:name)).not_to include('search_conversation')
+        expect(tools.map(&:name)).to include('get_conversation', 'get_contact')
+      end
+    end
+
     it 'wraps unexpected runner exceptions as Error and fires copilot_inference_failed' do
       allow(fake_runner).to receive(:run).and_raise(RuntimeError, 'boom')
       service = described_class.new(thread: thread)

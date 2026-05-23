@@ -2,20 +2,32 @@
 #
 # Table name: accounts
 #
-#  id                    :integer          not null, primary key
-#  auto_resolve_duration :integer
-#  custom_attributes     :jsonb
-#  domain                :string(100)
-#  feature_flags         :jsonb            not null
-#  internal_attributes   :jsonb            not null
-#  limits                :jsonb
-#  locale                :integer          default("en")
-#  name                  :string           not null
-#  settings              :jsonb
-#  status                :integer          default("active")
-#  support_email         :string(100)
-#  created_at            :datetime         not null
-#  updated_at            :datetime         not null
+#  id                             :integer          not null, primary key
+#  auto_resolve_duration          :integer
+#  custom_attributes              :jsonb
+#  domain                         :string(100)
+#  feature_flags                  :jsonb            not null
+#  internal_attributes            :jsonb            not null
+#  limits                         :jsonb
+#  locale                         :integer          default("en")
+#  name                           :string           not null
+#  pilot_autopilot_enabled        :boolean          default(FALSE), not null
+#  pilot_autoresolve_enabled      :boolean          default(FALSE), not null
+#  pilot_briefing_enabled         :boolean          default(FALSE), not null
+#  pilot_copilot_enabled          :boolean          default(FALSE), not null
+#  pilot_csat_analysis_enabled    :boolean          default(FALSE), not null
+#  pilot_enabled                  :boolean          default(FALSE), not null
+#  pilot_follow_up_enabled        :boolean          default(FALSE), not null
+#  pilot_label_suggestion_enabled :boolean          default(FALSE), not null
+#  pilot_logbook_enabled          :boolean          default(FALSE), not null
+#  pilot_rewrite_enabled          :boolean          default(FALSE), not null
+#  pilot_summary_enabled          :boolean          default(FALSE), not null
+#  pilot_tools_enabled            :boolean          default(FALSE), not null
+#  settings                       :jsonb
+#  status                         :integer          default("active")
+#  support_email                  :string(100)
+#  created_at                     :datetime         not null
+#  updated_at                     :datetime         not null
 #
 # Indexes
 #
@@ -23,6 +35,7 @@
 #  index_accounts_on_feature_flags_pilot_briefing           (((feature_flags ->> 'pilot_briefing'::text)))
 #  index_accounts_on_feature_flags_pilot_briefing_coalesce  (COALESCE((feature_flags ->> 'pilot_briefing'::text), 'true'::text))
 #  index_accounts_on_feature_flags_pilot_coalesce           (COALESCE((feature_flags ->> 'pilot'::text), 'true'::text))
+#  index_accounts_on_pilot_enabled                          (id) WHERE pilot_enabled
 #  index_accounts_on_status                                 (status)
 #
 

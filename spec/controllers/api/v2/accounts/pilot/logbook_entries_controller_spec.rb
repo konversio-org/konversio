@@ -47,14 +47,15 @@ RSpec.describe 'Api::V2::Accounts::Pilot::LogbookEntries', type: :request do
   describe 'POST /api/v2/accounts/:account_id/pilot/logbook_entries' do
     context 'when authenticated' do
       it 'creates a new logbook entry' do
-        post url,
-             params: { contact_id: contact.id, content: 'Test entry' },
-             headers: agent.create_new_auth_token,
-             as: :json
+        expect do
+          post url,
+               params: { contact_id: contact.id, content: 'Test entry' },
+               headers: agent.create_new_auth_token,
+               as: :json
+        end.to change { contact.pilot_logbook_entries.count }.by(1)
 
         expect(response).to have_http_status(:created)
         expect(response.parsed_body['content']).to eq('Test entry')
-        expect(Pilot::LogbookEntry.count).to eq(1)
       end
 
       it 'returns 422 if content is missing' do

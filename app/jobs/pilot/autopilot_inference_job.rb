@@ -89,8 +89,16 @@ module Pilot
     # waiting_since, dispatches CONVERSATION_BOT_HANDOFF) instead of a raw
     # status update. Posts a customer-visible message from the assistant's
     # configured handoff_message, falling back to the i18n default.
-    def process_handover(conversation, assistant, _result)
+    #
+    # Per pilot-telemetry "Dispatcher exception handling" (17.25): the
+    # `pilot.autopilot.handover.triggered` dispatch happens AFTER the
+    # transition is committed and is wrapped in an outer rescue so a
+    # raise inside the dispatch path never propagates to this job. The
+    # event timestamp is captured at the moment of state transition and
+    # passed explicitly.
+    def process_handover(conversation, assistant, result)
       conversation.bot_handoff! unless conversation.open?
+      transitioned_at = Time.zone.now
 
       content = assistant.config['handoff_message'].presence ||
                 I18n.t('conversations.pilot.handoff')
@@ -102,6 +110,50 @@ module Pilot
         sender: assistant,
         content: content
       )
+
+      append_activity_message(conversation, handover_reason(result))
+      dispatch_handover_event(conversation, assistant, result, transitioned_at)
+    end
+
+    # Per pilot-telemetry "Activity messages on conversation timeline": every
+    # inference-driven outcome appends a `messages` row with
+    # `message_type = activity` so agents see the model-supplied reason on
+    # the conversation timeline.
+    def append_activity_message(conversation, reason)
+      body = I18n.t('pilot.activity.handed_off_by_inference', reason: reason.to_s)
+      conversation.messages.create!(
+        message_type: :activity,
+        account_id: conversation.account_id,
+        inbox_id: conversation.inbox_id,
+        content: body
+      )
+    rescue StandardError => e
+      Rails.logger.warn("[pilot.autopilot_inference_job] activity message persist failed: #{e.class}: #{e.message}")
+    end
+
+    def dispatch_handover_event(conversation, assistant, result, transitioned_at)
+      envelope = ::Custom::Pilot::ConversationPayloadBuilder.call(conversation: conversation, assistant: assistant)
+      payload = {
+        account_id: conversation.account_id,
+        assistant_id: assistant.id,
+        conversation_envelope: envelope,
+        reason: handover_reason(result)
+      }
+      ::Custom::Pilot::EventDispatcher.dispatch(
+        'pilot.autopilot.handover.triggered',
+        payload,
+        time: transitioned_at,
+        account: conversation.account
+      )
+    rescue StandardError => e
+      Rails.logger.error("[pilot.autopilot_inference_job] handover dispatch failed: #{e.class}: #{e.message}")
+    end
+
+    def handover_reason(result)
+      handover = result&.handover
+      return 'llm_requested' if handover.blank?
+
+      handover.respond_to?(:reason) ? (handover.reason.presence || 'llm_requested') : 'llm_requested'
     end
   end
 end
