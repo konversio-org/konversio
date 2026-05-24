@@ -107,5 +107,22 @@ RSpec.describe Pilot::ReplySuggestionService do
         expect(service.send(:doc_search_available?)).to be(false)
       end
     end
+
+    it 'adds extra system context before the conversation prompt when provided' do
+      service = described_class.new(
+        account: account,
+        conversation_display_id: conversation.display_id,
+        user: user,
+        extra_system_context: 'Known facts about this contact: Prefers email'
+      )
+
+      messages = service.send(:build_messages)
+
+      expect(messages[1]).to eq(
+        role: 'system',
+        content: 'Known facts about this contact: Prefers email'
+      )
+      expect(messages[2][:role]).to eq('user')
+    end
   end
 end

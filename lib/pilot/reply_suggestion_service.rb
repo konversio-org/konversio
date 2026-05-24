@@ -1,5 +1,5 @@
 class Pilot::ReplySuggestionService < Pilot::BaseTaskService
-  pattr_initialize [:account!, :conversation_display_id!, :user!, :previous_output, :refinement_instruction]
+  pattr_initialize [:account!, :conversation_display_id!, :user!, :previous_output, :refinement_instruction, :extra_system_context]
 
   def perform
     tools = []
@@ -28,9 +28,11 @@ class Pilot::ReplySuggestionService < Pilot::BaseTaskService
   # refinement params fall through to the original single-shot flow.
   def build_messages
     messages = [
-      { role: 'system', content: system_prompt },
-      { role: 'user', content: formatted_conversation }
+      { role: 'system', content: system_prompt }
     ]
+    messages << { role: 'system', content: extra_system_context } if extra_system_context.present?
+    messages << { role: 'user', content: formatted_conversation }
+
     if previous_output.present? && refinement_instruction.present?
       messages << { role: 'assistant', content: previous_output }
       messages << { role: 'user', content: refinement_instruction }

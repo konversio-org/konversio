@@ -158,6 +158,7 @@ module Custom
         [
           persona_section,
           product_section,
+          logbook_section,
           response_guidelines_section,
           guardrails_section,
           'Use the `search_documentation` tool whenever the user asks a factual or product question.',
@@ -173,6 +174,12 @@ module Custom
         return nil if assistant.product_name.blank?
 
         "Product: #{assistant.product_name}"
+      end
+
+      def logbook_section
+        return nil if conversation.blank?
+
+        logbook_context_for(conversation.contact)
       end
 
       def response_guidelines_section
