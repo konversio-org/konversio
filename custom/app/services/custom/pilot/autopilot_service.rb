@@ -84,11 +84,7 @@ module Custom
         runner = build_runner(invoked_tool_names)
         context = build_context(history_without_last_user(history))
 
-        run_result = ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.autopilot.inference', attributes: span_attributes) do |span|
-          result = runner.run(last_user, context: context, max_turns: max_turns)
-          span.set_attribute('invoked_tools', invoked_tool_names.join(',')) if invoked_tool_names.any?
-          result
-        end
+        run_result = execute_runner(runner, last_user, context, invoked_tool_names)
         raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
 
         reply = extract_reply(run_result)
@@ -100,6 +96,15 @@ module Custom
         )
 
         Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover)
+      end
+
+      def execute_runner(runner, last_user, context, invoked_tool_names)
+        ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.autopilot.inference', attributes: span_attributes) do |span|
+          result = runner.run(last_user, context: context, max_turns: max_turns)
+          attach_token_usage(span, result.usage) if result.respond_to?(:usage)
+          span.set_attribute('invoked_tools', invoked_tool_names.join(',')) if invoked_tool_names.any?
+          result
+        end
       end
 
       def span_attributes

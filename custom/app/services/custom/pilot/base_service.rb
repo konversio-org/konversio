@@ -1,3 +1,4 @@
+# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Common parent for every Pilot sub-feature service. Centralises:
@@ -111,6 +112,37 @@ module Custom
         bullets = entries.map { |e| "- #{e.content}" }.join("\n")
         "Known facts about this contact:\n#{bullets}"
       end
+
+      private
+
+      def attach_token_usage(span, usage)
+        return if span.blank? || usage.blank?
+
+        prompt_tokens = token_usage_value(usage, :prompt_tokens, :input_tokens)
+        completion_tokens = token_usage_value(usage, :completion_tokens, :output_tokens)
+
+        span.set_attribute('prompt_tokens', prompt_tokens) unless prompt_tokens.nil?
+        span.set_attribute('completion_tokens', completion_tokens) unless completion_tokens.nil?
+      end
+
+      def token_usage_value(usage, *keys)
+        keys.each do |key|
+          value = token_usage_fetch(usage, key)
+          return value unless value.nil?
+        end
+        nil
+      end
+
+      def token_usage_fetch(usage, key)
+        return usage.public_send(key) if usage.respond_to?(key)
+        return usage[key] if usage.respond_to?(:key?) && usage.key?(key)
+
+        string_key = key.to_s
+        return usage[string_key] if usage.respond_to?(:key?) && usage.key?(string_key)
+
+        nil
+      end
     end
   end
 end
+# rubocop:enable Style/ClassAndModuleChildren

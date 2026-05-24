@@ -1,3 +1,4 @@
+# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Generates a one-click reply draft for an agent on a given conversation.
@@ -31,21 +32,12 @@ module Custom
 
         dispatch_event(:briefing_started, conversation_id: conversation&.display_id)
 
-        draft = ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.briefing.generate', attributes: span_attributes) do |span|
-          response = run_reply_suggestion
-          raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?
-
-          extracted = extract_draft(response)
-          span.set_attribute('draft_length', extracted.to_s.length)
-          extracted
-        end
+        draft = generate_draft
 
         dispatch_event(:briefing_completed, conversation_id: conversation&.display_id, draft_length: draft.to_s.length)
 
         draft
-      rescue FeatureDisabledError
-        raise
-      rescue Error
+      rescue FeatureDisabledError, Error
         raise
       rescue StandardError => e
         Rails.logger.error("[pilot.briefing] LLM error: #{e.class}: #{e.message}")
@@ -53,6 +45,18 @@ module Custom
       end
 
       private
+
+      def generate_draft
+        ::Custom::Pilot::TraceSpan.wrap(name: 'pilot.briefing.generate', attributes: span_attributes) do |span|
+          response = run_reply_suggestion
+          raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?
+
+          attach_token_usage(span, response[:usage] || response['usage']) if response.is_a?(Hash)
+          extracted = extract_draft(response)
+          span.set_attribute('draft_length', extracted.to_s.length)
+          extracted
+        end
+      end
 
       def span_attributes
         {
@@ -121,3 +125,4 @@ module Custom
     end
   end
 end
+# rubocop:enable Style/ClassAndModuleChildren

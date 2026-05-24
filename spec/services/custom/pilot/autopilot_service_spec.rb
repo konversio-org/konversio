@@ -45,6 +45,28 @@ RSpec.describe Custom::Pilot::AutopilotService do
       expect(result.invoked_tool_names).to include('search_documentation')
     end
 
+    it 'adds runner token usage to the trace span when present' do
+      service = described_class.new(assistant: assistant, message: 'How big is the box?')
+      span = instance_double(Custom::Pilot::TraceSpan::NullSpan, set_attribute: nil)
+      fake_result = Agents::RunResult.new(
+        output: 'The box is 30cm wide.',
+        messages: [],
+        usage: { input_tokens: 12, output_tokens: 5 },
+        context: {}
+      )
+      fake_runner = double('AgentRunner', on_tool_start: nil)
+      allow(fake_runner).to receive(:run).and_return(fake_result)
+      allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
+      allow(Custom::Pilot::TraceSpan).to receive(:wrap) do |**_args, &block|
+        block.call(span)
+      end
+
+      service.perform
+
+      expect(span).to have_received(:set_attribute).with('prompt_tokens', 12)
+      expect(span).to have_received(:set_attribute).with('completion_tokens', 5)
+    end
+
     it 'flags handover when the reply contains the sentinel' do
       service = described_class.new(assistant: assistant, message: 'Where is my refund?')
 
