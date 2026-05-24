@@ -5,6 +5,7 @@
 #  id                  :bigint           not null, primary key
 #  config              :jsonb            not null
 #  description         :string
+#  enabled_tool_slugs  :jsonb            not null
 #  guardrails          :jsonb
 #  name                :string           not null
 #  response_guidelines :jsonb
@@ -47,6 +48,8 @@ class Pilot::Assistant < ApplicationRecord
   has_many :inboxes, through: :pilot_inboxes
   has_many :messages, as: :sender, dependent: :nullify
 
+  before_validation :normalize_enabled_tool_slugs
+
   store_accessor :config,
                  :product_name,
                  :feature_faq,
@@ -77,6 +80,20 @@ class Pilot::Assistant < ApplicationRecord
     name
   end
 
+  def enabled_tool_slugs
+    normalize_tool_slugs(self[:enabled_tool_slugs])
+  end
+
+  def enabled_tool_slugs=(value)
+    self[:enabled_tool_slugs] = normalize_tool_slugs(value)
+  end
+
+  def enabled_custom_tools
+    return Pilot::CustomTool.none if account.blank?
+
+    account.pilot_custom_tools.enabled.where(slug: enabled_tool_slugs)
+  end
+
   # No avatar attachment support yet; subclasses or future migrations can
   # override. Until then `avatar_url` is always nil so push_event_data
   # falls through to `default_avatar_url`.
@@ -104,5 +121,16 @@ class Pilot::Assistant < ApplicationRecord
       name: name,
       type: 'pilot_assistant'
     }
+  end
+
+  private
+
+  def normalize_enabled_tool_slugs
+    self.enabled_tool_slugs = self[:enabled_tool_slugs]
+  end
+
+  def normalize_tool_slugs(value)
+    values = value.is_a?(Hash) ? value.values : Array(value)
+    values.filter_map { |slug| slug.to_s.presence }.uniq
   end
 end

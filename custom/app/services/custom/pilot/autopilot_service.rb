@@ -215,15 +215,11 @@ module Custom
         HANDOVER
       end
 
-      # Adapter-wrapped custom tools share the assistant's tool list with the
-      # built-in `SearchDocumentation`. The pilot-tools spec's per-assistant
-      # enablement filter is not yet backed by data — only the account-level
-      # `enabled` flag gates each tool today.
       def assistant_tools
         builtins = [::Custom::Pilot::Tools::SearchDocumentation.new]
-        return builtins if account.blank?
+        return builtins if assistant.blank?
 
-        builtins + account.pilot_custom_tools.enabled.map { |t| ::Pilot::Tools::AgentToolAdapter.new(t) }
+        builtins + assistant.enabled_custom_tools.map { |tool| ::Pilot::Tools::AgentToolAdapter.new(tool) }
       end
 
       def scenario_agents_for(_assistant_agent)

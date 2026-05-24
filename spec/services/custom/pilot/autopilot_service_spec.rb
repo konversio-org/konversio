@@ -206,13 +206,23 @@ RSpec.describe Custom::Pilot::AutopilotService do
       enabled = create(:pilot_custom_tool, account: account, title: 'Lookup order')
       create(:pilot_custom_tool, account: account, title: 'Disabled tool', enabled: false)
       other_account_tool = create(:pilot_custom_tool, account: create(:account), title: 'Foreign tool')
+      assistant.update!(enabled_tool_slugs: [enabled.slug])
 
       tools = service.send(:assistant_tools)
       slugs = tools.select { |t| t.is_a?(Pilot::Tools::AgentToolAdapter) }.map(&:name)
 
       expect(slugs).to include(enabled.slug)
       expect(slugs).not_to include(other_account_tool.slug)
-      expect(tools.map(&:name)).not_to include('disabled')
+      expect(tools.map(&:name)).not_to include('disabled', 'custom_disabled_tool')
+    end
+
+    it 'omits account tools that are not enabled for the assistant' do
+      tool = create(:pilot_custom_tool, account: account, title: 'Lookup order')
+
+      tools = service.send(:assistant_tools)
+      slugs = tools.select { |t| t.is_a?(Pilot::Tools::AgentToolAdapter) }.map(&:name)
+
+      expect(slugs).not_to include(tool.slug)
     end
 
     it 'omits custom tools when the account has none configured' do
@@ -236,6 +246,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
       service = described_class.new(assistant: assistant, message: 'hello')
       service.assistant.scenarios.reload
       scenario # touch
+      assistant.update!(enabled_tool_slugs: [lookup_tool.slug])
       resolved = Pilot::Tools::ScenarioResolver.call(scenario, account: account, assistant: assistant)
       expect(resolved.size).to eq(1)
       expect(resolved.first).to be_a(Pilot::Tools::AgentToolAdapter)

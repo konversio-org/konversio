@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useStore } from 'dashboard/composables/store';
+import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
 
@@ -16,15 +16,25 @@ const emit = defineEmits(['saved', 'cancel']);
 
 const { t } = useI18n();
 const store = useStore();
+const currentAccount = useMapGetter('getCurrentAccount');
+const customTools = useMapGetter('pilot/customTools/getRows');
+const customToolsLoading = useMapGetter('pilot/customTools/getLoading');
 
 const isEdit = computed(() => !!props.assistant);
 const isSubmitting = ref(false);
 const error = ref('');
+const isToolsEnabled = computed(
+  () => !!currentAccount.value?.pilot_tools_enabled
+);
+const enabledCustomTools = computed(() =>
+  customTools.value.filter(tool => tool.enabled)
+);
 
 const name = ref('');
 const description = ref('');
 const responseGuidelines = ref('');
 const guardrails = ref('');
+const selectedToolSlugs = ref([]);
 
 // config fields
 const productName = ref('');
@@ -57,6 +67,9 @@ const loadAssistantData = () => {
     instructions.value = config.instructions || '';
     temperature.value =
       config.temperature != null ? Number(config.temperature) : 0.1;
+    selectedToolSlugs.value = Array.isArray(props.assistant.enabled_tool_slugs)
+      ? [...props.assistant.enabled_tool_slugs]
+      : [];
   } else {
     name.value = '';
     description.value = '';
@@ -72,10 +85,22 @@ const loadAssistantData = () => {
     resolutionMessage.value = '';
     instructions.value = '';
     temperature.value = 0.1;
+    selectedToolSlugs.value = [];
   }
 };
 
+const fetchCustomTools = () => {
+  store.dispatch('pilot/customTools/fetchPage', { page: 1 }).catch(() => {});
+};
+
 watch(() => props.assistant, loadAssistantData, { immediate: true });
+watch(
+  isToolsEnabled,
+  enabled => {
+    if (enabled) fetchCustomTools();
+  },
+  { immediate: true }
+);
 
 const submit = async () => {
   if (!name.value.trim()) {
@@ -90,6 +115,7 @@ const submit = async () => {
     description: description.value.trim(),
     response_guidelines: responseGuidelines.value.trim(),
     guardrails: guardrails.value.trim(),
+    enabled_tool_slugs: selectedToolSlugs.value,
     config: {
       product_name: productName.value.trim(),
       feature_faq: featureFaq.value,
@@ -341,6 +367,54 @@ const submit = async () => {
           class="w-full p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 placeholder:text-n-slate-9 focus:outline-none focus:border-n-blue-9 resize-y"
           :placeholder="t('PILOT.SETTINGS.FORM.RESOLUTION_PLACEHOLDER')"
         />
+      </div>
+    </div>
+
+    <div
+      v-if="isToolsEnabled"
+      class="flex flex-col gap-4 border-t border-n-weak pt-4"
+    >
+      <div class="flex flex-col gap-1">
+        <h3 class="text-md font-medium text-n-slate-12">
+          {{ t('PILOT.SETTINGS.FORM.TOOLS_SECTION') }}
+        </h3>
+        <p class="text-sm text-n-slate-11">
+          {{ t('PILOT.SETTINGS.FORM.TOOLS_SECTION_DESC') }}
+        </p>
+      </div>
+
+      <div v-if="customToolsLoading" class="text-sm text-n-slate-11">
+        {{ t('PILOT.SETTINGS.FORM.TOOLS_LOADING') }}
+      </div>
+
+      <div
+        v-else-if="enabledCustomTools.length === 0"
+        class="text-sm text-n-slate-11"
+      >
+        {{ t('PILOT.SETTINGS.FORM.TOOLS_EMPTY') }}
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label
+          v-for="tool in enabledCustomTools"
+          :key="tool.id"
+          class="flex items-start gap-3 cursor-pointer rounded-lg border border-n-container p-3"
+        >
+          <input
+            v-model="selectedToolSlugs"
+            :value="tool.slug"
+            type="checkbox"
+            class="mt-1 rounded border-n-container text-n-blue-9 focus:ring-n-blue-9"
+          />
+          <span class="min-w-0 flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-slate-12 truncate">
+              {{ tool.title }}
+            </span>
+            <span class="text-xs text-n-slate-11 font-mono truncate">
+              {{ tool.slug }}
+            </span>
+          </span>
+        </label>
       </div>
     </div>
 
