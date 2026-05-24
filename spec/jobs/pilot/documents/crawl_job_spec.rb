@@ -9,18 +9,56 @@ RSpec.describe Pilot::Documents::CrawlJob do
   end
 
   let(:crawl_service) { instance_double(Custom::Pilot::DocumentCrawlService) }
+  let(:lock_manager) { instance_double(Redis::LockManager, lock: true, unlock: true) }
 
   before do
     allow(GlobalConfigService).to receive(:load).and_call_original
     allow(GlobalConfigService).to receive(:load).with('PILOT_FIRECRAWL_API_KEY', nil).and_return('firecrawl-key')
     allow(Custom::Pilot::DocumentCrawlService).to receive(:new).and_return(crawl_service)
+    allow(Redis::LockManager).to receive(:new).and_return(lock_manager)
     # Stub the private sleep so the polling backoff doesn't actually wait.
     allow_any_instance_of(described_class).to receive(:sleep) # rubocop:disable RSpec/AnyInstance
     allow(Pilot::DocumentResponseBuilderJob).to receive(:perform_later)
   end
 
   describe '#perform' do
-    it 'starts the crawl, persists the job id, and fans out result pages' do
+    it 'reschedules crawl execution when the source lock is already held' do
+      allow(lock_manager).to receive(:lock).and_return(false)
+
+      expect(crawl_service).not_to receive(:start)
+
+      expect do
+        described_class.perform_now(document.id)
+      end.to have_enqueued_job(described_class).with(document.id)
+
+      expect(lock_manager).not_to have_received(:unlock)
+    end
+
+    it 'uses separate source lock keys for different crawl sources' do
+      other_document = create(:pilot_document,
+                              assistant: assistant,
+                              account: account,
+                              external_link: 'https://example.com/other',
+                              status: :in_progress,
+                              content: nil)
+      allow(crawl_service).to receive(:start) do |url|
+        Custom::Pilot::DocumentCrawlService::StartResult.new(success: true, job_id: url)
+      end
+      allow(crawl_service).to receive(:poll) do |url|
+        Custom::Pilot::DocumentCrawlService::PollResult.new(status: :completed, pages: [
+                                                              { url: url, title: 'Help', markdown: '# Help' }
+                                                            ])
+      end
+
+      described_class.perform_now(document.id)
+      described_class.perform_now(other_document.id)
+
+      expect(lock_manager).to have_received(:lock).with(source_lock_key(seed_url), described_class::SOURCE_LOCK_TIMEOUT)
+      expect(lock_manager).to have_received(:lock).with(source_lock_key(other_document.external_link), described_class::SOURCE_LOCK_TIMEOUT)
+      expect(lock_manager).to have_received(:unlock).twice
+    end
+
+    it 'starts the crawl, persists the job id, and fans out result pages', :aggregate_failures do
       start_result = Custom::Pilot::DocumentCrawlService::StartResult.new(success: true, job_id: 'fc-123')
       pages = [
         { url: 'https://example.com/help', title: 'Help home', markdown: '# Help home' },
@@ -255,4 +293,9 @@ RSpec.describe Pilot::Documents::CrawlJob do
   # whose assistant_id does not belong to the signing account — asserting
   # 401/403 on the negative paths and no Pilot::Document rows created.
   pending 'TODO: webhooks/firecrawl signature + assistant scoping coverage when the controller lands'
+
+  def source_lock_key(url)
+    digest = Digest::SHA256.hexdigest(url.to_s.sub(%r{/+\z}, ''))
+    "pilot:documents:crawl:#{assistant.id}:#{digest}"
+  end
 end

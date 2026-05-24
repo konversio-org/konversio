@@ -17,42 +17,37 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 
 ## P1: Pilot Runtime Hardening
 
-3. **Add per-source Redis mutex to `Pilot::Documents::CrawlJob`**
-   - Current state: crawl jobs can overlap for the same source.
-   - Fix: add a source-scoped Redis lock around crawl execution; keep the lock timeout bounded and release in `ensure`.
-   - Verify: job spec proves two jobs for the same source do not run concurrently and jobs for different sources can proceed.
-
-4. **Surface LLM token usage to trace spans**
+3. **Surface LLM token usage to trace spans**
    - Current state: `TraceSpan` supports token attributes, but usage is not consistently pushed from Pilot LLM call sites.
    - Fix: propagate `prompt_tokens` / `completion_tokens` from runner/service results where available.
    - Verify: specs assert token attributes on trace spans for Autopilot, Copilot, and utility service paths that expose usage.
 
 ## P1: Product Polish
 
-5. **Finish Logbook prompt injection beyond Copilot**
+4. **Finish Logbook prompt injection beyond Copilot**
    - Current state: Copilot injection is functional; Briefing logs available context instead of inserting it into the prompt; Autopilot has no Logbook context path.
    - Fix: inject the standard Logbook context message into Briefing and Autopilot prompts behind `pilot_logbook`.
    - Verify: specs prove prompt/context includes Logbook entries when enabled and excludes them when disabled.
 
-6. **Confirm or build Pilot Activity dashboard UI**
+5. **Confirm or build Pilot Activity dashboard UI**
    - Current state: event store, ActionCable stream, redaction, and retention job exist; operator-facing Activity UI was not verified.
    - Fix: either locate and document the existing UI route, or add a minimal Activity page backed by `pilot_events`.
    - Verify: UI route renders event rows and respects account scoping.
 
-7. **Add per-assistant custom-tool enablement**
+6. **Add per-assistant custom-tool enablement**
    - Current state: custom tools are account-scoped and gated by `Pilot::CustomTool#enabled`; `Pilot::Assistant` has no `enabled_tool_slugs`-style backing.
    - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
    - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
 
 ## P2: Coverage Gaps
 
-8. **Add real `Agents::Runner` integration spec for Autopilot**
+7. **Add real `Agents::Runner` integration spec for Autopilot**
     - Current pending spec: `spec/services/custom/pilot/autopilot_service_spec.rb:135`.
     - Current state: most Autopilot specs stub `Agents::Runner.with_agents`.
     - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
     - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
 
-9. **Add CrawlJob webhook/signature and assistant-scoping coverage**
+8. **Add CrawlJob webhook/signature and assistant-scoping coverage**
     - Current pending spec: `spec/jobs/pilot/documents/crawl_job_spec.rb:257`.
     - Current state: Firecrawl/webhook signature and assistant scoping coverage are pending.
     - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
@@ -77,3 +72,7 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 
 - **Resolved unrelated dirty frontend files**
   - Isolated the four formatter-only Vue diffs into a separate style commit.
+
+- **Added per-source Redis mutex to `Pilot::Documents::CrawlJob`**
+  - Crawl execution now uses an assistant/source-scoped Redis lock with a bounded TTL, reschedules on contention, and releases it in `ensure`.
+  - Specs cover lock contention and separate keys for different sources.

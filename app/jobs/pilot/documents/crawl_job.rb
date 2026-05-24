@@ -2,6 +2,7 @@ require 'net/http'
 require 'uri'
 require 'cgi'
 
+# rubocop:disable Style/ClassAndModuleChildren
 module Pilot
   module Documents
     # Long-running Sidekiq job that owns the async crawl lifecycle for a
@@ -23,6 +24,7 @@ module Pilot
     #   - 5xx / network error → raises so Sidekiq retries with default
     #     backoff. Final attempt's `sidekiq_retries_exhausted` marks the
     #     seed row :failed.
+    # rubocop:disable Metrics/ClassLength
     class CrawlJob < ApplicationJob
       queue_as :low
 
@@ -36,6 +38,8 @@ module Pilot
       # Retry transient ingestion failures with the spec'd backoff
       # schedule: 30s, 2m, 5m (3 retries beyond the initial attempt).
       RETRY_WAITS = [30.seconds, 2.minutes, 5.minutes].freeze
+      SOURCE_LOCK_TIMEOUT = 35.minutes
+      SOURCE_LOCK_RETRY_WAIT = 1.minute
 
       retry_on ::Custom::Pilot::DocumentIngestionService::TransientFetchError,
                attempts: RETRY_WAITS.length + 1,
@@ -51,7 +55,7 @@ module Pilot
         document = ::Pilot::Document.find_by(id: document_id)
         next if document.blank?
 
-        document.update_columns(
+        document.update_columns( # rubocop:disable Rails/SkipsModelValidations
           sync_status: ::Pilot::Document.sync_statuses[:failed],
           metadata: (document.metadata || {}).merge('error' => 'crawl_retries_exhausted')
         )
@@ -61,14 +65,9 @@ module Pilot
         @document = ::Pilot::Document.find_by(id: document_id)
         return if @document.blank?
 
-        # PDFs are ingested synchronously via the existing service.
-        return ingest_pdf if @document.pdf_document?
-
-        # No Firecrawl key → single-page fallback (matches the spec scenario
-        # "URL ingestion fallback to simple page crawl").
-        return ingest_via_fallback if firecrawl_api_key.blank?
-
-        run_crawl
+        with_source_lock do
+          perform_with_document
+        end
       rescue ::Custom::Pilot::DocumentIngestionService::TransientFetchError
         # Let ActiveJob's retry_on handle this — propagate so the wait
         # schedule kicks in.
@@ -84,6 +83,42 @@ module Pilot
       end
 
       private
+
+      def perform_with_document
+        # PDFs are ingested synchronously via the existing service.
+        return ingest_pdf if @document.pdf_document?
+
+        # No Firecrawl key → single-page fallback (matches the spec scenario
+        # "URL ingestion fallback to simple page crawl").
+        return ingest_via_fallback if firecrawl_api_key.blank?
+
+        run_crawl
+      end
+
+      def with_source_lock
+        lock_manager = ::Redis::LockManager.new
+        key = source_lock_key
+        locked = lock_manager.lock(key, SOURCE_LOCK_TIMEOUT)
+        unless locked
+          reschedule_locked_source(key)
+          return
+        end
+
+        yield
+      ensure
+        lock_manager&.unlock(key) if locked
+      end
+
+      def reschedule_locked_source(key)
+        Rails.logger.info("[pilot.crawl_job] source lock busy document=#{@document.id} key=#{key}")
+        self.class.set(wait: SOURCE_LOCK_RETRY_WAIT).perform_later(@document.id)
+      end
+
+      def source_lock_key
+        normalized_source = normalize_url(@document.external_link)
+        digest = ::Digest::SHA256.hexdigest(normalized_source)
+        "pilot:documents:crawl:#{@document.assistant_id}:#{digest}"
+      end
 
       def run_crawl
         start_result = crawl_service.start(@document.external_link)
@@ -193,6 +228,7 @@ module Pilot
       # Single GET on the seed URL to scrape <title>. Bounded timeout, swallows
       # errors and returns nil — this is a best-effort name-improver, never a
       # blocker on the crawl completing successfully.
+      # rubocop:disable Metrics/AbcSize
       def fetch_html_title(url)
         uri = URI.parse(url.to_s)
         return nil unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
@@ -213,6 +249,7 @@ module Pilot
         Rails.logger.warn("[pilot.crawl_job] fetch_html_title failed for #{url}: #{e.message}")
         nil
       end
+      # rubocop:enable Metrics/AbcSize
 
       def upsert_child_document(page)
         existing = @document.assistant.documents.find_by(external_link: page[:url])
@@ -293,5 +330,7 @@ module Pilot
         ::GlobalConfigService.load('PILOT_FIRECRAWL_API_KEY', nil)
       end
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
+# rubocop:enable Style/ClassAndModuleChildren
