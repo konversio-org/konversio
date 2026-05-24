@@ -171,16 +171,28 @@ RSpec.describe Custom::Pilot::AutopilotService do
 
       expect(service.send(:assistant_instructions)).not_to include('Prefers email')
     end
-  end
 
-  # §13 follow-up: end-to-end agentic-loop integration spec. Today every
-  # autopilot spec stubs `Agents::Runner.with_agents`, which means a wiring
-  # regression (tool list never reaches the runner, scenario tools never
-  # register, system prompt drops on the floor) wouldn't be caught here.
-  # The integration spec should stub only the LLM-client HTTP boundary and
-  # let `Agents::Runner` orchestrate one real tool call (e.g.
-  # `search_documentation`) so we know the wiring is intact.
-  pending 'TODO: integration spec exercising a real Agents::Runner against a stubbed LLM HTTP boundary'
+    it 'runs a real Agents::Runner turn through search_documentation', :aggregate_failures do
+      service = described_class.new(assistant: assistant, message: 'How do refunds work?')
+      response = create(:pilot_assistant_response,
+                        assistant: assistant,
+                        account: account,
+                        question: 'How do refunds work?',
+                        answer: 'Refunds take 30 days.',
+                        status: :approved)
+      stub_documentation_results(response)
+      fake_chat = build_fake_runner_chat
+
+      expect(Agents::Runner).to receive(:with_agents).and_call_original
+      allow(RubyLLM::Chat).to receive(:new).and_return(fake_chat)
+
+      result = service.perform
+
+      expect(result.reply).to include('Refunds take 30 days.')
+      expect(result.invoked_tool_names).to include('search_documentation')
+      expect(fake_chat.tools.map(&:name)).to include('search_documentation')
+    end
+  end
 
   describe '#assistant_tools' do
     let(:service) { described_class.new(assistant: assistant, message: 'hello') }
@@ -255,6 +267,62 @@ RSpec.describe Custom::Pilot::AutopilotService do
 
       expect(result).to include(approved)
       expect(result.map(&:status)).to all(eq('approved'))
+    end
+  end
+
+  def stub_documentation_results(*rows)
+    allow(Custom::Pilot::EmbeddingService).to receive(:new)
+      .and_return(instance_double(Custom::Pilot::EmbeddingService, embed: [0.1] * 1536))
+    relation = Pilot::AssistantResponse.where(id: rows.map(&:id))
+    scope = instance_double(ActiveRecord::Relation)
+    allow(scope).to receive_messages(where: scope, order: scope, limit: relation)
+    allow(Pilot::AssistantResponse).to receive(:where).and_call_original
+    allow(Pilot::AssistantResponse).to receive(:where).with(account_id: account.id).and_return(scope)
+  end
+
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+  def build_fake_runner_chat
+    messages = []
+    tools = []
+    message_factory = method(:fake_llm_message)
+    Object.new.tap do |chat|
+      chat.define_singleton_method(:messages) { messages }
+      chat.define_singleton_method(:tools) { tools }
+      chat.define_singleton_method(:add_message) do |message|
+        messages << message
+        self
+      end
+      chat.define_singleton_method(:with_headers) { |**_headers| self }
+      chat.define_singleton_method(:with_model) { |_model| self }
+      chat.define_singleton_method(:with_instructions) { |_instructions, **_options| self }
+      chat.define_singleton_method(:with_temperature) { |_temperature| self }
+      chat.define_singleton_method(:with_schema) { |_schema| self }
+      chat.define_singleton_method(:with_tools) do |*new_tools, replace: false|
+        tools.replace(replace ? new_tools : tools + new_tools)
+        self
+      end
+      chat.define_singleton_method(:ask) do |input|
+        messages << message_factory.call(role: :user, content: input)
+        documentation_tool = tools.find { |tool| tool.name == 'search_documentation' }
+        tool_result = documentation_tool.call('query' => input)
+        message_factory.call(role: :assistant, content: "Found this: #{tool_result}", input_tokens: 10, output_tokens: 5).tap do |message|
+          messages << message
+        end
+      end
+      chat.define_singleton_method(:complete) { ask('(continue)') }
+    end
+  end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+  def fake_llm_message(role:, content:, input_tokens: 0, output_tokens: 0)
+    Object.new.tap do |message|
+      message.define_singleton_method(:role) { role }
+      message.define_singleton_method(:content) { content }
+      message.define_singleton_method(:input_tokens) { input_tokens }
+      message.define_singleton_method(:output_tokens) { output_tokens }
+      message.define_singleton_method(:tool_call?) { false }
+      message.define_singleton_method(:tool_result?) { false }
+      message.define_singleton_method(:tool_calls) { {} }
     end
   end
 end
