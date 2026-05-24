@@ -8,6 +8,7 @@ RSpec.describe Custom::Pilot::CopilotService do
   let(:agent) { create(:user, account: account, role: :agent) }
   let(:thread) { create(:pilot_copilot_thread, account: account, user: agent) }
   let(:fake_runner) { instance_double(Agents::AgentRunner) }
+  let(:tool_start_callbacks) { [] }
 
   before do
     account.enable_features!(:pilot, :pilot_copilot)
@@ -16,7 +17,7 @@ RSpec.describe Custom::Pilot::CopilotService do
     # Stub the runner factory so we can drive tool-start callbacks + final result manually.
     allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
     allow(fake_runner).to receive(:on_tool_start) do |&block|
-      @tool_start_callback = block
+      tool_start_callbacks << block
       fake_runner
     end
   end
@@ -73,7 +74,7 @@ RSpec.describe Custom::Pilot::CopilotService do
 
     it 'persists assistant_thinking messages for each tool call emitted during the run' do
       allow(fake_runner).to receive(:run) do
-        @tool_start_callback.call('search_conversation', { status: 'open' })
+        tool_start_callbacks.last.call('search_conversation', { status: 'open' })
         Agents::RunResult.new(output: 'Done.', messages: [], usage: nil, context: {})
       end
       expect { described_class.new(thread: thread).perform }
@@ -81,6 +82,26 @@ RSpec.describe Custom::Pilot::CopilotService do
       thinking = thread.copilot_messages.assistant_thinking.order(:created_at).last
       expect(thinking.message['content']).to eq('Using search_conversation')
       expect(thinking.message['function_name']).to eq('search_conversation')
+    end
+
+    it 'adds runner token usage to the trace span when present' do
+      span = instance_double(Custom::Pilot::TraceSpan::NullSpan, set_attribute: nil)
+      allow(fake_runner).to receive(:run).and_return(
+        Agents::RunResult.new(
+          output: 'Done.',
+          messages: [],
+          usage: { 'prompt_tokens' => 9, 'completion_tokens' => 4 },
+          context: {}
+        )
+      )
+      allow(Custom::Pilot::TraceSpan).to receive(:wrap) do |**_args, &block|
+        block.call(span)
+      end
+
+      described_class.new(thread: thread).perform
+
+      expect(span).to have_received(:set_attribute).with('prompt_tokens', 9)
+      expect(span).to have_received(:set_attribute).with('completion_tokens', 4)
     end
 
     it 'persists a fallback message and fires copilot_inference_failed on max-steps exhaustion' do
