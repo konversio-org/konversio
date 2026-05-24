@@ -55,6 +55,13 @@ const accountId = useMapGetter('getCurrentAccountId');
 const isFeatureEnabledonAccount = useMapGetter(
   'accounts/isFeatureEnabledonAccount'
 );
+const currentAccount = useMapGetter('getCurrentAccount');
+const isAutopilotEnabled = computed(
+  () => !!currentAccount.value?.pilot_autopilot_enabled
+);
+const isToolsEnabled = computed(
+  () => !!currentAccount.value?.pilot_tools_enabled
+);
 
 const hasAdvancedAssignment = computed(() => {
   return isFeatureEnabledonAccount.value(
@@ -655,55 +662,63 @@ const menuItems = computed(() => {
         },
       ],
     },
-    {
-      name: 'Pilot',
-      label: t('SIDEBAR.PILOT'),
-      icon: 'i-ph-robot',
-      children: [
-        {
-          name: 'Pilot FAQs',
-          label: t('SIDEBAR.PILOT_RESPONSES'),
-          icon: 'i-lucide-message-circle-question',
-          to: accountScopedRoute('pilot_faqs'),
-        },
-        {
-          name: 'Pilot Documents',
-          label: t('SIDEBAR.PILOT_DOCUMENTS'),
-          icon: 'i-lucide-file-text',
-          to: accountScopedRoute('pilot_documents'),
-        },
-        {
-          name: 'Pilot Scenarios',
-          label: t('SIDEBAR.PILOT_SCENARIOS'),
-          icon: 'i-lucide-list-checks',
-          to: accountScopedRoute('pilot_scenarios'),
-        },
-        {
-          name: 'Pilot Playground',
-          label: t('SIDEBAR.PILOT_PLAYGROUND'),
-          icon: 'i-lucide-flask-conical',
-          to: accountScopedRoute('pilot_playground'),
-        },
-        {
-          name: 'Pilot Inboxes',
-          label: t('SIDEBAR.PILOT_INBOXES'),
-          icon: 'i-lucide-inbox',
-          to: accountScopedRoute('pilot_inboxes'),
-        },
-        {
-          name: 'Pilot Tools',
-          label: t('SIDEBAR.PILOT_TOOLS'),
-          icon: 'i-lucide-wrench',
-          to: accountScopedRoute('pilot_tools'),
-        },
-        {
-          name: 'Pilot Copilot',
-          label: t('SIDEBAR.PILOT_COPILOT'),
-          icon: 'i-ph-robot',
-          to: accountScopedRoute('pilot_copilot'),
-        },
-      ],
-    },
+    ...(isAutopilotEnabled.value
+      ? [
+          {
+            name: 'Pilot',
+            label: t('SIDEBAR.PILOT'),
+            icon: 'i-ph-sparkle',
+            children: [
+              {
+                name: 'Pilot FAQs',
+                label: t('SIDEBAR.PILOT_RESPONSES'),
+                icon: 'i-lucide-message-circle-question',
+                to: accountScopedRoute('pilot_faqs'),
+              },
+              {
+                name: 'Pilot Documents',
+                label: t('SIDEBAR.PILOT_DOCUMENTS'),
+                icon: 'i-lucide-file-text',
+                to: accountScopedRoute('pilot_documents'),
+              },
+              {
+                name: 'Pilot Scenarios',
+                label: t('SIDEBAR.PILOT_SCENARIOS'),
+                icon: 'i-lucide-list-checks',
+                to: accountScopedRoute('pilot_scenarios'),
+              },
+              {
+                name: 'Pilot Playground',
+                label: t('SIDEBAR.PILOT_PLAYGROUND'),
+                icon: 'i-lucide-flask-conical',
+                to: accountScopedRoute('pilot_playground'),
+              },
+              {
+                name: 'Pilot Inboxes',
+                label: t('SIDEBAR.PILOT_INBOXES'),
+                icon: 'i-lucide-inbox',
+                to: accountScopedRoute('pilot_inboxes'),
+              },
+              ...(isToolsEnabled.value
+                ? [
+                    {
+                      name: 'Pilot Tools',
+                      label: t('SIDEBAR.PILOT_TOOLS'),
+                      icon: 'i-lucide-wrench',
+                      to: accountScopedRoute('pilot_tools'),
+                    },
+                  ]
+                : []),
+              {
+                name: 'Pilot Settings',
+                label: t('SIDEBAR.PILOT_SETTINGS'),
+                icon: 'i-lucide-bolt',
+                to: accountScopedRoute('pilot_settings'),
+              },
+            ],
+          },
+        ]
+      : []),
   ];
 });
 </script>

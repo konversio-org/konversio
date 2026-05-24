@@ -103,6 +103,274 @@
         "TITLE": "Top Feedback Themes"
       },
       "ESCALATION_RECOMMENDED": "Escalation Recommended"
+    },
+    "TOOLS": {
+      "PAGE_TITLE": "Custom Tools",
+      "SCOPE_HINT": "Tools are shared across all assistants in this account",
+      "CREATE_BUTTON": "Create new tool",
+      "SOFT_LIMIT_BANNER": "Having more than 10 custom tools can degrade your AI assistant's accuracy. Consider disabling or cleaning up unused tools.",
+      "EMPTY": {
+        "SPOTLIGHT_TITLE": "Connect External APIs with Custom Tools",
+        "SPOTLIGHT_DESC": "Custom Tools allow your AI assistants to fetch real-time data, query databases, or trigger actions via HTTP APIs during conversations.",
+        "LEARN_MORE": "Learn more about Custom Tools",
+        "TITLE": "No custom tools defined yet",
+        "SUBTITLE": "Create tools to let your AI assistants fetch data or trigger actions on external APIs.",
+        "CTA": "Create your first tool"
+      },
+      "CARD": {
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "DELETE_CONFIRM": "Are you sure you want to delete this tool? This cannot be undone.",
+        "LAST_UPDATED": "Last updated {time}",
+        "AUTH_BADGE": "Auth: {type}"
+      },
+      "DIALOG": {
+        "CREATE_TITLE": "Create new custom tool",
+        "EDIT_TITLE": "Edit custom tool",
+        "SUBMIT_CREATE": "Create tool",
+        "SUBMIT_EDIT": "Save changes",
+        "CANCEL": "Cancel",
+        "ENABLED_LABEL": "Enabled",
+        "FIELD_TITLE": "Title",
+        "FIELD_TITLE_PLACEHOLDER": "e.g., Check Order Status",
+        "FIELD_TITLE_REQUIRED": "Title is required",
+        "FIELD_TITLE_MAX_LEN": "Title must be 55 characters or less",
+        "FIELD_DESCRIPTION": "Description",
+        "FIELD_DESCRIPTION_PLACEHOLDER": "Describe what the tool does. The AI model reads this to know when to invoke it.",
+        "FIELD_METHOD": "Method",
+        "FIELD_METHOD_GET": "GET",
+        "FIELD_METHOD_POST": "POST",
+        "FIELD_URL": "Endpoint URL",
+        "FIELD_URL_PLACEHOLDER": "https://api.example.com/orders/{{order_id}}",
+        "FIELD_URL_REQUIRED": "Endpoint URL is required",
+        "FIELD_AUTH_TYPE": "Authentication Type",
+        "FIELD_AUTH_TYPE_NONE": "None",
+        "FIELD_AUTH_TYPE_BEARER": "Bearer Token",
+        "FIELD_AUTH_TYPE_BASIC": "Basic Auth",
+        "FIELD_AUTH_TYPE_API_KEY": "API Key",
+        "FIELD_AUTH_BEARER_TOKEN": "Bearer Token",
+        "FIELD_AUTH_BEARER_TOKEN_PLACEHOLDER": "Enter bearer token",
+        "FIELD_AUTH_BASIC_USER": "Username",
+        "FIELD_AUTH_BASIC_USER_PLACEHOLDER": "Enter username",
+        "FIELD_AUTH_BASIC_PASS": "Password",
+        "FIELD_AUTH_BASIC_PASS_PLACEHOLDER": "Enter password",
+        "FIELD_AUTH_API_KEY_PLACEMENT": "Placement",
+        "FIELD_AUTH_API_KEY_PLACEMENT_HEADER": "Header",
+        "FIELD_AUTH_API_KEY_PLACEMENT_QUERY": "Query parameter",
+        "FIELD_AUTH_API_KEY_NAME": "Parameter name",
+        "FIELD_AUTH_API_KEY_NAME_PLACEHOLDER": "e.g., X-API-Key",
+        "FIELD_AUTH_API_KEY_VALUE": "Parameter value",
+        "FIELD_AUTH_API_KEY_VALUE_PLACEHOLDER": "Enter API key value",
+        "FIELD_PARAMS_HEADER": "Parameters",
+        "FIELD_PARAMS_ADD": "Add parameter",
+        "FIELD_PARAM_NAME": "Parameter Name",
+        "FIELD_PARAM_NAME_PLACEHOLDER": "e.g., order_id",
+        "FIELD_PARAM_NAME_REQUIRED": "Parameter name is required",
+        "FIELD_PARAM_TYPE": "Type",
+        "FIELD_PARAM_DESC": "Description",
+        "FIELD_PARAM_DESC_PLACEHOLDER": "Describe what this parameter represents for the AI model",
+        "FIELD_PARAM_REQUIRED": "Required",
+        "FIELD_REQUEST_TEMPLATE": "Request Body Template (JSON with Liquid)",
+        "FIELD_REQUEST_TEMPLATE_PLACEHOLDER": "{\n  \"id\": \"{{order_id}}\"\n}",
+        "FIELD_RESPONSE_TEMPLATE": "Response Extraction Template (Liquid)",
+        "FIELD_RESPONSE_TEMPLATE_PLACEHOLDER": "{{ response.status }}",
+        "TEST_BUTTON": "Test Tool",
+        "TEST_DISABLED_HINT": "Testing is disabled when the endpoint URL uses templates or the request body is not empty.",
+        "TEST_SUCCESS": "Endpoint returned HTTP {status}",
+        "TEST_ERROR": "Test failed: {message}",
+        "TOAST": {
+          "CREATE_SUCCESS": "Tool created successfully.",
+          "CREATE_ERROR": "Failed to create tool.",
+          "UPDATE_SUCCESS": "Tool updated successfully.",
+          "UPDATE_ERROR": "Failed to update tool.",
+          "DELETE_SUCCESS": "Tool deleted successfully.",
+          "DELETE_ERROR": "Failed to delete tool.",
+          "TOGGLE_SUCCESS": "Tool status updated.",
+          "TOGGLE_ERROR": "Failed to update tool status."
+        }
+      },
+      "ERRORS": {
+        "LOAD_ERROR": "Failed to load custom tools",
+        "tool.timeout": "Tool execution timed out.",
+        "tool.host_not_allowed": "The request URL host is not allowed.",
+        "tool.private_ip_denied": "Private IP ranges are blocked.",
+        "tool.http_error": "The server returned an HTTP error.",
+        "tool.parse_error": "Failed to parse tool parameters or response.",
+        "tool.disabled": "This custom tool is currently disabled."
+      }
+    },
+    "SETTINGS": {
+      "HEADER": {
+        "TITLE": "Assistant Settings",
+        "CREATE_BUTTON": "Create new assistant"
+      },
+      "TABS": {
+        "ACTIVE_SETTINGS": "Active Assistant Settings",
+        "ALL_ASSISTANTS": "All Assistants"
+      },
+      "EMPTY": {
+        "TITLE": "No assistants found",
+        "BODY": "Get started by creating your first AI assistant.",
+        "CREATE_BUTTON": "Create Assistant"
+      },
+      "FORM": {
+        "CREATE_TITLE": "Create new assistant",
+        "EDIT_TITLE": "Edit assistant settings",
+        "CANCEL": "Cancel",
+        "SAVE": "Save Settings",
+        "CREATE": "Create Assistant",
+        "NAME_LABEL": "Name *",
+        "NAME_PLACEHOLDER": "e.g. Customer Support Bot",
+        "PRODUCT_LABEL": "Product Name",
+        "PRODUCT_PLACEHOLDER": "e.g. Konversio",
+        "DESC_LABEL": "Description",
+        "DESC_PLACEHOLDER": "Describe the purpose of this assistant...",
+        "BEHAVIOR_SECTION": "Behavior & Configuration",
+        "INSTRUCTIONS_LABEL": "System Instructions",
+        "INSTRUCTIONS_PLACEHOLDER": "Enter prompt instructions for the assistant...",
+        "GUIDELINES_LABEL": "Response Guidelines",
+        "GUIDELINES_PLACEHOLDER": "Response guidelines (rules, tone, formatting)...",
+        "GUARDRAILS_LABEL": "Guardrails",
+        "GUARDRAILS_PLACEHOLDER": "Enter guardrails or restrictions...",
+        "TEMPERATURE_LABEL": "Temperature (randomness)",
+        "MESSAGES_SECTION": "Default Assistant Messages",
+        "WELCOME_LABEL": "Welcome Message",
+        "WELCOME_PLACEHOLDER": "e.g. Hello, how can I help you today?",
+        "HANDOFF_LABEL": "Handoff Message",
+        "HANDOFF_PLACEHOLDER": "e.g. Connecting you to a human agent...",
+        "RESOLUTION_LABEL": "Resolution Message",
+        "RESOLUTION_PLACEHOLDER": "e.g. This conversation is marked resolved.",
+        "FEATURES_SECTION": "Enabled Features",
+        "FEATURE_FAQ": "FAQ Search Enabled",
+        "FEATURE_MEMORY": "Persistent Memory Enabled",
+        "FEATURE_CONTACT_ATTRIBUTES": "Contact Attributes Ingestion Enabled",
+        "FEATURE_CITATION": "Source Citation Enabled"
+      },
+      "TABLE": {
+        "NAME": "Name",
+        "DESCRIPTION": "Description",
+        "STATUS": "Status",
+        "ACTIONS": "Actions"
+      },
+      "STATUS": {
+        "ACTIVE": "Active Context",
+        "INACTIVE": "Inactive"
+      },
+      "ACTIONS": {
+        "SET_ACTIVE": "Select",
+        "EDIT": "Edit",
+        "DELETE": "Delete"
+      },
+      "ERRORS": {
+        "NAME_REQUIRED": "Name is required.",
+        "SAVE_FAILED": "Failed to save assistant settings.",
+        "DELETE_FAILED": "Failed to delete assistant."
+      },
+      "TOAST": {
+        "CREATED": "Assistant created successfully.",
+        "UPDATED": "Assistant settings updated successfully.",
+        "DELETED": "Assistant deleted successfully."
+      },
+      "DELETE_CONFIRM": "Are you sure you want to delete this assistant? This cannot be undone."
+    },
+    "SCENARIOS": {
+      "HEADER": {
+        "TITLE": "Scenarios",
+        "ADD_BUTTON": "Create scenario"
+      },
+      "FORM": {
+        "CREATE_TITLE": "Create new scenario",
+        "EDIT_TITLE": "Edit scenario",
+        "CANCEL": "Cancel",
+        "SAVE": "Save Scenario",
+        "TITLE_LABEL": "Title *",
+        "TITLE_PLACEHOLDER": "e.g. Upgrade Subscription Handoff",
+        "DESC_LABEL": "Description *",
+        "DESC_PLACEHOLDER": "Describe when this scenario should trigger...",
+        "INSTRUCTIONS_LABEL": "Instructions *",
+        "INSTRUCTIONS_PLACEHOLDER": "Explain exactly how the assistant should handle this scenario...",
+        "ENABLED_LABEL": "Enabled",
+        "TOOLS_HELPER": "Available Tools",
+        "TOOLS_HELPER_DESC": "Click any tool to insert its markdown reference in the instructions:",
+        "NO_TOOLS_AVAILABLE": "No custom tools defined yet."
+      },
+      "STATUS": {
+        "ENABLED": "Enabled",
+        "DISABLED": "Disabled"
+      },
+      "TABLE": {
+        "TOOLS_COUNT": "referenced tools"
+      },
+      "ACTIONS": {
+        "EDIT": "Edit",
+        "DELETE": "Delete"
+      },
+      "EMPTY": {
+        "TITLE": "No scenarios defined yet",
+        "BODY": "Define scenario units to guide the AI chatbot on specific customer request flows.",
+        "CREATE_BUTTON": "Create first scenario"
+      },
+      "ERRORS": {
+        "FIELDS_REQUIRED": "Title, Description, and Instructions are all required.",
+        "SAVE_FAILED": "Failed to save scenario."
+      },
+      "TOAST": {
+        "CREATED": "Scenario created successfully.",
+        "UPDATED": "Scenario updated successfully.",
+        "DELETED": "Scenario deleted successfully.",
+        "DELETE_FAILED": "Failed to delete scenario."
+      },
+      "CONFIRM_DELETE": "Are you sure you want to delete this scenario? This cannot be undone."
+    },
+    "PLAYGROUND": {
+      "HEADER": {
+        "TITLE": "Playground",
+        "CLEAR_BUTTON": "Clear conversation"
+      },
+      "EMPTY": {
+        "TITLE": "Autopilot Playground",
+        "BODY": "Send test messages to the AI assistant. Playground runs the production inference path but does not save any messages or customer logs."
+      },
+      "ROLE": {
+        "USER": "User (Test)",
+        "ASSISTANT": "Assistant (Autopilot)"
+      },
+      "STATUS": {
+        "THINKING": "Autopilot is thinking..."
+      },
+      "INPUT": {
+        "PLACEHOLDER": "Type a message to test the assistant..."
+      }
+    },
+    "INBOXES": {
+      "HEADER": {
+        "TITLE": "Inbox Attachments"
+      },
+      "ATTACH": {
+        "TITLE": "Attach Inbox",
+        "BODY": "Select a chat channel inbox to attach to this assistant. Autopilot will handle incoming customer messages on all attached inboxes.",
+        "INBOX_LABEL": "Select Inbox",
+        "INBOX_PLACEHOLDER": "Choose an inbox...",
+        "SUBMIT_BUTTON": "Attach to Assistant"
+      },
+      "TABLE": {
+        "INBOX": "Inbox Name",
+        "CHANNEL_TYPE": "Channel Type",
+        "ACTIONS": "Actions",
+        "EMPTY": "No inboxes attached to this assistant yet."
+      },
+      "ACTIONS": {
+        "DETACH": "Detach"
+      },
+      "TOAST": {
+        "ATTACHED": "Inbox attached successfully.",
+        "DETACHED": "Inbox detached successfully."
+      },
+      "ERRORS": {
+        "ATTACH_FAILED": "Failed to attach inbox to assistant.",
+        "DETACH_FAILED": "Failed to detach inbox."
+      },
+      "CONFIRM_DETACH": "Are you sure you want to detach this inbox? Autopilot will stop replying to customer messages on this channel."
     }
   }
 }

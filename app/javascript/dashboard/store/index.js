@@ -43,6 +43,8 @@ import pilotAssistants from './pilot/assistants';
 import pilotCopilot from './pilot/copilot';
 import pilotDocuments from './pilot/documents';
 import pilotFaqs from './pilot/faqs';
+import pilotAutopilot from './pilot/autopilot';
+import pilotCustomTools from './pilot/tools';
 import portals from './modules/helpCenterPortals';
 import reports from './modules/reports';
 import sla from './modules/sla';
@@ -100,6 +102,8 @@ export default createStore({
     'pilot/copilot': pilotCopilot,
     'pilot/documents': pilotDocuments,
     'pilot/faqs': pilotFaqs,
+    'pilot/autopilot': pilotAutopilot,
+    'pilot/customTools': pilotCustomTools,
     portals,
     reports,
     sla,
