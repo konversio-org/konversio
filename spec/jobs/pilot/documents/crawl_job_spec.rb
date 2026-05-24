@@ -285,15 +285,6 @@ RSpec.describe Pilot::Documents::CrawlJob do
     end
   end
 
-  # §13 follow-up: webhook signature verification on the inbound bulk-crawl
-  # webhook is not covered. The routes table declares
-  # `post 'webhooks/firecrawl'` but no controller exists yet. When that
-  # controller lands, add a request-spec context that drives the endpoint
-  # with (a) a valid signature, (b) a tampered signature, (c) a payload
-  # whose assistant_id does not belong to the signing account — asserting
-  # 401/403 on the negative paths and no Pilot::Document rows created.
-  pending 'TODO: webhooks/firecrawl signature + assistant scoping coverage when the controller lands'
-
   def source_lock_key(url)
     digest = Digest::SHA256.hexdigest(url.to_s.sub(%r{/+\z}, ''))
     "pilot:documents:crawl:#{assistant.id}:#{digest}"

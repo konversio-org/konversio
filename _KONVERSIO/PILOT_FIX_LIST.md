@@ -35,12 +35,6 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
     - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
     - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
 
-6. **Add CrawlJob webhook/signature and assistant-scoping coverage**
-    - Current pending spec: `spec/jobs/pilot/documents/crawl_job_spec.rb:257`.
-    - Current state: Firecrawl/webhook signature and assistant scoping coverage are pending.
-    - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
-    - Verify: invalid signatures are rejected, valid callbacks enqueue/process correctly, and sources cannot cross assistant/account boundaries.
-
 ## Completed During Tackle Pass
 
 - **Resolved stale `SearchDocumentation` unavailable pending spec**
@@ -72,3 +66,7 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Finished Logbook prompt injection beyond Copilot**
   - Briefing passes Logbook facts into `Pilot::ReplySuggestionService` as an extra system message.
   - Autopilot assistant instructions include Logbook facts when `pilot_logbook` is enabled.
+
+- **Closed CrawlJob webhook/signature and assistant-scoping coverage**
+  - Removed the stale `webhooks/firecrawl` pending from `CrawlJob` specs.
+  - Expanded the real `/webhooks/pilot/bulk_crawl/:assistant_id/:token` request spec for cross-assistant tokens and spoofed payload ownership.
