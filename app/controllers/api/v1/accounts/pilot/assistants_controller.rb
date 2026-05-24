@@ -64,7 +64,7 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   end
 
   def assistant_params
-    params.permit(:name, :description, :response_guidelines, :guardrails, config: {})
+    params.permit(:name, :description, :response_guidelines, :guardrails, enabled_tool_slugs: [], config: {})
   end
 
   def parsed_message_history

@@ -15,6 +15,7 @@ RSpec.describe Pilot::Tools::ScenarioResolver do
 
   it 'returns adapter instances for slugs that resolve to enabled tools' do
     scenario = build_scenario(tools: [lookup_tool.slug])
+    assistant.update!(enabled_tool_slugs: [lookup_tool.slug])
 
     result = described_class.call(scenario, account: account, assistant: assistant)
 
@@ -25,6 +26,7 @@ RSpec.describe Pilot::Tools::ScenarioResolver do
 
   it 'skips unresolved slugs without raising and emits telemetry' do
     scenario = build_scenario(tools: [lookup_tool.slug, 'missing_slug'])
+    assistant.update!(enabled_tool_slugs: [lookup_tool.slug])
 
     expect(Custom::Pilot::EventDispatcher).to receive(:dispatch).with(
       'pilot.scenario.tool_unresolved',
@@ -36,6 +38,18 @@ RSpec.describe Pilot::Tools::ScenarioResolver do
 
     expect(result.size).to eq(1)
     expect(result.first.tool).to eq(lookup_tool)
+  end
+
+  it 'skips tools that are enabled on the account but disabled for the assistant' do
+    scenario = build_scenario(tools: [lookup_tool.slug])
+
+    expect(Custom::Pilot::EventDispatcher).to receive(:dispatch).with(
+      'pilot.scenario.tool_unresolved',
+      hash_including(scenario_id: scenario.id, tool_slug: lookup_tool.slug, account_id: account.id),
+      account: account
+    )
+
+    expect(described_class.call(scenario, account: account, assistant: assistant)).to eq([])
   end
 
   it 'returns an empty array when the scenario has no tool references' do
