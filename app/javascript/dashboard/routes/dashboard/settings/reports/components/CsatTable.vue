@@ -15,6 +15,7 @@ import CsatEmptyState from './CsatEmptyState.vue';
 import CsatTableLoader from './CsatTableLoader.vue';
 
 import { CSAT_RATINGS } from 'shared/constants/messages';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 import {
   useVueTable,
@@ -36,6 +37,11 @@ const csatResponses = useMapGetter('csat/getCSATResponses');
 
 const isFeatureEnabled = computed(() =>
   isCloudFeatureEnabled('csat_review_notes')
+);
+const isPilotCsatAnalysisEnabled = computed(
+  () =>
+    isCloudFeatureEnabled(FEATURE_FLAGS.PILOT_MASTER) &&
+    isCloudFeatureEnabled(FEATURE_FLAGS.PILOT_CSAT_ANALYSIS)
 );
 const showExpandableRows = computed(
   () => isFeatureEnabled.value || isOnKonversioCloud.value
@@ -65,11 +71,22 @@ const tableData = computed(() => {
     feedbackText: response.feedback_message || '',
     conversationId: response.conversation_id,
     csatReviewNotes: response.csat_review_notes,
+    sentiment: response.pilot_sentiment,
+    themes: response.pilot_themes || [],
     createdAgo: dynamicTime(response.created_at),
     createdAt: messageStamp(response.created_at, 'LLL d yyyy, h:mm a'),
     _original: response,
   }));
 });
+
+const sentimentStyles = sentiment => {
+  const map = {
+    positive: 'bg-n-green-2 text-n-green-11 border-n-green-7',
+    neutral: 'bg-n-yellow-2 text-n-yellow-11 border-n-yellow-7',
+    negative: 'bg-n-ruby-2 text-n-ruby-11 border-n-ruby-7',
+  };
+  return map[sentiment] || '';
+};
 
 const getRatingData = rating => {
   return CSAT_RATINGS.find(r => r.value === rating) || {};
@@ -202,6 +219,13 @@ const table = useVueTable({
                 <div v-else class="text-sm text-n-slate-12">
                   <ShowMore :text="row.feedbackText" :limit="100" />
                 </div>
+                <span
+                  v-if="isPilotCsatAnalysisEnabled && row.sentiment"
+                  class="inline-block mt-1 px-1.5 py-0.5 rounded border text-xs font-medium"
+                  :class="sentimentStyles(row.sentiment)"
+                >
+                  {{ row.sentiment }}
+                </span>
               </td>
               <td class="py-4 px-5">
                 <UserAvatarWithName

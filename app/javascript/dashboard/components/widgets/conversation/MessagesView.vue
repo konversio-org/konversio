@@ -295,7 +295,7 @@ export default {
         return;
       }
 
-      this.labelSuggestions = await this.getLabelSuggestions();
+      this.labelSuggestions = await this.getLabelSuggestions(this.currentChat);
 
       // once the labels are fetched, we need to scroll to bottom
       // but we need to wait for the DOM to be updated

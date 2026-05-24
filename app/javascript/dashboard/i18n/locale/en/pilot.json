@@ -91,6 +91,18 @@
         "DELETE": "Failed to delete FAQ",
         "RETRY": "Retry"
       }
+    },
+    "CSAT": {
+      "SENTIMENT": {
+        "TITLE": "AI Sentiment Analysis",
+        "POSITIVE": "Positive",
+        "NEUTRAL": "Neutral",
+        "NEGATIVE": "Negative"
+      },
+      "THEMES": {
+        "TITLE": "Top Feedback Themes"
+      },
+      "ESCALATION_RECOMMENDED": "Escalation Recommended"
     }
   }
 }

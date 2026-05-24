@@ -4,6 +4,8 @@ import { useAlert, useTrack } from 'dashboard/composables';
 import CsatMetrics from './components/CsatMetrics.vue';
 import CsatTable from './components/CsatTable.vue';
 import CsatFilters from './components/Csat/CsatFilters.vue';
+import PilotSentimentCard from './components/PilotSentimentCard.vue';
+import PilotThemesCard from './components/PilotThemesCard.vue';
 import { generateFileName } from '../../../../helper/downloadHelper';
 import { REPORTS_EVENTS } from '../../../../helper/AnalyticsHelper/events';
 import { FEATURE_FLAGS } from '../../../../featureFlags';
@@ -16,6 +18,8 @@ export default {
     CsatMetrics,
     CsatTable,
     CsatFilters,
+    PilotSentimentCard,
+    PilotThemesCard,
     ReportHeader,
     V4Button,
   },
@@ -49,6 +53,18 @@ export default {
       return this.isFeatureEnabledOnAccount(
         this.accountId,
         FEATURE_FLAGS.TEAM_MANAGEMENT
+      );
+    },
+    isPilotCsatAnalysisEnabled() {
+      return (
+        this.isFeatureEnabledOnAccount(
+          this.accountId,
+          FEATURE_FLAGS.PILOT_MASTER
+        ) &&
+        this.isFeatureEnabledOnAccount(
+          this.accountId,
+          FEATURE_FLAGS.PILOT_CSAT_ANALYSIS
+        )
       );
     },
   },
@@ -130,6 +146,16 @@ export default {
       @filter-change="onFilterChange"
     />
     <CsatMetrics :filters="requestPayload" />
+    <template v-if="isPilotCsatAnalysisEnabled">
+      <div class="flex flex-col gap-6 lg:flex-row">
+        <div class="flex-1">
+          <PilotSentimentCard />
+        </div>
+        <div class="flex-1">
+          <PilotThemesCard />
+        </div>
+      </div>
+    </template>
     <CsatTable :page-index="pageIndex" @page-change="onPageNumberChange" />
   </div>
 </template>
