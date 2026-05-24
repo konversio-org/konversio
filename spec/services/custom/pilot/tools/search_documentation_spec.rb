@@ -13,10 +13,7 @@ RSpec.describe Custom::Pilot::Tools::SearchDocumentation do
   end
 
   it 'reports unavailable when Pilot::AssistantResponse is not defined yet' do
-    # Pilot::AssistantResponse ships with Autopilot (section 4); until then
-    # `.available?` returns false and the tool is omitted from the runner.
-    # We assert the runtime gracefully reports it rather than crashing.
-    skip('Pilot::AssistantResponse is defined; section 4 has shipped — update this spec.') if defined?(Pilot::AssistantResponse)
+    hide_const('Pilot::AssistantResponse')
 
     expect(described_class.available?).to be(false)
     expect(tool.perform(tool_context, query: 'refund')).to match(/not enabled/)
@@ -119,13 +116,15 @@ RSpec.describe Custom::Pilot::Tools::SearchDocumentation do
       # the row(s) we care about as the query result.
       relation = Pilot::AssistantResponse.where(id: rows.map(&:id))
       allow(Pilot::AssistantResponse).to receive(:where).and_call_original
-      allow(Pilot::AssistantResponse).to receive(:where).with(account_id: account.id).and_return(
-        instance_double(ActiveRecord::Relation).tap do |r|
-          allow(r).to receive(:where).with(status: 'approved').and_return(r)
-          allow(r).to receive(:order).and_return(r)
-          allow(r).to receive(:limit).and_return(relation)
-        end
-      )
+      allow(Pilot::AssistantResponse).to receive(:where)
+        .with(account_id: account.id)
+        .and_return(documentation_scope_for(relation))
+    end
+
+    def documentation_scope_for(relation)
+      instance_double(ActiveRecord::Relation).tap do |scope|
+        allow(scope).to receive_messages(where: scope, order: scope, limit: relation)
+      end
     end
   end
 end
