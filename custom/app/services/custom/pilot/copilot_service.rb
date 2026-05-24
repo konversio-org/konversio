@@ -1,5 +1,6 @@
 require 'agents'
 
+# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Generates the assistant reply for a Copilot thread using the ai-agents
@@ -21,6 +22,7 @@ module Custom
     #   4. Persist the final reply as `message_type: assistant`.
     #   5. On step exhaustion, persist a fallback assistant message and fire
     #      `:copilot_inference_failed` with `reason: 'max_steps_exhausted'`.
+    # rubocop:disable Metrics/ClassLength
     class CopilotService < BaseService
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
@@ -63,7 +65,7 @@ module Custom
 
       def validate_thread!
         raise Error, 'Thread is required' if thread.blank?
-        return if thread.copilot_messages.where(message_type: :user).exists?
+        return if thread.copilot_messages.exists?(message_type: :user)
 
         raise Error, 'No user message in thread to respond to'
       end
@@ -78,6 +80,7 @@ module Custom
           context = build_runner_context(history)
 
           result = runner.run(user_input, context: context, max_turns: MAX_AGENT_STEPS)
+          attach_token_usage(span, result.usage) if result.respond_to?(:usage)
           span.set_attribute('output_length', result&.output.to_s.length)
           result
         end
@@ -267,5 +270,7 @@ module Custom
       # compatible: returns nil today so the system prompt simply doesn't
       # include logbook context.
     end
+    # rubocop:enable Metrics/ClassLength
   end
 end
+# rubocop:enable Style/ClassAndModuleChildren

@@ -48,6 +48,24 @@ RSpec.describe Custom::Pilot::BriefingService do
       expect(service.perform).to eq('Hello!')
     end
 
+    it 'adds reply-suggestion token usage to the trace span when present' do
+      span = instance_double(Custom::Pilot::TraceSpan::NullSpan, set_attribute: nil)
+      fake_suggestion = instance_double(Pilot::ReplySuggestionService)
+      allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+      allow(fake_suggestion).to receive(:perform).and_return(
+        { message: 'Hi there!', usage: { 'prompt_tokens' => 6, 'completion_tokens' => 3 } }
+      )
+      allow(Custom::Pilot::TraceSpan).to receive(:wrap) do |**_args, &block|
+        block.call(span)
+      end
+
+      service = described_class.new(conversation: conversation, user: user)
+      service.perform
+
+      expect(span).to have_received(:set_attribute).with('prompt_tokens', 6)
+      expect(span).to have_received(:set_attribute).with('completion_tokens', 3)
+    end
+
     it 'raises Custom::Pilot::BriefingService::Error when the pilot service returns an error hash' do
       fake_suggestion = instance_double(Pilot::ReplySuggestionService)
       allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
