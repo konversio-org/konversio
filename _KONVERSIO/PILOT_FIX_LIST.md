@@ -27,14 +27,6 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
    - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
    - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
 
-## P2: Coverage Gaps
-
-5. **Add real `Agents::Runner` integration spec for Autopilot**
-    - Current pending spec: `spec/services/custom/pilot/autopilot_service_spec.rb:135`.
-    - Current state: most Autopilot specs stub `Agents::Runner.with_agents`.
-    - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
-    - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
-
 ## Completed During Tackle Pass
 
 - **Resolved stale `SearchDocumentation` unavailable pending spec**
@@ -70,3 +62,6 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Closed CrawlJob webhook/signature and assistant-scoping coverage**
   - Removed the stale `webhooks/firecrawl` pending from `CrawlJob` specs.
   - Expanded the real `/webhooks/pilot/bulk_crawl/:assistant_id/:token` request spec for cross-assistant tokens and spoofed payload ownership.
+
+- **Added real `Agents::Runner` integration coverage for Autopilot**
+  - Replaced the pending with a spec that keeps `Agents::Runner.with_agents` real and stubs only the RubyLLM chat boundary while invoking `search_documentation`.
