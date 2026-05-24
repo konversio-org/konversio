@@ -1,3 +1,9 @@
+# All sibling services under `custom/app/services/custom/pilot/` use the
+# nested module style (autopilot_no_assistant_skip, briefing_service,
+# copilot_service, etc.). Keeping this file consistent with the directory
+# convention is more valuable than the compact form the global cop prefers;
+# flipping just this file would make it the lone outlier in the dir.
+# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Drives a single Autopilot inference turn for an assistant: builds the
@@ -19,7 +25,15 @@ module Custom
 
       attr_reader :assistant, :conversation, :customer_message, :message_history, :source
 
+      # Six keyword arguments is one over the cop's cap, but each one is a
+      # distinct construction concern called by a distinct caller path:
+      #   - production job:        assistant + conversation + account
+      #   - super-admin playground: assistant + message + message_history + source
+      # Collapsing them into a single `context:` bag would obscure the public
+      # API and force every caller (job, controller, specs) to rewrap.
+      # rubocop:disable Metrics/ParameterLists
       def initialize(assistant:, conversation: nil, message: nil, message_history: nil, account: nil, source: 'production')
+        # rubocop:enable Metrics/ParameterLists
         @assistant = assistant
         @conversation = conversation
         @customer_message = message
@@ -32,22 +46,34 @@ module Custom
         raise FeatureDisabledError, 'Pilot Autopilot is not enabled for this account' unless feature_enabled?(:autopilot)
         return ::Custom::Pilot::AutopilotNoAssistantSkip.new(account: account, conversation: conversation).call if assistant.blank?
 
-        dispatch_event(:autopilot_inference_started, assistant_id: assistant.id, conversation_id: conversation&.display_id)
+        emit_inference_started
         result = run_runner
-        dispatch_event(:autopilot_inference_completed,
-                       assistant_id: assistant.id,
-                       length: result.reply.to_s.length,
-                       handover: result.handover.handover?)
+        emit_inference_completed(result)
         result
       rescue FeatureDisabledError, Error
         raise
       rescue StandardError => e
-        Rails.logger.error("[pilot.autopilot] LLM error: #{e.class}: #{e.message}")
-        dispatch_event(:autopilot_inference_failed, assistant_id: assistant&.id, error: e.message)
-        raise Error, e.message
+        handle_inference_failure(e)
       end
 
       private
+
+      def emit_inference_started
+        dispatch_event(:autopilot_inference_started, assistant_id: assistant.id, conversation_id: conversation&.display_id)
+      end
+
+      def emit_inference_completed(result)
+        dispatch_event(:autopilot_inference_completed,
+                       assistant_id: assistant.id,
+                       length: result.reply.to_s.length,
+                       handover: result.handover.handover?)
+      end
+
+      def handle_inference_failure(error)
+        Rails.logger.error("[pilot.autopilot] LLM error: #{error.class}: #{error.message}")
+        dispatch_event(:autopilot_inference_failed, assistant_id: assistant&.id, error: error.message)
+        raise Error, error.message
+      end
 
       def run_runner
         history = build_history
@@ -124,21 +150,38 @@ module Custom
       end
 
       def assistant_instructions
-        sections = []
-        sections << (assistant.description.presence || "You are #{assistant.name}, a helpful assistant.")
-        sections << "Product: #{assistant.product_name}" if assistant.product_name.present?
+        [
+          persona_section,
+          product_section,
+          response_guidelines_section,
+          guardrails_section,
+          'Use the `search_documentation` tool whenever the user asks a factual or product question.',
+          handover_policy
+        ].compact.join("\n\n")
+      end
 
-        if assistant.response_guidelines.is_a?(Array) && assistant.response_guidelines.any?
-          sections << "Response guidelines:\n#{assistant.response_guidelines.map { |g| "- #{g}" }.join("\n")}"
-        end
+      def persona_section
+        assistant.description.presence || "You are #{assistant.name}, a helpful assistant."
+      end
 
-        if assistant.guardrails.is_a?(Array) && assistant.guardrails.any?
-          sections << "Guardrails:\n#{assistant.guardrails.map { |g| "- #{g}" }.join("\n")}"
-        end
+      def product_section
+        return nil if assistant.product_name.blank?
 
-        sections << 'Use the `search_documentation` tool whenever the user asks a factual or product question.'
-        sections << handover_policy
-        sections.join("\n\n")
+        "Product: #{assistant.product_name}"
+      end
+
+      def response_guidelines_section
+        bullet_section('Response guidelines', assistant.response_guidelines)
+      end
+
+      def guardrails_section
+        bullet_section('Guardrails', assistant.guardrails)
+      end
+
+      def bullet_section(heading, items)
+        return nil unless items.is_a?(Array) && items.any?
+
+        "#{heading}:\n#{items.map { |i| "- #{i}" }.join("\n")}"
       end
 
       def handover_policy
@@ -261,3 +304,4 @@ module Custom
     end
   end
 end
+# rubocop:enable Style/ClassAndModuleChildren
