@@ -17,30 +17,25 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 
 ## P1: Product Polish
 
-3. **Finish Logbook prompt injection beyond Copilot**
-   - Current state: Copilot injection is functional; Briefing logs available context instead of inserting it into the prompt; Autopilot has no Logbook context path.
-   - Fix: inject the standard Logbook context message into Briefing and Autopilot prompts behind `pilot_logbook`.
-   - Verify: specs prove prompt/context includes Logbook entries when enabled and excludes them when disabled.
-
-4. **Confirm or build Pilot Activity dashboard UI**
+3. **Confirm or build Pilot Activity dashboard UI**
    - Current state: event store, ActionCable stream, redaction, and retention job exist; operator-facing Activity UI was not verified.
    - Fix: either locate and document the existing UI route, or add a minimal Activity page backed by `pilot_events`.
    - Verify: UI route renders event rows and respects account scoping.
 
-5. **Add per-assistant custom-tool enablement**
+4. **Add per-assistant custom-tool enablement**
    - Current state: custom tools are account-scoped and gated by `Pilot::CustomTool#enabled`; `Pilot::Assistant` has no `enabled_tool_slugs`-style backing.
    - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
    - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
 
 ## P2: Coverage Gaps
 
-6. **Add real `Agents::Runner` integration spec for Autopilot**
+5. **Add real `Agents::Runner` integration spec for Autopilot**
     - Current pending spec: `spec/services/custom/pilot/autopilot_service_spec.rb:135`.
     - Current state: most Autopilot specs stub `Agents::Runner.with_agents`.
     - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
     - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
 
-7. **Add CrawlJob webhook/signature and assistant-scoping coverage**
+6. **Add CrawlJob webhook/signature and assistant-scoping coverage**
     - Current pending spec: `spec/jobs/pilot/documents/crawl_job_spec.rb:257`.
     - Current state: Firecrawl/webhook signature and assistant scoping coverage are pending.
     - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
@@ -73,3 +68,7 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Surfaced LLM token usage to trace spans**
   - Autopilot and Copilot attach runner usage when present; Briefing attaches RubyLLM usage from `Pilot::ReplySuggestionService`.
   - Specs assert prompt/completion token attributes on each path.
+
+- **Finished Logbook prompt injection beyond Copilot**
+  - Briefing passes Logbook facts into `Pilot::ReplySuggestionService` as an extra system message.
+  - Autopilot assistant instructions include Logbook facts when `pilot_logbook` is enabled.

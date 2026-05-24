@@ -145,6 +145,32 @@ RSpec.describe Custom::Pilot::AutopilotService do
       expect(result.handover.handover?).to be true
       expect(result.handover.reason).to eq('customer_request')
     end
+
+    it 'includes Logbook context in assistant instructions when enabled' do
+      account.enable_features!(:pilot_logbook)
+      contact = create(:contact, account: account)
+      inbox = create(:inbox, account: account)
+      contact_inbox = create(:contact_inbox, contact: contact, inbox: inbox)
+      conversation = create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox)
+      create(:pilot_logbook_entry, account: account, contact: contact, content: 'Prefers email')
+
+      service = described_class.new(assistant: assistant, conversation: conversation)
+
+      expect(service.send(:assistant_instructions)).to include('Known facts about this contact:', 'Prefers email')
+    end
+
+    it 'omits Logbook context in assistant instructions when disabled' do
+      account.disable_features!(:pilot_logbook)
+      contact = create(:contact, account: account)
+      inbox = create(:inbox, account: account)
+      contact_inbox = create(:contact_inbox, contact: contact, inbox: inbox)
+      conversation = create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox)
+      create(:pilot_logbook_entry, account: account, contact: contact, content: 'Prefers email')
+
+      service = described_class.new(assistant: assistant, conversation: conversation)
+
+      expect(service.send(:assistant_instructions)).not_to include('Prefers email')
+    end
   end
 
   # §13 follow-up: end-to-end agentic-loop integration spec. Today every
