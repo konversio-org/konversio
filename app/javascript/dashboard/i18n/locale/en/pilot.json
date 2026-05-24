@@ -342,6 +342,28 @@
         "PLACEHOLDER": "Type a message to test the assistant..."
       }
     },
+    "ACTIVITY": {
+      "HEADER": {
+        "TITLE": "Activity",
+        "REFRESH": "Refresh"
+      },
+      "LOADING": "Loading activity...",
+      "EMPTY": {
+        "TITLE": "No activity yet",
+        "BODY": "Pilot events will appear here after assistants run."
+      },
+      "TABLE": {
+        "TIME": "Time",
+        "EVENT": "Event",
+        "ENTITY": "Entity",
+        "PAYLOAD": "Payload",
+        "NO_ENTITY": "None"
+      },
+      "ERROR": {
+        "GENERIC": "Failed to load Pilot activity",
+        "RETRY": "Retry"
+      }
+    },
     "INBOXES": {
       "HEADER": {
         "TITLE": "Inbox Attachments"

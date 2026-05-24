@@ -9,12 +9,7 @@ No active build or test blockers.
 
 ## P1: Product Polish
 
-1. **Confirm or build Pilot Activity dashboard UI**
-   - Current state: event store, ActionCable stream, redaction, and retention job exist; operator-facing Activity UI was not verified.
-   - Fix: either locate and document the existing UI route, or add a minimal Activity page backed by `pilot_events`.
-   - Verify: UI route renders event rows and respects account scoping.
-
-2. **Add per-assistant custom-tool enablement**
+1. **Add per-assistant custom-tool enablement**
    - Current state: custom tools are account-scoped and gated by `Pilot::CustomTool#enabled`; `Pilot::Assistant` has no `enabled_tool_slugs`-style backing.
    - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
    - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
@@ -65,3 +60,8 @@ No active build or test blockers.
 - **Verified order-dependent spec / leftover-row note is stale**
   - Pilot spec slice passed with seeds `12345` and `54321`.
   - Post-sweep test database check showed zero rows in all `pilot_*` tables.
+
+- **Built Pilot Activity dashboard UI**
+  - Added account-scoped API v2 event listing backed by `pilot_events`.
+  - Mounted `/pilot/activity` in the Pilot sidebar with loading, empty, error, table, and pagination states.
+  - Verified by the new events controller request spec and scoped JS/Vue lint.

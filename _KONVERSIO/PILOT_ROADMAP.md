@@ -35,8 +35,8 @@ These are features Pilot ships that Captain does not. All are intentional and re
 - **Sensitive payload redaction** — telemetry events strip raw prompts / customer messages / auth headers, replaced with length + sha256 fingerprints. GDPR safety.
 - **Copilot validator tolerance + ai-agents SDK tool execution** — fixes Captain crashes when LLMs return unexpected JSON keys or emit tool calls that need executing.
 - **Provider connection-test functionality + env-pre-configured detection** — fold into Super Admin LLM Settings; necessary because providers are configurable in Pilot but not in Captain.
-- **Logbook (contact memory)** — experimental Konversio-original feature by Matt. **Verified shipped**: `pilot_logbook_entries` table, `Pilot::LogbookExtractionJob`, `Custom::Pilot::LogbookExtractionService`, contact-panel viewer tab, and Copilot prompt injection (functional). **Cross-feature injection beyond Copilot is incomplete** (Briefing is a logging placeholder, Autopilot has none) — completing it is tracked in the polish backlog rather than overstated here.
-- **Pilot event infrastructure** — `Custom::Pilot::EventDispatcher` persists to `pilot_events`, streams via `PilotEventsChannel`, redacts sensitive fields via `PayloadRedactor`, retains for 30 days via `Pilot::EventsRetentionJob`. This is the **backend plumbing only**. An operator-facing Activity dashboard UI was not located in the 2026-05-23 audit — that question (verify-or-build) is tracked as a polish item rather than implied here.
+- **Logbook (contact memory)** — experimental Konversio-original feature by Matt. **Verified shipped**: `pilot_logbook_entries` table, `Pilot::LogbookExtractionJob`, `Custom::Pilot::LogbookExtractionService`, contact-panel viewer tab, Copilot prompt injection, Briefing prompt injection, and Autopilot prompt injection.
+- **Pilot event infrastructure + Activity UI** — `Custom::Pilot::EventDispatcher` persists to `pilot_events`, streams via `PilotEventsChannel`, redacts sensitive fields via `PayloadRedactor`, retains for 30 days via `Pilot::EventsRetentionJob`, and exposes an operator-facing Activity page at `/pilot/activity` backed by `api/v2/accounts/:account_id/pilot/events`.
 
 ## Deliberate execution improvements over Captain
 
@@ -59,10 +59,9 @@ Pilot honest to "we ship what Captain ships":
 
 Smaller items filed during the autonomous session. Independent of the feature-level gaps above.
 
-- Confirm or build a Pilot Activity dashboard UI; current evidence only proves the event store, ActionCable stream, and retention job.
 - Per-assistant tool enablement column on `Pilot::Assistant` — pilot-tools spec calls for assistant-scoped filtering of the account-wide tool set, but `Pilot::Assistant` has no `enabled_tool_slugs` column. Custom Tools wiring shipped account-level enabled-only gating in v1; this is the polish to align with spec.
 
-Closed during the 2026-05-24 tackle pass: ViteRuby production precompile package-manager detection, stale order-dependent spec / leftover-row note, LLM token usage trace attrs, per-source crawl mutex, Resolve-to-FAQ mining integration coverage, Logbook prompt injection beyond Copilot, and direct listener-enqueued job coverage.
+Closed during the 2026-05-24 tackle pass: ViteRuby production precompile package-manager detection, stale order-dependent spec / leftover-row note, LLM token usage trace attrs, per-source crawl mutex, Resolve-to-FAQ mining integration coverage, Logbook prompt injection beyond Copilot, Pilot Activity dashboard UI, and direct listener-enqueued job coverage.
 
 ## Verification audit log
 
@@ -73,3 +72,4 @@ Closed during the 2026-05-24 tackle pass: ViteRuby production precompile package
 - **2026-05-23 coverage closure**: added `spec/jobs/pilot/autopilot_inference_job_spec.rb` for the previously indirect-only `Pilot::AutopilotInferenceJob` coverage gap. The spec covers eligibility no-ops, normal reply persistence, handover side effects, swallowed service errors, and typing on/off lifecycle including the error path.
 - **2026-05-24 closeout verification**: OpenSpec `pilot-port-finalize` closeout is checked through task 4.5. Full Pilot sweep passed (`599 examples, 0 failures, 4 pending`); touched Ruby RuboCop passed (`7 files inspected, no offenses`); touched JS/Vue scoped ESLint passed with 0 errors (warnings only, not auto-fixed to avoid unrelated churn). The only task-list correction was narrowing 1.8 to the implemented account-level custom-tool gating; per-assistant tool enablement remains polish.
 - **2026-05-24 polish cleanup**: closed the schema / auto-resolve cleanup items. Added an idempotent repair migration for environments where legacy Pilot feature columns were still present despite the earlier drop migration being marked up; regenerated `db/schema.rb`; removed the dead `evaluated` auto-resolve mode from validation and runtime defaults, normalizing stored `evaluated` settings to `legacy`.
+- **2026-05-24 Activity UI closure**: added `PilotActivityPage.vue`, `api/v2/accounts/pilot/events#index`, sidebar mount, i18n, request specs for account scoping / feature gating / auth, and scoped JS/Vue lint verification.

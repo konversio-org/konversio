@@ -7,6 +7,7 @@ import PlaygroundPanel from './PlaygroundPanel.vue';
 import PilotInboxesPage from './PilotInboxesPage.vue';
 import PilotToolsPage from './tools/PilotToolsPage.vue';
 import AutopilotIndex from './AutopilotIndex.vue';
+import PilotActivityPage from './PilotActivityPage.vue';
 
 const commonMeta = {
   permissions: ['administrator', 'agent', 'custom_role'],
@@ -54,6 +55,12 @@ export const routes = [
     name: 'pilot_tools',
     component: PilotToolsPage,
     meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_TOOLS' },
+  },
+  {
+    path: frontendURL('accounts/:accountId/pilot/activity'),
+    name: 'pilot_activity',
+    component: PilotActivityPage,
+    meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_ACTIVITY' },
   },
   {
     path: frontendURL('accounts/:accountId/pilot/settings'),
