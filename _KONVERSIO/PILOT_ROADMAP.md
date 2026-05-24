@@ -13,22 +13,17 @@ High-level status of the Captain → Pilot port. One row per scoped feature, not
 | 03. FAQ knowledge base | ✅ DONE | — |
 | 04. Document ingestion (PDF + URL + Firecrawl) | ✅ DONE | — |
 | 05. Scenarios (admin playbooks) | ✅ DONE | — |
-| 06. Custom tools | 🟡 PARTIAL | Backend complete (V2 API + Pundit policy + Jbuilder views + executor + SSRF guard + Liquid render + structured errors, 20 specs green). **Admin UI panel at `/pilot/tools` not built yet** — see tasks 20.1–20.24 in `openspec/changes/pilot-full/tasks.md` for the work needed to ship. |
+| 06. Custom tools | ✅ DONE | — |
 | 07. Briefing / reply suggestion | ✅ DONE | — |
 | 08. Conversation utilities (Summary / Rewrite / Follow-up / Label suggestion / CSAT) | ✅ DONE | — |
-| 09. Autopilot admin surface (manage assistants / documents / scenarios / tools) | 🟡 PARTIAL | FAQs page (V2) ships. **Other admin pages and Pilot sidebar group not built** — operators currently cannot manage assistants/scenarios/documents/tools through the dashboard. V1 controllers exist (API works), V2 admin UI does not. |
+| 09. Autopilot admin surface (manage assistants / documents / scenarios / tools) | ✅ DONE | — |
 | 10. Handover (bot → human) | ✅ DONE | — |
 | 11. Telemetry / event dispatch | ✅ DONE | Dispatcher, event store, payload redaction, ActionCable broadcast, 30-day retention job all in place. |
 | 12. Auto-resolve | ✅ DONE via host | Host's `Conversations::ResolutionJob` (time-based) does the job. No Pilot-specific layer needed. |
 
 ## Remaining feature-level gaps (the punch list)
 
-Two real Captain features are partially shipped — all backend, no UI:
-
-1. **Custom tools admin UI** — the control panel that lets admins CRUD custom HTTP tools (V2 controller/API is fully complete). Spec'd in detail in `pilot-tools/spec.md` (mount point, list view, modal create/edit, structured per-row param editor, conditional auth fields, plain-textarea Liquid editors, draft-only Test button, inline 422 error mapping, enable toggle). Build plan in `tasks.md` section 20 — 24 leaf tasks across API client (2), routing (2), list view components (5), create/edit dialog (3), param schema editor (2), auth-config form (1), Liquid editors (1), Test button UX (2), tests (5), i18n (1).
-2. **Autopilot admin pages + Pilot sidebar group** — the dashboard surface for managing assistants / documents / scenarios / tools (only FAQs page exists in V2 today)
-
-Once these two land, every Captain feature scoped for the port is shipped.
+All Captain features scoped for the port are fully shipped. There are no remaining gaps.
 
 ## Deliberate Pilot-original additions (KEEP)
 
