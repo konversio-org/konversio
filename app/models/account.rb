@@ -107,6 +107,7 @@ class Account < ApplicationRecord
   has_many :pilot_documents, class_name: 'Pilot::Document', dependent: :destroy_async
   has_many :pilot_scenarios, class_name: 'Pilot::Scenario', dependent: :destroy_async
   has_many :pilot_custom_tools, class_name: 'Pilot::CustomTool', dependent: :destroy_async
+  has_many :pilot_events, class_name: 'Pilot::Event', dependent: :destroy_async
 
   has_one_attached :contacts_export
 

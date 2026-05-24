@@ -475,6 +475,7 @@ Rails.application.routes.draw do
             resources :follow_ups, only: [:create]
             resources :rewrites, only: [:create]
             resources :logbook_entries, only: [:index, :create, :update, :destroy]
+            resources :events, only: [:index]
             resources :custom_tools do
               post :test, on: :collection
             end

@@ -710,6 +710,12 @@ const menuItems = computed(() => {
                   ]
                 : []),
               {
+                name: 'Pilot Activity',
+                label: t('SIDEBAR.PILOT_ACTIVITY'),
+                icon: 'i-lucide-activity',
+                to: accountScopedRoute('pilot_activity'),
+              },
+              {
                 name: 'Pilot Settings',
                 label: t('SIDEBAR.PILOT_SETTINGS'),
                 icon: 'i-lucide-bolt',
