@@ -73,6 +73,33 @@ RSpec.describe Webhooks::Pilot::BulkCrawlController, type: :request do
         end.not_to change(Pilot::Document, :count)
         expect(response).to have_http_status(:forbidden)
       end
+
+      it 'returns 403 when token is computed for a different assistant/account' do
+        other_account = create(:account)
+        other_assistant = create(:pilot_assistant, account: other_account)
+        bogus = token_for(other_assistant.id, other_account.id)
+
+        expect do
+          post "/webhooks/pilot/bulk_crawl/#{assistant.id}/#{bogus}", params: payload
+        end.not_to change(Pilot::Document, :count)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+
+    context 'with spoofed assistant/account ids in the payload' do
+      it 'scopes document ownership to the assistant in the signed path' do
+        other_account = create(:account)
+        other_assistant = create(:pilot_assistant, account: other_account)
+        spoofed_payload = payload.merge(account_id: other_account.id, assistant_id: other_assistant.id)
+
+        post "/webhooks/pilot/bulk_crawl/#{assistant.id}/#{valid_token}", params: spoofed_payload
+
+        expect(response).to have_http_status(:ok)
+        document = Pilot::Document.last
+        expect(document.assistant_id).to eq(assistant.id)
+        expect(document.account_id).to eq(account.id)
+      end
     end
 
     context 'with an unknown assistant' do
