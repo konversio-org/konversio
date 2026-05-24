@@ -66,11 +66,6 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
     - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
     - Verify: invalid signatures are rejected, valid callbacks enqueue/process correctly, and sources cannot cross assistant/account boundaries.
 
-11. **Add Resolve to FAQ-mined integration spec**
-    - Current state: roadmap lists Resolve -> FAQ-mined as an integration coverage gap.
-    - Fix: exercise the resolution listener/job path through FAQ mining and pending `AssistantResponse` creation.
-    - Verify: resolving a qualifying conversation creates expected pending FAQ rows and avoids duplicates.
-
 ## Completed During Tackle Pass
 
 - **Resolved stale `SearchDocumentation` unavailable pending spec**
@@ -84,3 +79,6 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Expanded direct listener-enqueued job specs**
   - Added direct no-op, service invocation, swallowed-error, persistence, and non-destructive coverage for `Pilot::LabelSuggestionJob`.
   - Added direct service invocation and missing-conversation no-op coverage for `Pilot::Conversations::FaqMiningJob`.
+
+- **Added Resolve to FAQ-mined integration coverage**
+  - `PilotResolveListener` now has an inline job-flow spec proving resolve events create pending FAQ rows and remain idempotent for the same transcript.

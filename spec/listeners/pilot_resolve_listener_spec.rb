@@ -63,6 +63,50 @@ describe PilotResolveListener do
         listener.conversation_resolved(event)
       end
     end
+
+    context 'when jobs are performed inline' do
+      before do
+        account.enable_features!(:pilot_autopilot)
+        conversation.update!(first_reply_created_at: 5.minutes.ago)
+        create(:message,
+               account: account,
+               conversation: conversation,
+               inbox: inbox,
+               message_type: :incoming,
+               content: 'How do I cancel?')
+        create(:message,
+               account: account,
+               conversation: conversation,
+               inbox: inbox,
+               sender: create(:user, account: account),
+               message_type: :outgoing,
+               content: 'Go to Settings > Billing > Cancel.')
+
+        pair = Custom::Pilot::FaqMiningService::Pair.new(
+          question: 'How do I cancel?',
+          answer: 'Go to Settings > Billing > Cancel.'
+        )
+        service = instance_double(Custom::Pilot::FaqMiningService, call: [pair])
+        deduper = instance_double(Custom::Pilot::FaqMiningDeduper, filter: [{ question: pair.question, answer: pair.answer }])
+        allow(Custom::Pilot::FaqMiningService).to receive(:new).and_return(service)
+        allow(Custom::Pilot::FaqMiningDeduper).to receive(:new).and_return(deduper)
+        allow(Pilot::UpdateEmbeddingJob).to receive(:perform_later)
+      end
+
+      it 'creates pending mined FAQ rows and stays idempotent on the same transcript' do
+        expect do
+          perform_enqueued_jobs { listener.conversation_resolved(event) }
+        end.to change { Pilot::AssistantResponse.where(assistant: assistant, status: :pending).count }.by(1)
+
+        response = Pilot::AssistantResponse.where(assistant: assistant).last
+        expect(response.question).to eq('How do I cancel?')
+        expect(response.documentable).to be_nil
+
+        expect do
+          perform_enqueued_jobs { listener.conversation_resolved(event) }
+        end.not_to(change { Pilot::AssistantResponse.where(assistant: assistant).count })
+      end
+    end
   end
 
   describe '#conversation_resolved — Logbook' do
