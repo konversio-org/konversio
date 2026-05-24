@@ -65,25 +65,23 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
     - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
     - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
 
-11. **Resolve stale `SearchDocumentation` unavailable pending spec**
-    - Current pending spec: `spec/services/custom/pilot/tools/search_documentation_spec.rb:15`.
-    - Current state: pending text says `Pilot::AssistantResponse` is now defined and the spec should be updated.
-    - Fix: either implement the intended unavailable branch with constant hiding, or remove the stale pending example if the branch is obsolete.
-    - Verify: no pending example remains for this stale condition.
-
-12. **Add cross-source FAQ dedup coverage**
-    - Current pending spec: `spec/jobs/pilot/document_response_builder_job_spec.rb:67`.
-    - Current state: cross-source dedup against pre-existing `AssistantResponse` rows is pending.
-    - Fix: add/verify dedup behavior across document-backed and conversation-mined responses.
-    - Verify: duplicate FAQ pairs are skipped or merged according to the deduper contract.
-
-13. **Add CrawlJob webhook/signature and assistant-scoping coverage**
+11. **Add CrawlJob webhook/signature and assistant-scoping coverage**
     - Current pending spec: `spec/jobs/pilot/documents/crawl_job_spec.rb:257`.
     - Current state: Firecrawl/webhook signature and assistant scoping coverage are pending.
     - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
     - Verify: invalid signatures are rejected, valid callbacks enqueue/process correctly, and sources cannot cross assistant/account boundaries.
 
-14. **Add Resolve to FAQ-mined integration spec**
+12. **Add Resolve to FAQ-mined integration spec**
     - Current state: roadmap lists Resolve -> FAQ-mined as an integration coverage gap.
     - Fix: exercise the resolution listener/job path through FAQ mining and pending `AssistantResponse` creation.
     - Verify: resolving a qualifying conversation creates expected pending FAQ rows and avoids duplicates.
+
+## Completed During Tackle Pass
+
+- **Resolved stale `SearchDocumentation` unavailable pending spec**
+  - Replaced the stale pending example with constant hiding coverage for the unavailable branch.
+  - Verified by `spec/services/custom/pilot/tools/search_documentation_spec.rb`.
+
+- **Added cross-source FAQ dedup coverage**
+  - Reused `Custom::Pilot::FaqMiningDeduper` when document mining sees existing responses from other sources, and covered duplicate suppression.
+  - Verified by `spec/jobs/pilot/document_response_builder_job_spec.rb` and `spec/jobs/pilot/conversations/faq_mining_job_spec.rb`.
