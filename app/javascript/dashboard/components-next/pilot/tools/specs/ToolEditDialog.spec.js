@@ -16,12 +16,12 @@ describe('ToolEditDialog.vue', () => {
 
   beforeEach(() => {
     actions = {
-      'pilotCustomTools/createRow': vi.fn(),
-      'pilotCustomTools/updateRow': vi.fn(),
+      'pilot/customTools/createRow': vi.fn(),
+      'pilot/customTools/updateRow': vi.fn(),
     };
     getters = {
-      'pilotCustomTools/getSaving': () => false,
-      'pilotCustomTools/getTesting': () => false,
+      'pilot/customTools/getSaving': () => false,
+      'pilot/customTools/getTesting': () => false,
     };
     store = createStore({
       actions,
@@ -69,7 +69,7 @@ describe('ToolEditDialog.vue', () => {
         },
       },
     };
-    actions['pilotCustomTools/createRow'].mockRejectedValueOnce(errorObj);
+    actions['pilot/customTools/createRow'].mockRejectedValueOnce(errorObj);
 
     await wrapper.vm.onSubmit();
 
@@ -98,7 +98,7 @@ describe('ToolEditDialog.vue', () => {
         },
       },
     };
-    actions['pilotCustomTools/createRow'].mockRejectedValueOnce(errorObj);
+    actions['pilot/customTools/createRow'].mockRejectedValueOnce(errorObj);
 
     await wrapper.vm.onSubmit();
 
@@ -120,7 +120,7 @@ describe('ToolEditDialog.vue', () => {
 
     wrapper.vm.form.title = 'Successful Tool';
     wrapper.vm.form.endpoint_url = 'https://api.example.com';
-    actions['pilotCustomTools/createRow'].mockResolvedValueOnce({ id: 1 });
+    actions['pilot/customTools/createRow'].mockResolvedValueOnce({ id: 1 });
 
     // Mock Dialog ref close
     wrapper.vm.dialogRef = {
@@ -129,7 +129,7 @@ describe('ToolEditDialog.vue', () => {
 
     await wrapper.vm.onSubmit();
 
-    expect(actions['pilotCustomTools/createRow']).toHaveBeenCalled();
+    expect(actions['pilot/customTools/createRow']).toHaveBeenCalled();
     expect(wrapper.emitted('success')).toBeTruthy();
   });
 });

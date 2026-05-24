@@ -134,6 +134,55 @@ RSpec.describe Custom::Pilot::AutopilotService do
   # `search_documentation`) so we know the wiring is intact.
   pending 'TODO: integration spec exercising a real Agents::Runner against a stubbed LLM HTTP boundary'
 
+  describe '#assistant_tools' do
+    let(:service) { described_class.new(assistant: assistant, message: 'hello') }
+
+    it 'always includes the built-in search_documentation tool' do
+      tools = service.send(:assistant_tools)
+      expect(tools.first).to be_a(Custom::Pilot::Tools::SearchDocumentation)
+    end
+
+    it 'appends an adapter for every enabled custom tool on the account' do
+      enabled = create(:pilot_custom_tool, account: account, title: 'Lookup order')
+      create(:pilot_custom_tool, account: account, title: 'Disabled tool', enabled: false)
+      other_account_tool = create(:pilot_custom_tool, account: create(:account), title: 'Foreign tool')
+
+      tools = service.send(:assistant_tools)
+      slugs = tools.select { |t| t.is_a?(Pilot::Tools::AgentToolAdapter) }.map(&:name)
+
+      expect(slugs).to include(enabled.slug)
+      expect(slugs).not_to include(other_account_tool.slug)
+      expect(tools.map(&:name)).not_to include('disabled')
+    end
+
+    it 'omits custom tools when the account has none configured' do
+      tools = service.send(:assistant_tools)
+      expect(tools.count { |t| t.is_a?(Pilot::Tools::AgentToolAdapter) }).to eq(0)
+    end
+  end
+
+  describe 'scenario agent tool wiring' do
+    let(:lookup_tool) { create(:pilot_custom_tool, account: account, title: 'Lookup order') }
+    let(:scenario) do
+      create(:pilot_scenario,
+             assistant: assistant,
+             account: account,
+             title: 'Refund flow',
+             description: 'Refund handling',
+             instruction: "Use [Lookup](tool://#{lookup_tool.slug}) when needed.")
+    end
+
+    it 'passes adapter-wrapped tools into the scenario agent constructor' do
+      service = described_class.new(assistant: assistant, message: 'hello')
+      service.assistant.scenarios.reload
+      scenario # touch
+      resolved = Pilot::Tools::ScenarioResolver.call(scenario, account: account, assistant: assistant)
+      expect(resolved.size).to eq(1)
+      expect(resolved.first).to be_a(Pilot::Tools::AgentToolAdapter)
+      expect(resolved.first.tool).to eq(lookup_tool)
+    end
+  end
+
   describe 'vector search wiring' do
     # Embedding column is vector(3584) since the BGE switchover migration; the
     # canonical dimension lives in EmbeddingService::MODEL_DIMENSIONS so the

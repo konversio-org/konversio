@@ -8,7 +8,7 @@ module Custom
     # Per design D20 this is V2-only — no single-turn fallback. The runner
     # MAY invoke `search_documentation`, custom HTTP tools, and scenario
     # handoff tools in-process before producing the final assistant reply.
-    class AutopilotService < BaseService
+    class AutopilotService < BaseService # rubocop:disable Metrics/ClassLength
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
 
@@ -160,8 +160,15 @@ module Custom
         HANDOVER
       end
 
+      # Adapter-wrapped custom tools share the assistant's tool list with the
+      # built-in `SearchDocumentation`. The pilot-tools spec's per-assistant
+      # enablement filter is not yet backed by data — only the account-level
+      # `enabled` flag gates each tool today.
       def assistant_tools
-        [::Custom::Pilot::Tools::SearchDocumentation.new]
+        builtins = [::Custom::Pilot::Tools::SearchDocumentation.new]
+        return builtins if account.blank?
+
+        builtins + account.pilot_custom_tools.enabled.map { |t| ::Pilot::Tools::AgentToolAdapter.new(t) }
       end
 
       def scenario_agents_for(_assistant_agent)
@@ -176,7 +183,7 @@ module Custom
           instructions: scenario.instruction.to_s,
           model: model_for(:autopilot),
           temperature: (assistant.try(:temperature) || 0.7).to_f,
-          tools: []
+          tools: ::Pilot::Tools::ScenarioResolver.call(scenario, account: account, assistant: assistant)
         )
       end
 

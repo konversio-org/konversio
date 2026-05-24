@@ -49,7 +49,7 @@ const onDelete = () => {
 
 const onToggleEnabled = async enabled => {
   try {
-    await store.dispatch('pilotCustomTools/setEnabled', {
+    await store.dispatch('pilot/customTools/setEnabled', {
       id: props.row.id,
       enabled,
     });

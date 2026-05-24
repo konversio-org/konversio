@@ -83,7 +83,7 @@ const handleSuggestion = opt => {
       </p>
       <router-link
         :to="{
-          name: 'pilot_assistants_create_index',
+          name: 'pilot_settings',
           params: {
             accountId: route.params.accountId,
           },
