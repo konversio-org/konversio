@@ -21,7 +21,10 @@ We need to edit the `asset:precompile` rake task to include the SDK in the preco
 import { defineConfig } from 'vite';
 import ruby from 'vite-plugin-ruby';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import vue from '@vitejs/plugin-vue';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const isLibraryMode = process.env.BUILD_MODE === 'library';
 const isTestMode = process.env.TEST === 'true';
@@ -61,7 +64,7 @@ export default defineConfig({
       // deprecated in Dart Sass 1.79 and will be removed in 2.0.0;
       // switching now silences the per-file warning and keeps the build
       // forward-compatible. Same sass package, just a newer entrypoint.
-      scss: { api: 'modern-compiler' },
+      scss: { api: 'modern' },
     },
   },
   server: {
