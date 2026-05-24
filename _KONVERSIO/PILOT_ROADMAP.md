@@ -1,6 +1,6 @@
 # Pilot Port — Roadmap Status
 
-_Last updated: 2026-05-23 (verified against code by three independent agents: Claude Explore, DeepSeek V4 Pro, Codex)_
+_Last updated: 2026-05-24 (verified against code by three independent agents: Claude Explore, DeepSeek V4 Pro, Codex; closeout sweep verified by Codex sub-agents)_
 
 High-level status of the Captain → Pilot port. One row per scoped feature, not per requirement. Granular implementation details (citation toggles, eviction atomicity, etc.) live inside the specs in `openspec/changes/pilot-full/`.
 
@@ -70,6 +70,7 @@ Smaller items filed during the autonomous session. Independent of the feature-le
 - Finish Logbook prompt injection beyond Copilot: Briefing currently logs the available context instead of inserting it into the prompt, and Autopilot does not reference Logbook context.
 - Confirm or build a Pilot Activity dashboard UI; current evidence only proves the event store, ActionCable stream, and retention job.
 - Per-assistant tool enablement column on `Pilot::Assistant` — pilot-tools spec calls for assistant-scoped filtering of the account-wide tool set, but `Pilot::Assistant` has no `enabled_tool_slugs` column. Custom Tools wiring shipped account-level enabled-only gating in v1; this is the polish to align with spec.
+- Direct spec coverage for sibling listener-enqueued Pilot jobs — `Pilot::LabelSuggestionJob` and `Pilot::Conversations::FaqMiningJob` lack the same handover / failure-swallow / typing-bookend direct coverage that just landed for `Pilot::AutopilotInferenceJob`. Both are listener-enqueued like AutopilotInferenceJob; both currently rely on indirect service-level specs. (`Pilot::CopilotInferenceJob` already has direct coverage.)
 
 ## Verification audit log
 
@@ -77,3 +78,5 @@ Smaller items filed during the autonomous session. Independent of the feature-le
 - **2026-05-23 follow-up Codex audit**: found additional precision issues after the shared-agent convergence: custom tools page has Vuex namespace drift (`pilot/customTools` vs `pilotCustomTools`), Logbook context injection is only real in Copilot, and Pilot Activity dashboard UI is unverified despite solid telemetry/event infrastructure.
 - **2026-05-23 DeepSeek follow-up verified by Codex**: confirmed three additional roadmap omissions: checked-in `db/schema.rb` is stale after the legacy feature-flag drop migration; Copilot zero-assistant empty state links to nonexistent route `pilot_assistants_create_index`; `AccountPilotAutoResolve#pilot_auto_resolve_mode` still reaches broken `evaluated` mode when `pilot_tasks` is enabled by default. **Severity verified by Claude grep**: the `evaluated` mode is reachable but never read at runtime — no callers of `pilot_auto_resolve_evaluated?` exist anywhere. Dead code, not a crash path. Polish-backlog severity is correct.
 - **2026-05-23 punch list closure**: three parallel agents landed the openspec `pilot-port-finalize` changes. Section 1 Custom tools wiring (route flip, Vuex namespace normalization, `AgentToolAdapter` for autopilot runtime registration, `ScenarioResolver` for scenario tool resolution, 6 + 3 new RSpec examples, 55 total green). Section 2 Copilot empty-state route fix (single-line route name change, no spec needed). Section 3 Follow-up button mount (wired into `PilotActionsMenu.vue` with the Pilot preview / Accept-Dismiss flow). Rows 02, 06, 08 flipped from 🟡 PARTIAL to ✅ DONE. Per-assistant tool enablement column discovered as a spec/data mismatch and filed in polish backlog rather than expanding scope.
+- **2026-05-23 coverage closure**: added `spec/jobs/pilot/autopilot_inference_job_spec.rb` for the previously indirect-only `Pilot::AutopilotInferenceJob` coverage gap. The spec covers eligibility no-ops, normal reply persistence, handover side effects, swallowed service errors, and typing on/off lifecycle including the error path.
+- **2026-05-24 closeout verification**: OpenSpec `pilot-port-finalize` closeout is checked through task 4.5. Full Pilot sweep passed (`599 examples, 0 failures, 4 pending`); touched Ruby RuboCop passed (`7 files inspected, no offenses`); touched JS/Vue scoped ESLint passed with 0 errors (warnings only, not auto-fixed to avoid unrelated churn). The only task-list correction was narrowing 1.8 to the implemented account-level custom-tool gating; per-assistant tool enablement remains polish.
