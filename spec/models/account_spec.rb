@@ -198,18 +198,16 @@ RSpec.describe Account do
         expect(account.settings['auto_resolve_message']).to eq(message)
       end
 
-      it 'defaults pilot_auto_resolve_mode to legacy when pilot_tasks is disabled' do
-        allow(account).to receive(:feature_enabled?).with('pilot_tasks').and_return(false)
-
+      it 'defaults pilot_auto_resolve_mode to legacy' do
         expect(account.pilot_auto_resolve_mode).to eq('legacy')
         expect(account).to be_pilot_auto_resolve_legacy
       end
 
-      it 'defaults pilot_auto_resolve_mode to evaluated when pilot_tasks is enabled' do
-        allow(account).to receive(:feature_enabled?).with('pilot_tasks').and_return(true)
+      it 'treats the removed evaluated mode as legacy' do
+        account.settings = { 'pilot_auto_resolve_mode' => 'evaluated' }
 
-        expect(account.pilot_auto_resolve_mode).to eq('evaluated')
-        expect(account).to be_pilot_auto_resolve_evaluated
+        expect(account.pilot_auto_resolve_mode).to eq('legacy')
+        expect(account).to be_pilot_auto_resolve_legacy
       end
 
       it 'correctly gets and sets pilot_auto_resolve_mode' do
@@ -221,7 +219,6 @@ RSpec.describe Account do
       end
 
       it 'allows clearing pilot_auto_resolve_mode to fall back to feature defaults' do
-        allow(account).to receive(:feature_enabled?).with('pilot_tasks').and_return(false)
         account.pilot_auto_resolve_mode = nil
 
         expect(account).to be_valid
@@ -441,13 +438,13 @@ RSpec.describe Account do
       end
 
       it 'filters by negative default-true scope (pilot=false)' do
-        expect(Account.not_feature_pilot).to include(account)
-        expect(Account.feature_pilot).not_to include(account)
+        expect(described_class.not_feature_pilot).to include(account)
+        expect(described_class.feature_pilot).not_to include(account)
       end
 
       it 'filters by positive default-true scope (pilot_briefing=true)' do
-        expect(Account.feature_pilot_briefing).to include(account)
-        expect(Account.not_feature_pilot_briefing).not_to include(account)
+        expect(described_class.feature_pilot_briefing).to include(account)
+        expect(described_class.not_feature_pilot_briefing).not_to include(account)
       end
     end
   end

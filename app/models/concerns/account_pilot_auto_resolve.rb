@@ -1,7 +1,7 @@
 module AccountPilotAutoResolve
   extend ActiveSupport::Concern
 
-  VALID_PILOT_AUTO_RESOLVE_MODES = %w[evaluated legacy disabled].freeze
+  VALID_PILOT_AUTO_RESOLVE_MODES = %w[legacy disabled].freeze
 
   included do
     VALID_PILOT_AUTO_RESOLVE_MODES.each do |mode|
@@ -16,6 +16,6 @@ module AccountPilotAutoResolve
     return mode if VALID_PILOT_AUTO_RESOLVE_MODES.include?(mode)
     return 'disabled' if settings&.[]('pilot_disable_auto_resolve') == true
 
-    feature_enabled?('pilot_tasks') ? 'evaluated' : 'legacy'
+    'legacy'
   end
 end
