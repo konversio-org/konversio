@@ -54,24 +54,19 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 
 ## P2: Coverage Gaps
 
-9. **Add direct job specs for sibling listener-enqueued Pilot jobs**
-   - Current state: `Pilot::AutopilotInferenceJob` and `Pilot::CopilotInferenceJob` have direct job coverage; `Pilot::LabelSuggestionJob` and `Pilot::Conversations::FaqMiningJob` rely more heavily on service-level coverage.
-   - Fix: add focused job specs for eligibility/no-op paths, service invocation, swallowed errors, and persistence side effects.
-   - Verify: new job specs pass in host and container mode.
-
-10. **Add real `Agents::Runner` integration spec for Autopilot**
+9. **Add real `Agents::Runner` integration spec for Autopilot**
     - Current pending spec: `spec/services/custom/pilot/autopilot_service_spec.rb:135`.
     - Current state: most Autopilot specs stub `Agents::Runner.with_agents`.
     - Fix: stub only the LLM HTTP boundary and let `Agents::Runner` execute at least one real tool call.
     - Verify: spec fails if tool registration, scenario handoff wiring, or prompt handoff sentinel instructions break.
 
-11. **Add CrawlJob webhook/signature and assistant-scoping coverage**
+10. **Add CrawlJob webhook/signature and assistant-scoping coverage**
     - Current pending spec: `spec/jobs/pilot/documents/crawl_job_spec.rb:257`.
     - Current state: Firecrawl/webhook signature and assistant scoping coverage are pending.
     - Fix: add request/job specs around signed callbacks and assistant-bound source selection.
     - Verify: invalid signatures are rejected, valid callbacks enqueue/process correctly, and sources cannot cross assistant/account boundaries.
 
-12. **Add Resolve to FAQ-mined integration spec**
+11. **Add Resolve to FAQ-mined integration spec**
     - Current state: roadmap lists Resolve -> FAQ-mined as an integration coverage gap.
     - Fix: exercise the resolution listener/job path through FAQ mining and pending `AssistantResponse` creation.
     - Verify: resolving a qualifying conversation creates expected pending FAQ rows and avoids duplicates.
@@ -85,3 +80,7 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Added cross-source FAQ dedup coverage**
   - Reused `Custom::Pilot::FaqMiningDeduper` when document mining sees existing responses from other sources, and covered duplicate suppression.
   - Verified by `spec/jobs/pilot/document_response_builder_job_spec.rb` and `spec/jobs/pilot/conversations/faq_mining_job_spec.rb`.
+
+- **Expanded direct listener-enqueued job specs**
+  - Added direct no-op, service invocation, swallowed-error, persistence, and non-destructive coverage for `Pilot::LabelSuggestionJob`.
+  - Added direct service invocation and missing-conversation no-op coverage for `Pilot::Conversations::FaqMiningJob`.

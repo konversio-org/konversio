@@ -69,6 +69,16 @@ RSpec.describe Pilot::Conversations::FaqMiningJob do
       digest = conversation.reload.additional_attributes['pilot_faq_transcript_digest']
       expect(digest).to be_present
     end
+
+    it 'passes the assistant, account, and filtered transcript to the service' do
+      described_class.perform_now(conversation.id)
+
+      expect(Custom::Pilot::FaqMiningService).to have_received(:new).with(
+        assistant: assistant,
+        account: account,
+        transcript: include('[CUSTOMER] How do I cancel my subscription?', '[AGENT] You can cancel from Settings')
+      )
+    end
   end
 
   describe 'idempotency by transcript hash' do
@@ -132,6 +142,15 @@ RSpec.describe Pilot::Conversations::FaqMiningJob do
   end
 
   describe 'no assistant attached' do
+    it 'is a no-op when the conversation is gone' do
+      svc_double = instance_double(Custom::Pilot::FaqMiningService, call: [])
+      allow(Custom::Pilot::FaqMiningService).to receive(:new).and_return(svc_double)
+
+      described_class.perform_now(0)
+
+      expect(svc_double).not_to have_received(:call)
+    end
+
     it 'is a no-op when the inbox has no Pilot::Inbox link' do
       pilot_inbox.destroy
       svc_double = instance_double(Custom::Pilot::FaqMiningService, call: [])
