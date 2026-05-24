@@ -9,6 +9,7 @@ import { useRewrite } from 'dashboard/composables/pilot/useRewrite';
 import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
+import FollowUpSuggestionsButton from 'dashboard/components-next/pilot/follow_up/FollowUpSuggestionsButton.vue';
 import { emitter } from 'shared/helpers/mitt';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
@@ -234,85 +235,106 @@ const onBackClick = () => {
 const firstError = computed(
   () => briefing.error.value || summary.error.value || rewrite.error.value
 );
+
+// Picking a follow-up suggestion lands the text in the composer via the
+// shared Pilot preview surface — same Accept/Dismiss UX as Briefing and
+// Summarize, so the operator can edit before sending.
+const onFollowUpInsert = text => {
+  emitter.emit(BUS_EVENTS.PILOT_PREVIEW_START, {
+    actionKey: 'follow_up',
+    targetMode: REPLY_EDITOR_MODES.REPLY,
+  });
+  emitter.emit(BUS_EVENTS.PILOT_PREVIEW_READY, { content: text });
+};
 </script>
 
 <template>
-  <div
-    v-if="isVisible"
-    v-on-click-outside="closeMenu"
-    class="relative flex flex-col items-end gap-1"
-  >
-    <NextButton
-      ghost
-      sm
-      :disabled="disabled || anyLoading"
-      :is-loading="anyLoading"
-      class="text-woot-500 hover:enabled:!text-n-amber-9 hover:enabled:!bg-n-amber-3"
-      :aria-label="
-        anyLoading
-          ? t('PILOT.ACTIONS_MENU_LOADING_LABEL')
-          : t('PILOT.ACTIONS_MENU_LABEL')
-      "
-      :aria-expanded="isOpen"
-      @click="toggleMenu"
-    >
-      <template #icon>
-        <PilotSparkleIcon class="size-4" />
-      </template>
-    </NextButton>
-
+  <div v-if="isMasterEnabled" class="flex items-start gap-1">
+    <!-- Follow-up suggestions: self-gated on pilot_follow_up, self-contained
+         popover. Sits as a peer of the sparkle menu so the affordance is
+         visible even when no other utility actions are enabled. -->
+    <FollowUpSuggestionsButton
+      :conversation-id="conversationId"
+      :disabled="disabled"
+      @insert="onFollowUpInsert"
+    />
     <div
-      v-if="isOpen"
-      role="menu"
-      class="absolute bottom-full right-0 mb-2 min-w-56 rounded-lg border border-n-strong bg-n-solid-3 py-2 shadow-lg z-50"
+      v-if="isVisible"
+      v-on-click-outside="closeMenu"
+      class="relative flex flex-col items-end gap-1"
     >
-      <template v-if="!toneSubmenuOpen">
-        <button
-          v-for="action in actions"
-          :key="action.key"
-          type="button"
-          role="menuitem"
-          :disabled="action.disabled"
-          class="flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="onActionClick(action)"
-        >
-          <span class="flex items-center gap-2">
-            <span class="inline-block size-4" :class="[action.icon]" />
-            {{ action.label }}
-          </span>
-          <span
-            v-if="action.hasSubmenu"
-            class="inline-block size-3 i-ph-caret-right text-n-slate-10"
-          />
-        </button>
-      </template>
-      <template v-else>
-        <button
-          type="button"
-          role="menuitem"
-          class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-11 hover:bg-n-slate-3"
-          @click="onBackClick"
-        >
-          <span class="inline-block size-3 i-ph-caret-left" />
-          {{ t('PILOT.ACTIONS_MENU_BACK') }}
-        </button>
-        <div class="my-1 border-t border-n-strong" />
-        <button
-          v-for="tone in toneItems"
-          :key="tone.key"
-          type="button"
-          role="menuitem"
-          class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3"
-          @click="onActionClick(tone)"
-        >
-          <span class="inline-block size-4" :class="[tone.icon]" />
-          {{ tone.label }}
-        </button>
-      </template>
-    </div>
+      <NextButton
+        ghost
+        sm
+        :disabled="disabled || anyLoading"
+        :is-loading="anyLoading"
+        class="text-woot-500 hover:enabled:!text-n-amber-9 hover:enabled:!bg-n-amber-3"
+        :aria-label="
+          anyLoading
+            ? t('PILOT.ACTIONS_MENU_LOADING_LABEL')
+            : t('PILOT.ACTIONS_MENU_LABEL')
+        "
+        :aria-expanded="isOpen"
+        @click="toggleMenu"
+      >
+        <template #icon>
+          <PilotSparkleIcon class="size-4" />
+        </template>
+      </NextButton>
 
-    <span v-if="firstError" class="text-xs text-n-ruby-9" role="alert">
-      {{ firstError }}
-    </span>
+      <div
+        v-if="isOpen"
+        role="menu"
+        class="absolute bottom-full right-0 mb-2 min-w-56 rounded-lg border border-n-strong bg-n-solid-3 py-2 shadow-lg z-50"
+      >
+        <template v-if="!toneSubmenuOpen">
+          <button
+            v-for="action in actions"
+            :key="action.key"
+            type="button"
+            role="menuitem"
+            :disabled="action.disabled"
+            class="flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            @click="onActionClick(action)"
+          >
+            <span class="flex items-center gap-2">
+              <span class="inline-block size-4" :class="[action.icon]" />
+              {{ action.label }}
+            </span>
+            <span
+              v-if="action.hasSubmenu"
+              class="inline-block size-3 i-ph-caret-right text-n-slate-10"
+            />
+          </button>
+        </template>
+        <template v-else>
+          <button
+            type="button"
+            role="menuitem"
+            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-11 hover:bg-n-slate-3"
+            @click="onBackClick"
+          >
+            <span class="inline-block size-3 i-ph-caret-left" />
+            {{ t('PILOT.ACTIONS_MENU_BACK') }}
+          </button>
+          <div class="my-1 border-t border-n-strong" />
+          <button
+            v-for="tone in toneItems"
+            :key="tone.key"
+            type="button"
+            role="menuitem"
+            class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-n-slate-12 hover:bg-n-slate-3"
+            @click="onActionClick(tone)"
+          >
+            <span class="inline-block size-4" :class="[tone.icon]" />
+            {{ tone.label }}
+          </button>
+        </template>
+      </div>
+
+      <span v-if="firstError" class="text-xs text-n-ruby-9" role="alert">
+        {{ firstError }}
+      </span>
+    </div>
   </div>
 </template>

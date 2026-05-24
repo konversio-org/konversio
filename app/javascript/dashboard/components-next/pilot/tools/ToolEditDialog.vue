@@ -51,8 +51,8 @@ const serverFieldErrors = ref({});
 const serverParamErrors = ref({});
 const generalError = ref('');
 
-const isSaving = computed(() => store.getters['pilotCustomTools/getSaving']);
-const isTesting = computed(() => store.getters['pilotCustomTools/getTesting']);
+const isSaving = computed(() => store.getters['pilot/customTools/getSaving']);
+const isTesting = computed(() => store.getters['pilot/customTools/getTesting']);
 
 const isSavingDisabled = computed(() => {
   return form.value.title.length > 55;
@@ -229,7 +229,7 @@ const onTest = async () => {
   testErrorCode.value = '';
 
   try {
-    const data = await store.dispatch('pilotCustomTools/runTest', {
+    const data = await store.dispatch('pilot/customTools/runTest', {
       id: props.tool?.id,
       draft: form.value,
     });
@@ -264,9 +264,9 @@ const onSubmit = async () => {
 
   try {
     if (props.mode === 'create') {
-      await store.dispatch('pilotCustomTools/createRow', form.value);
+      await store.dispatch('pilot/customTools/createRow', form.value);
     } else {
-      await store.dispatch('pilotCustomTools/updateRow', {
+      await store.dispatch('pilot/customTools/updateRow', {
         id: props.tool.id,
         ...form.value,
       });
