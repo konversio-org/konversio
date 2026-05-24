@@ -6,6 +6,7 @@ import { useAgentsList } from 'dashboard/composables/useAgentsList';
 import ContactDetailsItem from './ContactDetailsItem.vue';
 import MultiselectDropdown from 'shared/components/ui/MultiselectDropdown.vue';
 import ConversationLabels from './labels/LabelBox.vue';
+import SuggestedLabelChips from 'dashboard/components-next/pilot/label/SuggestedLabelChips.vue';
 import { CONVERSATION_PRIORITY } from '../../../../shared/constants/messages';
 import { CONVERSATION_EVENTS } from '../../../helper/AnalyticsHelper/events';
 import { useTrack } from 'dashboard/composables';
@@ -16,6 +17,7 @@ export default {
     ContactDetailsItem,
     MultiselectDropdown,
     ConversationLabels,
+    SuggestedLabelChips,
     NextButton,
   },
   props: {
@@ -279,6 +281,7 @@ export default {
         @select="onClickAssignPriority"
       />
     </div>
+    <SuggestedLabelChips :conversation="currentChat" />
     <ContactDetailsItem
       compact
       :title="$t('CONVERSATION_SIDEBAR.ACCORDION.CONVERSATION_LABELS')"

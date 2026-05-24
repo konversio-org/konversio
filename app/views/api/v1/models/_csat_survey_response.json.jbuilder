@@ -22,4 +22,7 @@ if resource.assigned_agent
     json.partial! 'api/v1/models/agent', formats: [:json], resource: resource.assigned_agent
   end
 end
+json.pilot_sentiment resource.pilot_sentiment
+json.pilot_themes resource.pilot_themes
+json.pilot_escalation_recommended resource.pilot_escalation_recommended
 json.created_at resource.created_at.to_i
