@@ -2,6 +2,7 @@ json.id assistant.id
 json.name assistant.name
 json.description assistant.description
 json.config assistant.config
+json.enabled_tool_slugs assistant.enabled_tool_slugs
 json.response_guidelines assistant.response_guidelines
 json.guardrails assistant.guardrails
 json.enabled_inbox_count assistant.pilot_inboxes.count

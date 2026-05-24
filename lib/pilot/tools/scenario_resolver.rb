@@ -25,7 +25,7 @@ class Pilot::Tools::ScenarioResolver
     slugs = Array(@scenario.tools).map(&:to_s).reject(&:blank?)
     return [] if slugs.empty? || @account.blank?
 
-    available = @account.pilot_custom_tools.enabled.where(slug: slugs).index_by(&:slug)
+    available = available_tools.where(slug: slugs).index_by(&:slug)
     slugs.filter_map do |slug|
       tool = available[slug]
       if tool
@@ -38,6 +38,12 @@ class Pilot::Tools::ScenarioResolver
   end
 
   private
+
+  def available_tools
+    return @assistant.enabled_custom_tools if @assistant.present?
+
+    @account.pilot_custom_tools.enabled
+  end
 
   def dispatch_unresolved(slug)
     ::Custom::Pilot::EventDispatcher.dispatch(

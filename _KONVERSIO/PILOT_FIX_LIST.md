@@ -9,10 +9,7 @@ No active build or test blockers.
 
 ## P1: Product Polish
 
-1. **Add per-assistant custom-tool enablement**
-   - Current state: custom tools are account-scoped and gated by `Pilot::CustomTool#enabled`; `Pilot::Assistant` has no `enabled_tool_slugs`-style backing.
-   - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
-   - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
+No active product-polish items.
 
 ## Completed During Tackle Pass
 
@@ -65,3 +62,9 @@ No active build or test blockers.
   - Added account-scoped API v2 event listing backed by `pilot_events`.
   - Mounted `/pilot/activity` in the Pilot sidebar with loading, empty, error, table, and pagination states.
   - Verified by the new events controller request spec and scoped JS/Vue lint.
+
+- **Added per-assistant custom-tool enablement**
+  - Added `Pilot::Assistant#enabled_tool_slugs` with a backfill that preserves current enabled account tools for existing assistants.
+  - Wired assistant settings to select enabled account tools per assistant.
+  - Filtered Autopilot and scenario tool registration through assistant-level selections.
+  - Verified by focused host and container RSpec slices plus touched Ruby/Vue lint.
