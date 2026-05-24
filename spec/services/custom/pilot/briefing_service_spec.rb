@@ -4,7 +4,9 @@ RSpec.describe Custom::Pilot::BriefingService do
   let(:account) { create(:account) }
   let(:user) { create(:user, account: account, role: :agent) }
   let(:inbox) { create(:inbox, account: account) }
-  let(:conversation) { create(:conversation, account: account, inbox: inbox) }
+  let(:contact) { create(:contact, account: account) }
+  let(:contact_inbox) { create(:contact_inbox, contact: contact, inbox: inbox) }
+  let(:conversation) { create(:conversation, account: account, inbox: inbox, contact: contact, contact_inbox: contact_inbox) }
 
   before do
     account.enable_features!(:pilot, :pilot_briefing)
@@ -31,7 +33,14 @@ RSpec.describe Custom::Pilot::BriefingService do
       fake_suggestion = instance_double(Pilot::ReplySuggestionService)
       expect(Pilot::ReplySuggestionService)
         .to receive(:new)
-        .with(account: account, conversation_display_id: conversation.display_id, user: user, previous_output: nil, refinement_instruction: nil)
+        .with(
+          account: account,
+          conversation_display_id: conversation.display_id,
+          user: user,
+          previous_output: nil,
+          refinement_instruction: nil,
+          extra_system_context: nil
+        )
         .and_return(fake_suggestion)
       expect(fake_suggestion).to receive(:perform).and_return({ message: 'Hi there!' })
 
@@ -85,32 +94,35 @@ RSpec.describe Custom::Pilot::BriefingService do
     end
 
     context 'with Logbook' do
-      it 'skips Logbook context injection when pilot_logbook_enabled is false' do
+      it 'does not pass Logbook context when pilot_logbook_enabled is false' do
         account.disable_features!(:pilot_logbook)
+        create(:pilot_logbook_entry, contact: conversation.contact, account: account, content: 'Prefers email')
 
         fake_suggestion = instance_double(Pilot::ReplySuggestionService)
-        allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        expect(Pilot::ReplySuggestionService)
+          .to receive(:new)
+          .with(hash_including(extra_system_context: nil))
+          .and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)
 
-        # logbook injection helper should never be invoked when feature off
-        expect(service).not_to receive(:inject_logbook_context!)
         service.perform
       end
 
-      it 'invokes Logbook context injection when feature is on AND model is defined' do
+      it 'passes Logbook context as an extra system message when enabled' do
         account.enable_features!(:pilot_logbook)
-
-        stub_const('Pilot::LogbookEntry', Class.new) unless defined?(Pilot::LogbookEntry)
+        create(:pilot_logbook_entry, contact: conversation.contact, account: account, content: 'Prefers email')
 
         fake_suggestion = instance_double(Pilot::ReplySuggestionService)
-        allow(Pilot::ReplySuggestionService).to receive(:new).and_return(fake_suggestion)
+        expect(Pilot::ReplySuggestionService)
+          .to receive(:new)
+          .with(hash_including(extra_system_context: include('Known facts about this contact:', 'Prefers email')))
+          .and_return(fake_suggestion)
         allow(fake_suggestion).to receive(:perform).and_return({ message: 'ok' })
 
         service = described_class.new(conversation: conversation, user: user)
 
-        expect(service).to receive(:inject_logbook_context!).and_call_original
         service.perform
       end
     end

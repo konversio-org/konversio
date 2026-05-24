@@ -8,8 +8,7 @@ module Custom
     #   * per-account feature-flag gating (`pilot_briefing` + master
     #     `pilot`)
     #   * Pilot-namespaced telemetry events
-    #   * optional Logbook context injection once the Logbook sub-feature
-    #     lands (section 5 of the Pilot tasks)
+    #   * optional Logbook context injection as an extra system message
     #
     # Returns the generated draft text as a String, or raises
     # `Custom::Pilot::BriefingService::Error` on LLM/transport failure.
@@ -76,13 +75,11 @@ module Custom
           conversation_display_id: conversation.display_id,
           user: user,
           previous_output: previous_output,
-          refinement_instruction: refinement_instruction
+          refinement_instruction: refinement_instruction,
+          extra_system_context: logbook_context_for(conversation.contact)
         )
 
-        result = suggestion_service.perform
-
-        inject_logbook_context!(result) if logbook_active?
-        result
+        suggestion_service.perform
       end
 
       # The MIT ReplySuggestionService returns a Hash with a `:message` key on
@@ -94,33 +91,6 @@ module Custom
         return response[:message] if response.is_a?(Hash) && response.key?(:message)
 
         response.to_s
-      end
-
-      # Logbook context is injected at the prompt layer once the Logbook
-      # sub-feature lands. Until then this is a no-op: the helper is
-      # stubbed on BaseService and the model is not yet defined.
-      def inject_logbook_context!(_response)
-        context_text = logbook_context_for(conversation.contact)
-        return if context_text.blank?
-
-        # Placeholder hook — concrete prompt-injection happens in section 5
-        # once we own the request construction inside Pilot via a wrapper.
-        Rails.logger.info("[pilot.briefing] logbook context length=#{context_text.length}")
-      end
-
-      def logbook_active?
-        return false unless feature_enabled?(:logbook)
-        return false unless defined?(::Pilot::LogbookEntry)
-
-        true
-      end
-
-      # Until section 5 ships, BaseService has no `logbook_context_for`
-      # helper. We use `try` so this code is forward-compatible.
-      def logbook_context_for(contact)
-        return nil if contact.blank?
-
-        try(:base_logbook_context_for, contact)
       end
     end
   end
