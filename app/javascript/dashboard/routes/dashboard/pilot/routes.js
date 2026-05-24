@@ -1,11 +1,11 @@
 import { frontendURL } from '../../../helper/URLHelper';
-import PilotPlaceholder from './PilotPlaceholder.vue';
 import PilotCopilotEntry from './PilotCopilotEntry.vue';
 import PilotDocumentsPage from './documents/PilotDocumentsPage.vue';
 import PilotFaqsPage from '../../../components-next/pilot/faqs/PilotFaqsPage.vue';
 import ScenarioBuilder from './ScenarioBuilder.vue';
 import PlaygroundPanel from './PlaygroundPanel.vue';
 import PilotInboxesPage from './PilotInboxesPage.vue';
+import PilotToolsPage from './tools/PilotToolsPage.vue';
 import AutopilotIndex from './AutopilotIndex.vue';
 
 const commonMeta = {
@@ -52,7 +52,7 @@ export const routes = [
   {
     path: frontendURL('accounts/:accountId/pilot/tools'),
     name: 'pilot_tools',
-    component: PilotPlaceholder,
+    component: PilotToolsPage,
     meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_TOOLS' },
   },
   {

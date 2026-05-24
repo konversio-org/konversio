@@ -19,7 +19,7 @@ describe('ToolCard.vue', () => {
 
   beforeEach(() => {
     actions = {
-      'pilotCustomTools/setEnabled': vi.fn(),
+      'pilot/customTools/setEnabled': vi.fn(),
     };
     store = createStore({
       actions,
@@ -52,11 +52,11 @@ describe('ToolCard.vue', () => {
       },
     });
 
-    actions['pilotCustomTools/setEnabled'].mockResolvedValueOnce();
+    actions['pilot/customTools/setEnabled'].mockResolvedValueOnce();
 
     await wrapper.vm.onToggleEnabled(true);
 
-    expect(actions['pilotCustomTools/setEnabled']).toHaveBeenCalledWith(
+    expect(actions['pilot/customTools/setEnabled']).toHaveBeenCalledWith(
       expect.any(Object),
       { id: 1, enabled: true }
     );
