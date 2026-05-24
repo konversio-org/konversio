@@ -55,19 +55,14 @@ Pilot honest to "we ship what Captain ships":
 - **Onboarding wizard** (entire pilot-onboarding capability) — REMOVED 2026-05-23. Vue components, controller, routes, `pilot_onboarding_state` JSONB, `OnboardingState`, `WebsiteWidgetSeeder`, `WidgetTaglineService`, i18n all deleted. The provider connection-test + env-detection plumbing is preserved (folds into Super Admin → LLM Settings).
 - **AI auto-resolve evaluator** (Pilot's half of pilot-autoresolve) — REMOVED 2026-05-23. `Custom::Pilot::AutoResolveEvaluator`, mode toggle, business-hours toggle, `/pilot/settings` panel, `pilot_autoresolve_config` JSONB, Pilot `AutoResolve*Job` family deleted. `AccountPilotAutoResolve` now falls back to the host `legacy` path only; the dead `evaluated` mode was removed on 2026-05-24. Host's time-based auto-resolve stays unchanged. `BusinessHoursCalculator` preserved because `EventDispatcher` uses it for `pilot.autopilot.handover.triggered` reporting rows.
 
-## Other open polish (filed, not started)
+## Other open polish
 
 Smaller items filed during the autonomous session. Independent of the feature-level gaps above.
 
-- Vite-plugin-ruby ESM build fix (pre-existing main breakage, blocks `assets:precompile`)
-- Three order-dependent specs + leftover-row residue (test isolation)
-- Surface LLM `prompt_tokens` / `completion_tokens` to trace spans
-- Per-source Redis mutex in `Pilot::Documents::CrawlJob` (concurrency hardening)
-- Resolve → FAQ-mined integration test (coverage gap)
-- Finish Logbook prompt injection beyond Copilot: Briefing currently logs the available context instead of inserting it into the prompt, and Autopilot does not reference Logbook context.
 - Confirm or build a Pilot Activity dashboard UI; current evidence only proves the event store, ActionCable stream, and retention job.
 - Per-assistant tool enablement column on `Pilot::Assistant` — pilot-tools spec calls for assistant-scoped filtering of the account-wide tool set, but `Pilot::Assistant` has no `enabled_tool_slugs` column. Custom Tools wiring shipped account-level enabled-only gating in v1; this is the polish to align with spec.
-- Direct spec coverage for sibling listener-enqueued Pilot jobs — `Pilot::LabelSuggestionJob` and `Pilot::Conversations::FaqMiningJob` lack the same handover / failure-swallow / typing-bookend direct coverage that just landed for `Pilot::AutopilotInferenceJob`. Both are listener-enqueued like AutopilotInferenceJob; both currently rely on indirect service-level specs. (`Pilot::CopilotInferenceJob` already has direct coverage.)
+
+Closed during the 2026-05-24 tackle pass: ViteRuby production precompile package-manager detection, stale order-dependent spec / leftover-row note, LLM token usage trace attrs, per-source crawl mutex, Resolve-to-FAQ mining integration coverage, Logbook prompt injection beyond Copilot, and direct listener-enqueued job coverage.
 
 ## Verification audit log
 

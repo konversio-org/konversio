@@ -5,19 +5,16 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 
 ## P1: Build / Test Blockers
 
-1. **Clean up order-dependent specs and leftover-row residue**
-   - Current state: roadmap notes three order-dependent specs plus leftover-row residue.
-   - Fix: identify the failing seed/order, isolate leaked records or shared globals, and move setup/cleanup into the offending specs.
-   - Verify: randomized repeat runs pass for the affected files and the Pilot sweep still passes.
+No active build or test blockers.
 
 ## P1: Product Polish
 
-2. **Confirm or build Pilot Activity dashboard UI**
+1. **Confirm or build Pilot Activity dashboard UI**
    - Current state: event store, ActionCable stream, redaction, and retention job exist; operator-facing Activity UI was not verified.
    - Fix: either locate and document the existing UI route, or add a minimal Activity page backed by `pilot_events`.
    - Verify: UI route renders event rows and respects account scoping.
 
-3. **Add per-assistant custom-tool enablement**
+2. **Add per-assistant custom-tool enablement**
    - Current state: custom tools are account-scoped and gated by `Pilot::CustomTool#enabled`; `Pilot::Assistant` has no `enabled_tool_slugs`-style backing.
    - Fix: add assistant-level storage for enabled tool slugs/IDs, wire admin UI selection, and filter `AgentToolAdapter` registration.
    - Verify: Autopilot and scenario specs prove disabled-for-assistant tools are not registered even if enabled at account level.
@@ -64,3 +61,7 @@ coverage, hardening, or worktree hygiene items. They are not parity blockers.
 - **Fixed production asset precompile package-manager detection**
   - ViteRuby now uses pnpm explicitly instead of detecting npm from the stale `package-lock.json`.
   - Verified by `env RAILS_ENV=production SECRET_KEY_BASE=dummy POSTGRES_HOST=localhost REDIS_URL=redis://localhost:6379/0 bundle exec rails assets:precompile`.
+
+- **Verified order-dependent spec / leftover-row note is stale**
+  - Pilot spec slice passed with seeds `12345` and `54321`.
+  - Post-sweep test database check showed zero rows in all `pilot_*` tables.
