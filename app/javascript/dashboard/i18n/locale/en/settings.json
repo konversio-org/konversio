@@ -319,6 +319,7 @@
     "PILOT_SCENARIOS": "Scenarios",
     "PILOT_PLAYGROUND": "Playground",
     "PILOT_INBOXES": "Inboxes",
+    "PILOT_ACTIVITY": "Activity",
     "PILOT_SETTINGS": "Settings",
     "PILOT_COPILOT": "Copilot",
     "PILOT_PLACEHOLDER_BODY": "Coming soon — this Pilot surface is not implemented yet.",
