@@ -220,7 +220,7 @@
         "SAVE": "Save Settings",
         "CREATE": "Create Assistant",
         "NAME_LABEL": "Name *",
-        "NAME_PLACEHOLDER": "e.g. Customer Support Bot",
+        "NAME_PLACEHOLDER": "e.g. Mira",
         "PRODUCT_LABEL": "Product Name",
         "PRODUCT_PLACEHOLDER": "e.g. Konversio",
         "DESC_LABEL": "Description",
