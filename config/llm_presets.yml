@@ -27,9 +27,14 @@ presets:
     # vision-capable, explicit Dutch + English support, 128k context.
     # €0.25 input / €0.50 output per million tokens. Highly reliable tool-calling.
     chat: { provider: scaleway, model: gemma-4-26b-a4b-it }
-    # BGE multilingual gemma2: tops MTEB multilingual; 3584 dims.
-    # Direct EU equivalent of text-embedding-3-small (different dim count).
-    embedding: { provider: scaleway, model: bge-multilingual-gemma2 }
+    # Qwen3-Embedding-8B: native 4096 dims, MRL-aware with proper L2-renorm at
+    # truncated sizes. Scaleway honors the `dimensions` parameter (verified
+    # empirically: first-1536 slice + renormalize). At the installation lock
+    # of 1536 dims it interoperates with OpenAI text-embedding-3-small in the
+    # same pgvector column. bge-multilingual-gemma2 (3584, locked) was the
+    # prior choice — swapped to Qwen3 specifically for the cross-provider
+    # interop story.
+    embedding: { provider: scaleway, model: qwen3-embedding-8b }
     # Whisper large v3: newer/larger variant of OpenAI's whisper-1.
     # €0.003/audio minute (half OpenAI's price).
     audio: { provider: scaleway, model: whisper-large-v3 }
