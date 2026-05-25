@@ -1,5 +1,13 @@
 # Pilot Port — Roadmap Status
 
+> ## 🟢 PORT DECLARED COMPLETE — 2026-05-24
+>
+> The Konversio Pilot 1:1 port of Chatwoot Enterprise Captain is **declared complete** as of 2026-05-24. All 12 Captain-parity features are implemented, verified at file:line precision by a triangulated audit (Claude Explore + DeepSeek V4 Pro + Codex), and exercised by a 599-example Pilot spec sweep at zero failures. Zero open feature-level gaps. Polish backlog cleared.
+>
+> Tag: `pilot-port-complete`. See "Verification audit log" at the bottom for the full audit history; see "Deliberate Pilot-original additions" for the EU-residency / GDPR / Logbook / Activity work that goes beyond Captain by design.
+>
+> This document now serves as the historical record of the port. Future Pilot work goes through normal openspec changes; this file should not need to flip back to "in progress" for parity reasons.
+
 _Last updated: 2026-05-24 (verified against code by three independent agents: Claude Explore, DeepSeek V4 Pro, Codex; closeout sweep verified by Codex sub-agents)_
 
 High-level status of the Captain → Pilot port. One row per scoped feature, not per requirement. Granular implementation details (citation toggles, eviction atomicity, etc.) live inside the specs in `openspec/changes/pilot-full/`.
