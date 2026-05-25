@@ -47,7 +47,8 @@ const runSDK = ({ baseUrl, websiteToken }) => {
     restoreWidgetInDOM(event.newDocument.body)
   );
 
-  const konversioSettings = window.konversioSettings || {};
+  const konversioSettings =
+    window.konversioSettings || window.chatwootSettings || {};
   let locale = konversioSettings.locale;
   let baseDomain = konversioSettings.baseDomain;
 
@@ -211,6 +212,10 @@ const runSDK = ({ baseUrl, websiteToken }) => {
     },
   };
 
+  // Back-compat: legacy embeds reference window.$chatwoot. Same object
+  // reference, so all later mutations stay in sync.
+  window.$chatwoot = window.$konversio;
+
   IFrameHelper.createFrame({
     baseUrl,
     websiteToken,
@@ -220,3 +225,6 @@ const runSDK = ({ baseUrl, websiteToken }) => {
 window.konversioSDK = {
   run: runSDK,
 };
+
+// Back-compat: legacy embeds call window.chatwootSDK.run(...).
+window.chatwootSDK = window.konversioSDK;
