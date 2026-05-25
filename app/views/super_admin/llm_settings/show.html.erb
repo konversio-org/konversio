@@ -22,19 +22,146 @@
   <% end %>
 
   <% if @dimension_warning %>
-    <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded mb-4">
-      <% if @dimension_warning[:kind] == :unknown_model %>
-        <strong>Embedding model dimension not declared.</strong>
-        The embedding slot uses <code><%= @dimension_warning[:model] %></code>, which is not in the built-in catalog.
-        Set the <strong>Dimensions</strong> field below (Custom mode) so the system knows what to expect from the provider.
-        The <code>pilot_assistant_responses.embedding</code> column is currently <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
-      <% else %>
-        <strong>Embedding dimension mismatch.</strong>
-        The embedding slot resolves to <code><%= @dimension_warning[:model] %></code> at <%= @dimension_warning[:expected_dim] %> dims,
-        but the <code>pilot_assistant_responses.embedding</code> column is <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
-        Write a migration to <code>ALTER COLUMN embedding TYPE vector(<%= @dimension_warning[:expected_dim] %>)</code>
-        and re-embed the corpus, or switch the model back.
+    <div class="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded mb-4 flex items-center justify-between">
+      <div>
+        <% if @dimension_warning[:kind] == :unknown_model %>
+          <strong>Embedding model dimension not declared.</strong>
+          The embedding slot uses <code><%= @dimension_warning[:model] %></code>, which is not in the built-in catalog.
+          Set the <strong>Dimensions</strong> field below (Custom mode) so the system knows what to expect from the provider.
+          The <code>pilot_assistant_responses.embedding</code> column is currently <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+        <% else %>
+          <strong>Pre-existing dimension mismatch detected.</strong>
+          The embedding slot resolves to <code><%= @dimension_warning[:model] %></code> at <%= @dimension_warning[:expected_dim] %> dims,
+          but the <code>pilot_assistant_responses.embedding</code> column is <code>vector(<%= @dimension_warning[:column_dim] %>)</code>.
+        <% end %>
+      </div>
+      <% if @dimension_warning[:kind] == :mismatch %>
+        <a href="<%= super_admin_llm_settings_path(rebuild_legacy: true) %>"
+           class="bg-yellow-100 hover:bg-yellow-200 border border-yellow-400 text-yellow-900 font-semibold px-3 py-1.5 rounded text-xs transition">
+          Run rebuild now
+        </a>
       <% end %>
+    </div>
+  <% end %>
+
+  <% if @show_rebuild_confirm %>
+    <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4">
+      <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
+      <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-100 max-w-lg w-full overflow-hidden transform transition-all p-6 md:p-8">
+        <div class="flex items-start gap-4">
+          <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-slate-900">Rebuild Knowledge Base Required</h3>
+            <p class="mt-2 text-sm text-slate-500">
+              Changing the embedding model requires recreating all stored vectors. The table structure must be updated, and knowledge base documents must be re-embedded.
+            </p>
+          </div>
+        </div>
+
+        <div class="my-6 bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm text-slate-700 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-medium">Current dimension:</span>
+            <span class="font-mono bg-slate-200 px-2 py-0.5 rounded text-xs"><%= @current_dim %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500 font-medium">New dimension:</span>
+            <span class="font-mono bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs font-semibold"><%= @new_dim %></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200/60 pt-2 mt-2">
+            <span class="text-slate-500">Indexed documents:</span>
+            <span class="font-medium"><%= @document_count %></span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Generated FAQs:</span>
+            <span class="font-medium"><%= @faq_count %></span>
+          </div>
+          <div class="flex justify-between border-t border-slate-200/60 pt-2 mt-2">
+            <span class="text-slate-500 font-medium">Estimated time:</span>
+            <span class="font-semibold text-blue-700"><%= @time_estimate %></span>
+          </div>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-xs leading-relaxed mb-6">
+          <strong>Important:</strong> Chat will continue to work during the rebuild, but autopilot/copilot reasoning will temporarily operate without grounding documentation until the rebuild finishes.
+        </div>
+
+        <%= form_with url: super_admin_llm_settings_path, method: :patch, local: true do |f| %>
+          <% if @target_config[:preset] != Llm::Presets::CUSTOM_SLUG %>
+            <%= f.hidden_field :preset, value: @target_config[:preset] %>
+          <% else %>
+            <%= f.hidden_field :preset, value: 'custom' %>
+            <% @target_config[:slots].each do |slot, value| %>
+              <input type="hidden" name="slots[<%= slot %>][provider]" value="<%= value[:provider] %>" />
+              <input type="hidden" name="slots[<%= slot %>][model]" value="<%= value[:model] %>" />
+            <% end %>
+            <% if @target_config[:dimensions_override].present? %>
+              <input type="hidden" name="slots[embedding][dimensions]" value="<%= @target_config[:dimensions_override] %>" />
+            <% end %>
+          <% end %>
+
+          <div class="space-y-4">
+            <label class="block">
+              <span class="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-2">
+                Type <code class="font-mono bg-slate-200 px-1 rounded text-red-700">REBUILD</code> to confirm:
+              </span>
+              <input type="text" name="confirm_rebuild_word" placeholder="Type REBUILD" required autocomplete="off"
+                     class="w-full border border-slate-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 font-mono" />
+            </label>
+
+            <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
+              <%= f.submit 'Switch and rebuild', class: 'flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 px-4 rounded-xl text-sm transition text-center shadow-lg shadow-red-500/20' %>
+              <a href="<%= super_admin_llm_settings_path %>"
+                 class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 px-4 rounded-xl text-sm transition text-center">
+                Cancel
+              </a>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% active_progresses = @rebuild_progresses.reject { |p| p.complete? } %>
+  <% if active_progresses.any? %>
+    <div class="mb-6 p-6 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-6" id="rebuild-progress-container">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <svg class="animate-spin h-5 w-5 text-blue-500" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle>
+            <path d="M4 12a8 8 0 018-8" stroke="currentColor" stroke-width="4" stroke-linecap="round" class="opacity-75"></path>
+          </svg>
+          <h3 class="text-base font-semibold text-slate-900">Knowledge Base Rebuild Active</h3>
+        </div>
+        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide bg-slate-100 px-2 py-0.5 rounded">In Progress</span>
+      </div>
+
+      <div class="space-y-4" id="progress-items">
+        <% active_progresses.each do |progress| %>
+          <div class="space-y-2" data-account-id="<%= progress.account_id %>">
+            <div class="flex justify-between text-sm">
+              <span class="font-medium text-slate-800"><%= progress.account&.name || "Account ##{progress.account_id}" %></span>
+              <span class="text-slate-500" data-progress-text><%= progress.phase.to_s.humanize %> — <%= progress.current_index %> of <%= progress.total %></span>
+            </div>
+            
+            <div class="w-full bg-slate-100 rounded-full h-3.5 overflow-hidden border border-slate-100/40">
+              <div class="bg-gradient-to-r from-blue-500 to-indigo-500 h-full rounded-full transition-all duration-500"
+                   style="width: <%= progress.percentage %>%;" data-progress-bar></div>
+            </div>
+
+            <div class="text-xs text-red-600 bg-red-50 border border-red-100 rounded-lg p-3 <%= 'hidden' unless progress.failed? %>" data-error-container>
+              <strong>Error:</strong> <span data-error-text><%= progress.error %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 text-xs">
+        <strong>Rebuild Active:</strong> Changing configurations or starting a new model switch is disabled until the current rebuild completes.
+      </div>
     </div>
   <% end %>
 
@@ -138,10 +265,16 @@
                       <span class="text-slate-500">·</span>
                       <span class="font-mono"><%= preset[slot][:model] %></span>
                       <% if slot == :embedding %>
-                        <% dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[preset[slot][:model]] %>
-                        <% if dim %>
+                        <% native_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[preset[slot][:model]] %>
+                        <% locked_dim = Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS %>
+                        <% if native_dim %>
                           <span class="text-slate-500">·</span>
-                          <span class="font-mono"><%= dim %> dims</span>
+                          <% if native_dim == locked_dim %>
+                            <span class="font-mono"><%= locked_dim %> dims</span>
+                          <% else %>
+                            <span class="font-mono"><%= locked_dim %> dims</span>
+                            <span class="text-slate-500 text-xs">(native <%= native_dim %>, truncated for interop)</span>
+                          <% end %>
                         <% end %>
                       <% end %>
                     <% end %>
@@ -221,8 +354,8 @@
                            data-llm-model-input="<%= slot %>"
                            class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
                     <% if slot == :embedding %>
-                      <p class="mt-1 text-xs text-yellow-700">
-                        Changing this model invalidates all stored vectors. Re-embed FAQs and documents manually after saving — there is no automatic reindex.
+                      <p class="mt-1 text-xs text-blue-700">
+                        Changing this model requires a confirmed rebuild of all stored embeddings.
                       </p>
                     <% end %>
                   </td>
@@ -232,11 +365,15 @@
                       <% known_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[current_model] %>
                       <% override = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', nil).to_s.strip %>
                       <% initial_value = override.presence || known_dim&.to_s || '' %>
-                      <input type="text" name="slots[embedding][dimensions]"
-                             value="<%= initial_value %>"
-                             data-llm-embedding-dimensions
-                             <%= 'required' if known_dim.nil? %>
-                             class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
+                      <div class="relative flex items-center">
+                        <input type="text" name="slots[embedding][dimensions]"
+                               value="<%= initial_value %>"
+                               data-llm-embedding-dimensions
+                               <%= 'required' if known_dim.nil? %>
+                               <%= 'readonly' if known_dim.present? %>
+                               class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full <%= 'bg-slate-100 text-slate-500 cursor-not-allowed' if known_dim.present? %>" />
+                        <span id="dimensions-auto-label" class="<%= 'hidden' if known_dim.nil? %> text-[10px] text-slate-400 absolute right-2 bg-slate-200/80 px-1 py-0.5 rounded font-sans uppercase font-semibold">auto</span>
+                      </div>
                     <% else %>
                       <span class="text-xs text-slate-400">—</span>
                     <% end %>
@@ -356,6 +493,7 @@
       }
       var embeddingModelInput = form.querySelector('[data-llm-model-input="embedding"]');
       var dimensionsInput = form.querySelector('[data-llm-embedding-dimensions]');
+      var dimensionsAutoLabel = document.getElementById('dimensions-auto-label');
 
       function syncDimensions() {
         if (!embeddingModelInput || !dimensionsInput) return;
@@ -366,15 +504,93 @@
         if (known !== null) {
           dimensionsInput.value = String(known);
           dimensionsInput.removeAttribute('required');
+          dimensionsInput.setAttribute('readonly', 'readonly');
+          dimensionsInput.classList.add('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+          if (dimensionsAutoLabel) dimensionsAutoLabel.classList.remove('hidden');
         } else {
-          dimensionsInput.value = '';
+          var currentVal = dimensionsInput.value.trim();
+          var isKnownVal = Object.values(modelDimensions).map(String).indexOf(currentVal) !== -1;
+          if (isKnownVal || currentVal === '') {
+            dimensionsInput.value = '';
+          }
           dimensionsInput.setAttribute('required', 'required');
+          dimensionsInput.removeAttribute('readonly');
+          dimensionsInput.classList.remove('bg-slate-100', 'text-slate-500', 'cursor-not-allowed');
+          if (dimensionsAutoLabel) dimensionsAutoLabel.classList.add('hidden');
         }
       }
 
       if (embeddingModelInput) {
         embeddingModelInput.addEventListener('input', syncDimensions);
         embeddingModelInput.addEventListener('change', syncDimensions);
+      }
+
+      // Handle Rebuild Progress Polling
+      var progressContainer = document.getElementById('rebuild-progress-container');
+      if (progressContainer) {
+        var submitBtn = document.querySelector('#llm-settings-form button[type="submit"]');
+        var presetInputs = document.querySelectorAll('input[name="preset"]');
+
+        function disableInputs() {
+          if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          }
+          presetInputs.forEach(function (input) {
+            input.disabled = true;
+          });
+        }
+
+        var intervalId = setInterval(function () {
+          fetch('/super_admin/llm_settings/rebuild_status')
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+              var progresses = data.progresses || [];
+              var activeCount = 0;
+
+              progresses.forEach(function (p) {
+                var row = document.querySelector('[data-account-id="' + p.account_id + '"]');
+                if (!row) return;
+
+                var textEl = row.querySelector('[data-progress-text]');
+                var barEl = row.querySelector('[data-progress-bar]');
+                var errorContainer = row.querySelector('[data-error-container]');
+                var errorText = row.querySelector('[data-error-text]');
+
+                if (p.phase === 'complete') {
+                  window.location.reload();
+                  return;
+                }
+
+                if (p.phase === 'failed') {
+                  if (errorContainer && errorText) {
+                    errorText.textContent = p.error || 'Unknown failure';
+                    errorContainer.classList.remove('hidden');
+                  }
+                } else {
+                  activeCount++;
+                  if (errorContainer) errorContainer.classList.add('hidden');
+                }
+
+                if (textEl) {
+                  textEl.textContent = p.phase.charAt(0).toUpperCase() + p.phase.slice(1) + ' — ' + p.current_index + ' of ' + p.total;
+                }
+                if (barEl) {
+                  barEl.style.width = p.percentage + '%';
+                }
+              });
+
+              if (activeCount === 0) {
+                clearInterval(intervalId);
+                window.location.reload();
+              }
+            })
+            .catch(function (err) {
+              console.error('Failed to poll rebuild status:', err);
+            });
+        }, 5000);
+
+        disableInputs();
       }
     })();
   </script>
