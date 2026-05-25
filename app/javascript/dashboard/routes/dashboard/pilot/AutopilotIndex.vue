@@ -23,6 +23,14 @@ const editingAssistant = ref(null);
 const activeAssistant = computed(
   () => assistants.value.find(a => a.id === activeAssistantId.value) || null
 );
+const editorAssistant = computed(() => {
+  if (showEditor.value) return editingAssistant.value;
+  if (activeTabKey.value === 'settings') return activeAssistant.value;
+  return null;
+});
+const shouldShowEditor = computed(
+  () => !!editorAssistant.value || showEditor.value
+);
 
 const tabs = computed(() => {
   const list = [
@@ -180,13 +188,9 @@ const onCancel = () => {
         </div>
 
         <!-- Editor Mode (Creating or Editing specific assistant) -->
-        <div
-          v-else-if="
-            showEditor || (activeTabKey === 'settings' && activeAssistant)
-          "
-        >
+        <div v-else-if="shouldShowEditor">
           <AssistantEditor
-            :assistant="editingAssistant || activeAssistant"
+            :assistant="editorAssistant"
             @saved="onSaved"
             @cancel="onCancel"
           />
