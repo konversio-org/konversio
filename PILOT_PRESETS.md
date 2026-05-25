@@ -43,7 +43,7 @@ export PILOT_OPEN_AI_API_PROVIDER="openai_compatible"
 
 # Embeddings — Scaleway hosts BGE multilingual at 768 dims natively; we ask
 # the server to upscale/truncate to 1536 to fit the existing pgvector column.
-export PILOT_EMBEDDING_MODEL="bge-multilingual-gemma2"
+export PILOT_EMBEDDING_MODEL="qwen3-embedding-8b"
 export PILOT_EMBEDDING_DIMENSIONS="1536"
 ```
 
@@ -55,7 +55,7 @@ heroku config:set -a konversio \
   PILOT_OPEN_AI_ENDPOINT=https://api.scaleway.ai \
   PILOT_OPEN_AI_MODEL=gemma-4-26b-a4b-it \
   PILOT_OPEN_AI_API_PROVIDER=openai_compatible \
-  PILOT_EMBEDDING_MODEL=bge-multilingual-gemma2 \
+  PILOT_EMBEDDING_MODEL=qwen3-embedding-8b \
   PILOT_EMBEDDING_DIMENSIONS=1536
 ```
 
