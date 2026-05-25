@@ -164,7 +164,9 @@ const onCancel = () => {
       <div class="w-full max-w-5xl mx-auto">
         <!-- Zero State -->
         <div
-          v-if="assistants.length === 0 && !uiFlags.isFetching"
+          v-if="
+            !shouldShowEditor && assistants.length === 0 && !uiFlags.isFetching
+          "
           class="flex flex-col items-center justify-center text-center p-12 bg-n-solid-1 border border-dashed border-n-weak rounded-xl gap-4"
         >
           <div
