@@ -30,6 +30,18 @@ json.accounts do
     # availability derived from presence
     json.availability_status account_user.availability_status
     json.auto_offline account_user.auto_offline
+    json.pilot_enabled account_user.account.pilot_enabled
+    json.pilot_briefing_enabled account_user.account.pilot_briefing_enabled
+    json.pilot_copilot_enabled account_user.account.pilot_copilot_enabled
+    json.pilot_autopilot_enabled account_user.account.pilot_autopilot_enabled
+    json.pilot_logbook_enabled account_user.account.pilot_logbook_enabled
+    json.pilot_tools_enabled account_user.account.pilot_tools_enabled
+    json.pilot_autoresolve_enabled account_user.account.pilot_autoresolve_enabled
+    json.pilot_summary_enabled account_user.account.pilot_summary_enabled
+    json.pilot_csat_analysis_enabled account_user.account.pilot_csat_analysis_enabled
+    json.pilot_follow_up_enabled account_user.account.pilot_follow_up_enabled
+    json.pilot_rewrite_enabled account_user.account.pilot_rewrite_enabled
+    json.pilot_label_suggestion_enabled account_user.account.pilot_label_suggestion_enabled
     json.partial! 'api/v1/models/account_user', account_user: account_user if KonversioApp.enterprise?
   end
 end
