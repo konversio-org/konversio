@@ -137,6 +137,13 @@
                       <span class="font-medium"><%= preset[slot][:provider] %></span>
                       <span class="text-slate-500">·</span>
                       <span class="font-mono"><%= preset[slot][:model] %></span>
+                      <% if slot == :embedding %>
+                        <% dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[preset[slot][:model]] %>
+                        <% if dim %>
+                          <span class="text-slate-500">·</span>
+                          <span class="font-mono"><%= dim %> dims</span>
+                        <% end %>
+                      <% end %>
                     <% end %>
                   </div>
                 <% end %>
