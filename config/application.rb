@@ -8,6 +8,9 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# RubyLLM 1.7+ defaults to its legacy ActiveRecord acts_as API unless opted in early.
+RubyLLM.configure { |config| config.use_new_acts_as = true }
+
 ## Load the specific APM agent
 # We rely on DOTENV to load the environment variables
 # We need these environment variables to load the specific APM agent
@@ -42,7 +45,7 @@ module Konversio
 
     # Konversio fork-specific code (Pilot AI module, etc.) lives under custom/.
     # Adding the conventional Rails app subtrees so Zeitwerk picks them up.
-    Dir[Rails.root.join('custom', 'app', '*')].each do |path|
+    Dir[Rails.root.join('custom/app/*')].each do |path|
       config.eager_load_paths << path
     end
 
