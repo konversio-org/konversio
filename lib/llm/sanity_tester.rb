@@ -1,6 +1,7 @@
 require 'net/http'
 require 'json'
 require 'uri'
+require 'tempfile'
 
 # Runs reachability and credential checks against LLM providers.
 #
@@ -18,12 +19,15 @@ require 'uri'
 #
 # Both return `{ state: :connected | :failed | :not_configured, message: }`.
 module Llm::SanityTester
-  AUDIO_RESULT = {
-    state: :not_configured,
-    message: 'Audio transcription is not enabled for this build.'
-  }.freeze
-
   HTTP_TIMEOUT_SECONDS = 15
+
+  # Tiny audio sample sent to the audio-slot transcription endpoint during
+  # the sanity check. 0.25s of silence @ 8 kHz, 16-bit mono, mono WAV — the
+  # smallest payload that every Whisper-flavored provider we support
+  # (OpenAI whisper-1, Scaleway whisper-large-v3) reliably accepts without
+  # rejecting as "too short."
+  AUDIO_TEST_DURATION_SECONDS = 0.25
+  AUDIO_TEST_SAMPLE_RATE = 8000
 
   class << self
     def test_slot(slot)
@@ -34,7 +38,7 @@ module Llm::SanityTester
       case slot
       when :chat then chat_slot_test(config)
       when :embedding then embedding_slot_test(config)
-      when :audio then AUDIO_RESULT
+      when :audio then audio_slot_test(config)
       end
     rescue StandardError => e
       { state: :failed, message: e.message }
@@ -69,6 +73,27 @@ module Llm::SanityTester
       { state: :connected, message: 'Provider responded successfully.' }
     end
 
+    def audio_slot_test(config)
+      client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
+      tempfile = build_silent_wav_tempfile
+      begin
+        response = client.audio.transcribe(parameters: {
+                                             model: config[:model],
+                                             file: tempfile
+                                           })
+        text = response.is_a?(Hash) ? response['text'] : nil
+        if text.is_a?(String)
+          return { state: :connected,
+                   message: 'Provider responded — transcription endpoint reachable (empty text expected for silent input).' }
+        end
+
+        { state: :failed, message: "Provider returned no transcription text. Response: #{response.inspect[0..200]}" }
+      ensure
+        tempfile.close
+        tempfile.unlink
+      end
+    end
+
     def embedding_slot_test(config)
       client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
       expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
@@ -90,6 +115,31 @@ module Llm::SanityTester
                  'Update the Dimensions field or pick a model whose native dimension is ' \
                  "#{expected}."
       }
+    end
+
+    # Builds a tiny silent WAV (PCM, 8 kHz, 16-bit mono, ~0.25s) in a
+    # Tempfile suitable for the OpenAI Ruby client's audio.transcribe API.
+    # Caller is responsible for closing + unlinking.
+    def build_silent_wav_tempfile
+      num_samples = (AUDIO_TEST_SAMPLE_RATE * AUDIO_TEST_DURATION_SECONDS).to_i
+      data_size = num_samples * 2 # 16-bit = 2 bytes/sample
+      byte_rate = AUDIO_TEST_SAMPLE_RATE * 2
+
+      header = +'RIFF'
+      header << [36 + data_size].pack('V')
+      header << 'WAVE'
+      header << 'fmt '
+      header << [16, 1, 1, AUDIO_TEST_SAMPLE_RATE, byte_rate, 2, 16].pack('VvvVVvv')
+      header << 'data'
+      header << [data_size].pack('V')
+      silence = [0].pack('v') * num_samples
+
+      tempfile = Tempfile.new(['llm_audio_test', '.wav'])
+      tempfile.binmode
+      tempfile.write(header)
+      tempfile.write(silence)
+      tempfile.rewind
+      tempfile
     end
 
     def not_configured(provider)
