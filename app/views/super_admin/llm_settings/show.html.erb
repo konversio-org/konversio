@@ -48,14 +48,18 @@
         <div class="mt-1 flex flex-wrap items-center gap-2 text-sm text-slate-600">
           <span>Preset: <strong class="text-slate-900"><%= current_preset_label %></strong></span>
           <% if @current_preset == 'all-scaleway' %>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium"
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium"
                   title="Scaleway is a French cloud provider with EU-hosted infrastructure.">
+              <span aria-hidden="true">🇪🇺</span>
+              <span aria-hidden="true">👍</span>
               EU digital sovereignty
             </span>
           <% end %>
           <% if @current_preset == 'all-openai' %>
-            <span class="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-medium"
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-medium"
                   title="OpenAI is incorporated in the United States.">
+              <span aria-hidden="true">🇺🇸</span>
+              <span aria-hidden="true">⚠️</span>
               US CLOUD Act applies
             </span>
           <% end %>
@@ -172,12 +176,16 @@
                   <% if preset[:slug] == 'all-scaleway' %>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs font-medium"
                           title="Scaleway is a French cloud provider (Iliad Group) with EU-hosted infrastructure. GDPR-applicable, outside US CLOUD Act jurisdiction.">
+                      <span aria-hidden="true">🇪🇺</span>
+                      <span aria-hidden="true">👍</span>
                       EU digital sovereignty
                     </span>
                   <% end %>
                   <% if preset[:slug] == 'all-openai' %>
                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-100 text-amber-900 text-xs font-medium"
                           title="OpenAI is incorporated in the United States. Data processed via OpenAI is subject to the US CLOUD Act regardless of region.">
+                      <span aria-hidden="true">🇺🇸</span>
+                      <span aria-hidden="true">⚠️</span>
                       US CLOUD Act applies
                     </span>
                   <% end %>
