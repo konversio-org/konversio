@@ -12,6 +12,14 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
   end
 
   def test
+    if params[:current_setup].present?
+      # rubocop:disable Rails/I18nLocaleTexts
+      flash.now[:notice] = 'Current LLM setup tested. Results below.'
+      # rubocop:enable Rails/I18nLocaleTexts
+      render_with_slot_tests
+      return
+    end
+
     slug = params[:slug].to_s.strip
     if slug.blank?
       # rubocop:disable Rails/I18nLocaleTexts
