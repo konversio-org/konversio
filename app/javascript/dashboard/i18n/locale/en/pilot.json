@@ -263,7 +263,8 @@
       "ACTIONS": {
         "SET_ACTIVE": "Select",
         "EDIT": "Edit",
-        "DELETE": "Delete"
+        "DELETE": "Delete",
+        "VIEW_INBOXES": "View connected inboxes"
       },
       "ERRORS": {
         "NAME_REQUIRED": "Name is required.",

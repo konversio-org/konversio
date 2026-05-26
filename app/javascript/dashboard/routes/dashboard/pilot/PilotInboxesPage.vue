@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 
@@ -9,6 +10,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 
 const { t } = useI18n();
 const store = useStore();
+const route = useRoute();
 
 const activeAssistantId = useMapGetter('pilot/assistants/getActiveId');
 const assistants = useMapGetter('pilot/assistants/getRecords');
@@ -16,7 +18,12 @@ const attachedInboxes = useMapGetter('pilot/autopilot/getInboxes');
 const allInboxes = useMapGetter('inboxes/getInboxes');
 const uiFlags = useMapGetter('pilot/autopilot/getUIFlags');
 
-const selectedAssistantId = ref(activeAssistantId.value);
+const routeAssistantId = () => {
+  const id = Number(route.query.assistant_id);
+  return Number.isFinite(id) && id > 0 ? id : null;
+};
+
+const selectedAssistantId = ref(routeAssistantId() || activeAssistantId.value);
 const selectedInboxId = ref(null);
 const error = ref('');
 
@@ -31,6 +38,32 @@ const unattachedInboxes = computed(() => {
   return allInboxes.value.filter(inbox => !attachedIds.has(inbox.id));
 });
 
+const channelTypeLabels = computed(() => ({
+  'Channel::FacebookPage': t('INBOX_MGMT.CHANNELS.MESSENGER'),
+  'Channel::WebWidget': t('INBOX_MGMT.CHANNELS.WEB_WIDGET'),
+  'Channel::TwitterProfile': t('INBOX_MGMT.CHANNELS.TWITTER_PROFILE'),
+  'Channel::TwilioSms': t('INBOX_MGMT.CHANNELS.TWILIO_SMS'),
+  'Channel::Whatsapp': t('INBOX_MGMT.CHANNELS.WHATSAPP'),
+  'Channel::Sms': t('INBOX_MGMT.CHANNELS.SMS'),
+  'Channel::Email': t('INBOX_MGMT.CHANNELS.EMAIL'),
+  'Channel::Telegram': t('INBOX_MGMT.CHANNELS.TELEGRAM'),
+  'Channel::Line': t('INBOX_MGMT.CHANNELS.LINE'),
+  'Channel::Api': t('INBOX_MGMT.CHANNELS.API'),
+  'Channel::Instagram': t('INBOX_MGMT.CHANNELS.INSTAGRAM'),
+  'Channel::Tiktok': t('INBOX_MGMT.CHANNELS.TIKTOK'),
+  'Channel::Voice': t('INBOX_MGMT.CHANNELS.VOICE'),
+}));
+
+const channelTypeLabel = inbox => {
+  const channelType = inbox.channel_type || inbox.channelType;
+  const medium = inbox.medium || inbox.inbox?.medium;
+  if (channelType === 'Channel::TwilioSms' && medium === 'whatsapp') {
+    return t('INBOX_MGMT.CHANNELS.WHATSAPP');
+  }
+
+  return channelTypeLabels.value[channelType] || channelType || '-';
+};
+
 const fetchAttachedInboxes = async () => {
   if (!selectedAssistantId.value) return;
   try {
@@ -40,6 +73,35 @@ const fetchAttachedInboxes = async () => {
     );
   } catch (_e) {
     // Handled
+  }
+};
+
+const assistantExists = id =>
+  assistants.value.some(assistant => assistant.id === id);
+
+const selectAvailableAssistant = () => {
+  const requestedId = routeAssistantId();
+  let nextAssistantId = null;
+
+  if (requestedId && assistantExists(requestedId)) {
+    nextAssistantId = requestedId;
+  } else if (
+    selectedAssistantId.value &&
+    assistantExists(selectedAssistantId.value)
+  ) {
+    nextAssistantId = selectedAssistantId.value;
+  } else if (
+    activeAssistantId.value &&
+    assistantExists(activeAssistantId.value)
+  ) {
+    nextAssistantId = activeAssistantId.value;
+  } else if (assistants.value.length) {
+    nextAssistantId = assistants.value[0].id;
+  }
+
+  selectedAssistantId.value = nextAssistantId;
+  if (selectedAssistantId.value) {
+    store.dispatch('pilot/assistants/setActive', selectedAssistantId.value);
   }
 };
 
@@ -58,10 +120,7 @@ onMounted(async () => {
       // Handled
     }
   }
-  if (!selectedAssistantId.value && assistants.value.length) {
-    selectedAssistantId.value = assistants.value[0].id;
-    store.dispatch('pilot/assistants/setActive', assistants.value[0].id);
-  }
+  selectAvailableAssistant();
   fetchAttachedInboxes();
 });
 
@@ -188,7 +247,7 @@ const detachInbox = async inboxId => {
                   :key="inbox.id"
                   :value="inbox.id"
                 >
-                  {{ inbox.name + ' (' + inbox.channel_type + ')' }}
+                  {{ inbox.name + ' (' + channelTypeLabel(inbox) + ')' }}
                 </option>
               </select>
             </div>
@@ -231,9 +290,13 @@ const detachInbox = async inboxId => {
                     <td class="p-4 font-medium text-n-slate-12">
                       {{ inbox.name || inbox.inbox?.name }}
                     </td>
-                    <td class="p-4 text-n-slate-11 capitalize">
+                    <td class="p-4 text-n-slate-11">
                       {{
-                        inbox.channel_type || inbox.inbox?.channel_type || '-'
+                        channelTypeLabel({
+                          channel_type:
+                            inbox.channel_type || inbox.inbox?.channel_type,
+                          medium: inbox.medium || inbox.inbox?.medium,
+                        })
                       }}
                     </td>
                     <td class="p-4 text-right">

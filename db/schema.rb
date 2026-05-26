@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_25_190000) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_26_000000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1080,8 +1080,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_25_190000) do
     t.bigint "inbox_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["inbox_id"], name: "index_pilot_inboxes_on_inbox_id"
-    t.index ["pilot_assistant_id", "inbox_id"], name: "index_pilot_inboxes_on_pilot_assistant_id_and_inbox_id", unique: true
+    t.index ["inbox_id"], name: "index_pilot_inboxes_on_inbox_id", unique: true
     t.index ["pilot_assistant_id"], name: "index_pilot_inboxes_on_pilot_assistant_id"
   end
 

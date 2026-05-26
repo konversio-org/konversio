@@ -1,16 +1,26 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
+import { useAccount } from 'dashboard/composables/useAccount';
 
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import TabBar from 'dashboard/components-next/tabbar/TabBar.vue';
+import {
+  DropdownContainer,
+  DropdownBody,
+  DropdownSection,
+  DropdownItem,
+} from 'dashboard/components-next/dropdown-menu/base';
 import AssistantEditor from './AssistantEditor.vue';
 
 const { t } = useI18n();
 const store = useStore();
+const router = useRouter();
+const { accountScopedRoute } = useAccount();
 
 const assistants = useMapGetter('pilot/assistants/getRecords');
 const activeAssistantId = useMapGetter('pilot/assistants/getActiveId');
@@ -109,6 +119,10 @@ const onSelectActive = id => {
   editingAssistant.value = null;
 };
 
+const onViewInboxes = id => {
+  router.push(accountScopedRoute('pilot_inboxes', {}, { assistant_id: id }));
+};
+
 const onSaved = () => {
   showEditor.value = false;
   editingAssistant.value = null;
@@ -201,7 +215,7 @@ const onCancel = () => {
         <!-- All Assistants List Tab -->
         <div v-else-if="activeTabKey === 'all'" class="flex flex-col gap-4">
           <div
-            class="bg-n-solid-1 border border-n-weak rounded-xl overflow-hidden"
+            class="bg-n-solid-1 border border-n-weak rounded-xl overflow-visible"
           >
             <table class="w-full text-left border-collapse text-sm">
               <thead>
@@ -246,31 +260,80 @@ const onCancel = () => {
                       {{ t('PILOT.SETTINGS.STATUS.INACTIVE') }}
                     </span>
                   </td>
-                  <td
-                    class="p-4 text-right flex items-center justify-end gap-2"
-                  >
-                    <Button
-                      v-if="item.id !== activeAssistantId"
-                      variant="ghost"
-                      color="slate"
-                      size="xs"
-                      :label="t('PILOT.SETTINGS.ACTIONS.SET_ACTIVE')"
-                      @click="onSelectActive(item.id)"
-                    />
-                    <Button
-                      variant="ghost"
-                      color="slate"
-                      size="xs"
-                      :label="t('PILOT.SETTINGS.ACTIONS.EDIT')"
-                      @click="onEdit(item)"
-                    />
-                    <Button
-                      variant="ghost"
-                      color="ruby"
-                      size="xs"
-                      :label="t('PILOT.SETTINGS.ACTIONS.DELETE')"
-                      @click="onDelete(item.id)"
-                    />
+                  <td class="p-4 text-right">
+                    <div class="inline-flex justify-end">
+                      <DropdownContainer>
+                        <template #trigger="{ toggle }">
+                          <Button
+                            variant="ghost"
+                            color="slate"
+                            size="xs"
+                            icon="i-lucide-ellipsis-vertical"
+                            :aria-label="t('PILOT.SETTINGS.TABLE.ACTIONS')"
+                            @click="toggle"
+                          />
+                        </template>
+                        <DropdownBody class="right-0 min-w-52 z-50">
+                          <DropdownSection>
+                            <DropdownItem
+                              v-if="item.id !== activeAssistantId"
+                              :click="() => onSelectActive(item.id)"
+                            >
+                              <template #label>
+                                <span
+                                  class="flex items-center gap-3 w-full text-left rtl:text-right"
+                                >
+                                  <span
+                                    class="i-lucide-check-circle size-4 text-n-slate-11"
+                                    aria-hidden="true"
+                                  />
+                                  {{ t('PILOT.SETTINGS.ACTIONS.SET_ACTIVE') }}
+                                </span>
+                              </template>
+                            </DropdownItem>
+                            <DropdownItem :click="() => onViewInboxes(item.id)">
+                              <template #label>
+                                <span
+                                  class="flex items-center gap-3 w-full text-left rtl:text-right"
+                                >
+                                  <span
+                                    class="i-lucide-inbox size-4 text-n-slate-11"
+                                    aria-hidden="true"
+                                  />
+                                  {{ t('PILOT.SETTINGS.ACTIONS.VIEW_INBOXES') }}
+                                </span>
+                              </template>
+                            </DropdownItem>
+                            <DropdownItem :click="() => onEdit(item)">
+                              <template #label>
+                                <span
+                                  class="flex items-center gap-3 w-full text-left rtl:text-right"
+                                >
+                                  <span
+                                    class="i-lucide-pencil size-4 text-n-slate-11"
+                                    aria-hidden="true"
+                                  />
+                                  {{ t('PILOT.SETTINGS.ACTIONS.EDIT') }}
+                                </span>
+                              </template>
+                            </DropdownItem>
+                            <DropdownItem :click="() => onDelete(item.id)">
+                              <template #label>
+                                <span
+                                  class="flex items-center gap-3 w-full text-n-ruby-11 text-left rtl:text-right"
+                                >
+                                  <span
+                                    class="i-lucide-trash-2 size-4 text-n-ruby-11"
+                                    aria-hidden="true"
+                                  />
+                                  {{ t('PILOT.SETTINGS.ACTIONS.DELETE') }}
+                                </span>
+                              </template>
+                            </DropdownItem>
+                          </DropdownSection>
+                        </DropdownBody>
+                      </DropdownContainer>
+                    </div>
                   </td>
                 </tr>
               </tbody>
