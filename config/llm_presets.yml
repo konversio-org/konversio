@@ -28,12 +28,10 @@ presets:
     # €0.25 input / €0.50 output per million tokens. Highly reliable tool-calling.
     chat: { provider: scaleway, model: gemma-4-26b-a4b-it }
     # Qwen3-Embedding-8B: native 4096 dims, MRL-aware with proper L2-renorm at
-    # truncated sizes. Scaleway honors the `dimensions` parameter (verified
-    # empirically: first-1536 slice + renormalize). At the installation lock
-    # of 1536 dims it interoperates with OpenAI text-embedding-3-small in the
-    # same pgvector column. bge-multilingual-gemma2 (3584, locked) was the
-    # prior choice — swapped to Qwen3 specifically for the cross-provider
-    # interop story.
+    # truncated sizes. Scaleway honors the `dimensions` parameter even though
+    # its UI currently says this model cannot be reduced (verified empirically:
+    # first-1536 slice + renormalize). At the installation lock of 1536 dims it
+    # shares the same pgvector column as OpenAI text-embedding-3-small.
     embedding: { provider: scaleway, model: qwen3-embedding-8b }
     # Whisper large v3: newer/larger variant of OpenAI's whisper-1.
     # €0.003/audio minute (half OpenAI's price).
@@ -42,5 +40,8 @@ presets:
   - slug: all-nebius
     label: All Nebius (open source, no audio)
     chat: { provider: nebius, model: Qwen/Qwen2.5-72B-Instruct }
-    embedding: { provider: nebius, model: BAAI/bge-en-icl }
+    # Same Qwen3 embedding family as the Scaleway preset. Nebius uses the
+    # Hugging Face-style model ID and also honors `dimensions: 1536` with
+    # prefix truncation + L2 renormalization.
+    embedding: { provider: nebius, model: Qwen/Qwen3-Embedding-8B }
     # audio omitted — Nebius has no transcription API

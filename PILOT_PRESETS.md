@@ -41,8 +41,10 @@ export PILOT_OPEN_AI_ENDPOINT="https://api.scaleway.ai"
 export PILOT_OPEN_AI_MODEL="gemma-4-26b-a4b-it"
 export PILOT_OPEN_AI_API_PROVIDER="openai_compatible"
 
-# Embeddings — Scaleway hosts BGE multilingual at 768 dims natively; we ask
-# the server to upscale/truncate to 1536 to fit the existing pgvector column.
+# Embeddings — Qwen3-Embedding-8B is native 4096 dims. We request 1536 via
+# the provider's dimensions parameter to fit the locked pgvector column.
+# Scaleway's UI currently says this model cannot be reduced, but live API
+# tests confirm first-prefix truncation plus L2 renormalization.
 export PILOT_EMBEDDING_MODEL="qwen3-embedding-8b"
 export PILOT_EMBEDDING_DIMENSIONS="1536"
 ```
@@ -116,15 +118,15 @@ export PILOT_EMBEDDING_DIMENSIONS="1536"
 
 ---
 
-## Nebius AI Studio
+## Nebius Token Factory
 
 ```sh
 export PILOT_OPEN_AI_API_KEY="<nebius api key>"
-export PILOT_OPEN_AI_ENDPOINT="https://api.studio.nebius.ai"
+export PILOT_OPEN_AI_ENDPOINT="https://api.tokenfactory.nebius.com"
 export PILOT_OPEN_AI_MODEL="meta-llama/Meta-Llama-3.1-70B-Instruct"
 export PILOT_OPEN_AI_API_PROVIDER="openai_compatible"
 
-export PILOT_EMBEDDING_MODEL="BAAI/bge-en-icl"
+export PILOT_EMBEDDING_MODEL="Qwen/Qwen3-Embedding-8B"
 export PILOT_EMBEDDING_DIMENSIONS="1536"
 ```
 

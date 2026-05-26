@@ -65,7 +65,16 @@ class Custom::Pilot::ProviderConnectionTester
     return failure_blank(:embedding, config) if config[:api_key].blank?
 
     client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
-    client.embeddings(parameters: { model: config[:model], input: 'ping' })
+    expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
+    response = client.embeddings(parameters: { model: config[:model], input: 'ping', dimensions: expected })
+    vector = response.dig('data', 0, 'embedding')
+    if vector&.length != expected
+      return {
+        ok: false,
+        error_class: 'EmbeddingDimensionMismatch',
+        message: "Expected #{expected} dimensions, got #{vector&.length || 0}."
+      }
+    end
 
     { ok: true }
   rescue StandardError => e
