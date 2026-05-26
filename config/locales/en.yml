@@ -112,6 +112,7 @@ en:
       search:
         query_missing: Specify search string with parameter q
     messages:
+      already_connected_to_assistant: is already connected to another assistant
       search:
         time_range_limit_exceeded: 'Search is limited to the last %{days} days'
     categories:

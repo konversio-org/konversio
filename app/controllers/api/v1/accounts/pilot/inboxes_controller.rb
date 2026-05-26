@@ -10,20 +10,25 @@ class Api::V1::Accounts::Pilot::InboxesController < Api::V1::Accounts::BaseContr
         id: pi.id,
         inbox_id: pi.inbox_id,
         name: pi.inbox.name,
-        channel_type: pi.inbox.channel_type
+        channel_type: pi.inbox.channel_type,
+        medium: pi.inbox.channel.try(:medium)
       }
     }, status: :ok
   end
 
   def create
     inbox = Current.account.inboxes.find(params[:inbox_id])
+    existing = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
+    return render_connection(existing, inbox, :ok) if existing&.pilot_assistant_id == @assistant.id
+    return render_inbox_conflict(inbox) if existing.present?
+
     attached = @assistant.pilot_inboxes.create!(inbox: inbox)
-    render json: {
-      id: attached.id,
-      inbox_id: attached.inbox_id,
-      name: inbox.name,
-      channel_type: inbox.channel_type
-    }, status: :created
+    render_connection(attached, inbox, :created)
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique
+    existing = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
+    return render_connection(existing, inbox, :ok) if existing&.pilot_assistant_id == @assistant.id
+
+    render_inbox_conflict(inbox)
   end
 
   def destroy
@@ -46,5 +51,20 @@ class Api::V1::Accounts::Pilot::InboxesController < Api::V1::Accounts::BaseContr
 
   def authorize_request
     authorize @assistant, :update?, policy_class: Pilot::AssistantPolicy
+  end
+
+  def render_connection(pilot_inbox, inbox, status)
+    render json: {
+      id: pilot_inbox.id,
+      inbox_id: pilot_inbox.inbox_id,
+      name: inbox.name,
+      channel_type: inbox.channel_type,
+      medium: inbox.channel.try(:medium)
+    }, status: status
+  end
+
+  def render_inbox_conflict(inbox)
+    message = "Inbox '#{inbox.name}' is already connected to another assistant."
+    render json: { error: message, message: message }, status: :unprocessable_entity
   end
 end
