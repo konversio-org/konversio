@@ -15,12 +15,6 @@
 # provider that doesn't declare the slot's capability are dropped with a
 # logged warning — they never raise.
 presets:
-  - slug: all-openai
-    label: All OpenAI
-    chat: { provider: openai, model: gpt-4.1-mini }
-    embedding: { provider: openai, model: text-embedding-3-small }
-    audio: { provider: openai, model: whisper-1 }
-
   - slug: all-scaleway
     label: All Scaleway (EU equivalent of the OpenAI defaults)
     # Gemma 4 26B-a4b-it: MoE (4B active) direct equivalent of gpt-4.1-mini — fast, cheap,
@@ -45,3 +39,9 @@ presets:
     # prefix truncation + L2 renormalization.
     embedding: { provider: nebius, model: Qwen/Qwen3-Embedding-8B }
     # audio omitted — Nebius has no transcription API
+
+  - slug: all-openai
+    label: All OpenAI
+    chat: { provider: openai, model: gpt-4.1-mini }
+    embedding: { provider: openai, model: text-embedding-3-small }
+    audio: { provider: openai, model: whisper-1 }
