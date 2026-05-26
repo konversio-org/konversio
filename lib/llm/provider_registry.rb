@@ -12,7 +12,7 @@ module Llm
     DEFAULTS = {
       openai: { label: 'OpenAI', endpoint: 'https://api.openai.com', openai_compatible: false,
                 capabilities: %i[chat embedding audio] },
-      nebius: { label: 'Nebius', endpoint: 'https://api.studio.nebius.ai', openai_compatible: true,
+      nebius: { label: 'Nebius', endpoint: 'https://api.tokenfactory.nebius.com', openai_compatible: true,
                 capabilities: %i[chat embedding] },
       scaleway: { label: 'Scaleway', endpoint: 'https://api.scaleway.ai', openai_compatible: true,
                   capabilities: %i[chat embedding audio] },
@@ -103,9 +103,7 @@ module Llm
         return nil if raw == Llm::Presets::DISABLED_SENTINEL
 
         configured = raw.presence
-        if configured && providers_for(slot).include?(configured.to_sym)
-          return configured.to_sym
-        end
+        return configured.to_sym if configured && providers_for(slot).include?(configured.to_sym)
 
         capable = providers_for(slot)
         return :openai if capable.include?(:openai)

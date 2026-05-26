@@ -342,12 +342,11 @@ Audio:      scaleway · whisper-large-v3
 Embedding sits on `qwen3-embedding-8b` (Scaleway, EU-hosted by Iliad
 Group, strong multilingual + Dutch performance, MRL-aware truncation).
 Konversio standardizes on a 1536-dim pgvector column installation-wide
-so OpenAI `text-embedding-3-small` and Scaleway `qwen3-embedding-8b`
-remain interchangeable in the same column without a schema rebuild on
-every provider swap. Do not swap the embedding model without re-embedding
-every `pilot_assistant_responses` row — query-time and seed-time
-embeddings must come from the same model for cosine similarity to mean
-anything.
+so OpenAI `text-embedding-3-small`, Scaleway `qwen3-embedding-8b`, and
+Nebius `Qwen/Qwen3-Embedding-8B` remain schema-compatible with the same
+column. Do not swap the embedding provider or model without re-embedding
+every `pilot_assistant_responses` row — query-time and seed-time embeddings
+must come from the same model for cosine similarity to mean anything.
 
 ### Why not `bge-multilingual-gemma2`?
 
@@ -361,8 +360,9 @@ It was the prior Scaleway embedding choice. Removed deliberately because:
 - **`vector(3584)` is above pgvector's 2,000-dim ivfflat/hnsw cap.**
   Sequential scan only; doesn't scale beyond FAQ-size corpora.
 - **Qwen3-Embedding-8B covers the same need.** Strong multilingual
-  performance, EU-hosted, MRL-aware truncation to 1536 (verified
-  empirically: prefix slice + L2 renorm on Scaleway's endpoint).
+  performance, EU-hosted, MRL-aware truncation to 1536. Scaleway and Nebius
+  both verified empirically as native-prefix slice + L2 renorm, despite
+  Scaleway's UI warning that reduced dimensions are unsupported.
 
 If a future installation has a hard requirement for `bge-multilingual-gemma2`
 specifically, the per-model column-rebuild flow tracked in

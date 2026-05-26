@@ -37,9 +37,13 @@ RSpec.describe Custom::Pilot::ProviderConnectionTester do
     allow(OpenAI::Client).to receive(:new).and_return(client)
     case behavior
     when :success
-      allow(client).to receive(:embeddings).and_return('data' => [{ 'embedding' => [0.0] * 1536 }])
+      allow(client).to receive(:embeddings)
+        .with(parameters: hash_including(dimensions: 1536))
+        .and_return('data' => [{ 'embedding' => [0.0] * 1536 }])
     when :raise
-      allow(client).to receive(:embeddings).and_raise(StandardError, 'dimension mismatch')
+      allow(client).to receive(:embeddings)
+        .with(parameters: hash_including(dimensions: 1536))
+        .and_raise(StandardError, 'dimension mismatch')
     end
   end
 

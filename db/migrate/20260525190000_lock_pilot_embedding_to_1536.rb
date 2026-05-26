@@ -1,8 +1,10 @@
 class LockPilotEmbeddingTo1536 < ActiveRecord::Migration[7.1]
   # Locks the pgvector column at 1536 dims installation-wide so OpenAI
-  # text-embedding-3-small (native 1536) and Scaleway qwen3-embedding-8b
-  # (4096 native, truncates to 1536 with MRL-aware renorm) can share one
-  # column without a rebuild on every provider swap.
+  # text-embedding-3-small (native 1536), Scaleway qwen3-embedding-8b, and
+  # Nebius Qwen/Qwen3-Embedding-8B (4096 native, truncate to 1536 with
+  # MRL-aware renorm) can share one column without schema churn.
+  # Provider/model swaps still require a full re-embedding rebuild because
+  # same dimension does not mean same embedding space.
   #
   # Previously the column was sized for Scaleway bge-multilingual-gemma2
   # (3584, fixed, no truncation). That model is no longer supported — see
