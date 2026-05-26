@@ -189,7 +189,7 @@
 
         <div id="advanced-section"
              class="<%= 'hidden' unless custom_selected %> border-t border-blue-200 bg-white px-4 py-4"
-             data-model-dimensions='<%= Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.to_json %>'>
+             data-model-dimensions='<%= Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.transform_values { |_| Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS }.to_json %>'>
           <table class="w-full text-sm">
             <thead class="text-slate-500 text-xs uppercase tracking-wide">
               <tr>
@@ -228,7 +228,7 @@
                            class="border border-slate-300 rounded px-2 py-1 text-sm font-mono w-full" />
                     <% if slot == :embedding %>
                       <p class="mt-1 text-xs text-yellow-700">
-                        Changing this model invalidates all stored vectors. Re-embed FAQs and documents manually after saving — there is no automatic reindex.
+                        Changing this provider or model invalidates all stored vectors. Re-embed FAQs and documents manually after saving — there is no automatic reindex.
                       </p>
                     <% end %>
                   </td>
@@ -237,7 +237,7 @@
                       <% current_model = @slots[:embedding][:model] %>
                       <% known_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[current_model] %>
                       <% override = GlobalConfigService.load('PILOT_LLM_EMBEDDING_DIMENSIONS_OVERRIDE', nil).to_s.strip %>
-                      <% initial_value = override.presence || known_dim&.to_s || '' %>
+                      <% initial_value = override.presence || (known_dim.present? ? Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS.to_s : '') %>
                       <input type="text" name="slots[embedding][dimensions]"
                              value="<%= initial_value %>"
                              data-llm-embedding-dimensions

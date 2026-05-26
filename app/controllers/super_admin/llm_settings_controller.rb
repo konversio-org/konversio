@@ -116,9 +116,9 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     value = Integer(raw, 10)
     raise ArgumentError, 'Embedding slot: Dimensions must be a positive integer.' unless value.positive?
 
-    # Drop the override when it just restates the known value — keeps the
-    # config row absent unless the operator really meant to override.
-    return nil if known_dim == value
+    # Drop the override when it just restates the installation-wide lock —
+    # keeps the config row absent unless the operator really meant to override.
+    return nil if value == Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS
 
     value
   rescue ::ArgumentError, ::TypeError => e
