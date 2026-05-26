@@ -71,11 +71,11 @@ module Llm::SanityTester
 
     def embedding_slot_test(config)
       client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
-      response = client.embeddings(parameters: { model: config[:model], input: 'ping' })
+      expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
+      response = client.embeddings(parameters: { model: config[:model], input: 'ping', dimensions: expected })
       vector = response.dig('data', 0, 'embedding')
       return { state: :failed, message: 'Provider returned no embedding vector.' } if vector.blank?
 
-      expected = Custom::Pilot::EmbeddingService.expected_dimension(config)
       return dimension_mismatch_result(vector.length, expected) if vector.length != expected
 
       { state: :connected, message: "Provider responded successfully — #{vector.length} dimensions." }
