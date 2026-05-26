@@ -148,16 +148,31 @@
     </div>
   </div>
 
-  <details class="border border-slate-200 rounded bg-white mb-4" <%= 'open' if @error.present? || @dimension_warning.present? %>>
-    <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-3">
+  <div class="border border-slate-200 rounded bg-white mb-4">
+    <button type="button" data-open-modal="change-setup-modal"
+            class="w-full cursor-pointer px-4 py-3 flex items-center justify-between gap-3 text-left !bg-white hover:!bg-slate-50 !border-0 !shadow-none !rounded">
       <span>
         <span class="block text-base font-semibold text-slate-900">Change setup</span>
         <span class="block text-xs text-slate-500 mt-0.5">Pick a preset or configure each capability manually.</span>
       </span>
       <span class="text-xs text-slate-500">Show options</span>
-    </summary>
+    </button>
+  </div>
 
-  <%= form_with url: super_admin_llm_settings_path, method: :patch, local: true, id: 'llm-settings-form', html: { 'data-dirty-form': true, class: 'px-4 pb-4' } do |form| %>
+  <div id="change-setup-modal" data-modal
+       class="<%= 'hidden' unless @error.present? || @dimension_warning.present? %> fixed inset-0 z-40 bg-slate-900/40 flex items-start justify-center overflow-y-auto p-4">
+    <div data-modal-panel class="bg-white rounded-lg shadow-xl w-full max-w-3xl my-8 max-h-[calc(100vh-4rem)] flex flex-col">
+      <div class="shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-100">
+        <div>
+          <span class="block text-base font-semibold text-slate-900">Change setup</span>
+          <span class="block text-xs text-slate-500 mt-0.5">Pick a preset or configure each capability manually.</span>
+        </div>
+        <button type="button" data-close-modal aria-label="Close"
+                class="text-slate-400 hover:text-slate-600 text-2xl leading-none px-2">&times;</button>
+      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto">
+
+  <%= form_with url: super_admin_llm_settings_path, method: :patch, local: true, id: 'llm-settings-form', html: { 'data-dirty-form': true, class: 'px-4 pb-4 pt-4' } do |form| %>
 
     <div class="space-y-2 mb-4" id="preset-cards">
       <% @presets.each do |preset| %>
@@ -330,7 +345,9 @@
       <span class="text-xs text-slate-500 ml-auto">Save runs a minimal round-trip per slot and renders pass/fail below.</span>
     </div>
   <% end %>
-  </details>
+      </div>
+    </div>
+  </div>
 
   <div id="llm-saving-overlay" class="hidden fixed inset-0 z-50 bg-slate-900/40 flex items-center justify-center">
     <div class="bg-white rounded-lg shadow-xl px-8 py-6 flex items-center gap-4 max-w-md">
@@ -347,8 +364,9 @@
 
   <% configured = @providers.count { |p| p[:available] } %>
   <% missing = @providers.length - configured %>
-  <details class="border border-slate-200 rounded bg-white mb-6" <%= 'open' if @last_test_slug.present? %>>
-    <summary class="cursor-pointer list-none px-4 py-3 flex items-center justify-between gap-3">
+  <div class="border border-slate-200 rounded bg-white mb-6">
+    <button type="button" data-open-modal="provider-diagnostics-modal"
+            class="w-full cursor-pointer px-4 py-3 flex items-center justify-between gap-3 text-left !bg-white hover:!bg-slate-50 !border-0 !shadow-none !rounded">
       <span>
         <span class="block text-base font-semibold text-slate-900">Provider diagnostics</span>
         <span class="block text-xs text-slate-500 mt-0.5">
@@ -361,9 +379,21 @@
           · <%= missing %> missing
         <% end %>
       </span>
-    </summary>
+    </button>
+  </div>
 
-    <div class="px-4 pb-4">
+  <div id="provider-diagnostics-modal" data-modal
+       class="<%= 'hidden' unless @last_test_slug.present? %> fixed inset-0 z-40 bg-slate-900/40 flex items-start justify-center overflow-y-auto p-4">
+    <div data-modal-panel class="bg-white rounded-lg shadow-xl w-full max-w-3xl my-8 max-h-[calc(100vh-4rem)] flex flex-col">
+      <div class="shrink-0 flex items-center justify-between px-4 py-3 border-b border-slate-100">
+        <div>
+          <span class="block text-base font-semibold text-slate-900">Provider diagnostics</span>
+          <span class="block text-xs text-slate-500 mt-0.5">Environment keys, endpoints, and individual provider tests.</span>
+        </div>
+        <button type="button" data-close-modal aria-label="Close"
+                class="text-slate-400 hover:text-slate-600 text-2xl leading-none px-2">&times;</button>
+      </div>
+      <div class="flex-1 min-h-0 overflow-y-auto px-4 pb-4 pt-4">
       <div class="bg-blue-50 border border-blue-200 text-blue-900 px-3 py-2 rounded mb-3 text-xs">
         Providers are enabled with <code class="font-mono">PILOT_LLM_&lt;SLUG&gt;_API_KEY</code>.
         Optional companions are <code class="font-mono">_ENDPOINT</code> and <code class="font-mono">_LABEL</code>.
@@ -384,9 +414,35 @@
         <% end %>
       </div>
     </div>
-  </details>
+    </div>
+  </div>
 
   <script>
+    (function () {
+      function closeModal(modal) { modal.classList.add('hidden'); }
+
+      document.querySelectorAll('[data-open-modal]').forEach(function (trigger) {
+        trigger.addEventListener('click', function () {
+          var modal = document.getElementById(trigger.getAttribute('data-open-modal'));
+          if (modal) modal.classList.remove('hidden');
+        });
+      });
+
+      document.querySelectorAll('[data-modal]').forEach(function (modal) {
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) closeModal(modal);
+        });
+        modal.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+          btn.addEventListener('click', function () { closeModal(modal); });
+        });
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key !== 'Escape') return;
+        document.querySelectorAll('[data-modal]:not(.hidden)').forEach(closeModal);
+      });
+    })();
+
     (function () {
       var form = document.getElementById('llm-settings-form');
       if (!form) return;
