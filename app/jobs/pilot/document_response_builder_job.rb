@@ -18,6 +18,7 @@ class Pilot::DocumentResponseBuilderJob < ApplicationJob
     ## Requirements
     - Extract ALL substantive information from the content into question/answer pairs. This is exhaustive extraction, not a summary.
     - Ignore non-informational page furniture (navigation, menus, headers/footers, structural boilerplate). Draw only from real subject matter.
+    - If the document is only an index or table of contents — primarily links or navigation to other pages, with no substantive content of its own — return an empty list.
     - Base answers strictly on the provided content. Do NOT invent facts.
     - Write every question and answer in the same language as the document content. Do NOT translate.
     - Preserve concrete specifics: steps, examples, identifiers, numeric limits, and enumerated items.
