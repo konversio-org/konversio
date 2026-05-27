@@ -20,8 +20,14 @@ module Pilot
 
       result = run_inference_with_typing(conversation, assistant)
 
-      if result.handover.handover? && !already_in_warm_handoff?(conversation)
-        process_handover(conversation, assistant, result)
+      if result.handover.handover? &&
+         !already_in_warm_handoff?(conversation) &&
+         !offline_already_acknowledged?(conversation)
+        if agents_available?(conversation.inbox)
+          process_handover(conversation, assistant, result)
+        else
+          acknowledge_offline_team(conversation, assistant)
+        end
       else
         post_reply(conversation, assistant, result.reply)
       end
@@ -77,6 +83,41 @@ module Pilot
     # conversation routes to a human.
     def already_in_warm_handoff?(conversation)
       conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'handoff_requested'
+    end
+
+    def offline_already_acknowledged?(conversation)
+      conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'offline_acknowledged'
+    end
+
+    def agents_available?(inbox)
+      return false if inbox.blank?
+      return false unless inbox.respond_to?(:available_agents)
+
+      inbox.available_agents.exists?
+    end
+
+    # No human is online in this inbox right now. Posting the standard
+    # "I'll connect you to a teammate" message would be a lie. Instead,
+    # post a one-time acknowledgement, mark the conversation so we don't
+    # repeat it on every follow-up, and let the bot keep answering
+    # normally via the `post_reply` path on subsequent turns.
+    def acknowledge_offline_team(conversation, assistant)
+      conversation.additional_attributes ||= {}
+      conversation.additional_attributes['pilot_handoff'] = {
+        'state' => 'offline_acknowledged',
+        'acknowledged_at' => Time.zone.now.iso8601
+      }
+      conversation.save!
+
+      content = assistant.config['handoff_message_offline'].presence ||
+                I18n.t('conversations.pilot.handoff_offline')
+      conversation.messages.create!(
+        message_type: :outgoing,
+        account_id: conversation.account_id,
+        inbox_id: conversation.inbox_id,
+        sender: assistant,
+        content: content
+      )
     end
 
     def post_reply(conversation, assistant, reply)

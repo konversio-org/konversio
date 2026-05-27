@@ -252,6 +252,7 @@ en:
     pilot:
       handoff: 'Transferring to another agent for further assistance.'
       handoff_timeout: "I'm back and can keep helping while we wait for the team."
+      handoff_offline: "Our team isn't online right now — but I can keep helping. They'll follow up as soon as they're back."
     messages:
       instagram_story_content: '%{story_sender} mentioned you in the story: '
       instagram_deleted_story_content: This story is no longer available.
