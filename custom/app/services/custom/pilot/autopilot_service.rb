@@ -18,7 +18,6 @@ module Custom
       class Error < StandardError; end
       class FeatureDisabledError < Error; end
 
-      MAX_HISTORY = 40
       DEFAULT_MAX_TURNS = 6
 
       Result = Struct.new(:reply, :invoked_tool_names, :handover, keyword_init: true)
@@ -197,6 +196,8 @@ module Custom
       end
 
       def handover_policy
+        return handover_pending_policy if handoff_already_requested?
+
         sentinel = ::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
         <<~HANDOVER.strip
           Handover policy — follow exactly:
@@ -213,6 +214,23 @@ module Custom
 
           Never invent fallbacks: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", URL, email, phone number, or category that did not come from a tool result. Do not apologise at length or list topics. Just hand over with the token.
         HANDOVER
+      end
+
+      # When a handoff has already been requested, the conversation is
+      # waiting for a human and re-offering to connect is just noise. Tell
+      # the model to keep answering from documentation instead, and never
+      # re-emit the handover token (the system ignores it in this state).
+      def handoff_already_requested?
+        state = conversation&.additional_attributes&.dig('pilot_handoff', 'state')
+        %w[handoff_requested offline_acknowledged].include?(state)
+      end
+
+      def handover_pending_policy
+        <<~PENDING.strip
+          A human handoff has ALREADY been requested for this conversation and a teammate will follow up.
+
+          Do NOT offer to connect them to a human again, and do NOT emit any handover token. Simply keep helping: answer the user's questions using `search_documentation`. If you cannot answer from the documentation, briefly say a teammate will follow up — do not repeat that you are connecting them to a human.
+        PENDING
       end
 
       def assistant_tools
@@ -250,7 +268,7 @@ module Custom
                     .where(message_type: %i[incoming outgoing])
                     .where(private: false)
                     .order(:created_at)
-                    .last(MAX_HISTORY)
+                    .last(assistant&.max_history || ::Pilot::Assistant::DEFAULT_MAX_HISTORY)
                     .filter_map do |msg|
           content = msg.content.to_s
           next if content.blank?

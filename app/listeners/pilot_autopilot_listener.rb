@@ -33,13 +33,14 @@ class PilotAutopilotListener < BaseListener
 
   # The bot may respond when the conversation is either:
   #   - still bot-handled (`pending`), the classic Autopilot path, or
-  #   - `open` in the warm-bot window opened by `Conversation#bot_handoff!`
+  #   - `open` in the co-active window opened by `Conversation#bot_handoff!`
   #     and still gated by Pilot metadata as `handoff_requested`, with no
   #     human takeover (no assignee, no human outgoing reply since the
-  #     handoff timestamp).
+  #     handoff timestamp), AND the assistant has the
+  #     `keep_assistant_active_during_handoff` toggle enabled.
   #
-  # Any other state — resolved, snoozed, agent-owned `open` — silences
-  # the bot to avoid handoff loops.
+  # Any other state — resolved, snoozed, agent-owned `open`, or the toggle
+  # turned off — silences the assistant.
   def bot_eligible?(conversation)
     return false if conversation.blank?
     return true if conversation.pending?
@@ -48,16 +49,28 @@ class PilotAutopilotListener < BaseListener
   end
 
   def warm_bot_active?(conversation)
-    return false unless conversation.open?
-    return false if conversation.assignee_id.present?
+    return false unless conversation.open? && conversation.assignee_id.blank?
+    return false unless handoff_requested?(conversation)
+    return false unless coactive_enabled?(conversation.inbox)
 
+    requested_at = parse_requested_at(conversation.additional_attributes.dig('pilot_handoff', 'requested_at'))
+    requested_at.present? && !conversation.human_replied_since?(requested_at)
+  end
+
+  def handoff_requested?(conversation)
     handoff = conversation.additional_attributes&.dig('pilot_handoff')
-    return false unless handoff.is_a?(Hash) && handoff['state'] == 'handoff_requested'
+    handoff.is_a?(Hash) && handoff['state'] == 'handoff_requested'
+  end
 
-    requested_at = parse_requested_at(handoff['requested_at'])
-    return false if requested_at.blank?
+  def coactive_enabled?(inbox)
+    assistant = assistant_for(inbox)
+    assistant.present? && assistant.keep_assistant_active_during_handoff
+  end
 
-    !conversation.human_replied_since?(requested_at)
+  def assistant_for(inbox)
+    return nil if inbox.blank?
+
+    ::Pilot::Inbox.find_by(inbox_id: inbox.id)&.assistant
   end
 
   def parse_requested_at(value)
