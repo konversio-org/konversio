@@ -7,6 +7,7 @@ import { useAlert } from 'dashboard/composables';
 
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 
 const { t } = useI18n();
 const store = useStore();
@@ -24,7 +25,7 @@ const routeAssistantId = () => {
 };
 
 const selectedAssistantId = ref(routeAssistantId() || activeAssistantId.value);
-const selectedInboxId = ref(null);
+const selectedInboxId = ref('');
 const error = ref('');
 
 const isLoading = computed(() => uiFlags.value.isFetchingInboxes);
@@ -63,6 +64,13 @@ const channelTypeLabel = inbox => {
 
   return channelTypeLabels.value[channelType] || channelType || '-';
 };
+
+const inboxOptions = computed(() =>
+  unattachedInboxes.value.map(inbox => ({
+    value: inbox.id,
+    label: `${inbox.name} (${channelTypeLabel(inbox)})`,
+  }))
+);
 
 const fetchAttachedInboxes = async () => {
   if (!selectedAssistantId.value) return;
@@ -146,7 +154,7 @@ const attachInbox = async () => {
       inboxId: selectedInboxId.value,
     });
     useAlert(t('PILOT.INBOXES.TOAST.ATTACHED'));
-    selectedInboxId.value = null;
+    selectedInboxId.value = '';
     fetchAttachedInboxes();
   } catch (err) {
     error.value =
@@ -234,22 +242,13 @@ const detachInbox = async inboxId => {
               >
                 {{ t('PILOT.INBOXES.ATTACH.INBOX_LABEL') }}
               </label>
-              <select
+              <ComboBox
                 id="inbox-select"
                 v-model="selectedInboxId"
-                class="w-full h-10 px-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9"
-              >
-                <option :value="null" disabled>
-                  {{ t('PILOT.INBOXES.ATTACH.INBOX_PLACEHOLDER') }}
-                </option>
-                <option
-                  v-for="inbox in unattachedInboxes"
-                  :key="inbox.id"
-                  :value="inbox.id"
-                >
-                  {{ inbox.name + ' (' + channelTypeLabel(inbox) + ')' }}
-                </option>
-              </select>
+                :options="inboxOptions"
+                :placeholder="t('PILOT.INBOXES.ATTACH.INBOX_PLACEHOLDER')"
+                class="w-full"
+              />
             </div>
 
             <Button
