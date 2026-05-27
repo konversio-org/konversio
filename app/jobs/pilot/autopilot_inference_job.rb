@@ -1,235 +1,242 @@
-module Pilot
-  # Triggered when an inbound customer message lands in an inbox that has
-  # a Pilot::Assistant attached AND the account has the `pilot_autopilot`
-  # feature flag enabled. Runs `AutopilotService` and either posts the
-  # reply as an outgoing message or transitions the conversation to
-  # `pending` for human follow-up.
-  class AutopilotInferenceJob < ApplicationJob
-    include Events::Types
+# Triggered when an inbound customer message lands in an inbox that has
+# a Pilot::Assistant attached AND the account has the `pilot_autopilot`
+# feature flag enabled. Runs `AutopilotService` and either posts the
+# reply as an outgoing message or transitions the conversation to
+# `pending` for human follow-up.
+class Pilot::AutopilotInferenceJob < ApplicationJob
+  include Events::Types
 
-    queue_as :default
+  queue_as :default
 
-    def perform(message_id:)
-      message = ::Message.find_by(id: message_id)
-      return if message.blank?
-      return unless eligible?(message)
+  def perform(message_id:)
+    message = ::Message.find_by(id: message_id)
+    return if message.blank?
+    return unless eligible?(message)
 
-      conversation = message.conversation
-      assistant = assistant_for(conversation.inbox)
-      return if assistant.blank?
+    conversation = message.conversation
+    assistant = assistant_for(conversation.inbox)
+    return if assistant.blank?
 
-      result = run_inference_with_typing(conversation, assistant)
+    result = run_inference_with_typing(conversation, assistant)
+    dispatch_inference_outcome(result, conversation, assistant)
+  rescue ::Custom::Pilot::AutopilotService::FeatureDisabledError => e
+    Rails.logger.warn("[pilot.autopilot_inference_job] feature disabled msg=#{message_id}: #{e.message}")
+  rescue ::Custom::Pilot::AutopilotService::Error => e
+    Rails.logger.error("[pilot.autopilot_inference_job] LLM failure msg=#{message_id}: #{e.message}")
+  end
 
-      if result.handover.handover? &&
-         !already_in_warm_handoff?(conversation) &&
-         !offline_already_acknowledged?(conversation)
-        if agents_available?(conversation.inbox)
-          process_handover(conversation, assistant, result)
-        else
-          acknowledge_offline_team(conversation, assistant)
-        end
-      else
-        post_reply(conversation, assistant, result.reply)
-      end
-    rescue ::Custom::Pilot::AutopilotService::FeatureDisabledError => e
-      Rails.logger.warn("[pilot.autopilot_inference_job] feature disabled msg=#{message_id}: #{e.message}")
-    rescue ::Custom::Pilot::AutopilotService::Error => e
-      Rails.logger.error("[pilot.autopilot_inference_job] LLM failure msg=#{message_id}: #{e.message}")
+  private
+
+  def run_inference_with_typing(conversation, assistant)
+    dispatch_typing(CONVERSATION_TYPING_ON, conversation, assistant)
+    ::Custom::Pilot::AutopilotService.new(
+      assistant: assistant,
+      conversation: conversation,
+      account: assistant.account
+    ).perform
+  ensure
+    dispatch_typing(CONVERSATION_TYPING_OFF, conversation, assistant)
+  end
+
+  def dispatch_typing(event, conversation, assistant)
+    Rails.configuration.dispatcher.dispatch(event, Time.zone.now, conversation: conversation, user: assistant)
+  rescue StandardError => e
+    Rails.logger.warn("[pilot.autopilot_inference_job] typing dispatch failed event=#{event}: #{e.message}")
+  end
+
+  def eligible?(message)
+    return false unless message.message_type == 'incoming'
+    return false if message.private?
+
+    account = message.account
+    return false if account.blank?
+    return false unless account.feature_enabled?('pilot')
+    return false unless account.feature_enabled?('pilot_autopilot')
+
+    true
+  end
+
+  def assistant_for(inbox)
+    return nil if inbox.blank?
+
+    join = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
+    join&.assistant
+  end
+
+  # Routes the LLM result to the correct side-effect: hand off to a
+  # human, acknowledge the team is offline, or just post the reply.
+  # Extracted from `perform` to keep that method's complexity under
+  # the project's rubocop thresholds.
+  def dispatch_inference_outcome(result, conversation, assistant)
+    return post_reply(conversation, assistant, result.reply) unless fresh_handover?(result, conversation)
+
+    if agents_available?(conversation.inbox)
+      process_handover(conversation, assistant, result)
+    else
+      acknowledge_offline_team(conversation, assistant)
     end
+  end
 
-    private
+  def fresh_handover?(result, conversation)
+    result.handover.handover? &&
+      !already_in_warm_handoff?(conversation) &&
+      !offline_already_acknowledged?(conversation)
+  end
 
-    def run_inference_with_typing(conversation, assistant)
-      dispatch_typing(CONVERSATION_TYPING_ON, conversation, assistant)
-      ::Custom::Pilot::AutopilotService.new(
-        assistant: assistant,
-        conversation: conversation,
-        account: assistant.account
-      ).perform
-    ensure
-      dispatch_typing(CONVERSATION_TYPING_OFF, conversation, assistant)
-    end
+  # Once `process_handover` has fired and the conversation carries the
+  # warm-bot envelope, subsequent LLM-signalled handover intents must
+  # NOT re-handoff — that creates a loop where every customer message
+  # gets met with the handoff message again. Fall through to
+  # `post_reply` instead so the bot can keep helping while the
+  # conversation routes to a human.
+  def already_in_warm_handoff?(conversation)
+    conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'handoff_requested'
+  end
 
-    def dispatch_typing(event, conversation, assistant)
-      Rails.configuration.dispatcher.dispatch(event, Time.zone.now, conversation: conversation, user: assistant)
-    rescue StandardError => e
-      Rails.logger.warn("[pilot.autopilot_inference_job] typing dispatch failed event=#{event}: #{e.message}")
-    end
+  def offline_already_acknowledged?(conversation)
+    conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'offline_acknowledged'
+  end
 
-    def eligible?(message)
-      return false unless message.message_type == 'incoming'
-      return false if message.private?
+  def agents_available?(inbox)
+    return false if inbox.blank?
+    return false unless inbox.respond_to?(:available_agents)
 
-      account = message.account
-      return false if account.blank?
-      return false unless account.feature_enabled?('pilot')
-      return false unless account.feature_enabled?('pilot_autopilot')
+    inbox.available_agents.exists?
+  end
 
-      true
-    end
+  # No human is online in this inbox right now. Posting the standard
+  # "I'll connect you to a teammate" message would be a lie. Instead,
+  # post a one-time acknowledgement, mark the conversation so we don't
+  # repeat it on every follow-up, and let the bot keep answering
+  # normally via the `post_reply` path on subsequent turns.
+  def acknowledge_offline_team(conversation, assistant)
+    conversation.additional_attributes ||= {}
+    conversation.additional_attributes['pilot_handoff'] = {
+      'state' => 'offline_acknowledged',
+      'acknowledged_at' => Time.zone.now.iso8601
+    }
+    conversation.save!
 
-    def assistant_for(inbox)
-      return nil if inbox.blank?
+    content = assistant.config['handoff_message_offline'].presence ||
+              I18n.t('conversations.pilot.handoff_offline')
+    conversation.messages.create!(
+      message_type: :outgoing,
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      sender: assistant,
+      content: content
+    )
+  end
 
-      join = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
-      join&.assistant
-    end
+  def post_reply(conversation, assistant, reply)
+    content = reply.to_s.sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '').strip
+    return if content.blank?
 
-    # Once `process_handover` has fired and the conversation carries the
-    # warm-bot envelope, subsequent LLM-signalled handover intents must
-    # NOT re-handoff — that creates a loop where every customer message
-    # gets met with the handoff message again. Fall through to
-    # `post_reply` instead so the bot can keep helping while the
-    # conversation routes to a human.
-    def already_in_warm_handoff?(conversation)
-      conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'handoff_requested'
-    end
+    conversation.messages.create!(
+      message_type: :outgoing,
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      sender: assistant,
+      content: content
+    )
+  end
 
-    def offline_already_acknowledged?(conversation)
-      conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'offline_acknowledged'
-    end
+  # Customer-facing handover per pilot-autopilot spec ("Handover to human agent"
+  # requirement) and mirroring Chatwoot Enterprise Captain's
+  # `Captain::Conversation::ResponseBuilderJob#create_handoff_message`.
+  # Uses Chatwoot core's `bot_handoff!` (transitions status, resets
+  # waiting_since, dispatches CONVERSATION_BOT_HANDOFF) instead of a raw
+  # status update. Posts a customer-visible message from the assistant's
+  # configured handoff_message, falling back to the i18n default.
+  #
+  # Per pilot-telemetry "Dispatcher exception handling" (17.25): the
+  # `pilot.autopilot.handover.triggered` dispatch happens AFTER the
+  # transition is committed and is wrapped in an outer rescue so a
+  # raise inside the dispatch path never propagates to this job. The
+  # event timestamp is captured at the moment of state transition and
+  # passed explicitly.
+  def process_handover(conversation, assistant, result)
+    conversation.bot_handoff! unless conversation.open?
+    transitioned_at = Time.zone.now
+    requested_at_iso = transitioned_at.iso8601
 
-    def agents_available?(inbox)
-      return false if inbox.blank?
-      return false unless inbox.respond_to?(:available_agents)
+    mark_handoff_requested!(conversation, requested_at_iso)
+    schedule_handoff_timeout(conversation, assistant, requested_at_iso)
 
-      inbox.available_agents.exists?
-    end
+    content = assistant.config['handoff_message'].presence ||
+              I18n.t('conversations.pilot.handoff')
 
-    # No human is online in this inbox right now. Posting the standard
-    # "I'll connect you to a teammate" message would be a lie. Instead,
-    # post a one-time acknowledgement, mark the conversation so we don't
-    # repeat it on every follow-up, and let the bot keep answering
-    # normally via the `post_reply` path on subsequent turns.
-    def acknowledge_offline_team(conversation, assistant)
-      conversation.additional_attributes ||= {}
-      conversation.additional_attributes['pilot_handoff'] = {
-        'state' => 'offline_acknowledged',
-        'acknowledged_at' => Time.zone.now.iso8601
-      }
-      conversation.save!
+    conversation.messages.create!(
+      message_type: :outgoing,
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      sender: assistant,
+      content: content
+    )
 
-      content = assistant.config['handoff_message_offline'].presence ||
-                I18n.t('conversations.pilot.handoff_offline')
-      conversation.messages.create!(
-        message_type: :outgoing,
-        account_id: conversation.account_id,
-        inbox_id: conversation.inbox_id,
-        sender: assistant,
-        content: content
-      )
-    end
+    append_activity_message(conversation, handover_reason(result))
+    dispatch_handover_event(conversation, assistant, result, transitioned_at)
+  end
 
-    def post_reply(conversation, assistant, reply)
-      content = reply.to_s.sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '').strip
-      return if content.blank?
+  # Tags the conversation with the warm-bot handoff envelope. The
+  # listener and `Pilot::HandoffTimeoutJob` both key off this metadata
+  # to decide whether the bot may still respond and whether to resume
+  # it on timeout.
+  def mark_handoff_requested!(conversation, requested_at_iso)
+    conversation.additional_attributes ||= {}
+    conversation.additional_attributes['pilot_handoff'] = {
+      'state' => 'handoff_requested',
+      'requested_at' => requested_at_iso,
+      'mode' => 'keep_pilot_warm',
+      'resume_count' => 0
+    }
+    conversation.save!
+  end
 
-      conversation.messages.create!(
-        message_type: :outgoing,
-        account_id: conversation.account_id,
-        inbox_id: conversation.inbox_id,
-        sender: assistant,
-        content: content
-      )
-    end
+  def schedule_handoff_timeout(conversation, assistant, requested_at_iso)
+    ::Pilot::HandoffTimeoutJob
+      .set(wait: assistant.handoff_timeout_minutes.to_i.minutes)
+      .perform_later(conversation.id, requested_at_iso)
+  end
 
-    # Customer-facing handover per pilot-autopilot spec ("Handover to human agent"
-    # requirement) and mirroring Chatwoot Enterprise Captain's
-    # `Captain::Conversation::ResponseBuilderJob#create_handoff_message`.
-    # Uses Chatwoot core's `bot_handoff!` (transitions status, resets
-    # waiting_since, dispatches CONVERSATION_BOT_HANDOFF) instead of a raw
-    # status update. Posts a customer-visible message from the assistant's
-    # configured handoff_message, falling back to the i18n default.
-    #
-    # Per pilot-telemetry "Dispatcher exception handling" (17.25): the
-    # `pilot.autopilot.handover.triggered` dispatch happens AFTER the
-    # transition is committed and is wrapped in an outer rescue so a
-    # raise inside the dispatch path never propagates to this job. The
-    # event timestamp is captured at the moment of state transition and
-    # passed explicitly.
-    def process_handover(conversation, assistant, result)
-      conversation.bot_handoff! unless conversation.open?
-      transitioned_at = Time.zone.now
-      requested_at_iso = transitioned_at.iso8601
+  # Per pilot-telemetry "Activity messages on conversation timeline": every
+  # inference-driven outcome appends a `messages` row with
+  # `message_type = activity` so agents see the model-supplied reason on
+  # the conversation timeline.
+  def append_activity_message(conversation, reason)
+    body = I18n.t('pilot.activity.handed_off_by_inference', reason: reason.to_s)
+    conversation.messages.create!(
+      message_type: :activity,
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      content: body
+    )
+  rescue StandardError => e
+    Rails.logger.warn("[pilot.autopilot_inference_job] activity message persist failed: #{e.class}: #{e.message}")
+  end
 
-      mark_handoff_requested!(conversation, requested_at_iso)
-      schedule_handoff_timeout(conversation, assistant, requested_at_iso)
+  def dispatch_handover_event(conversation, assistant, result, transitioned_at)
+    envelope = ::Custom::Pilot::ConversationPayloadBuilder.call(conversation: conversation, assistant: assistant)
+    payload = {
+      account_id: conversation.account_id,
+      assistant_id: assistant.id,
+      conversation_envelope: envelope,
+      reason: handover_reason(result)
+    }
+    ::Custom::Pilot::EventDispatcher.dispatch(
+      'pilot.autopilot.handover.triggered',
+      payload,
+      time: transitioned_at,
+      account: conversation.account
+    )
+  rescue StandardError => e
+    Rails.logger.error("[pilot.autopilot_inference_job] handover dispatch failed: #{e.class}: #{e.message}")
+  end
 
-      content = assistant.config['handoff_message'].presence ||
-                I18n.t('conversations.pilot.handoff')
+  def handover_reason(result)
+    handover = result&.handover
+    return 'llm_requested' if handover.blank?
 
-      conversation.messages.create!(
-        message_type: :outgoing,
-        account_id: conversation.account_id,
-        inbox_id: conversation.inbox_id,
-        sender: assistant,
-        content: content
-      )
-
-      append_activity_message(conversation, handover_reason(result))
-      dispatch_handover_event(conversation, assistant, result, transitioned_at)
-    end
-
-    # Tags the conversation with the warm-bot handoff envelope. The
-    # listener and `Pilot::HandoffTimeoutJob` both key off this metadata
-    # to decide whether the bot may still respond and whether to resume
-    # it on timeout.
-    def mark_handoff_requested!(conversation, requested_at_iso)
-      conversation.additional_attributes ||= {}
-      conversation.additional_attributes['pilot_handoff'] = {
-        'state' => 'handoff_requested',
-        'requested_at' => requested_at_iso,
-        'mode' => 'keep_pilot_warm',
-        'resume_count' => 0
-      }
-      conversation.save!
-    end
-
-    def schedule_handoff_timeout(conversation, assistant, requested_at_iso)
-      ::Pilot::HandoffTimeoutJob
-        .set(wait: assistant.handoff_timeout_minutes.to_i.minutes)
-        .perform_later(conversation.id, requested_at_iso)
-    end
-
-    # Per pilot-telemetry "Activity messages on conversation timeline": every
-    # inference-driven outcome appends a `messages` row with
-    # `message_type = activity` so agents see the model-supplied reason on
-    # the conversation timeline.
-    def append_activity_message(conversation, reason)
-      body = I18n.t('pilot.activity.handed_off_by_inference', reason: reason.to_s)
-      conversation.messages.create!(
-        message_type: :activity,
-        account_id: conversation.account_id,
-        inbox_id: conversation.inbox_id,
-        content: body
-      )
-    rescue StandardError => e
-      Rails.logger.warn("[pilot.autopilot_inference_job] activity message persist failed: #{e.class}: #{e.message}")
-    end
-
-    def dispatch_handover_event(conversation, assistant, result, transitioned_at)
-      envelope = ::Custom::Pilot::ConversationPayloadBuilder.call(conversation: conversation, assistant: assistant)
-      payload = {
-        account_id: conversation.account_id,
-        assistant_id: assistant.id,
-        conversation_envelope: envelope,
-        reason: handover_reason(result)
-      }
-      ::Custom::Pilot::EventDispatcher.dispatch(
-        'pilot.autopilot.handover.triggered',
-        payload,
-        time: transitioned_at,
-        account: conversation.account
-      )
-    rescue StandardError => e
-      Rails.logger.error("[pilot.autopilot_inference_job] handover dispatch failed: #{e.class}: #{e.message}")
-    end
-
-    def handover_reason(result)
-      handover = result&.handover
-      return 'llm_requested' if handover.blank?
-
-      handover.respond_to?(:reason) ? (handover.reason.presence || 'llm_requested') : 'llm_requested'
-    end
+    handover.respond_to?(:reason) ? (handover.reason.presence || 'llm_requested') : 'llm_requested'
   end
 end

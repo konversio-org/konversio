@@ -121,11 +121,20 @@ RSpec.describe Pilot::AutopilotInferenceJob do
                       perform: service_result(reply: '[handover]', handover: handover))
     end
 
+    let(:online_agent) { create(:user, account: account) }
+
     before do
       # bot_handoff! is only invoked when the conversation isn't already open;
       # putting it in :pending forces the transition path we want to assert.
       conversation.update!(status: :pending)
       allow(Custom::Pilot::AutopilotService).to receive(:new).and_return(service)
+
+      # The job now skips handoff when no agents are online and posts an
+      # offline-acknowledgement instead. Wire one inbox member with online
+      # presence so we exercise the online path covered by this describe.
+      create(:inbox_member, user: online_agent, inbox: inbox)
+      allow(OnlineStatusTracker).to receive(:get_available_users)
+        .with(account.id).and_return(online_agent.id.to_s => 'online')
     end
 
     it 'transitions the conversation back to open via bot_handoff!' do
