@@ -1,8 +1,10 @@
 # Triggered when an inbound customer message lands in an inbox that has
 # a Pilot::Assistant attached AND the account has the `pilot_autopilot`
 # feature flag enabled. Runs `AutopilotService` and either posts the
-# reply as an outgoing message or transitions the conversation to
-# `pending` for human follow-up.
+# reply as an outgoing message or hands the conversation off to a human.
+# The conversation stays `open` through the whole handoff wait so it sits
+# in agent queues and is eligible for Chatwoot's native auto-resolve;
+# there is no bot-resume timer.
 class Pilot::AutopilotInferenceJob < ApplicationJob
   include Events::Types
 
@@ -23,6 +25,9 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     Rails.logger.warn("[pilot.autopilot_inference_job] feature disabled msg=#{message_id}: #{e.message}")
   rescue ::Custom::Pilot::AutopilotService::Error => e
     Rails.logger.error("[pilot.autopilot_inference_job] LLM failure msg=#{message_id}: #{e.message}")
+    # Dead air on error is the worst outcome — hand off to a human instead
+    # of swallowing it. conversation/assistant are set before inference runs.
+    handoff_on_error(conversation, assistant) if conversation && assistant
   end
 
   private
@@ -141,62 +146,63 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     )
   end
 
-  # Customer-facing handover per pilot-autopilot spec ("Handover to human agent"
-  # requirement) and mirroring Chatwoot Enterprise Captain's
-  # `Captain::Conversation::ResponseBuilderJob#create_handoff_message`.
-  # Uses Chatwoot core's `bot_handoff!` (transitions status, resets
-  # waiting_since, dispatches CONVERSATION_BOT_HANDOFF) instead of a raw
-  # status update. Posts a customer-visible message from the assistant's
-  # configured handoff_message, falling back to the i18n default.
-  #
-  # Per pilot-telemetry "Dispatcher exception handling" (17.25): the
-  # `pilot.autopilot.handover.triggered` dispatch happens AFTER the
-  # transition is committed and is wrapped in an outer rescue so a
-  # raise inside the dispatch path never propagates to this job. The
-  # event timestamp is captured at the moment of state transition and
-  # passed explicitly.
+  # Normal LLM-signalled handover: post the assistant's configured
+  # handoff message and route to a human.
   def process_handover(conversation, assistant, result)
+    perform_handoff(
+      conversation, assistant,
+      reason: handover_reason(result),
+      message: assistant.config['handoff_message'].presence || I18n.t('conversations.pilot.handoff')
+    )
+  end
+
+  # Inference failed (LLM error). Hand off so the customer isn't stranded
+  # in dead air; post a generic "a human will help" message regardless of
+  # the co-active toggle, since an error is not a normal wait.
+  def handoff_on_error(conversation, assistant)
+    perform_handoff(
+      conversation, assistant,
+      reason: 'inference_error',
+      message: I18n.t('conversations.pilot.handoff_error')
+    )
+  rescue StandardError => e
+    Rails.logger.error("[pilot.autopilot_inference_job] error handoff failed: #{e.class}: #{e.message}")
+  end
+
+  # Shared handoff side-effects. Uses Chatwoot core's `bot_handoff!` to
+  # transition into the human-support path (only if not already `open`),
+  # marks the Pilot metadata envelope, posts the customer-visible message,
+  # records the timeline activity, and dispatches telemetry. The
+  # conversation is left `open` — no resume timer is scheduled; native
+  # auto-resolve closes it if the customer abandons it.
+  def perform_handoff(conversation, assistant, reason:, message:)
     conversation.bot_handoff! unless conversation.open?
     transitioned_at = Time.zone.now
-    requested_at_iso = transitioned_at.iso8601
 
-    mark_handoff_requested!(conversation, requested_at_iso)
-    schedule_handoff_timeout(conversation, assistant, requested_at_iso)
-
-    content = assistant.config['handoff_message'].presence ||
-              I18n.t('conversations.pilot.handoff')
+    mark_handoff_requested!(conversation, transitioned_at.iso8601)
 
     conversation.messages.create!(
       message_type: :outgoing,
       account_id: conversation.account_id,
       inbox_id: conversation.inbox_id,
       sender: assistant,
-      content: content
+      content: message
     )
 
-    append_activity_message(conversation, handover_reason(result))
-    dispatch_handover_event(conversation, assistant, result, transitioned_at)
+    append_activity_message(conversation, reason)
+    dispatch_handover_event(conversation, assistant, reason, transitioned_at)
   end
 
-  # Tags the conversation with the warm-bot handoff envelope. The
-  # listener and `Pilot::HandoffTimeoutJob` both key off this metadata
-  # to decide whether the bot may still respond and whether to resume
-  # it on timeout.
+  # Tags the conversation with the handoff envelope. The listener keys off
+  # this metadata (`state == handoff_requested`) to decide whether the
+  # assistant may still respond while a human is being reached.
   def mark_handoff_requested!(conversation, requested_at_iso)
     conversation.additional_attributes ||= {}
     conversation.additional_attributes['pilot_handoff'] = {
       'state' => 'handoff_requested',
-      'requested_at' => requested_at_iso,
-      'mode' => 'keep_pilot_warm',
-      'resume_count' => 0
+      'requested_at' => requested_at_iso
     }
     conversation.save!
-  end
-
-  def schedule_handoff_timeout(conversation, assistant, requested_at_iso)
-    ::Pilot::HandoffTimeoutJob
-      .set(wait: assistant.handoff_timeout_minutes.to_i.minutes)
-      .perform_later(conversation.id, requested_at_iso)
   end
 
   # Per pilot-telemetry "Activity messages on conversation timeline": every
@@ -215,13 +221,13 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     Rails.logger.warn("[pilot.autopilot_inference_job] activity message persist failed: #{e.class}: #{e.message}")
   end
 
-  def dispatch_handover_event(conversation, assistant, result, transitioned_at)
+  def dispatch_handover_event(conversation, assistant, reason, transitioned_at)
     envelope = ::Custom::Pilot::ConversationPayloadBuilder.call(conversation: conversation, assistant: assistant)
     payload = {
       account_id: conversation.account_id,
       assistant_id: assistant.id,
       conversation_envelope: envelope,
-      reason: handover_reason(result)
+      reason: reason
     }
     ::Custom::Pilot::EventDispatcher.dispatch(
       'pilot.autopilot.handover.triggered',

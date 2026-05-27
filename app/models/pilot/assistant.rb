@@ -62,10 +62,10 @@ class Pilot::Assistant < ApplicationRecord
                  :resolution_message,
                  :instructions,
                  :temperature,
-                 :handoff_timeout_minutes,
-                 :handoff_timeout_message
+                 :keep_assistant_active_during_handoff,
+                 :max_history
 
-  DEFAULT_HANDOFF_TIMEOUT_MINUTES = 5
+  DEFAULT_MAX_HISTORY = 15
 
   validates :name, presence: true
   validates :account_id, presence: true
@@ -77,19 +77,19 @@ class Pilot::Assistant < ApplicationRecord
     config&.dig('citation_behavior').presence || 'on'
   end
 
-  # Minutes the bot stays warm during a handoff before
-  # `Pilot::HandoffTimeoutJob` resumes it. Defaults to 5 if unset or
-  # configured to a non-positive value.
-  def handoff_timeout_minutes
-    value = config&.dig('handoff_timeout_minutes').to_i
-    value.positive? ? value : DEFAULT_HANDOFF_TIMEOUT_MINUTES
+  # Whether the Autopilot keeps answering customer messages while a
+  # handoff is pending and no human has taken over yet. Defaults to true
+  # (co-active). When false, the assistant stays silent during the wait.
+  def keep_assistant_active_during_handoff
+    value = config&.dig('keep_assistant_active_during_handoff')
+    value.nil? || ActiveModel::Type::Boolean.new.cast(value)
   end
 
-  # Customer-facing message posted when the handoff timer fires and the
-  # bot resumes. Falls back to the i18n default.
-  def handoff_timeout_message
-    config&.dig('handoff_timeout_message').presence ||
-      I18n.t('conversations.pilot.handoff_timeout')
+  # Number of prior conversation messages sent to the LLM per inference.
+  # Bounds per-turn token cost. Defaults to 15 if unset or non-positive.
+  def max_history
+    value = config&.dig('max_history').to_i
+    value.positive? ? value : DEFAULT_MAX_HISTORY
   end
 
   scope :ordered, -> { order(created_at: :desc) }

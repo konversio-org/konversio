@@ -167,32 +167,23 @@ RSpec.describe Pilot::AutopilotInferenceJob do
       expect(conversation.messages.activity.last.content).to include('sentinel')
     end
 
-    it 'writes pilot_handoff metadata describing the warm-bot envelope' do
+    it 'writes pilot_handoff metadata describing the handoff envelope' do
       freeze_time = Time.zone.parse('2026-05-26 12:00:00')
       travel_to(freeze_time) do
         described_class.perform_now(message_id: message.id)
       end
 
       handoff = conversation.reload.additional_attributes['pilot_handoff']
-      expect(handoff).to include(
-        'state' => 'handoff_requested',
-        'mode' => 'keep_pilot_warm',
-        'resume_count' => 0
-      )
+      expect(handoff).to include('state' => 'handoff_requested')
       expect(handoff['requested_at']).to eq(freeze_time.iso8601)
     end
 
-    it 'schedules Pilot::HandoffTimeoutJob with the conversation id, requested_at, and configured delay' do
-      assistant.update!(config: assistant.config.merge('handoff_timeout_minutes' => 7))
-      freeze_time = Time.zone.parse('2026-05-26 12:00:00')
+    it 'leaves the conversation open and schedules no resume timer' do
+      expect do
+        described_class.perform_now(message_id: message.id)
+      end.not_to have_enqueued_job(described_class)
 
-      travel_to(freeze_time) do
-        expect do
-          described_class.perform_now(message_id: message.id)
-        end.to have_enqueued_job(Pilot::HandoffTimeoutJob)
-          .with(conversation.id, freeze_time.iso8601)
-          .at(freeze_time + 7.minutes)
-      end
+      expect(conversation.reload).to be_open
     end
 
     it 'dispatches pilot.autopilot.handover.triggered with the conversation envelope' do
@@ -226,12 +217,14 @@ RSpec.describe Pilot::AutopilotInferenceJob do
       expect(conversation.messages.outgoing).to be_empty
     end
 
-    it 'logs and swallows AutopilotService::Error' do
+    it 'hands off to a human on AutopilotService::Error instead of going silent' do
       allow(service).to receive(:perform).and_raise(Custom::Pilot::AutopilotService::Error, 'upstream down')
-      expect(Rails.logger).to receive(:error).with(/LLM failure/)
+      allow(Rails.logger).to receive(:error)
 
       expect { described_class.perform_now(message_id: message.id) }.not_to raise_error
-      expect(conversation.messages.outgoing).to be_empty
+
+      expect(conversation.reload).to be_open
+      expect(conversation.messages.outgoing.last.content).to eq(I18n.t('conversations.pilot.handoff_error'))
     end
 
     # The job only rescues the two Pilot-specific error classes above. An
