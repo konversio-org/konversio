@@ -20,7 +20,7 @@ module Pilot
 
       result = run_inference_with_typing(conversation, assistant)
 
-      if result.handover.handover?
+      if result.handover.handover? && !already_in_warm_handoff?(conversation)
         process_handover(conversation, assistant, result)
       else
         post_reply(conversation, assistant, result.reply)
@@ -67,6 +67,16 @@ module Pilot
 
       join = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
       join&.assistant
+    end
+
+    # Once `process_handover` has fired and the conversation carries the
+    # warm-bot envelope, subsequent LLM-signalled handover intents must
+    # NOT re-handoff — that creates a loop where every customer message
+    # gets met with the handoff message again. Fall through to
+    # `post_reply` instead so the bot can keep helping while the
+    # conversation routes to a human.
+    def already_in_warm_handoff?(conversation)
+      conversation.additional_attributes&.dig('pilot_handoff', 'state') == 'handoff_requested'
     end
 
     def post_reply(conversation, assistant, reply)
