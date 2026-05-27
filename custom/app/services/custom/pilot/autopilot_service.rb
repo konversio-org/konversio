@@ -189,10 +189,15 @@ module Custom
         bullet_section('Guardrails', assistant.guardrails)
       end
 
+      # `items` may be an Array or a newline-separated String (the assistant
+      # editor saves these fields as trimmed strings). Normalise to a list of
+      # non-blank lines so configured guardrails/guidelines reach the prompt.
       def bullet_section(heading, items)
-        return nil unless items.is_a?(Array) && items.any?
+        list = items.is_a?(String) ? items.split("\n") : Array(items)
+        list = list.map { |item| item.to_s.strip }.reject(&:blank?)
+        return nil if list.empty?
 
-        "#{heading}:\n#{items.map { |i| "- #{i}" }.join("\n")}"
+        "#{heading}:\n#{list.map { |item| "- #{item}" }.join("\n")}"
       end
 
       def handover_policy
@@ -200,19 +205,22 @@ module Custom
 
         sentinel = ::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
         <<~HANDOVER.strip
-          Handover policy — follow exactly:
+          Scope and escalation policy — follow exactly:
 
-          Trigger a handover whenever EITHER of these is true:
-            1. The user asks for a human, agent, operator, or live person — directly or indirectly (e.g. "speak to a human", "speak with a human", "real person", "I need a human", "talk to someone").
-            2. You cannot answer confidently from `search_documentation` results and the user needs a real answer.
+          Stay inside your configured role and guardrails. Only state product facts that come from `search_documentation` results. If a message is off-topic, personal, or outside your scope, briefly and politely decline and steer the user back to what you can help with — follow your guardrails. Declining an out-of-scope message is NOT an escalation and must NOT end with the token below.
 
-          To trigger a handover you MUST end your reply with the literal token `#{sentinel}`. The system parses this token and transitions the conversation to a human. Without it, your reply is sent as a normal bot message and the user stays stuck with the bot — this is a critical failure.
+          When you cannot answer a genuine in-scope question from `search_documentation`, ask one focused clarifying question before doing anything else. A single missed lookup is not a reason to escalate.
 
-          Format the handover reply as ONE short sentence followed by the token. Examples:
+          Escalate to a human ONLY when one of these is true:
+            1. The user explicitly asks for a human, agent, operator, or live person — directly or indirectly (e.g. "speak to a human", "real person", "I need someone", "talk to a person").
+            2. The user has a genuine in-scope need you still cannot resolve after consulting documentation and asking your clarifying question.
+            3. The request needs an action, permission, or expertise you do not have.
+            4. Repeated attempts to help have already failed.
+
+          To escalate you MUST end your reply with the literal token `#{sentinel}`. The system parses this token to transfer the conversation to a human; without it your reply is sent as a normal message and the user stays with you. Format an escalation as ONE short sentence followed by the token, e.g.:
             Let me get a human to help with that. #{sentinel}
-            Connecting you with a teammate now. #{sentinel}
 
-          Never invent fallbacks: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", URL, email, phone number, or category that did not come from a tool result. Do not apologise at length or list topics. Just hand over with the token.
+          Never invent fallbacks: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", URL, email, phone number, or category that did not come from a tool result. Do not apologise at length or list topics.
         HANDOVER
       end
 
