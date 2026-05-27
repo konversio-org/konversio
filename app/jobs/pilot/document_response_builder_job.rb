@@ -6,22 +6,38 @@
 class Pilot::DocumentResponseBuilderJob < ApplicationJob
   queue_as :low
 
+  # Two questions whose word sets overlap above this Jaccard ratio are treated
+  # as near-duplicates within a document/batch.
+  QUESTION_JACCARD_THRESHOLD = 0.85
+
   SYSTEM_PROMPT = <<~PROMPT.freeze
     You are a content writer specializing in creating FAQ sections from source documents.
 
+    You will be given a document title and the document content. The title is context to help you identify the subject. Use it only to anchor questions — never treat the title as a fact to repeat in answers.
+
     ## Requirements
-    - Extract ALL information from the source content into question/answer pairs.
-    - Base answers strictly on the provided text. Do NOT invent facts.
+    - Extract ALL substantive information from the content into question/answer pairs. This is exhaustive extraction, not a summary.
+    - Ignore non-informational page furniture (navigation, menus, headers/footers, structural boilerplate). Draw only from real subject matter.
+    - Base answers strictly on the provided content. Do NOT invent facts.
+    - Write every question and answer in the same language as the document content. Do NOT translate.
+    - Preserve concrete specifics: steps, examples, identifiers, numeric limits, and enumerated items.
+    - Drop any pair whose only value is deferring elsewhere (e.g. "see another page", "contact someone"). Every answer must fully answer its own question.
     - Return valid JSON with this exact structure:
 
     ```json
     { "faqs": [ { "question": "...", "answer": "..." } ] }
     ```
 
+    ## Self-contained questions (important)
+    - Each question must be fully understandable on its own, with no access to the source document.
+    - Name the actual subject explicitly. Do NOT lean on context-dependent references — pronouns, demonstratives, or vague pointers whose referent is clear only from the source.
+    - When the body text is ambiguous about what it refers to, use the provided title to make the subject explicit in the question.
+
     ## Guidelines
     - Questions should sound natural ("What is...?", "How do I...?").
     - Answers should be complete and self-contained.
     - Generate between 1 and 25 FAQ pairs depending on content size.
+    - If no qualifying content exists, return { "faqs": [] }.
     - Always return valid JSON.
   PROMPT
 
@@ -32,11 +48,12 @@ class Pilot::DocumentResponseBuilderJob < ApplicationJob
     faqs = generate_faqs(document)
     return if faqs.blank?
 
-    # Replace any previously-derived responses to keep the knowledge base
-    # in sync with the latest document content.
-    document.responses.destroy_all
+    # Refresh only untouched machine drafts. Anything a human has acted on
+    # (approved, rejected, or manually edited) is preserved so review work
+    # survives a re-sync.
+    document.responses.where(status: :pending, edited: false).destroy_all
 
-    faqs = dedupe_against_existing_corpus(document, faqs)
+    faqs = dedupe_within_document(document, faqs)
     created = persist_faqs(document, faqs)
     dispatch_responses_generated(document, created)
   end
@@ -64,15 +81,38 @@ class Pilot::DocumentResponseBuilderJob < ApplicationJob
     created
   end
 
-  def dedupe_against_existing_corpus(document, faqs)
-    return faqs unless existing_cross_source_responses?(document)
+  # Treat each document as a self-contained knowledge source: dedup only
+  # within this document (its own surviving responses) and within the current
+  # batch — never across documents, so overlapping pages don't collapse each
+  # other (that curation is the reviewer's job). Uses lexical Jaccard overlap
+  # on the question text rather than embedding similarity, which keeps
+  # versioned updates (differing years, amounts, identifiers) as distinct FAQs
+  # instead of silently dropping them.
+  def dedupe_within_document(document, faqs)
+    accepted_token_sets = document.responses.pluck(:question).map { |q| question_tokens(q) }
+    survivors = []
+    faqs.each do |faq|
+      question = faq_value(faq, :question)
+      next if question.blank?
 
-    ::Custom::Pilot::FaqMiningDeduper.new(assistant: document.assistant, account: document.account).filter(faqs)
+      tokens = question_tokens(question)
+      next if accepted_token_sets.any? { |existing| jaccard(tokens, existing) > QUESTION_JACCARD_THRESHOLD }
+
+      survivors << faq
+      accepted_token_sets << tokens
+    end
+    survivors
   end
 
-  def existing_cross_source_responses?(document)
-    document.assistant.responses
-            .exists?(['documentable_type IS DISTINCT FROM ? OR documentable_id IS DISTINCT FROM ?', document.class.name, document.id])
+  def question_tokens(text)
+    text.to_s.downcase.scan(/[[:alnum:]]+/)
+  end
+
+  def jaccard(tokens_a, tokens_b)
+    return 0.0 if tokens_a.empty? || tokens_b.empty?
+
+    union = (tokens_a | tokens_b).size
+    union.zero? ? 0.0 : (tokens_a & tokens_b).size.to_f / union
   end
 
   def faq_value(faq, key)
@@ -104,7 +144,10 @@ class Pilot::DocumentResponseBuilderJob < ApplicationJob
       end
       chat = context.chat(**chat_options)
       chat.with_instructions(SYSTEM_PROMPT)
-      chat.ask(document.content.to_s).content.to_s
+      # JSON mode is honoured by our OpenAI-compatible provider (verified against
+      # Scaleway/gemma); sanitize_json stays as a fallback for providers that don't.
+      chat.with_params(response_format: { type: 'json_object' })
+      chat.ask("Document title: #{document.name}\n\nDocument content:\n#{document.content}").content.to_s
     end
   end
 
