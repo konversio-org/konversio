@@ -99,6 +99,10 @@ module Pilot
     def process_handover(conversation, assistant, result)
       conversation.bot_handoff! unless conversation.open?
       transitioned_at = Time.zone.now
+      requested_at_iso = transitioned_at.iso8601
+
+      mark_handoff_requested!(conversation, requested_at_iso)
+      schedule_handoff_timeout(conversation, assistant, requested_at_iso)
 
       content = assistant.config['handoff_message'].presence ||
                 I18n.t('conversations.pilot.handoff')
@@ -113,6 +117,27 @@ module Pilot
 
       append_activity_message(conversation, handover_reason(result))
       dispatch_handover_event(conversation, assistant, result, transitioned_at)
+    end
+
+    # Tags the conversation with the warm-bot handoff envelope. The
+    # listener and `Pilot::HandoffTimeoutJob` both key off this metadata
+    # to decide whether the bot may still respond and whether to resume
+    # it on timeout.
+    def mark_handoff_requested!(conversation, requested_at_iso)
+      conversation.additional_attributes ||= {}
+      conversation.additional_attributes['pilot_handoff'] = {
+        'state' => 'handoff_requested',
+        'requested_at' => requested_at_iso,
+        'mode' => 'keep_pilot_warm',
+        'resume_count' => 0
+      }
+      conversation.save!
+    end
+
+    def schedule_handoff_timeout(conversation, assistant, requested_at_iso)
+      ::Pilot::HandoffTimeoutJob
+        .set(wait: assistant.handoff_timeout_minutes.to_i.minutes)
+        .perform_later(conversation.id, requested_at_iso)
     end
 
     # Per pilot-telemetry "Activity messages on conversation timeline": every

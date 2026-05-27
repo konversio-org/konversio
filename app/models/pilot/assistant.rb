@@ -61,7 +61,11 @@ class Pilot::Assistant < ApplicationRecord
                  :handoff_message,
                  :resolution_message,
                  :instructions,
-                 :temperature
+                 :temperature,
+                 :handoff_timeout_minutes,
+                 :handoff_timeout_message
+
+  DEFAULT_HANDOFF_TIMEOUT_MINUTES = 5
 
   validates :name, presence: true
   validates :account_id, presence: true
@@ -71,6 +75,21 @@ class Pilot::Assistant < ApplicationRecord
   # PDF-origin matches; URL-origin matches always surface the URL.
   def citation_behavior
     config&.dig('citation_behavior').presence || 'on'
+  end
+
+  # Minutes the bot stays warm during a handoff before
+  # `Pilot::HandoffTimeoutJob` resumes it. Defaults to 5 if unset or
+  # configured to a non-positive value.
+  def handoff_timeout_minutes
+    value = config&.dig('handoff_timeout_minutes').to_i
+    value.positive? ? value : DEFAULT_HANDOFF_TIMEOUT_MINUTES
+  end
+
+  # Customer-facing message posted when the handoff timer fires and the
+  # bot resumes. Falls back to the i18n default.
+  def handoff_timeout_message
+    config&.dig('handoff_timeout_message').presence ||
+      I18n.t('conversations.pilot.handoff_timeout')
   end
 
   scope :ordered, -> { order(created_at: :desc) }

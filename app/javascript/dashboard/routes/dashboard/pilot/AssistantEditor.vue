@@ -44,6 +44,8 @@ const featureContactAttributes = ref(false);
 const featureCitation = ref(true);
 const welcomeMessage = ref('');
 const handoffMessage = ref('');
+const handoffTimeoutMinutes = ref(5);
+const handoffTimeoutMessage = ref('');
 const resolutionMessage = ref('');
 const instructions = ref('');
 const temperature = ref(0.1);
@@ -63,6 +65,11 @@ const loadAssistantData = () => {
     featureCitation.value = config.feature_citation !== false;
     welcomeMessage.value = config.welcome_message || '';
     handoffMessage.value = config.handoff_message || '';
+    handoffTimeoutMinutes.value =
+      config.handoff_timeout_minutes != null
+        ? Number(config.handoff_timeout_minutes)
+        : 5;
+    handoffTimeoutMessage.value = config.handoff_timeout_message || '';
     resolutionMessage.value = config.resolution_message || '';
     instructions.value = config.instructions || '';
     temperature.value =
@@ -82,6 +89,8 @@ const loadAssistantData = () => {
     featureCitation.value = true;
     welcomeMessage.value = '';
     handoffMessage.value = '';
+    handoffTimeoutMinutes.value = 5;
+    handoffTimeoutMessage.value = '';
     resolutionMessage.value = '';
     instructions.value = '';
     temperature.value = 0.1;
@@ -124,6 +133,8 @@ const submit = async () => {
       feature_citation: featureCitation.value,
       welcome_message: welcomeMessage.value.trim(),
       handoff_message: handoffMessage.value.trim(),
+      handoff_timeout_minutes: Number(handoffTimeoutMinutes.value) || 5,
+      handoff_timeout_message: handoffTimeoutMessage.value.trim(),
       resolution_message: resolutionMessage.value.trim(),
       instructions: instructions.value.trim(),
       temperature: Number(temperature.value),
@@ -350,6 +361,44 @@ const submit = async () => {
           rows="2"
           class="w-full p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 placeholder:text-n-slate-9 focus:outline-none focus:border-n-blue-9 resize-y"
           :placeholder="t('PILOT.SETTINGS.FORM.HANDOFF_PLACEHOLDER')"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="assistant-handoff-timeout-minutes"
+          class="text-sm font-medium text-n-slate-12"
+        >
+          {{ t('PILOT.SETTINGS.FORM.HANDOFF_TIMEOUT_MINUTES_LABEL') }}
+        </label>
+        <input
+          id="assistant-handoff-timeout-minutes"
+          v-model="handoffTimeoutMinutes"
+          type="number"
+          min="1"
+          step="1"
+          class="w-32 h-10 px-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9"
+        />
+        <p class="text-xs text-n-slate-11">
+          {{ t('PILOT.SETTINGS.FORM.HANDOFF_TIMEOUT_MINUTES_HINT') }}
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="assistant-handoff-timeout-message"
+          class="text-sm font-medium text-n-slate-12"
+        >
+          {{ t('PILOT.SETTINGS.FORM.HANDOFF_TIMEOUT_MESSAGE_LABEL') }}
+        </label>
+        <textarea
+          id="assistant-handoff-timeout-message"
+          v-model="handoffTimeoutMessage"
+          rows="2"
+          class="w-full p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 placeholder:text-n-slate-9 focus:outline-none focus:border-n-blue-9 resize-y"
+          :placeholder="
+            t('PILOT.SETTINGS.FORM.HANDOFF_TIMEOUT_MESSAGE_PLACEHOLDER')
+          "
         />
       </div>
 
