@@ -165,6 +165,18 @@ class Conversation < ApplicationRecord
     dispatcher_dispatch(CONVERSATION_BOT_HANDOFF)
   end
 
+  # True when an outgoing message authored by anyone other than the Pilot
+  # assistant (i.e. a human agent or AgentBot) has landed on/after the
+  # given timestamp. Used by Pilot warm-bot guards to detect agent
+  # takeover during a `handoff_requested` window.
+  def human_replied_since?(timestamp)
+    return false if timestamp.blank?
+
+    messages.outgoing
+            .where.not(sender_type: ['AgentBot', 'Pilot::Assistant'])
+            .exists?(['created_at >= ?', timestamp])
+  end
+
   def unread_messages
     agent_last_seen_at.present? ? messages.created_since(agent_last_seen_at) : messages
   end

@@ -11,11 +11,7 @@ class PilotAutopilotListener < BaseListener
     return unless message.message_type == 'incoming'
     return if message.private?
     return unless autopilot_active?(account, message.inbox)
-    # Only respond while the conversation is bot-handled. After
-    # `Conversation#bot_handoff!` transitions status to `open`, a human
-    # agent has taken over — the bot must stop firing inference on every
-    # subsequent customer message to avoid handoff loops.
-    return unless message.conversation&.pending?
+    return unless bot_eligible?(message.conversation)
 
     ::Pilot::AutopilotInferenceJob.perform_later(message_id: message.id)
   end
@@ -34,6 +30,41 @@ class PilotAutopilotListener < BaseListener
   end
 
   private
+
+  # The bot may respond when the conversation is either:
+  #   - still bot-handled (`pending`), the classic Autopilot path, or
+  #   - `open` in the warm-bot window opened by `Conversation#bot_handoff!`
+  #     and still gated by Pilot metadata as `handoff_requested`, with no
+  #     human takeover (no assignee, no human outgoing reply since the
+  #     handoff timestamp).
+  #
+  # Any other state — resolved, snoozed, agent-owned `open` — silences
+  # the bot to avoid handoff loops.
+  def bot_eligible?(conversation)
+    return false if conversation.blank?
+    return true if conversation.pending?
+
+    warm_bot_active?(conversation)
+  end
+
+  def warm_bot_active?(conversation)
+    return false unless conversation.open?
+    return false if conversation.assignee_id.present?
+
+    handoff = conversation.additional_attributes&.dig('pilot_handoff')
+    return false unless handoff.is_a?(Hash) && handoff['state'] == 'handoff_requested'
+
+    requested_at = parse_requested_at(handoff['requested_at'])
+    return false if requested_at.blank?
+
+    !conversation.human_replied_since?(requested_at)
+  end
+
+  def parse_requested_at(value)
+    Time.iso8601(value.to_s)
+  rescue ArgumentError
+    nil
+  end
 
   def label_suggestion_active?(account)
     return false unless account.feature_enabled?('pilot')

@@ -158,6 +158,34 @@ RSpec.describe Pilot::AutopilotInferenceJob do
       expect(conversation.messages.activity.last.content).to include('sentinel')
     end
 
+    it 'writes pilot_handoff metadata describing the warm-bot envelope' do
+      freeze_time = Time.zone.parse('2026-05-26 12:00:00')
+      travel_to(freeze_time) do
+        described_class.perform_now(message_id: message.id)
+      end
+
+      handoff = conversation.reload.additional_attributes['pilot_handoff']
+      expect(handoff).to include(
+        'state' => 'handoff_requested',
+        'mode' => 'keep_pilot_warm',
+        'resume_count' => 0
+      )
+      expect(handoff['requested_at']).to eq(freeze_time.iso8601)
+    end
+
+    it 'schedules Pilot::HandoffTimeoutJob with the conversation id, requested_at, and configured delay' do
+      assistant.update!(config: assistant.config.merge('handoff_timeout_minutes' => 7))
+      freeze_time = Time.zone.parse('2026-05-26 12:00:00')
+
+      travel_to(freeze_time) do
+        expect do
+          described_class.perform_now(message_id: message.id)
+        end.to have_enqueued_job(Pilot::HandoffTimeoutJob)
+          .with(conversation.id, freeze_time.iso8601)
+          .at(freeze_time + 7.minutes)
+      end
+    end
+
     it 'dispatches pilot.autopilot.handover.triggered with the conversation envelope' do
       expect(Custom::Pilot::EventDispatcher).to receive(:dispatch).with(
         'pilot.autopilot.handover.triggered',
