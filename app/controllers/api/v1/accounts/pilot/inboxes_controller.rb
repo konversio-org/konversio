@@ -4,7 +4,7 @@ class Api::V1::Accounts::Pilot::InboxesController < Api::V1::Accounts::BaseContr
   before_action :authorize_request
 
   def index
-    @attached_inboxes = @assistant.pilot_inboxes.includes(:inbox)
+    @attached_inboxes = @assistant.pilot_inboxes.joins(:inbox).includes(:inbox)
     render json: @attached_inboxes.map { |pi|
       {
         id: pi.id,
