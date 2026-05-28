@@ -29,11 +29,11 @@ The modern customer support platform, an open-source alternative to Intercom, Ze
 
 ## About Konversio
 
-Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license as Konversio v0.0.1. We've kept only the MIT-licensed core — Chatwoot's Enterprise overlay (including **Captain AI**) is not included or redistributed.
+Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license. We retain the fully open-source, MIT-licensed core platform.
 
-On top of this foundation we're building **Pilot**, an independently re-expressed AI integration layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). See [`docs/architecture.md`](./docs/architecture.md) for the architectural model and extension layout. If AI was your only reason for considering Chatwoot Enterprise, Pilot removes that need. *(Pilot does not replicate other Enterprise features such as SSO or advanced role management.)*
+On top of this foundation, we include **Pilot**, an **independently re-expressed AI integration layer built on a custom SDK**. Pilot features **bring-your-own-key** (BYO-Key) support, allowing you to connect directly to any LLM provider (such as OpenAI, Anthropic, Mistral, or local models via Ollama). 
 
-Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-processor** — you control where data lives and which providers touch it. This makes Konversio a suitable building block for **EU-sovereign, GDPR-compliant deployments**. The software enables compliance; the deployment achieves it.
+By offering self-hosting and BYO-Key support, Pilot ensures that **no customer data flows through a vendor's AI sub-processor** — you control exactly where data lives and which models process it. This makes Konversio an ideal platform for **EU-sovereign, GDPR-compliant deployments**.
 
 ---
 
