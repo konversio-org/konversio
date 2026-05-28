@@ -19,7 +19,7 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     assistant = assistant_for(conversation.inbox)
     return if assistant.blank?
 
-    result = run_inference_with_typing(conversation, assistant)
+    result = run_inference_with_typing(conversation, assistant, message)
     dispatch_inference_outcome(result, conversation, assistant)
   rescue ::Custom::Pilot::AutopilotService::FeatureDisabledError => e
     Rails.logger.warn("[pilot.autopilot_inference_job] feature disabled msg=#{message_id}: #{e.message}")
@@ -32,8 +32,9 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
 
   private
 
-  def run_inference_with_typing(conversation, assistant)
+  def run_inference_with_typing(conversation, assistant, incoming_message)
     dispatch_typing(CONVERSATION_TYPING_ON, conversation, assistant)
+    notify_whatsapp_typing(incoming_message)
     ::Custom::Pilot::AutopilotService.new(
       assistant: assistant,
       conversation: conversation,
@@ -47,6 +48,18 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     Rails.configuration.dispatcher.dispatch(event, Time.zone.now, conversation: conversation, user: assistant)
   rescue StandardError => e
     Rails.logger.warn("[pilot.autopilot_inference_job] typing dispatch failed event=#{event}: #{e.message}")
+  end
+
+  # Best-effort: a Meta blip on the typing call must never break the
+  # actual reply, so we swallow errors and just log them.
+  def notify_whatsapp_typing(message)
+    channel = message.inbox.channel
+    return unless channel.is_a?(::Channel::Whatsapp) && channel.provider == 'whatsapp_cloud'
+    return if message.source_id.blank?
+
+    channel.provider_service.mark_seen_with_typing(message.source_id)
+  rescue StandardError => e
+    Rails.logger.warn("[pilot.autopilot_inference_job] whatsapp typing failed: #{e.message}")
   end
 
   def eligible?(message)

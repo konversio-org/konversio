@@ -79,6 +79,22 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
     "#{api_base_path}/v13.0/#{media_id}"
   end
 
+  # Marks the incoming customer message as read and shows WhatsApp's
+  # "typing…" bubble. Meta clears the bubble when the next outbound
+  # message is sent, or after 25s — whichever comes first.
+  def mark_seen_with_typing(wamid)
+    HTTParty.post(
+      "#{api_base_path}/v22.0/#{whatsapp_channel.provider_config['phone_number_id']}/messages",
+      headers: api_headers,
+      body: {
+        messaging_product: 'whatsapp',
+        status: 'read',
+        message_id: wamid,
+        typing_indicator: { type: 'text' }
+      }.to_json
+    )
+  end
+
   private
 
   def csat_template_service
