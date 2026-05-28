@@ -20,9 +20,7 @@
 
 # Account-scoped Autopilot assistant. Owns documents (knowledge sources),
 # assistant responses (the searchable knowledge base), scenarios (rule-based
-# behavior), and inbox attachments. The underlying table is still named
-# `captain_assistants` per the minimal-fork doctrine — only the AR class
-# carries the Pilot namespace.
+# behavior), and inbox attachments.
 class Pilot::Assistant < ApplicationRecord
   self.table_name = 'pilot_assistants'
 

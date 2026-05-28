@@ -44,7 +44,7 @@ The **built-in AI responder**. The flow:
 
 What you provide: documents (FAQ, help center, product docs), prompts, optional custom tools. What Konversio provides: the LLM, the RAG pipeline, the API integration, the UI.
 
-**Internal name:** `Pilot::Assistant` (was `Captain::Assistant` upstream).
+**Internal name:** `Pilot::Assistant`.
 
 **Conceptually,** Autopilot is "a Bot whose brain Konversio writes for you." From the customer's point of view, both Bot and Autopilot are the same thing: a non-human responder. The difference is who built the response logic.
 
@@ -128,7 +128,6 @@ If you need strict guarantees ("never refund without a manager approval", "alway
 - **Autopilot** → built-in AI responder (also called "AI Agent")
 - **Copilot** → AI assist for the human Agent, not a responder
 - **Pilot** → internal namespace covering both Copilot and Autopilot. Not a user-facing concept; don't use in copy.
-- **Captain** → the upstream Chatwoot name for what we call Pilot. Konversio renamed it.
 
 ## Where the code lives
 

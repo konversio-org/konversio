@@ -15,7 +15,7 @@ import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 
 // Menu layout: rewrite actions (Improve / Change tone / Fix grammar) sit
-// above the Captain three-item layout (Suggest a reply / Summarize / Ask
+// above the three-item layout (Suggest a reply / Summarize / Ask
 // Copilot). Rewrite items are gated on `features.pilot_rewrite` and a
 // non-empty draft. "Change tone" expands the menu inline to show the five
 // spec-defined Pilot tones; picking one closes the menu.
@@ -137,8 +137,8 @@ const actions = computed(() => {
       icon: 'i-ph-chat-text',
       handler: async () => {
         // Open the preview surface immediately so the thinking state
-        // is visible while the API call is in flight (matches Captain's
-        // editor-swap UX). ReplyBox owns the panel state and renders
+        // is visible while the API call is in flight (editor-swap
+        // pattern). ReplyBox owns the panel state and renders
         // PilotPreviewPanel in place of the composer until Accept or
         // Dismiss is fired.
         emitter.emit(BUS_EVENTS.PILOT_PREVIEW_START, {
@@ -190,9 +190,9 @@ const actions = computed(() => {
       label: t('PILOT.ACTIONS_MENU_ASK_COPILOT'),
       icon: 'i-ph-sparkle',
       handler: () => {
-        // Captain's "Ask Copilot" surfaces a free-form chat assistant
-        // scoped to the current conversation. Konversio's equivalent
-        // is the Copilot drawer (sidebar surface); openBoundToConversation
+        // "Ask Copilot" surfaces a free-form chat assistant scoped to
+        // the current conversation via the Copilot drawer (sidebar
+        // surface); openBoundToConversation
         // pre-seeds the conversation_id so the first thread message
         // carries it through.
         copilotDrawer.openBoundToConversation(props.conversationId);

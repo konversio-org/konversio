@@ -6,15 +6,14 @@ import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.v
 import { useMessageFormatter } from 'shared/composables/useMessageFormatter';
 
 // In-composer preview surface for Pilot one-shot actions (Suggest a
-// reply, Summarize the conversation). Conceptually mirrors the
-// editor-swap pattern from Chatwoot Enterprise Captain: the rich-text
-// editor is replaced with a thinking-state, then with an editable
-// preview the agent can Accept (merge into composer) or Dismiss
+// reply, Summarize the conversation). Uses an editor-swap pattern: the
+// rich-text editor is replaced with a thinking-state, then with an
+// editable preview the agent can Accept (merge into composer) or Dismiss
 // (discard, restore the original editor).
 //
-// Layout matches Captain's UX: violet-tinted box for the active state,
-// Discard/Accept buttons positioned outside the box below. Cmd/Ctrl +
-// Enter on the textarea accepts (matches Captain's keyboard shortcut).
+// Layout: violet-tinted box for the active state, Discard/Accept buttons
+// positioned outside the box below. Cmd/Ctrl + Enter on the textarea
+// accepts.
 
 const props = defineProps({
   // 'briefing' | 'summary' — drives the loading copy.

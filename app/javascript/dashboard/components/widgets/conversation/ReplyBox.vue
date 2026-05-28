@@ -144,8 +144,7 @@ export default {
       // In-composer preview state for one-shot Pilot actions (Suggest a
       // reply, Summarize). When non-null, PilotPreviewPanel replaces
       // the WootMessageEditor; Accept inserts content + closes, Dismiss
-      // just closes. Mirrors Chatwoot Enterprise Captain's editor-swap
-      // UX, conceptually.
+      // just closes. Uses an editor-swap pattern.
       pilotPreview: null,
     };
   },
