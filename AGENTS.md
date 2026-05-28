@@ -1,4 +1,4 @@
-# Chatwoot Development Guidelines
+# Konversio Development Guidelines
 
 ## Dev environments
 
@@ -138,10 +138,10 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 ## Fork Status
 
 - Konversio is a hard fork of Chatwoot v4.13.0 — no upstream tracking, 100% MIT, self-hosted only.
-- The `enterprise/` overlay and Captain AI have been removed; there is no OSS/Enterprise split to preserve.
-- Captain has been renamed to `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
+- The enterprise overlay and commercial AI modules have been removed; there is no OSS/Enterprise split to preserve.
+- The Pilot AI integration layer is namespaced under `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
 - Edit core files freely — no `prepend_mod_with` dance, no mirror-edits, no `spec/enterprise`.
-- **Pilot was built clean-room.** See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full methodology. Critical rule for any work on Pilot: **do not resurrect deleted `enterprise/captain/*` files from git history to reference when extending Pilot.** No `git show 461d6ab36^:enterprise/captain/...`, no pasting that source into any tool. The Chinese Wall holds only if no protected expression flows in.
+- **Pilot is an independent implementation.** All work on Pilot should proceed from Konversio-specific product specifications and original code designs. Do not reference or copy historical commercial AI assets.
 
 ## Branding / White-labeling note
 
