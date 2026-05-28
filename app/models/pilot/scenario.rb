@@ -34,8 +34,8 @@
 class Pilot::Scenario < ApplicationRecord
   self.table_name = 'pilot_scenarios'
 
-  # Markdown link to a tool reference: [Label](tool://<id>)
-  TOOL_REFERENCE_REGEX = %r{\[[^\]]+\]\(tool://([^/)]+)\)}.freeze
+  # Matches markdown links with custom tool schemes: [Label](tool://slug) or [Label](pilot-tool://slug)
+  TOOL_REFERENCE_PATTERN = %r{\[[^\]]+\]\((?:pilot-tool|tool)://([^#\s\)]+)\)}
 
   HANDOFF_TOOL_PREFIX = 'handoff_to_'.freeze
   HANDOFF_KEY_PREFIX = 'scenario'.freeze
@@ -74,7 +74,7 @@ class Pilot::Scenario < ApplicationRecord
   def self.extract_tool_ids_from_text(text)
     return [] if text.blank?
 
-    text.scan(TOOL_REFERENCE_REGEX).flatten.uniq
+    text.scan(TOOL_REFERENCE_PATTERN).flatten.uniq
   end
 
   private
