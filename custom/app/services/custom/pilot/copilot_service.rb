@@ -6,8 +6,8 @@ module Custom
     # Generates the assistant reply for a Copilot thread using the ai-agents
     # SDK runner pattern.
     #
-    # This service is the deliberate divergence from upstream Chatwoot
-    # Copilot V1 (`Captain::Copilot::ChatService`) — see openspec
+    # This service handles generating the assistant reply using the ai-agents
+    # SDK runner pattern. See openspec
     # changes/pilot-full design D20 + D21 + the pilot-copilot requirement
     # "Copilot uses the ai-agents SDK runner with full tool execution".
     #
@@ -200,8 +200,7 @@ module Custom
 
       # Split persisted thread history into the latest user turn (sent as the
       # runner's `input`) plus the prior context (sent as
-      # `context[:conversation_history]`). This mirrors how
-      # `Captain::Assistant::AgentRunnerService` shapes its payload.
+      # `context[:conversation_history]`).
       def split_history
         messages = thread.copilot_messages
                          .where(message_type: %i[user assistant])

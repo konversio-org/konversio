@@ -128,8 +128,7 @@ module Custom
         runner
       end
 
-      # Mirrors the upstream Captain `AgentRunnerService#build_and_wire_agents`:
-      # the assistant is the primary agent; each enabled scenario becomes a
+      # The assistant is the primary agent; each enabled scenario becomes a
       # handoff target. Scenarios can also hand back to the assistant.
       def build_and_wire_agents
         assistant_agent = build_assistant_agent

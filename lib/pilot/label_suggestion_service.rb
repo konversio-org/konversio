@@ -21,7 +21,7 @@ class Pilot::LabelSuggestionService < Pilot::BaseTaskService
     return response if response[:error].present?
 
     # Clean up response
-    result = { message: response[:message] ? response[:message].gsub(/^(label|labels):/i, '') : '' }
+    result = { message: sanitize_label_output(response[:message]) }
 
     # Cache successful result
     write_to_cache(result)
@@ -30,6 +30,14 @@ class Pilot::LabelSuggestionService < Pilot::BaseTaskService
   end
 
   private
+
+  def sanitize_label_output(text)
+    return '' if text.blank?
+
+    # Strip common LLM prefixes and surrounding quotes
+    cleaned = text.strip.sub(/\A(labels?|categories|tags|selected\s+labels?):\s*/i, '')
+    cleaned.strip.gsub(/\A["']|["']\z/, '')
+  end
 
   def cache_key
     return nil unless conversation
@@ -76,9 +84,9 @@ class Pilot::LabelSuggestionService < Pilot::BaseTaskService
 
   def valid_conversation?(conversation)
     return false if conversation.nil?
-    return false if conversation.messages.incoming.count < 3
-    return false if conversation.messages.count > 100
-    return false if conversation.messages.count > 20 && !conversation.messages.last.incoming?
+    return false if conversation.messages.incoming.count < 2
+    return false if conversation.messages.count > 120
+    return false if conversation.messages.count > 15 && !conversation.messages.last.incoming?
 
     true
   end
