@@ -8,47 +8,19 @@ Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chat
 
 In its place we ship **Pilot**, an **independently re-expressed AI integration layer built on a custom SDK**. Pilot targets feature parity with Captain on an MIT-licensed, open-source footing, and supports **bring-your-own-key** (BYO-Key) for any LLM provider — OpenAI, Anthropic, Mistral, or local models via Ollama.
 
-By offering self-hosting and BYO-Key support, Pilot ensures that **no customer data flows through a vendor's AI sub-processor** — you control exactly where data lives and which models process it. This makes Konversio an ideal platform for **EU-sovereign, GDPR-compliant deployments**.
+By offering self-hosting and BYO-Key support, Pilot ensures that **no customer data flows through a vendor's AI sub-processor** — you control exactly where data lives and which models process it. This makes Konversio an ideal platform for 🇪🇺 **EU-sovereign, GDPR-compliant deployments**.
 
 ---
 
-## 🚀 Quick Start with Docker
+## 🚀 Getting Started
 
-The easiest way to run Konversio locally is using Docker Compose, which automatically starts PostgreSQL, Redis, Mailhog, the Rails backend, and the Vite frontend.
-
-### 1. Copy Environment Template
-```bash
-cp .env.example .env
-```
-
-### 2. Boot the Containers
-```bash
-docker compose up -d
-```
-*(Wait for the `postgres` and `redis` healthchecks to pass.)*
-
-### 3. Initialize the Database
-```bash
-docker compose exec rails bundle exec rails db:chatwoot_prepare
-```
-
-### 4. Access the App
-Once started, the services are available at:
-* **Frontend Dashboard**: [http://localhost:3000](http://localhost:3000)
-* **Vite Dev Server (HMR)**: [http://localhost:3036](http://localhost:3036)
-* **Mailhog Web Interface**: [http://localhost:8025](http://localhost:8025)
-
-#### Default Development Credentials:
-* **Email**: `john@acme.inc`
-* **Password**: `Password1!`
+Run Konversio locally with Docker Compose in four steps. See [`docs/getting-started.md`](./docs/getting-started.md) for the full walkthrough.
 
 ---
 
 ### ✨ Pilot – Open-Source BYOK AI Layer
 
-Pilot is Konversio's open-source AI layer for customer support — the open alternative to closed AI add-ons. Pilot is **bring-your-own-key**: you supply credentials for OpenAI, Anthropic, Mistral, or point it at a local model via Ollama. No customer data is routed through a vendor's AI sub-processor, making Pilot a fit for EU-sovereign deployments and regulated industries.
-
-- **Pilot Logbook**: Agents can record key context about contacts to ground AI responses in customer history, ensuring Pilot has the most relevant background information.
+Pilot is Konversio's open-source AI layer for customer support — the open alternative to closed AI add-ons. Pilot is **bring-your-own-key**: you supply credentials for OpenAI, Anthropic, Mistral, or point it at a local model via Ollama. No customer data is routed through a vendor's AI sub-processor, making Pilot a fit for 🇪🇺 EU-sovereign deployments and regulated industries.
 
 ### 💬 Omnichannel Support Desk
 
@@ -96,11 +68,6 @@ Publish help articles, FAQs, and guides through the built-in Help Center Portal.
 - Downloadable Reports for offline analysis and reporting.
 
 
-<!-- @TODO: Points at Chatwoot's Crowdin. Honest only if Konversio upstreams translation contributions — otherwise replace with Konversio's own process or remove. -->
-## Translation process
-
-The translation process for Konversio web and mobile app is managed at [https://translate.chatwoot.com](https://translate.chatwoot.com) using Crowdin. Please read the [translation guide](https://www.chatwoot.com/docs/contributing/translating-chatwoot-to-your-language) for contributing to Konversio.
-
 ## Branching model
 
 We use the [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The base branch is `develop`.
@@ -110,10 +77,6 @@ If you are looking for a stable version, please use the `master` or tags labelle
 ## Security
 
 Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
-
-## Community
-
-If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/cJXdrwS) server.
 
 ## License
 
