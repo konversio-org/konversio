@@ -6,7 +6,7 @@ Konversio currently has **two parallel feature flag mechanisms** for the same ty
 
 | | System A: Featurable | System B: Pilot Columns |
 |---|---|---|
-| **Origin** | Chatwoot (inherited) | Konversio (clean-room rewrite) |
+| **Origin** | Chatwoot (inherited) | Konversio (independent implementation) |
 | **Storage** | `feature_flags` bigint bitfield | 13 `pilot_*_enabled` boolean columns |
 | **Definition** | `config/features.yml` (58 entries) | Migration files only |
 | **Admin UI** | Super Admin checkbox grid | None (DB-only) |
