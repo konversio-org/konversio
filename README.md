@@ -29,9 +29,9 @@ The modern customer support platform, an open-source alternative to Intercom, Ze
 
 ## About Konversio
 
-Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license. We retain the fully open-source, MIT-licensed core platform.
+Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license. We retain the fully open-source, MIT-licensed core platform. **Chatwoot's Enterprise overlay — including the Captain AI layer — has been removed and is not redistributed.**
 
-On top of this foundation, we include **Pilot**, an **independently re-expressed AI integration layer built on a custom SDK**. Pilot features **bring-your-own-key** (BYO-Key) support, allowing you to connect directly to any LLM provider (such as OpenAI, Anthropic, Mistral, or local models via Ollama). 
+In its place we ship **Pilot**, an **independently re-expressed AI integration layer built on a custom SDK**. Pilot targets feature parity with Captain on an MIT-licensed, open-source footing, and supports **bring-your-own-key** (BYO-Key) for any LLM provider — OpenAI, Anthropic, Mistral, or local models via Ollama.
 
 By offering self-hosting and BYO-Key support, Pilot ensures that **no customer data flows through a vendor's AI sub-processor** — you control exactly where data lives and which models process it. This makes Konversio an ideal platform for **EU-sovereign, GDPR-compliant deployments**.
 
