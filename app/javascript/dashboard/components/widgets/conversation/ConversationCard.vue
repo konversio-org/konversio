@@ -10,6 +10,7 @@ import InboxName from '../InboxName.vue';
 import ConversationContextMenu from './contextMenu/Index.vue';
 import TimeAgo from 'dashboard/components/ui/TimeAgo.vue';
 import CardLabels from './conversationCardComponents/CardLabels.vue';
+import CardStatusLabel from './conversationCardComponents/CardStatusLabel.vue';
 import CardPriorityIcon from 'dashboard/components-next/Conversation/ConversationCard/CardPriorityIcon.vue';
 import SLACardLabel from './components/SLACardLabel.vue';
 import ContextMenu from 'dashboard/components/ui/ContextMenu.vue';
@@ -118,7 +119,8 @@ const showMetaSection = computed(() => {
   return (
     showInboxName.value ||
     (props.showAssignee && assignee.value.name) ||
-    props.chat.priority
+    props.chat.priority ||
+    props.chat.status
   );
 });
 
@@ -322,6 +324,10 @@ const deleteConversation = () => {
             class="flex-shrink-0 !size-3.5"
           />
         </div>
+        <CardStatusLabel
+          :status="chat.status"
+          class="ltr:ml-auto rtl:mr-auto"
+        />
       </div>
       <h4
         class="conversation--user text-sm my-0 mx-2 capitalize pt-0.5 text-ellipsis overflow-hidden whitespace-nowrap flex-1 min-w-0 ltr:pr-16 rtl:pl-16 text-n-slate-12"
