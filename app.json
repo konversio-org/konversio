@@ -52,7 +52,7 @@
       "size": "basic"
     }
   },
-  "stack": "heroku-24",
+  "stack": "heroku-26",
   "image": "heroku/ruby",
   "addons": [
     {
@@ -62,7 +62,7 @@
       "plan": "heroku-postgresql:essential-0"
     }
   ],
-  "stack": "heroku-24",
+  "stack": "heroku-26",
   "buildpacks": [
     {
       "url": "heroku/nodejs"

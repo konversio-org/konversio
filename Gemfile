@@ -121,6 +121,7 @@ gem 'slack-ruby-client', '~> 2.7.0'
 # for dialogflow integrations
 gem 'google-cloud-dialogflow-v2', '>= 0.24.0'
 gem 'grpc'
+gem 'google-protobuf', '>= 4.0'
 # Translate integrations
 # 'google-cloud-translate' gem depends on faraday 2.0 version
 # this dependency breaks the slack-ruby-client gem
@@ -133,7 +134,7 @@ gem 'datadog', '~> 2.0', require: false
 gem 'elastic-apm', require: false
 gem 'newrelic_rpm', require: false
 gem 'newrelic-sidekiq-metrics', '>= 1.6.2', require: false
-gem 'scout_apm', require: false
+gem 'scout_apm', '>= 6.0', require: false
 gem 'sentry-rails', '>= 5.19.0', require: false
 gem 'sentry-ruby', require: false
 gem 'sentry-sidekiq', '>= 5.19.0', require: false
