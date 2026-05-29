@@ -2,26 +2,13 @@ require 'rails_helper'
 
 RSpec.describe KonversioMarkdownRenderer do
   let(:markdown_content) { 'This is a *test* content with ^markdown^' }
-  let(:plain_text_content) { 'This is a test content with markdown' }
-  let(:doc) { instance_double(CommonMarker::Node) }
   let(:renderer) { described_class.new(markdown_content) }
-  let(:markdown_renderer) { instance_double(CustomMarkdownRenderer) }
-  let(:html_content) { '<p>This is a <em>test</em> content with <sup>markdown</sup></p>' }
-
-  before do
-    allow(CustomMarkdownRenderer).to receive(:new).and_return(markdown_renderer)
-    allow(markdown_renderer).to receive(:render).with(doc).and_return(html_content)
-  end
 
   describe '#render_article' do
-    before do
-      allow(CommonMarker).to receive(:render_doc).with(markdown_content, :DEFAULT, [:table]).and_return(doc)
-    end
-
     let(:rendered_content) { renderer.render_article }
 
     it 'renders the markdown content to html' do
-      expect(rendered_content.to_s).to eq(html_content)
+      expect(rendered_content.to_s).to eq("<p>This is a <em>test</em> content with <sup>markdown</sup></p>\n")
     end
 
     it 'returns an html safe string' do
@@ -40,34 +27,16 @@ RSpec.describe KonversioMarkdownRenderer do
         MARKDOWN
       end
 
-      let(:html_content) do
-        <<~HTML
-          <p>This is a <strong>bold</strong> text and <em>italic</em> text.</p>
-          <table>
-            <thead>
-              <tr><th>Header1</th><th>Header2</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>Bold Cell</strong></td><td><em>Italic Cell</em></td></tr>
-              <tr><td>Cell3</td><td>Cell4</td></tr>
-            </tbody>
-          </table>
-        HTML
-      end
-
-      it 'renders tables in html' do
-        expect(rendered_content.to_s).to eq(html_content)
+      it 'renders tables wrapped in tableWrapper' do
+        expect(rendered_content.to_s).to include('<div class="tableWrapper">')
+        expect(rendered_content.to_s).to include('<table>')
+        expect(rendered_content.to_s).to include('<strong>Bold Cell</strong>')
       end
     end
   end
 
   describe '#render_message' do
     let(:rendered_message) { renderer.render_message }
-
-    before do
-      allow(CommonMarker).to receive(:render_doc).and_call_original
-      allow(BaseMarkdownRenderer).to receive(:new).and_call_original
-    end
 
     it 'renders the markdown message to html' do
       expect(rendered_message.to_s).to eq("<p>This is a <em>test</em> content with ^markdown^</p>\n")
@@ -89,13 +58,8 @@ RSpec.describe KonversioMarkdownRenderer do
   describe '#render_markdown_to_plain_text' do
     let(:rendered_content) { renderer.render_markdown_to_plain_text }
 
-    before do
-      allow(CommonMarker).to receive(:render_doc).with(markdown_content, :DEFAULT).and_return(doc)
-      allow(doc).to receive(:to_plaintext).and_return(plain_text_content)
-    end
-
     it 'renders the markdown content to plain text' do
-      expect(rendered_content).to eq(plain_text_content)
+      expect(rendered_content).to eq('This is a test content with ^markdown^')
     end
   end
 end

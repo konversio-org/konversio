@@ -4,8 +4,7 @@ describe CustomMarkdownRenderer do
   let(:renderer) { described_class.new }
 
   def render_markdown(markdown)
-    doc = CommonMarker.render_doc(markdown, :DEFAULT)
-    renderer.render(doc)
+    renderer.render(markdown)
   end
 
   describe '#text' do
@@ -50,8 +49,7 @@ describe CustomMarkdownRenderer do
 
   describe '#link' do
     def render_markdown_link(link)
-      doc = CommonMarker.render_doc("[link](#{link})", :DEFAULT)
-      renderer.render(doc)
+      renderer.render("[link](#{link})")
     end
 
     context 'when link is a YouTube URL' do
@@ -148,13 +146,13 @@ describe CustomMarkdownRenderer do
 
       it 'renders an iframe with Arcade tab embed code' do
         output = render_markdown_link(arcade_tab_url)
-        expect(output).to include('src="https://app.arcade.software/embed/ARCADE_TAB_ID?embed&embed_mobile=tab"')
+        expect(output).to include('src="https://app.arcade.software/embed/ARCADE_TAB_ID?embed&amp;embed_mobile=tab"')
       end
 
       it 'supports additional query params after embed_mobile' do
         url = 'https://app.arcade.software/share/ARCADE_TAB_ID?foo=bar&embed_mobile=tab?user_id=1'
         output = render_markdown_link(url)
-        expect(output).to include('src="https://app.arcade.software/embed/ARCADE_TAB_ID?embed&embed_mobile=tab"')
+        expect(output).to include('src="https://app.arcade.software/embed/ARCADE_TAB_ID?embed&amp;embed_mobile=tab"')
       end
 
       it 'wraps iframe in responsive container' do
@@ -189,7 +187,7 @@ describe CustomMarkdownRenderer do
 
       it 'renders an iframe with GuideJar embed code' do
         output = render_markdown_link(guidejar_url)
-        expect(output).to include('src="https://www.guidejar.com/embed/i2qMQRp26rtRxpZczmaA?type=1&controls=on"')
+        expect(output).to include('src="https://www.guidejar.com/embed/i2qMQRp26rtRxpZczmaA?type=1&amp;controls=on"')
         expect(output).to include('allowfullscreen')
       end
     end
@@ -199,7 +197,7 @@ describe CustomMarkdownRenderer do
 
       it 'renders an iframe with GuideJar embed code' do
         output = render_markdown_link(guidejar_url)
-        expect(output).to include('src="https://www.guidejar.com/embed/d6a6fdc2-4812-4777-897e-ec1b0c64238f?type=1&controls=on"')
+        expect(output).to include('src="https://www.guidejar.com/embed/d6a6fdc2-4812-4777-897e-ec1b0c64238f?type=1&amp;controls=on"')
         expect(output).to include('allowfullscreen')
       end
 
@@ -215,7 +213,7 @@ describe CustomMarkdownRenderer do
 
       it 'renders an iframe with Bunny embed code' do
         output = render_markdown_link(bunny_url)
-        expect(output).to include('src="https://player.mediadelivery.net/embed/431789/1f105841-cad9-46fe-a70e-b7623c60797c?autoplay=false&loop=false&muted=false&preload=true&responsive=true"')
+        expect(output).to include('src="https://player.mediadelivery.net/embed/431789/1f105841-cad9-46fe-a70e-b7623c60797c?autoplay=false&amp;loop=false&amp;muted=false&amp;preload=true&amp;responsive=true"')
         expect(output).to include('allowfullscreen')
         expect(output).to include('allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"')
       end
@@ -233,7 +231,7 @@ describe CustomMarkdownRenderer do
       it 'renders an iframe with Bunny embed code' do
         output = render_markdown_link(bunny_url)
         expect(output).to include('embed/431789/1f105841-cad9-46fe-a70e-b7623c60797c')
-        expect(output).to include('autoplay=false&loop=false&muted=false&preload=true&responsive=true')
+        expect(output).to include('autoplay=false&amp;loop=false&amp;muted=false&amp;preload=true&amp;responsive=true')
         expect(output).to include('allowfullscreen')
         expect(output).to include('allow="accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;"')
       end

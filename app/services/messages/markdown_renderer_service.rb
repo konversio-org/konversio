@@ -37,12 +37,12 @@ class Messages::MarkdownRendererService
   end
 
   def commonmarker_doc
-    @commonmarker_doc ||= CommonMarker.render_doc(@content, [:DEFAULT, :STRIKETHROUGH_DOUBLE_TILDE])
+    @commonmarker_doc ||= Commonmarker.parse(@content, options: text_channel_parse_options)
   end
 
   def render_html
     markdown_renderer = BaseMarkdownRenderer.new
-    doc = CommonMarker.render_doc(@content, :DEFAULT, [:strikethrough])
+    doc = Commonmarker.parse(@content, options: html_channel_parse_options)
     markdown_renderer.render(doc)
   end
 
@@ -51,7 +51,7 @@ class Messages::MarkdownRendererService
     normalized_content = @content.gsub(/^[ \t]+$/m, '')
     content_with_preserved_newlines = preserve_multiple_newlines(normalized_content)
     renderer = Messages::MarkdownRenderers::TelegramRenderer.new
-    doc = CommonMarker.render_doc(content_with_preserved_newlines, [:STRIKETHROUGH_DOUBLE_TILDE], [:strikethrough])
+    doc = Commonmarker.parse(content_with_preserved_newlines, options: html_channel_parse_options)
     result = renderer.render(doc).gsub(/\n+\z/, '')
     restore_multiple_newlines(result)
   end
@@ -61,7 +61,7 @@ class Messages::MarkdownRendererService
     normalized_content = @content.gsub(/^[ \t]+$/m, '')
     content_with_preserved_newlines = preserve_multiple_newlines(normalized_content)
     renderer = Messages::MarkdownRenderers::WhatsAppRenderer.new
-    doc = CommonMarker.render_doc(content_with_preserved_newlines, [:DEFAULT, :STRIKETHROUGH_DOUBLE_TILDE])
+    doc = Commonmarker.parse(content_with_preserved_newlines, options: text_channel_parse_options)
     result = renderer.render(doc).gsub(/\n+\z/, '')
     restore_multiple_newlines(result)
   end
@@ -71,7 +71,7 @@ class Messages::MarkdownRendererService
     normalized_content = @content.gsub(/^[ \t]+$/m, '')
     content_with_preserved_newlines = preserve_multiple_newlines(normalized_content)
     renderer = Messages::MarkdownRenderers::InstagramRenderer.new
-    doc = CommonMarker.render_doc(content_with_preserved_newlines, [:DEFAULT, :STRIKETHROUGH_DOUBLE_TILDE])
+    doc = Commonmarker.parse(content_with_preserved_newlines, options: text_channel_parse_options)
     result = renderer.render(doc).gsub(/\n+\z/, '')
     restore_multiple_newlines(result)
   end
@@ -81,7 +81,7 @@ class Messages::MarkdownRendererService
     normalized_content = @content.gsub(/^[ \t]+$/m, '')
     content_with_preserved_newlines = preserve_multiple_newlines(normalized_content)
     renderer = Messages::MarkdownRenderers::LineRenderer.new
-    doc = CommonMarker.render_doc(content_with_preserved_newlines, [:DEFAULT, :STRIKETHROUGH_DOUBLE_TILDE])
+    doc = Commonmarker.parse(content_with_preserved_newlines, options: text_channel_parse_options)
     result = renderer.render(doc).gsub(/\n+\z/, '')
     restore_multiple_newlines(result)
   end
@@ -91,7 +91,7 @@ class Messages::MarkdownRendererService
     normalized_content = @content.gsub(/^[ \t]+$/m, '')
     content_with_preserved_newlines = preserve_multiple_newlines(normalized_content)
     renderer = Messages::MarkdownRenderers::PlainTextRenderer.new
-    doc = CommonMarker.render_doc(content_with_preserved_newlines, [:DEFAULT, :STRIKETHROUGH_DOUBLE_TILDE])
+    doc = Commonmarker.parse(content_with_preserved_newlines, options: text_channel_parse_options)
     result = renderer.render(doc).gsub(/\n+\z/, '')
     restore_multiple_newlines(result)
   end
@@ -109,5 +109,27 @@ class Messages::MarkdownRendererService
     content.gsub(/\{\{PRESERVE_(\d+)_NEWLINES\}\}/) do |_match|
       "\n" * Regexp.last_match(1).to_i
     end
+  end
+
+  def text_channel_parse_options
+    {
+      extension: {
+        autolink: false,
+        strikethrough: false,
+        table: false,
+        tagfilter: false
+      }
+    }
+  end
+
+  def html_channel_parse_options
+    {
+      extension: {
+        autolink: false,
+        strikethrough: true,
+        table: false,
+        tagfilter: false
+      }
+    }
   end
 end

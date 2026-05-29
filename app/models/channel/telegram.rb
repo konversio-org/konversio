@@ -137,7 +137,7 @@ class Channel::Telegram < ApplicationRecord
     # Parse markdown with extensions:
     # - strikethrough: support ~~text~~
     # - hardbreaks: preserve all newlines as <br>
-    html = CommonMarker.render_html(escaped_text, [:HARDBREAKS], [:strikethrough]).strip
+    html = Commonmarker.to_html(escaped_text, options: { render: { hardbreaks: true }, extension: { strikethrough: true } }).strip
 
     # Convert paragraph breaks to double newlines to preserve them
     # CommonMarker creates <p> tags for paragraph breaks, but Telegram doesn't support <p>

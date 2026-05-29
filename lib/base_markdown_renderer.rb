@@ -1,39 +1,39 @@
-class BaseMarkdownRenderer < CommonMarker::HtmlRenderer
-  def image(node)
-    src, title = extract_img_attributes(node)
-    height = extract_image_height(src)
+require 'nokogiri'
+require 'uri'
+require 'cgi'
 
-    render_img_tag(src, title, height)
+class BaseMarkdownRenderer
+  def render(doc_or_text)
+    html = if doc_or_text.is_a?(String)
+             Commonmarker.to_html(doc_or_text, options: { extension: { strikethrough: true } })
+           elsif doc_or_text.respond_to?(:to_html)
+             doc_or_text.to_html
+           else
+             doc_or_text.to_s
+           end
+
+    adjust_image_tags(html)
   end
 
   private
 
-  def extract_img_attributes(node)
-    [
-      escape_href(node.url),
-      escape_html(node.title)
-    ]
-  end
+  def adjust_image_tags(html)
+    doc = Nokogiri::HTML.fragment(html)
+    doc.css('img').each do |img|
+      src = img['src']
+      next if src.blank?
 
-  def extract_image_height(src)
-    query_params = parse_query_params(src)
-    query_params['cw_image_height']&.first
-  end
-
-  def parse_query_params(url)
-    parsed_url = URI.parse(url)
-    CGI.parse(parsed_url.query || '')
-  rescue URI::InvalidURIError
-    {}
-  end
-
-  def render_img_tag(src, title, height = nil)
-    title_attribute = title.present? ? " title=\"#{title}\"" : ''
-    height_attribute = height ? " height=\"#{height}\" width=\"auto\"" : ''
-
-    plain do
-      # plain ensures that the content is not wrapped in a paragraph tag
-      out("<img src=\"#{src}\"#{title_attribute}#{height_attribute} />")
+      begin
+        parsed_url = URI.parse(src)
+        query_params = CGI.parse(parsed_url.query || '')
+        height = query_params['cw_image_height']&.first
+        if height
+          img['height'] = height
+          img['width'] = 'auto'
+        end
+      rescue URI::InvalidURIError
+      end
     end
+    doc.to_html
   end
 end
