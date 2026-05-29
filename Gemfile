@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.4.4'
+ruby '3.4.9'
 
 # Ruby 3.5 will remove fiddle from the stdlib; reline (loaded via Bundler)
 # still requires it. Declaring it here silences the deprecation warning on
