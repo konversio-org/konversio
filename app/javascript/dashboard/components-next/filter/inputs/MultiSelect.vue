@@ -67,6 +67,12 @@ const remainingTooltip = computed(() => {
   return remainingItems.value.map(item => item.name).join(', ');
 });
 
+// 'all' is a catch-all sentinel — it already means "match every value"
+// (see filterHelpers.equalTo), so it can't coexist with specific values.
+const ALL_OPTION_ID = 'all';
+
+const isAllSelected = computed(() => selectedIds.value.includes(ALL_OPTION_ID));
+
 const toggleOption = option => {
   // Ensure that the `icon` prop is not included, icon is a VNode which has circular references
   // This causes an error when creating a clone using JSON.parse(JSON.stringify())
@@ -84,8 +90,18 @@ const toggleOption = option => {
 
   if (selectedIds.value.includes(idToToggle)) {
     selected.value = selected.value.filter(value => value.id !== idToToggle);
+    return;
+  }
+
+  // Selecting the catch-all clears specific values; selecting a specific
+  // value clears the catch-all — the two are mutually exclusive.
+  if (idToToggle === ALL_OPTION_ID) {
+    selected.value = [optionToToggle];
   } else {
-    selected.value = [...selected.value, optionToToggle];
+    selected.value = [
+      ...selected.value.filter(value => value.id !== ALL_OPTION_ID),
+      optionToToggle,
+    ];
   }
 };
 </script>
@@ -115,7 +131,10 @@ const toggleOption = option => {
             t('COMBOBOX.MORE', { count: remainingItems.length })
           }}</span>
         </div>
-        <div class="flex items-center border-none px-3 gap-2">
+        <div
+          v-if="!isAllSelected"
+          class="flex items-center border-none px-3 gap-2"
+        >
           <Icon icon="i-lucide-plus" />
         </div>
       </button>

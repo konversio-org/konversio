@@ -23,7 +23,12 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['applyFilter', 'updateFolder', 'close']);
+const emit = defineEmits([
+  'applyFilter',
+  'updateFolder',
+  'close',
+  'clearFilters',
+]);
 const { filterTypes } = useConversationFilterContext();
 
 const filters = defineModel({
@@ -44,6 +49,14 @@ const store = useStore();
 
 const resetFilter = () => {
   filters.value = [{ ...DEFAULT_FILTER }];
+};
+
+// "Clear filters" should drop all filtering and dismiss the panel, rather
+// than leaving an empty row stuck on a "Value is required" error. The parent
+// clears applied filters, refetches the default list, and closes.
+const clearFilters = () => {
+  resetFilter();
+  emit('clearFilters');
 };
 
 const removeFilter = index => {
@@ -151,7 +164,7 @@ const outsideClickHandler = [
         {{ $t('FILTER.ADD_NEW_FILTER') }}
       </Button>
       <div class="flex gap-2">
-        <Button sm faded slate @click="resetFilter">
+        <Button sm faded slate @click="clearFilters">
           {{ t('FILTER.CLEAR_BUTTON_LABEL') }}
         </Button>
         <Button

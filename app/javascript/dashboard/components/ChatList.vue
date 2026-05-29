@@ -590,6 +590,11 @@ function resetAndFetchData() {
   fetchConversations();
 }
 
+function onClearFilters() {
+  resetAndFetchData();
+  closeAdvanceFiltersModal();
+}
+
 function loadMoreConversations() {
   if (hasCurrentPageEndReached.value || chatListLoading.value) {
     return;
@@ -1030,6 +1035,7 @@ watch(conversationFilters, (newVal, oldVal) => {
         :is-folder-view="hasActiveFolders"
         @apply-filter="onApplyFilter"
         @update-folder="onUpdateSavedFilter"
+        @clear-filters="onClearFilters"
         @close="closeAdvanceFiltersModal"
       />
     </TeleportWithDirection>
