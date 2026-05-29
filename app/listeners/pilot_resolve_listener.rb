@@ -19,6 +19,8 @@ class PilotResolveListener < BaseListener
     return if conversation.blank? || account.blank?
     return unless account.feature_enabled?('pilot')
 
+    clear_pilot_handoff_metadata(conversation)
+
     assistant = pilot_assistant_for(conversation)
 
     enqueue_faq_mining(conversation, account, assistant)
@@ -26,6 +28,13 @@ class PilotResolveListener < BaseListener
   end
 
   private
+
+  def clear_pilot_handoff_metadata(conversation)
+    return unless conversation.additional_attributes&.key?('pilot_handoff')
+
+    conversation.additional_attributes.delete('pilot_handoff')
+    conversation.save!
+  end
 
   def pilot_assistant_for(conversation)
     inbox = conversation.inbox
