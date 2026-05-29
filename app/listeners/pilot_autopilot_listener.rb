@@ -10,6 +10,12 @@ class PilotAutopilotListener < BaseListener
     return if message.blank? || account.blank?
     return unless message.message_type == 'incoming'
     return if message.private?
+
+    # Channel-agnostic enrichment: transcribe any inbound voice note so the
+    # transcript reaches every consumer (agent dashboard, and via
+    # content_for_llm the assistant), independent of Autopilot eligibility.
+    enqueue_audio_transcription(message, account)
+
     return unless autopilot_active?(account, message.inbox)
     return unless bot_eligible?(message.conversation)
 
@@ -30,6 +36,13 @@ class PilotAutopilotListener < BaseListener
   end
 
   private
+
+  def enqueue_audio_transcription(message, account)
+    return unless account.feature_enabled?('pilot') && account.feature_enabled?('pilot_audio_transcription')
+    return unless message.attachments.exists?(file_type: :audio)
+
+    ::Pilot::AudioTranscriptionJob.perform_later(message_id: message.id)
+  end
 
   # The bot may respond when the conversation is either:
   #   - still bot-handled (`pending`), the classic Autopilot path, or

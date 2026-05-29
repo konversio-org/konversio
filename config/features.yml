@@ -273,3 +273,6 @@
 - name: pilot_label_suggestion
   display_name: Pilot Label Suggestion
   enabled: true
+- name: pilot_audio_transcription
+  display_name: Pilot Audio Transcription
+  enabled: true

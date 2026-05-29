@@ -74,7 +74,17 @@ module Custom
         raise Error, error.message
       end
 
+      # Idempotent precondition: make sure a just-received voice note is
+      # transcribed before its content is read into the LLM history, so the
+      # assistant answers the words rather than a "[Voice Message]"
+      # placeholder. No-ops when the ingestion listener already transcribed it.
+      def ensure_audio_transcribed
+        last_inbound = conversation&.messages&.where(message_type: :incoming)&.order(:created_at)&.last
+        ::Custom::Pilot::AudioTranscriptionService.transcribe_message(last_inbound)
+      end
+
       def run_runner
+        ensure_audio_transcribed
         history = build_history
         last_user = extract_last_user_text(history)
         raise Error, 'No customer message to respond to' if last_user.blank?
