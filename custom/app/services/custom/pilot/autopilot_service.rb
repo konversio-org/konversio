@@ -287,7 +287,10 @@ module Custom
                     .order(:created_at)
                     .last(assistant&.max_history || ::Pilot::Assistant::DEFAULT_MAX_HISTORY)
                     .filter_map do |msg|
-          content = msg.content.to_s
+          # content_for_llm yields the transcript for voice notes (and an
+          # attachment placeholder) instead of the blank raw content, so audio
+          # messages are not silently dropped from the history.
+          content = msg.content_for_llm.to_s
           next if content.blank?
 
           { role: msg.message_type == 'incoming' ? 'user' : 'assistant', content: content }
