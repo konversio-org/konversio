@@ -52,39 +52,34 @@ assistant.guardrails = "Only help with Migrately and topics about relocating to 
 assistant.save!
 puts "Assistant 1 (Mira) instructions and guardrails updated successfully."
 
-# 2. Inject FAQs / Assistant Responses
+# Destroy any previously created Dutch duplicate FAQs to keep database clean
+dutch_questions = [
+  "Waar kan ik controleren of ik in aanmerking kom om naar Nederland te verhuizen?",
+  "Waarom kan ik controleren of ik in aanmerking kom om naar Nederland te verhuizen?",
+  "Bieden jullie een geld-terug-garantie?",
+  "Hoe kan ik mijn immigratieproces starten bij Migrately?",
+  "Wat houdt de 14 dagen niet-goed-geld-terug-garantie in?"
+]
+deleted_count = Pilot::AssistantResponse.where(assistant_id: assistant.id, question: dutch_questions).destroy_all.count
+puts "Deleted #{deleted_count} Dutch duplicate FAQs."
+
+# Inject/Update English FAQs
 faqs = [
   {
     question: "Where can I check if I am eligible to move to the Netherlands?",
     answer: "You can check your eligibility online by taking our quick Eligibility Test at https://migrately.nl/eligibility-test. It only takes a few minutes, and we offer a 14-day, no-questions-asked money-back guarantee so you can try it completely risk-free!"
   },
   {
-    question: "Waarom kan ik controleren of ik in aanmerking kom om naar Nederland te verhuizen?",
-    answer: "U kunt uw geschiktheid en opties direct online controleren door onze snelle geschiktheidstest te doen op https://migrately.nl/eligibility-test. Het invullen duurt slechts een paar minuten, en we hanteren een 14 dagen niet-goed-geld-terug-garantie zonder vragen te stellen. U kunt het dus volledig risicovrij proberen!"
-  },
-  {
     question: "Do you offer a money-back guarantee?",
     answer: "Yes! We offer a 14-day, no-questions-asked money-back guarantee on our Eligibility Test. If you take the test at https://migrately.nl/eligibility-test and are not satisfied for any reason, just let us know within 14 days and we will refund you fully, no questions asked."
-  },
-  {
-    question: "Bieden jullie een geld-terug-garantie?",
-    answer: "Ja zeker! We bieden een 14 dagen niet-goed-geld-terug-garantie op onze geschiktheidstest. Als u de test doet op https://migrately.nl/eligibility-test en om wat voor reden dan ook niet tevreden bent, laat het ons dan binnen 14 dagen weten en we betalen u het volledige bedrag terug, zonder vragen te stellen."
   },
   {
     question: "How can I start my immigration process with Migrately?",
     answer: "The best way to start is by taking our Eligibility Test at https://migrately.nl/eligibility-test. This will analyze your personal situation, contract, and documentation to tell you exactly which visas you qualify for. It includes a 14-day, no-questions-asked money-back guarantee."
   },
   {
-    question: "Hoe kan ik mijn immigratieproces starten bij Migrately?",
-    answer: "De beste manier om te starten is door onze online geschiktheidstest te doen op https://migrately.nl/eligibility-test. Hiermee analyseren we uw persoonlijke situatie, contract en documenten om u precies te laten zien voor welke visa u in aanmerking komt. Dit komt met een 14 dagen niet-goed-geld-terug-garantie, zonder vragen te stellen."
-  },
-  {
     question: "What is the 14-day money-back guarantee?",
     answer: "Our 14-day money-back guarantee applies to the Eligibility Test at https://migrately.nl/eligibility-test. If you are not satisfied with the results or experience, you can request a full refund within 14 days of purchase, and we will return your money, no questions asked."
-  },
-  {
-    question: "Wat houdt de 14 dagen niet-goed-geld-terug-garantie in?",
-    answer: "Onze 14 dagen geld-terug-garantie is van toepassing op de online geschiktheidstest op https://migrately.nl/eligibility-test. Als u niet tevreden bent met de resultaten of uw ervaring, kunt u binnen 14 dagen na aankoop een volledige terugbetaling aanvragen. We storten het bedrag dan direct terug, zonder dat u vragen hoeft te beantwoorden."
   }
 ]
 
