@@ -48,6 +48,7 @@ import { useConversationRequiredAttributes } from 'dashboard/composables/useConv
 import { emitter } from 'shared/helpers/mitt';
 
 import wootConstants from 'dashboard/constants/globals';
+import ConversationApi from 'dashboard/api/inbox/conversation';
 import advancedFilterOptions from './widgets/conversation/advancedFilterItems';
 import filterQueryGenerator from '../helper/filterQueryGenerator.js';
 import languages from 'dashboard/components/widgets/conversation/advancedFilterItems/languages';
@@ -92,6 +93,42 @@ const virtualListRef = ref(null);
 provide('contextMenuElementTarget', virtualListRef);
 
 const activeAssigneeTab = ref(wootConstants.ASSIGNEE_TYPE.ME);
+const activeLifecycleTab = ref('active');
+const aiLifecycleCounts = ref({
+  active: 0,
+  handed_off: 0,
+  resolved: 0,
+});
+
+const isAiAgentView = computed(() => !!props.pilotAssistantId);
+
+async function fetchAiLifecycleCounts() {
+  if (!isAiAgentView.value) return;
+  try {
+    const agentId = props.pilotAssistantId;
+
+    // Fetch active & handed_off counts (open status)
+    const openMetaRes = await ConversationApi.meta({
+      pilotAssistantId: agentId,
+      status: ['open', 'pending', 'snoozed'],
+    });
+
+    // Fetch resolved count (resolved status)
+    const resolvedMetaRes = await ConversationApi.meta({
+      pilotAssistantId: agentId,
+      status: 'resolved',
+    });
+
+    aiLifecycleCounts.value = {
+      active: openMetaRes.data.meta.unassigned_count || 0,
+      handed_off: openMetaRes.data.meta.assigned_count || 0,
+      resolved: resolvedMetaRes.data.meta.all_count || 0,
+    };
+  } catch (error) {
+    // Ignore error
+  }
+}
+
 const activeStatus = ref(wootConstants.STATUS_TYPE.OPEN);
 const activeSortBy = ref(wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC);
 const showAdvancedFilters = ref(false);
@@ -207,6 +244,26 @@ const assigneeTabItems = computed(() => {
   }));
 });
 
+const lifecycleTabItems = computed(() => {
+  return [
+    {
+      key: 'active',
+      name: t('CHAT_LIST.AI_AGENT_LIFECYCLE_TABS.ACTIVE'),
+      count: aiLifecycleCounts.value.active,
+    },
+    {
+      key: 'handed_off',
+      name: t('CHAT_LIST.AI_AGENT_LIFECYCLE_TABS.HANDED_OFF'),
+      count: aiLifecycleCounts.value.handed_off,
+    },
+    {
+      key: 'resolved',
+      name: t('CHAT_LIST.AI_AGENT_LIFECYCLE_TABS.RESOLVED'),
+      count: aiLifecycleCounts.value.resolved,
+    },
+  ];
+});
+
 const showAssigneeInConversationCard = computed(() => {
   return (
     hasAppliedFiltersOrActiveFolders.value ||
@@ -215,6 +272,9 @@ const showAssigneeInConversationCard = computed(() => {
 });
 
 const currentPageFilterKey = computed(() => {
+  if (isAiAgentView.value) {
+    return `ai_agent_${props.pilotAssistantId}_${activeLifecycleTab.value}`;
+  }
   return hasAppliedFiltersOrActiveFolders.value
     ? 'appliedFilters'
     : activeAssigneeTab.value;
@@ -223,7 +283,7 @@ const currentPageFilterKey = computed(() => {
 const inbox = useFunctionGetter('inboxes/getInbox', activeInbox);
 const currentPage = useFunctionGetter(
   'conversationPage/getCurrentPageFilter',
-  activeAssigneeTab
+  currentPageFilterKey
 );
 const currentFiltersPage = useFunctionGetter(
   'conversationPage/getCurrentPageFilter',
@@ -240,6 +300,12 @@ const conversationCustomAttributes = useFunctionGetter(
 );
 
 const activeAssigneeTabCount = computed(() => {
+  if (isAiAgentView.value) {
+    const item = lifecycleTabItems.value.find(
+      el => el.key === activeLifecycleTab.value
+    );
+    return item ? item.count : 0;
+  }
   const count = assigneeTabItems.value.find(
     item => item.key === activeAssigneeTab.value
   ).count;
@@ -267,11 +333,28 @@ const conversationListPagination = computed(() => {
 });
 
 const conversationFilters = computed(() => {
+  const isAi = isAiAgentView.value;
+  let assigneeType = activeAssigneeTab.value;
+  let status = activeStatus.value;
+
+  if (isAi) {
+    if (activeLifecycleTab.value === 'active') {
+      assigneeType = 'unassigned';
+      status = ['open', 'pending', 'snoozed'];
+    } else if (activeLifecycleTab.value === 'handed_off') {
+      assigneeType = 'assigned';
+      status = ['open', 'pending', 'snoozed'];
+    } else if (activeLifecycleTab.value === 'resolved') {
+      assigneeType = undefined;
+      status = 'resolved';
+    }
+  }
+
   return {
     inboxId: props.conversationInbox ? props.conversationInbox : undefined,
     pilotAssistantId: props.pilotAssistantId || undefined,
-    assigneeType: activeAssigneeTab.value,
-    status: activeStatus.value,
+    assigneeType,
+    status,
     sortBy: activeSortBy.value,
     page: conversationListPagination.value,
     labels: props.label ? [props.label] : undefined,
@@ -334,7 +417,9 @@ const conversationList = computed(() => {
 
   if (!hasAppliedFiltersOrActiveFolders.value) {
     const filters = conversationFilters.value;
-    if (
+    if (isAiAgentView.value) {
+      localConversationList = [...allChatList.value(filters)];
+    } else if (
       props.conversationType === wootConstants.CONVERSATION_TYPE.PARTICIPATING
     ) {
       localConversationList = filterByAssigneeTab(
@@ -574,6 +659,9 @@ function onToggleAdvanceFiltersModal() {
 function fetchConversations() {
   store.dispatch('updateChatListFilters', conversationFilters.value);
   store.dispatch('fetchAllConversations').then(emitConversationLoaded);
+  if (isAiAgentView.value) {
+    fetchAiLifecycleCounts();
+  }
 }
 
 function resetAndFetchData() {
@@ -628,6 +716,15 @@ function updateAssigneeTab(selectedTab) {
     if (!currentPage.value) {
       fetchConversations();
     }
+  }
+}
+
+function updateLifecycleTab(selectedTab) {
+  if (activeLifecycleTab.value !== selectedTab) {
+    resetBulkActions();
+    emitter.emit('clearSearchInput');
+    activeLifecycleTab.value = selectedTab;
+    resetAndFetchData();
   }
 }
 
@@ -823,7 +920,11 @@ function toggleSelectAll(check) {
 
 useEmitter('fetch_conversation_stats', () => {
   if (hasAppliedFiltersOrActiveFolders.value) return;
-  store.dispatch('conversationStats/get', conversationFilters.value);
+  if (isAiAgentView.value) {
+    fetchAiLifecycleCounts();
+  } else {
+    store.dispatch('conversationStats/get', conversationFilters.value);
+  }
 });
 
 onMounted(() => {
@@ -901,8 +1002,26 @@ watch(chatLists, () => {
   chatsOnView.value = conversationList.value;
 });
 
+function isDeepEqual(obj1, obj2) {
+  if (obj1 === obj2) return true;
+  if (!obj1 || !obj2 || typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+    return false;
+  }
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  if (keys1.length !== keys2.length) return false;
+  return keys1.every(key => {
+    const val1 = obj1[key];
+    const val2 = obj2[key];
+    if (typeof val1 === 'object' && typeof val2 === 'object') {
+      return isDeepEqual(val1, val2);
+    }
+    return val1 === val2;
+  });
+}
+
 watch(conversationFilters, (newVal, oldVal) => {
-  if (newVal !== oldVal) {
+  if (!isDeepEqual(newVal, oldVal)) {
     store.dispatch('updateChatListFilters', newVal);
   }
 });
@@ -955,10 +1074,12 @@ watch(conversationFilters, (newVal, oldVal) => {
 
     <ChatTypeTabs
       v-if="!hasAppliedFiltersOrActiveFolders"
-      :items="assigneeTabItems"
-      :active-tab="activeAssigneeTab"
+      :items="isAiAgentView ? lifecycleTabItems : assigneeTabItems"
+      :active-tab="isAiAgentView ? activeLifecycleTab : activeAssigneeTab"
       is-compact
-      @chat-tab-change="updateAssigneeTab"
+      @chat-tab-change="
+        isAiAgentView ? updateLifecycleTab($event) : updateAssigneeTab($event)
+      "
     />
 
     <p
@@ -998,6 +1119,7 @@ watch(conversationFilters, (newVal, oldVal) => {
           :folders-id="foldersId"
           :conversation-type="conversationType"
           :show-assignee="showAssigneeInConversationCard"
+          :pilot-assistant-id="pilotAssistantId"
           :data-index="index"
           @select-conversation="selectConversation"
           @de-select-conversation="deSelectConversation"

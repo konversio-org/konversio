@@ -19,6 +19,11 @@
       "unassigned": "Unassigned",
       "all": "All"
     },
+    "AI_AGENT_LIFECYCLE_TABS": {
+      "ACTIVE": "Active",
+      "HANDED_OFF": "Handed Off",
+      "RESOLVED": "Resolved (Contained)"
+    },
     "CHAT_STATUS_FILTER_ITEMS": {
       "open": {
         "TEXT": "Open"

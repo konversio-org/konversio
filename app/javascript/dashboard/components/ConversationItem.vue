@@ -44,6 +44,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    pilotAssistantId: {
+      type: [String, Number],
+      default: 0,
+    },
   },
 };
 </script>
@@ -57,6 +61,7 @@ export default {
     :conversation-type="conversationType"
     :selected="isConversationSelected(source.id)"
     :show-assignee="showAssignee"
+    :pilot-assistant-id="pilotAssistantId"
     enable-context-menu
     @select-conversation="selectConversation"
     @de-select-conversation="deSelectConversation"
