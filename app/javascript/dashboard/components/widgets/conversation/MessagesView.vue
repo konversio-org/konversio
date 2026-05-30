@@ -105,6 +105,11 @@ export default {
         !this.messageSentSinceOpened
       );
     },
+    isAiAgentObservabilityView() {
+      return Boolean(
+        this.$route.name && this.$route.name.startsWith('ai_agent')
+      );
+    },
     inboxId() {
       return this.currentChat.inbox_id;
     },
@@ -513,7 +518,10 @@ export default {
         />
       </template>
     </MessageList>
-    <div class="flex relative flex-col bg-n-surface-1">
+    <div
+      v-if="!isAiAgentObservabilityView"
+      class="flex relative flex-col bg-n-surface-1"
+    >
       <div
         v-if="isAnyoneTyping"
         class="absolute flex items-center w-full h-0 -top-7"
