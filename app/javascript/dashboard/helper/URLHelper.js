@@ -11,9 +11,16 @@ export const conversationUrl = ({
   teamId,
   conversationType = '',
   foldersId,
+  pilotAssistantId,
 }) => {
   let url = `accounts/${accountId}/conversations/${id}`;
-  if (activeInbox) {
+  if (pilotAssistantId) {
+    if (activeInbox) {
+      url = `accounts/${accountId}/ai-agent/${pilotAssistantId}/inbox/${activeInbox}/conversations/${id}`;
+    } else {
+      url = `accounts/${accountId}/ai-agent/${pilotAssistantId}/conversations/${id}`;
+    }
+  } else if (activeInbox) {
     url = `accounts/${accountId}/inbox/${activeInbox}/conversations/${id}`;
   } else if (label) {
     url = `accounts/${accountId}/label/${label}/conversations/${id}`;
@@ -38,9 +45,16 @@ export const conversationListPageURL = ({
   label,
   teamId,
   customViewId,
+  pilotAssistantId,
 }) => {
   let url = `accounts/${accountId}/dashboard`;
-  if (label) {
+  if (pilotAssistantId) {
+    if (inboxId) {
+      url = `accounts/${accountId}/ai-agent/${pilotAssistantId}/inbox/${inboxId}`;
+    } else {
+      url = `accounts/${accountId}/ai-agent/${pilotAssistantId}`;
+    }
+  } else if (label) {
     url = `accounts/${accountId}/label/${label}`;
   } else if (teamId) {
     url = `accounts/${accountId}/team/${teamId}`;

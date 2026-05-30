@@ -49,12 +49,24 @@ const actions = {
       const {
         data: { data },
       } = await ConversationApi.get(params);
-      buildConversationList(
-        { commit, dispatch },
-        params,
-        data,
-        params.assigneeType
-      );
+
+      let filterType = params.assigneeType;
+      if (params.pilotAssistantId) {
+        let lifecycleTab = 'active';
+        if (
+          params.status === 'resolved' ||
+          (Array.isArray(params.status) && params.status.includes('resolved'))
+        ) {
+          lifecycleTab = 'resolved';
+        } else if (params.assigneeType === 'assigned') {
+          lifecycleTab = 'handed_off';
+        } else if (params.assigneeType === 'unassigned') {
+          lifecycleTab = 'active';
+        }
+        filterType = `ai_agent_${params.pilotAssistantId}_${lifecycleTab}`;
+      }
+
+      buildConversationList({ commit, dispatch }, params, data, filterType);
     } catch (error) {
       // Handle error
     }
@@ -522,8 +534,13 @@ const actions = {
     commit(types.SET_CONTEXT_MENU_CHAT_ID, chatId);
   },
 
-  getInboxPilotAssistantById: async ({ commit }) => {
-    commit(types.SET_INBOX_PILOT_ASSISTANT, null);
+  getInboxPilotAssistantById: async ({ commit }, conversationId) => {
+    try {
+      const response = await ConversationApi.getInboxAssistant(conversationId);
+      commit(types.SET_INBOX_PILOT_ASSISTANT, response.data);
+    } catch (error) {
+      commit(types.SET_INBOX_PILOT_ASSISTANT, null);
+    }
   },
 
   ...messageReadActions,

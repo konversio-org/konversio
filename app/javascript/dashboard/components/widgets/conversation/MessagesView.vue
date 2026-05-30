@@ -431,6 +431,9 @@ export default {
     },
 
     makeMessagesRead() {
+      if (this.$route.name && this.$route.name.startsWith('ai_agent')) {
+        return;
+      }
       this.$store.dispatch('markMessagesRead', { id: this.currentChat.id });
     },
     async handleMessageRetry(message) {

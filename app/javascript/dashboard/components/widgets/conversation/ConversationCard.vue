@@ -30,6 +30,7 @@ const props = defineProps({
   compact: { type: Boolean, default: false },
   enableContextMenu: { type: Boolean, default: false },
   allowedContextMenuOptions: { type: Array, default: () => [] },
+  pilotAssistantId: { type: [String, Number], default: 0 },
 });
 
 const emit = defineEmits([
@@ -154,6 +155,7 @@ const conversationPath = computed(() => {
       teamId: props.teamId,
       conversationType: props.conversationType,
       foldersId: props.foldersId,
+      pilotAssistantId: props.pilotAssistantId,
     })
   );
 });

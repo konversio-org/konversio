@@ -73,6 +73,22 @@ export default {
       },
     },
     {
+      path: frontendURL(
+        'accounts/:accountId/ai-agent/:agentId/conversations/:conversationId'
+      ),
+      name: 'ai_agent_conversation',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => {
+        return {
+          pilotAssistantId: route.params.agentId,
+          conversationId: route.params.conversationId,
+        };
+      },
+    },
+    {
       path: frontendURL('accounts/:accountId/ai-agent/:agentId/inbox/:inboxId'),
       name: 'ai_agent_inbox_dashboard',
       meta: {
@@ -83,6 +99,23 @@ export default {
         return {
           pilotAssistantId: route.params.agentId,
           inboxId: route.params.inboxId,
+        };
+      },
+    },
+    {
+      path: frontendURL(
+        'accounts/:accountId/ai-agent/:agentId/inbox/:inboxId/conversations/:conversationId'
+      ),
+      name: 'ai_agent_inbox_conversation',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => {
+        return {
+          pilotAssistantId: route.params.agentId,
+          inboxId: route.params.inboxId,
+          conversationId: route.params.conversationId,
         };
       },
     },
