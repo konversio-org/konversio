@@ -7,14 +7,15 @@
 class PilotAutopilotListener < BaseListener
   def message_created(event)
     message, account = extract_message_and_account(event)
-    return if message.blank? || account.blank?
-    return unless message.message_type == 'incoming'
-    return if message.private?
+    return unless eligible_inbound_message?(message, account)
 
-    # Channel-agnostic enrichment: transcribe any inbound voice note so the
-    # transcript reaches every consumer (agent dashboard, and via
-    # content_for_llm the assistant), independent of Autopilot eligibility.
-    enqueue_audio_transcription(message, account)
+    # If it's a voice message, we enqueue transcription and delegate enqueuing
+    # AutopilotInferenceJob to that job to avoid a race condition where the LLM
+    # gets invoked before transcription metadata is ready.
+    if message.attachments.exists?(file_type: :audio)
+      enqueue_audio_transcription(message, account)
+      return
+    end
 
     return unless autopilot_active?(account, message.inbox)
     return unless bot_eligible?(message.conversation)
@@ -36,6 +37,13 @@ class PilotAutopilotListener < BaseListener
   end
 
   private
+
+  def eligible_inbound_message?(message, account)
+    message.present? &&
+      account.present? &&
+      message.message_type == 'incoming' &&
+      !message.private?
+  end
 
   def enqueue_audio_transcription(message, account)
     return unless account.feature_enabled?('pilot') && account.feature_enabled?('pilot_audio_transcription')

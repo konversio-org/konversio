@@ -15,5 +15,22 @@ class Pilot::AudioTranscriptionJob < ApplicationJob
     return if message.blank?
 
     Custom::Pilot::AudioTranscriptionService.transcribe_message(message)
+
+    trigger_autopilot(message)
+  end
+
+  private
+
+  def trigger_autopilot(message)
+    account = message.account
+    inbox = message.inbox
+    return if account.blank? || inbox.blank?
+
+    # Verify that autopilot is enabled and conversation is eligible
+    return unless account.feature_enabled?('pilot') && account.feature_enabled?('pilot_autopilot')
+    return unless PilotAutopilotListener.instance.send(:autopilot_active?, account, inbox)
+    return unless PilotAutopilotListener.instance.send(:bot_eligible?, message.conversation)
+
+    ::Pilot::AutopilotInferenceJob.perform_later(message_id: message.id)
   end
 end
