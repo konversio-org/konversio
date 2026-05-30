@@ -15,6 +15,7 @@ import CardPriorityIcon from 'dashboard/components-next/Conversation/Conversatio
 import SLACardLabel from './components/SLACardLabel.vue';
 import ContextMenu from 'dashboard/components/ui/ContextMenu.vue';
 import VoiceCallStatus from './VoiceCallStatus.vue';
+import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
 
 const props = defineProps({
   activeLabel: { type: String, default: '' },
@@ -74,6 +75,10 @@ const accountId = useMapGetter('getCurrentAccountId');
 
 const chatMetadata = computed(() => props.chat.meta || {});
 
+const participatingAiAgents = computed(
+  () => chatMetadata.value.pilot_assistants || []
+);
+
 const assignee = computed(() => chatMetadata.value.assignee || {});
 
 const senderId = computed(() => chatMetadata.value.sender?.id);
@@ -120,7 +125,8 @@ const showMetaSection = computed(() => {
     showInboxName.value ||
     (props.showAssignee && assignee.value.name) ||
     props.chat.priority ||
-    props.chat.status
+    props.chat.status ||
+    participatingAiAgents.value.length
   );
 });
 
@@ -324,6 +330,15 @@ const deleteConversation = () => {
             class="flex-shrink-0 !size-3.5"
           />
         </div>
+        <span
+          v-for="agent in participatingAiAgents"
+          :key="`ai-agent-${agent.id}`"
+          class="inline-flex items-center gap-0.5 flex-shrink-0 text-n-slate-11 text-xxs font-medium leading-3 py-0.5 px-1.5 rounded-md bg-n-alpha-2 max-w-[8rem]"
+          :title="agent.name"
+        >
+          <PilotSparkleIcon class="flex-shrink-0 size-3" />
+          <span class="truncate">{{ agent.name }}</span>
+        </span>
         <CardStatusLabel
           :status="chat.status"
           class="ltr:ml-auto rtl:mr-auto"

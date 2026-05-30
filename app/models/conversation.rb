@@ -177,6 +177,14 @@ class Conversation < ApplicationRecord
             .exists?(['created_at >= ?', timestamp])
   end
 
+  # AI Agents observability: Pilot assistants that authored at least one
+  # message in this conversation. Drives the conversation-card AI-agent chip.
+  def participating_pilot_assistants
+    account.pilot_assistants.where(
+      id: messages.where(sender_type: 'Pilot::Assistant').select(:sender_id)
+    )
+  end
+
   def unread_messages
     agent_last_seen_at.present? ? messages.created_since(agent_last_seen_at) : messages
   end

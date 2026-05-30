@@ -85,6 +85,7 @@ class ConversationFinder
     filter_by_labels
     filter_by_query
     filter_by_source_id
+    filter_by_pilot_assistant
   end
 
   def set_inboxes
@@ -181,6 +182,18 @@ class ConversationFinder
 
     @conversations = @conversations.joins(:contact_inbox)
     @conversations = @conversations.where(contact_inboxes: { source_id: params[:source_id] })
+  end
+
+  # AI Agents observability: derive participation from message authorship.
+  # One row per conversation via EXISTS, so no distinct is needed.
+  def filter_by_pilot_assistant
+    return if params[:pilot_assistant_id].blank?
+
+    @conversations = @conversations.where(
+      'EXISTS (SELECT 1 FROM messages WHERE messages.conversation_id = conversations.id ' \
+      "AND messages.sender_type = 'Pilot::Assistant' AND messages.sender_id = :assistant_id)",
+      assistant_id: params[:pilot_assistant_id]
+    )
   end
 
   def set_count_for_all_conversations

@@ -165,6 +165,7 @@ useEventListener(document, 'touchmove', onResizeMove, { passive: false });
 useEventListener(document, 'touchend', onResizeEnd);
 
 const inboxes = useMapGetter('inboxes/getInboxes');
+const pilotAssistants = useMapGetter('pilot/assistants/getRecords');
 const labels = useMapGetter('labels/getLabelsOnSidebar');
 const teams = useMapGetter('teams/getMyTeams');
 const contactCustomViews = useMapGetter('customViews/getContactCustomViews');
@@ -180,11 +181,67 @@ onMounted(() => {
   store.dispatch('attributes/get');
   store.dispatch('customViews/get', 'conversation');
   store.dispatch('customViews/get', 'contact');
+  store.dispatch('pilot/assistants/fetch');
 });
 
 const sortedInboxes = computed(() =>
   inboxes.value.slice().sort((a, b) => a.name.localeCompare(b.name))
 );
+
+// Resolve the inboxes connected to a Pilot assistant. The assistant payload may
+// expose connected inboxes as full objects (`inboxes`) or as join rows
+// (`pilot_inboxes` with `inbox_id`); in either case we map the ids back to the
+// account inbox records so we can render channel icons consistently.
+const connectedInboxesForAssistant = assistant => {
+  const directInboxes = assistant.inboxes || [];
+  if (directInboxes.length) {
+    return directInboxes
+      .map(inbox => inboxes.value.find(i => i.id === inbox.id) || inbox)
+      .filter(Boolean);
+  }
+  const joinRows = assistant.pilot_inboxes || [];
+  return joinRows
+    .map(row => inboxes.value.find(i => i.id === (row.inbox_id || row.id)))
+    .filter(Boolean);
+};
+
+// Only assistants connected to at least one inbox are customer-facing and shown.
+const customerFacingAssistants = computed(() =>
+  pilotAssistants.value
+    .map(assistant => ({
+      ...assistant,
+      connectedInboxes: connectedInboxesForAssistant(assistant),
+    }))
+    .filter(assistant => assistant.connectedInboxes.length > 0)
+);
+
+const aiAgentsGroup = computed(() => ({
+  name: 'AI Agents',
+  label: t('SIDEBAR.AI_AGENTS'),
+  icon: 'i-ph-sparkle',
+  activeOn: ['ai_agent_dashboard', 'ai_agent_inbox_dashboard'],
+  children: customerFacingAssistants.value.map(assistant => ({
+    name: `ai-agent-${assistant.id}`,
+    label: assistant.name,
+    icon: 'i-ph-sparkle',
+    to: accountScopedRoute('ai_agent_dashboard', { agentId: assistant.id }),
+    children: assistant.connectedInboxes.map(inbox => ({
+      name: `ai-agent-${assistant.id}-inbox-${inbox.id}`,
+      label: inbox.name,
+      icon: h(ChannelIcon, { inbox, class: 'size-[16px]' }),
+      to: accountScopedRoute('ai_agent_inbox_dashboard', {
+        agentId: assistant.id,
+        inboxId: inbox.id,
+      }),
+      component: leafProps =>
+        h(ChannelLeaf, {
+          label: leafProps.label,
+          active: leafProps.active,
+          inbox,
+        }),
+    })),
+  })),
+}));
 
 const closeMobileSidebar = () => {
   if (!props.isMobileSidebarOpen) return;
@@ -309,6 +366,7 @@ const menuItems = computed(() => {
               }),
           })),
         },
+        ...(customerFacingAssistants.value.length ? [aiAgentsGroup.value] : []),
         {
           name: 'Labels',
           label: t('SIDEBAR.LABELS'),

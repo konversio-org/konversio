@@ -8,6 +8,7 @@ class ConversationApi extends ApiClient {
 
   get({
     inboxId,
+    pilotAssistantId,
     status,
     assigneeType,
     page,
@@ -20,6 +21,7 @@ class ConversationApi extends ApiClient {
     return axios.get(this.url, {
       params: {
         inbox_id: inboxId,
+        pilot_assistant_id: pilotAssistantId,
         team_id: teamId,
         status,
         assignee_type: assigneeType,

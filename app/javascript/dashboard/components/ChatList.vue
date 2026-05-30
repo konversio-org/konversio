@@ -69,6 +69,7 @@ import { ASSIGNEE_TYPE_TAB_PERMISSIONS } from 'dashboard/constants/permissions.j
 
 const props = defineProps({
   conversationInbox: { type: [String, Number], default: 0 },
+  pilotAssistantId: { type: [String, Number], default: 0 },
   teamId: { type: [String, Number], default: 0 },
   label: { type: String, default: '' },
   conversationType: { type: String, default: '' },
@@ -268,6 +269,7 @@ const conversationListPagination = computed(() => {
 const conversationFilters = computed(() => {
   return {
     inboxId: props.conversationInbox ? props.conversationInbox : undefined,
+    pilotAssistantId: props.pilotAssistantId || undefined,
     assigneeType: activeAssigneeTab.value,
     status: activeStatus.value,
     sortBy: activeSortBy.value,
@@ -873,6 +875,10 @@ watch(activeTeam, () => resetAndFetchData());
 
 watch(
   computed(() => props.conversationInbox),
+  () => resetAndFetchData()
+);
+watch(
+  computed(() => props.pilotAssistantId),
   () => resetAndFetchData()
 );
 watch(

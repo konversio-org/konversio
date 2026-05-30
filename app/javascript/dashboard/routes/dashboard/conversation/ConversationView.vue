@@ -52,6 +52,10 @@ export default {
       type: [String, Number],
       default: 0,
     },
+    pilotAssistantId: {
+      type: [String, Number],
+      default: 0,
+    },
   },
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
@@ -199,6 +203,7 @@ export default {
     <ChatList
       :show-conversation-list="showConversationList"
       :conversation-inbox="inboxId"
+      :pilot-assistant-id="pilotAssistantId"
       :label="label"
       :team-id="teamId"
       :conversation-type="conversationType"

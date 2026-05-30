@@ -62,6 +62,31 @@ export default {
       },
     },
     {
+      path: frontendURL('accounts/:accountId/ai-agent/:agentId'),
+      name: 'ai_agent_dashboard',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => {
+        return { pilotAssistantId: route.params.agentId };
+      },
+    },
+    {
+      path: frontendURL('accounts/:accountId/ai-agent/:agentId/inbox/:inboxId'),
+      name: 'ai_agent_inbox_dashboard',
+      meta: {
+        permissions: CONVERSATION_PERMISSIONS,
+      },
+      component: ConversationView,
+      props: route => {
+        return {
+          pilotAssistantId: route.params.agentId,
+          inboxId: route.params.inboxId,
+        };
+      },
+    },
+    {
       path: frontendURL('accounts/:accountId/label/:label'),
       name: 'label_conversations',
       meta: {

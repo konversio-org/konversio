@@ -24,6 +24,10 @@ json.meta do
     end
   end
   json.hmac_verified conversation.contact_inbox&.hmac_verified
+  json.pilot_assistants conversation.participating_pilot_assistants do |assistant|
+    json.id assistant.id
+    json.name assistant.name
+  end
 end
 
 json.id conversation.display_id
