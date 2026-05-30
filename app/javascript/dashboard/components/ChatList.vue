@@ -412,13 +412,28 @@ function filterByAssigneeTab(conversations) {
   return [...conversations];
 }
 
+// The AI-agent list getter only filters by status, so mirror the server's
+// assignee scoping per lifecycle tab: active = unassigned (AI handling),
+// handed_off = assigned to a human, resolved = all.
+function filterByLifecycleAssignee(conversations) {
+  if (activeLifecycleTab.value === 'active') {
+    return conversations.filter(c => !c.meta?.assignee);
+  }
+  if (activeLifecycleTab.value === 'handed_off') {
+    return conversations.filter(c => c.meta?.assignee);
+  }
+  return [...conversations];
+}
+
 const conversationList = computed(() => {
   let localConversationList = [];
 
   if (!hasAppliedFiltersOrActiveFolders.value) {
     const filters = conversationFilters.value;
     if (isAiAgentView.value) {
-      localConversationList = [...allChatList.value(filters)];
+      localConversationList = filterByLifecycleAssignee(
+        allChatList.value(filters)
+      );
     } else if (
       props.conversationType === wootConstants.CONVERSATION_TYPE.PARTICIPATING
     ) {
