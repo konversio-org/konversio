@@ -79,3 +79,12 @@ pilot_documents_sync_scheduler_job:
   cron: '0 * * * *'
   class: 'Pilot::Documents::SyncSchedulerJob'
   queue: scheduled_jobs
+
+# executed At every 5th minute..
+# Pilot System B auto-resolve sweep: resolves (or, in evaluated mode, hands
+# off) idle `pending` Pilot conversations that the native open-only
+# auto-resolve never reaches. See Pilot::Conversations::ResolutionSchedulerJob.
+pilot_conversations_resolution_scheduler_job:
+  cron: '*/5 * * * *'
+  class: 'Pilot::Conversations::ResolutionSchedulerJob'
+  queue: scheduled_jobs

@@ -86,13 +86,31 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   # Extracted from `perform` to keep that method's complexity under
   # the project's rubocop thresholds.
   def dispatch_inference_outcome(result, conversation, assistant)
-    return post_reply(conversation, assistant, result.reply) unless fresh_handover?(result, conversation)
+    if fresh_handover?(result, conversation)
+      return process_handover(conversation, assistant, result) if agents_available?(conversation.inbox)
 
-    if agents_available?(conversation.inbox)
-      process_handover(conversation, assistant, result)
-    else
-      acknowledge_offline_team(conversation, assistant)
+      return acknowledge_offline_team(conversation, assistant)
     end
+
+    return resolve_after_reply(conversation, assistant, result) if fresh_resolution?(result, conversation)
+
+    post_reply(conversation, assistant, result.reply)
+  end
+
+  # Action C: the assistant signalled the conversation is finished. Post its
+  # (token-stripped) sign-off, then close. Gated by the account's auto-resolve
+  # mode — a `disabled` account never honours the token.
+  def fresh_resolution?(result, conversation)
+    result.resolution? && !conversation.account.pilot_auto_resolve_disabled?
+  end
+
+  def resolve_after_reply(conversation, assistant, result)
+    post_reply(conversation, assistant, result.reply)
+    ::Custom::Pilot::ConversationResolver.resolve!(
+      conversation: conversation,
+      assistant: assistant,
+      reason: 'agentic_close'
+    )
   end
 
   def fresh_handover?(result, conversation)
@@ -147,7 +165,10 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   end
 
   def post_reply(conversation, assistant, reply)
-    content = reply.to_s.sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '').strip
+    content = reply.to_s
+                   .sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '')
+                   .sub(::Custom::Pilot::HandoverEvaluator::RESOLUTION_SENTINEL, '')
+                   .strip
     return if content.blank?
 
     conversation.messages.create!(
@@ -162,8 +183,9 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   # Normal LLM-signalled handover: post the assistant's configured
   # handoff message and route to a human.
   def process_handover(conversation, assistant, result)
-    perform_handoff(
-      conversation, assistant,
+    ::Custom::Pilot::HandoffService.call(
+      conversation: conversation,
+      assistant: assistant,
       reason: handover_reason(result),
       message: assistant.config['handoff_message'].presence || I18n.t('conversations.pilot.handoff')
     )
@@ -173,83 +195,14 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   # in dead air; post a generic "a human will help" message regardless of
   # the co-active toggle, since an error is not a normal wait.
   def handoff_on_error(conversation, assistant)
-    perform_handoff(
-      conversation, assistant,
+    ::Custom::Pilot::HandoffService.call(
+      conversation: conversation,
+      assistant: assistant,
       reason: 'inference_error',
       message: I18n.t('conversations.pilot.handoff_error')
     )
   rescue StandardError => e
     Rails.logger.error("[pilot.autopilot_inference_job] error handoff failed: #{e.class}: #{e.message}")
-  end
-
-  # Shared handoff side-effects. Uses Chatwoot core's `bot_handoff!` to
-  # transition into the human-support path (only if not already `open`),
-  # marks the Pilot metadata envelope, posts the customer-visible message,
-  # records the timeline activity, and dispatches telemetry. The
-  # conversation is left `open` — no resume timer is scheduled; native
-  # auto-resolve closes it if the customer abandons it.
-  def perform_handoff(conversation, assistant, reason:, message:)
-    conversation.bot_handoff! unless conversation.open?
-    transitioned_at = Time.zone.now
-
-    mark_handoff_requested!(conversation, transitioned_at.iso8601)
-
-    conversation.messages.create!(
-      message_type: :outgoing,
-      account_id: conversation.account_id,
-      inbox_id: conversation.inbox_id,
-      sender: assistant,
-      content: message
-    )
-
-    append_activity_message(conversation, reason)
-    dispatch_handover_event(conversation, assistant, reason, transitioned_at)
-  end
-
-  # Tags the conversation with the handoff envelope. The listener keys off
-  # this metadata (`state == handoff_requested`) to decide whether the
-  # assistant may still respond while a human is being reached.
-  def mark_handoff_requested!(conversation, requested_at_iso)
-    conversation.additional_attributes ||= {}
-    conversation.additional_attributes['pilot_handoff'] = {
-      'state' => 'handoff_requested',
-      'requested_at' => requested_at_iso
-    }
-    conversation.save!
-  end
-
-  # Per pilot-telemetry "Activity messages on conversation timeline": every
-  # inference-driven outcome appends a `messages` row with
-  # `message_type = activity` so agents see the model-supplied reason on
-  # the conversation timeline.
-  def append_activity_message(conversation, reason)
-    body = I18n.t('pilot.activity.handed_off_by_inference', reason: reason.to_s)
-    conversation.messages.create!(
-      message_type: :activity,
-      account_id: conversation.account_id,
-      inbox_id: conversation.inbox_id,
-      content: body
-    )
-  rescue StandardError => e
-    Rails.logger.warn("[pilot.autopilot_inference_job] activity message persist failed: #{e.class}: #{e.message}")
-  end
-
-  def dispatch_handover_event(conversation, assistant, reason, transitioned_at)
-    envelope = ::Custom::Pilot::ConversationPayloadBuilder.call(conversation: conversation, assistant: assistant)
-    payload = {
-      account_id: conversation.account_id,
-      assistant_id: assistant.id,
-      conversation_envelope: envelope,
-      reason: reason
-    }
-    ::Custom::Pilot::EventDispatcher.dispatch(
-      'pilot.autopilot.handover.triggered',
-      payload,
-      time: transitioned_at,
-      account: conversation.account
-    )
-  rescue StandardError => e
-    Rails.logger.error("[pilot.autopilot_inference_job] handover dispatch failed: #{e.class}: #{e.message}")
   end
 
   def handover_reason(result)

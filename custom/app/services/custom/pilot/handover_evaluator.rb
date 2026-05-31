@@ -19,6 +19,7 @@ module Custom
       Result = Struct.new(:handover?, :reason, keyword_init: true)
 
       HANDOVER_SENTINEL = '[handover]'.freeze
+      RESOLUTION_SENTINEL = '[resolved]'.freeze
 
       # Matches common ways a user asks for a human across preposition / article
       # variants ("speak to a human", "speak with a human", "talk to someone",
@@ -49,6 +50,14 @@ module Custom
         return Result.new(handover?: true, reason: 'customer_request') if customer_phrase_present?(customer_message)
 
         Result.new(handover?: false, reason: nil)
+      end
+
+      # Action C accelerator: the assistant signals a finished conversation by
+      # ending its reply with the `[resolved]` sentinel. Handover always wins
+      # over resolution (escalation is safer than closing), so callers must
+      # only honour this when no handover signal fired this turn.
+      def resolution?(assistant_reply)
+        assistant_reply.to_s.downcase.include?(RESOLUTION_SENTINEL)
       end
 
       private

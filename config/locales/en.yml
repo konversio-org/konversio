@@ -253,6 +253,7 @@ en:
       handoff: 'Transferring to another agent for further assistance.'
       handoff_error: "I'm having trouble answering right now — let me get a human to help you."
       handoff_offline: "Our team isn't online right now — but I can keep helping. They'll follow up as soon as they're back."
+      resolution: 'Glad I could help! Marking this conversation as resolved — feel free to start a new one anytime.'
     messages:
       instagram_story_content: '%{story_sender} mentioned you in the story: '
       instagram_deleted_story_content: This story is no longer available.
@@ -384,6 +385,7 @@ en:
   pilot:
     activity:
       handed_off_by_inference: 'Handed off by inference: %{reason}'
+      resolved_by_inference: 'Resolved by Pilot: %{reason}'
       resolved_by_tool: 'Resolved by tool: %{reason}'
     copilot_message_required: Message is required
     copilot_error: 'Please connect an assistant to this inbox to use Copilot'

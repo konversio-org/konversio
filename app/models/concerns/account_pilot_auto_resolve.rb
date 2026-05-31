@@ -1,7 +1,7 @@
 module AccountPilotAutoResolve
   extend ActiveSupport::Concern
 
-  VALID_PILOT_AUTO_RESOLVE_MODES = %w[legacy disabled].freeze
+  VALID_PILOT_AUTO_RESOLVE_MODES = %w[legacy disabled evaluated].freeze
 
   included do
     VALID_PILOT_AUTO_RESOLVE_MODES.each do |mode|

@@ -20,7 +20,11 @@ module Custom
 
       DEFAULT_MAX_TURNS = 6
 
-      Result = Struct.new(:reply, :invoked_tool_names, :handover, keyword_init: true)
+      Result = Struct.new(:reply, :invoked_tool_names, :handover, :resolution, keyword_init: true) do
+        def resolution?
+          resolution == true
+        end
+      end
 
       attr_reader :assistant, :conversation, :customer_message, :message_history, :source
 
@@ -98,13 +102,17 @@ module Custom
 
         reply = extract_reply(run_result)
 
-        handover = ::Custom::Pilot::HandoverEvaluator.new.evaluate(
+        evaluator = ::Custom::Pilot::HandoverEvaluator.new
+        handover = evaluator.evaluate(
           assistant_reply: reply,
           customer_message: last_user,
           invoked_tool_names: invoked_tool_names
         )
+        # Handover wins over resolution: only treat `[resolved]` as a close
+        # signal when no handover fired this turn.
+        resolution = !handover.handover? && evaluator.resolution?(reply)
 
-        Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover)
+        Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover, resolution: resolution)
       end
 
       def execute_runner(runner, last_user, context, invoked_tool_names)
@@ -170,8 +178,27 @@ module Custom
           response_guidelines_section,
           guardrails_section,
           'Use the `search_documentation` tool whenever the user asks a factual or product question.',
-          handover_policy
+          handover_policy,
+          closing_policy
         ].compact.join("\n\n")
+      end
+
+      # Action C accelerator. Only present when auto-resolve is active for the
+      # account and no handoff is already pending — when a human is being
+      # reached the bot must not also try to close the thread.
+      def closing_policy
+        return nil if handoff_already_requested?
+        return nil if account&.pilot_auto_resolve_disabled?
+
+        sentinel = ::Custom::Pilot::HandoverEvaluator::RESOLUTION_SENTINEL
+        <<~CLOSING.strip
+          Closing policy — follow exactly:
+
+          When the customer's request has been fully handled and they signal they are done (e.g. "thanks, that's all", "that's everything", "bye", or they confirm their question is answered and ask nothing further), end your reply with the literal token `#{sentinel}`. The system parses this token to close the conversation.
+
+          Do NOT emit this token when: you asked the customer a question, you are waiting on them, their request is still unresolved, you declined an out-of-scope message, or you are escalating to a human. Never emit both `#{sentinel}` and the handover token in the same reply. Format a close as ONE short friendly sign-off followed by the token, e.g.:
+            Glad I could help — take care! #{sentinel}
+        CLOSING
       end
 
       def persona_section
