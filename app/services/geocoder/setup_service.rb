@@ -1,7 +1,7 @@
 require 'rubygems/package'
 
 class Geocoder::SetupService
-  BUCKET_KEY = 'GeoLite2-City.mmdb'
+  BUCKET_KEY = 'GeoLite2-City.mmdb'.freeze
 
   def perform
     return if File.exist?(GeocoderConfiguration::LOOK_UP_DB)
