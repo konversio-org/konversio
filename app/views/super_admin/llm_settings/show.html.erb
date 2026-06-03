@@ -108,6 +108,13 @@
               <td class="px-4 py-3">
                 <% if model.present? %>
                   <div class="font-mono text-xs text-slate-800 break-all"><%= model %></div>
+                  <% if slot == :chat %>
+                    <% if Llm::SanityTester.reasoning_supported?(provider_slug, model) %>
+                      <div class="inline-flex items-center gap-1 rounded bg-blue-50 px-1.5 py-0.5 text-xs font-semibold text-blue-700 mt-1">
+                        Supports reasoning
+                      </div>
+                    <% end %>
+                  <% end %>
                   <% if slot == :embedding %>
                     <% native_dim = Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS[model] %>
                     <% locked_dim = Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS %>

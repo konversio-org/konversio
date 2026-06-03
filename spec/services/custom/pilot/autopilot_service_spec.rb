@@ -33,7 +33,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
       service = described_class.new(assistant: assistant, message: 'How big is the box?')
 
       fake_result = double('RunResult', output: 'The box is 30cm wide.', failed?: false, error: nil)
-      fake_runner = double('AgentRunner')
+      fake_runner = double('AgentRunner', on_chat_created: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(fake_runner).to receive(:on_tool_start).and_yield('search_documentation')
 
@@ -54,7 +54,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
         usage: { input_tokens: 12, output_tokens: 5 },
         context: {}
       )
-      fake_runner = double('AgentRunner', on_tool_start: nil)
+      fake_runner = double('AgentRunner', on_tool_start: nil, on_chat_created: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
       allow(Custom::Pilot::TraceSpan).to receive(:wrap) do |**_args, &block|
@@ -72,7 +72,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
 
       sentinel = Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
       fake_result = double('RunResult', output: "I cannot help here. #{sentinel}", failed?: false, error: nil)
-      fake_runner = double('AgentRunner', on_tool_start: nil)
+      fake_runner = double('AgentRunner', on_tool_start: nil, on_chat_created: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
 
@@ -137,7 +137,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
       service = described_class.new(assistant: assistant, message: 'I want to speak to a human, please.')
 
       fake_result = double('RunResult', output: 'Sure.', failed?: false, error: nil)
-      fake_runner = double('AgentRunner', on_tool_start: nil)
+      fake_runner = double('AgentRunner', on_tool_start: nil, on_chat_created: nil)
       allow(fake_runner).to receive(:run).and_return(fake_result)
       allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
 
@@ -259,9 +259,7 @@ RSpec.describe Custom::Pilot::AutopilotService do
     # canonical dimension lives in EmbeddingService::MODEL_DIMENSIONS so the
     # test stays correct if the default model changes.
     let(:vector_dim) do
-      Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.fetch(
-        Custom::Pilot::EmbeddingService::DEFAULT_EMBEDDING_MODEL
-      )
+      Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS
     end
 
     it 'returns matching approved responses via search_for_assistant' do

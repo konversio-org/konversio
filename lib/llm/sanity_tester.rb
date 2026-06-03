@@ -29,7 +29,20 @@ module Llm::SanityTester
   AUDIO_TEST_DURATION_SECONDS = 0.25
   AUDIO_TEST_SAMPLE_RATE = 8000
 
+  CACHE_KEY_PREFIX = 'llm_reasoning_supported:'.freeze
+
   class << self
+    def reasoning_supported_cached?(provider, model)
+      key = "#{CACHE_KEY_PREFIX}#{provider.to_s.downcase}:#{model}"
+      Rails.cache.read(key) == true
+    end
+
+    def reasoning_supported?(provider, model)
+      return true if Llm::ProviderRegistry.declared_reasoning_supported?(provider, model)
+
+      reasoning_supported_cached?(provider, model)
+    end
+
     def test_slot(slot)
       slot = slot.to_sym
       config = Llm::Config.for_slot(slot)
@@ -70,8 +83,60 @@ module Llm::SanityTester
       result = ::Agents::Runner.with_agents(agent).run('ping', max_turns: 1)
       return { state: :failed, message: result.error&.message.presence || 'Provider returned a failure with no error message.' } if result.failed?
 
+      # Run the reasoning probe
+      probed_supported = probe_reasoning(config)
+      key = "#{CACHE_KEY_PREFIX}#{config[:provider].to_s.downcase}:#{config[:model]}"
+      Rails.cache.write(key, probed_supported)
+
       { state: :connected, message: 'Provider responded successfully.' }
     end
+
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+    def probe_reasoning(config)
+      provider = config[:provider]
+      model = config[:model]
+      api_key = config[:api_key]
+      api_base = config[:endpoint]
+
+      # Find capability if declared, or default
+      cap = Llm::ProviderRegistry.reasoning_capability(provider, model)
+
+      # Use the declared parameter or default to reasoning_effort: 'low'
+      params = {}
+      if cap[:supported] && cap[:parameter]
+        params[cap[:parameter]] = cap[:intent_map]['low']
+      else
+        params[:reasoning_effort] = 'low'
+      end
+
+      supported = false
+      Llm::Config.with_api_key(api_key, api_base: api_base) do |context|
+        chat_options = { model: model }
+        if config[:openai_compatible]
+          chat_options[:provider] = :openai
+          chat_options[:assume_model_exists] = true
+        end
+        chat = context.chat(**chat_options)
+        chat.with_params(**params) if params.any?
+        response = chat.ask('What is 4 + 4?')
+
+        body = response.raw.respond_to?(:body) ? response.raw.body : nil
+        if body.is_a?(Hash)
+          message_data = body.dig('choices', 0, 'message')
+          reasoning_field = message_data&.dig('reasoning') || message_data&.dig('reasoning_content')
+
+          usage = body['usage']
+          reasoning_tokens = usage&.dig('completion_tokens_details', 'reasoning_tokens').to_i
+
+          supported = true if reasoning_field.present? || reasoning_tokens.positive?
+        end
+      end
+      supported
+    rescue StandardError => e
+      Rails.logger.error("[Llm::SanityTester] Reasoning probe failed for #{provider}/#{model}: #{e.message}")
+      false
+    end
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
     def audio_slot_test(config)
       client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")

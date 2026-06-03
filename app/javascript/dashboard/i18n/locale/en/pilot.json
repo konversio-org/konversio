@@ -250,7 +250,11 @@
         "FEATURE_FAQ": "FAQ Search Enabled",
         "FEATURE_MEMORY": "Persistent Memory Enabled",
         "FEATURE_CONTACT_ATTRIBUTES": "Contact Attributes Ingestion Enabled",
-        "FEATURE_CITATION": "Source Citation Enabled"
+        "FEATURE_CITATION": "Source Citation Enabled",
+        "REASONING_EFFORT_LABEL": "Reasoning depth",
+        "REASONING_EFFORT_DISABLED_HINT": "Reasoning is not supported by the active model ({model}).",
+        "MAX_TOKENS_LABEL": "Max output tokens",
+        "MAX_TOKENS_PLACEHOLDER": "Default (2048)"
       },
       "TABLE": {
         "NAME": "Name",

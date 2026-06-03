@@ -143,6 +143,12 @@ module Custom
         runner.on_tool_start do |tool_name, *_rest|
           invoked_tool_names << tool_name.to_s
         end
+        runner.on_chat_created do |chat, agent_name, _model, _context_wrapper|
+          if agent_name == assistant.name.parameterize(separator: '_').presence || agent_name == "assistant_#{assistant.id}"
+            params = ::Llm::Config.reasoning_params_for(assistant)
+            chat.with_params(**params) if params.any?
+          end
+        end
         runner
       end
 

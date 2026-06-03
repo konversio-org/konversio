@@ -61,12 +61,16 @@ class Pilot::Assistant < ApplicationRecord
                  :instructions,
                  :temperature,
                  :keep_assistant_active_during_handoff,
-                 :max_history
+                 :max_history,
+                 :reasoning_effort,
+                 :max_tokens
 
   DEFAULT_MAX_HISTORY = 15
 
   validates :name, presence: true
   validates :account_id, presence: true
+  validates :reasoning_effort, inclusion: { in: %w[off low medium high], allow_nil: true }
+  validates :max_tokens, numericality: { only_integer: true, greater_than_or_equal_to: 1000, allow_nil: true }
 
   # Documentation-search citation toggle (default "on"). When "off", the
   # documentation-search tool MUST suppress `Source: <file>` lines for

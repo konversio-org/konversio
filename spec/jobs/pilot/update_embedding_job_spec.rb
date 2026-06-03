@@ -10,9 +10,7 @@ RSpec.describe Pilot::UpdateEmbeddingJob do
     # service so the test follows the default-model change rather than the
     # raw width.
     let(:vector_dim) do
-      Custom::Pilot::EmbeddingService::MODEL_DIMENSIONS.fetch(
-        Custom::Pilot::EmbeddingService::DEFAULT_EMBEDDING_MODEL
-      )
+      Custom::Pilot::EmbeddingService::LOCKED_EMBEDDING_DIMENSIONS
     end
 
     it 'calls EmbeddingService with the combined question and answer text' do
