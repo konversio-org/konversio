@@ -145,8 +145,6 @@ If you need help or just want to hang out, come, say hi on our [Discord](https:/
 
 Konversio is built on the work of the [Chatwoot](https://github.com/chatwoot/chatwoot) team and its [wonderful contributors](https://www.chatwoot.com/docs/contributors). Original Chatwoot copyright and MIT license terms are preserved in [`LICENSE`](./LICENSE).
 
-<a href="https://github.com/chatwoot/chatwoot/graphs/contributors"><img src="https://opencollective.com/chatwoot/contributors.svg?width=890&button=false" /></a>
-
 
 *Chatwoot* &copy; 2017–2025, Chatwoot Inc — MIT License.
 *Konversio* &copy; 2025–2026, Konversio Inc — MIT License (Pilot and other original code).
