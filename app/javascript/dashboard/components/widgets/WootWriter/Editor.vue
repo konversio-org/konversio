@@ -630,16 +630,31 @@ async function insertNodeIntoEditor(node, from = 0, to = 0) {
 }
 
 function insertContentIntoEditor(content, defaultFrom = 0) {
-  const from = defaultFrom || editorView.state.selection.from || 0;
-  // Use the editor's current schema to ensure compatibility with buildMessageSchema
   const currentSchema = editorView.state.schema;
-  // Strip unsupported formatting before parsing to ensure content can be inserted
-  // into channels that don't support certain markdown features (e.g., API channels)
   const sanitizedContent = stripUnsupportedFormatting(content, currentSchema);
   let node = new MessageMarkdownTransformer(currentSchema).parse(
     sanitizedContent
   );
 
+  // When the editor is empty (single empty paragraph), replace the entire
+  // document so inserted content doesn't leave a leading blank line above it.
+  const { doc } = editorView.state;
+  const isEditorEmpty =
+    doc.childCount === 1 &&
+    doc.firstChild.type.name === 'paragraph' &&
+    doc.firstChild.content.size === 0;
+
+  if (isEditorEmpty) {
+    const tr = editorView.state.tr.replaceWith(0, doc.content.size, node);
+    state = editorView.state.apply(tr);
+    editorView.updateState(state);
+    editorView.focus();
+    emitOnChange();
+    nextTick(() => scrollCursorIntoView(editorView));
+    return;
+  }
+
+  const from = defaultFrom || editorView.state.selection.from || 0;
   insertNodeIntoEditor(node, from, undefined);
 }
 
