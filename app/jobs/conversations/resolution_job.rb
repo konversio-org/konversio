@@ -25,6 +25,7 @@ class Conversations::ResolutionJob < ApplicationJob
                    account.conversations.resolvable_all(account.auto_resolve_after)
                  end
     # Exclude orphan conversations where contact was deleted but conversation cleanup is pending
+    # Only auto-resolve live-chat channels; async channels (email etc.) need human follow-up
     base_scope.where.not(contact_id: nil)
               .joins(:inbox)
               .where(inboxes: { channel_type: AUTO_RESOLVE_CHANNEL_TYPES })
