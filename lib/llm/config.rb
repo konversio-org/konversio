@@ -77,6 +77,46 @@ module Llm::Config
       for_slot(:chat)[:openai_compatible]
     end
 
+    def reasoning_effort_for(assistant)
+      slot_config = for_slot(:chat)
+      provider = slot_config[:provider]
+      model = slot_config[:model]
+
+      return 'off' unless Llm::SanityTester.reasoning_supported?(provider, model)
+
+      assistant.reasoning_effort.presence || 'off'
+    end
+
+    def effective_max_tokens(assistant)
+      assistant.max_tokens.presence || 2048
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def reasoning_params_for(assistant)
+      slot_config = for_slot(:chat)
+      provider = slot_config[:provider]
+      model = slot_config[:model]
+
+      params = {}
+      token_key = provider.to_sym == :openai && model.to_s.match?(/\A(o1|o3)/i) ? :max_completion_tokens : :max_tokens
+
+      if Llm::SanityTester.reasoning_supported?(provider, model)
+        cap = Llm::ProviderRegistry.reasoning_capability(provider, model)
+        effort = reasoning_effort_for(assistant)
+        param_val = cap[:intent_map][effort]
+
+        params[cap[:parameter]] = param_val if cap[:parameter] && !param_val.nil?
+
+        params[token_key] = effective_max_tokens(assistant)
+      elsif assistant.max_tokens.present?
+        # Not reasoning capable: only apply max_tokens if explicitly configured
+        params[token_key] = assistant.max_tokens.to_i
+      end
+
+      params
+    end
+    # rubocop:enable Metrics/AbcSize
+
     def configure_ruby_llm
       RubyLLM.configure do |config|
         config.openai_api_key = api_key if api_key.present?

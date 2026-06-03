@@ -48,6 +48,18 @@ const keepAssistantActiveDuringHandoff = ref(true);
 const resolutionMessage = ref('');
 const instructions = ref('');
 const temperature = ref(0.1);
+const reasoningEffort = ref('off');
+const maxTokens = ref(null);
+
+const chatModelName = computed(
+  () => currentAccount.value?.pilot_chat_model_name || ''
+);
+const isReasoningSupported = computed(
+  () => !!currentAccount.value?.pilot_chat_model_reasoning_supported
+);
+const reasoningLevels = computed(
+  () => currentAccount.value?.pilot_chat_model_reasoning_levels || ['off']
+);
 
 const loadAssistantData = () => {
   if (props.assistant) {
@@ -70,6 +82,9 @@ const loadAssistantData = () => {
     instructions.value = config.instructions || '';
     temperature.value =
       config.temperature != null ? Number(config.temperature) : 0.1;
+    reasoningEffort.value = config.reasoning_effort || 'off';
+    maxTokens.value =
+      config.max_tokens != null ? Number(config.max_tokens) : null;
     selectedToolSlugs.value = Array.isArray(props.assistant.enabled_tool_slugs)
       ? [...props.assistant.enabled_tool_slugs]
       : [];
@@ -89,6 +104,8 @@ const loadAssistantData = () => {
     resolutionMessage.value = '';
     instructions.value = '';
     temperature.value = 0.1;
+    reasoningEffort.value = 'off';
+    maxTokens.value = null;
     selectedToolSlugs.value = [];
   }
 };
@@ -133,6 +150,8 @@ const submit = async () => {
       resolution_message: resolutionMessage.value.trim(),
       instructions: instructions.value.trim(),
       temperature: Number(temperature.value),
+      reasoning_effort: reasoningEffort.value,
+      max_tokens: maxTokens.value ? Number(maxTokens.value) : null,
     },
   };
 
@@ -316,6 +335,67 @@ const submit = async () => {
             max="1.5"
             step="0.05"
             class="w-full h-2 bg-n-alpha-1 rounded-lg appearance-none cursor-pointer"
+          />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            for="assistant-reasoning"
+            class="text-sm font-medium text-n-slate-12"
+          >
+            {{ t('PILOT.SETTINGS.FORM.REASONING_EFFORT_LABEL') }}
+          </label>
+          <select
+            id="assistant-reasoning"
+            v-model="reasoningEffort"
+            :disabled="!isReasoningSupported"
+            :title="
+              !isReasoningSupported
+                ? t('PILOT.SETTINGS.FORM.REASONING_EFFORT_DISABLED_HINT', {
+                    model: chatModelName,
+                  })
+                : ''
+            "
+            class="w-full h-10 px-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 placeholder:text-n-slate-9 focus:outline-none focus:border-n-blue-9"
+            :class="{
+              'opacity-50 cursor-not-allowed bg-n-slate-3':
+                !isReasoningSupported,
+            }"
+          >
+            <option
+              v-for="level in reasoningLevels"
+              :key="level"
+              :value="level"
+            >
+              {{ level }}
+            </option>
+          </select>
+          <span
+            v-if="!isReasoningSupported"
+            class="text-xs text-n-slate-11 mt-0.5"
+          >
+            {{
+              t('PILOT.SETTINGS.FORM.REASONING_EFFORT_DISABLED_HINT', {
+                model: chatModelName,
+              })
+            }}
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label
+            for="assistant-max-tokens"
+            class="text-sm font-medium text-n-slate-12"
+          >
+            {{ t('PILOT.SETTINGS.FORM.MAX_TOKENS_LABEL') }}
+          </label>
+          <input
+            id="assistant-max-tokens"
+            v-model="maxTokens"
+            type="number"
+            min="1000"
+            :placeholder="t('PILOT.SETTINGS.FORM.MAX_TOKENS_PLACEHOLDER')"
+            class="w-full h-10 px-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 placeholder:text-n-slate-9 focus:outline-none focus:border-n-blue-9"
           />
         </div>
       </div>

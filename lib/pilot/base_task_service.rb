@@ -64,11 +64,11 @@ class Pilot::BaseTaskService
     response.merge(follow_up_context: build_follow_up_context(messages, response))
   end
 
-  def execute_ruby_llm_request(model:, messages:, schema: nil, tools: [])
+  def execute_ruby_llm_request(model:, messages:, schema: nil, tools: [], params: {})
     credential = llm_credential
 
     Llm::Config.with_api_key(credential[:api_key], api_base: api_base) do |context|
-      chat = build_chat(context, model: model, messages: messages, schema: schema, tools: tools)
+      chat = build_chat(context, model: model, messages: messages, schema: schema, tools: tools, params: params)
 
       conversation_messages = messages.reject { |m| m[:role] == 'system' }
       return { error: 'No conversation messages provided', error_code: 400, request_messages: messages } if conversation_messages.empty?
@@ -81,7 +81,8 @@ class Pilot::BaseTaskService
     { error: e.message, request_messages: messages }
   end
 
-  def build_chat(context, model:, messages:, schema: nil, tools: [])
+  # rubocop:disable Metrics/CyclomaticComplexity, Metrics/ParameterLists
+  def build_chat(context, model:, messages:, schema: nil, tools: [], params: {})
     # When the chat provider is openai-compatible (Nebius, Scaleway, OpenRouter,
     # custom slugs with _OPENAI_COMPATIBLE=true), pass provider + assume_model_exists
     # so RubyLLM skips its model registry — which doesn't know Scaleway's mistral-*,
@@ -92,6 +93,7 @@ class Pilot::BaseTaskService
       chat_options[:assume_model_exists] = true
     end
     chat = context.chat(**chat_options)
+    chat.with_params(**params) if params.any?
     system_msg = messages.find { |m| m[:role] == 'system' }
     chat.with_instructions(system_msg[:content]) if system_msg
     chat.with_schema(schema) if schema
@@ -103,6 +105,7 @@ class Pilot::BaseTaskService
 
     chat
   end
+  # rubocop:enable Metrics/CyclomaticComplexity, Metrics/ParameterLists
 
   def add_messages_if_needed(chat, conversation_messages)
     return if conversation_messages.length == 1

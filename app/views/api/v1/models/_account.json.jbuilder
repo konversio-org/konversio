@@ -41,3 +41,9 @@ json.pilot_csat_analysis_enabled @account.pilot_csat_analysis_enabled
 json.pilot_follow_up_enabled @account.pilot_follow_up_enabled
 json.pilot_rewrite_enabled @account.pilot_rewrite_enabled
 json.pilot_label_suggestion_enabled @account.pilot_label_suggestion_enabled
+
+# Active chat slot details for reasoning effort configuration
+chat_config = Llm::Config.for_slot(:chat)
+json.pilot_chat_model_name chat_config[:model]
+json.pilot_chat_model_reasoning_supported Llm::SanityTester.reasoning_supported?(chat_config[:provider], chat_config[:model])
+json.pilot_chat_model_reasoning_levels Llm::ProviderRegistry.reasoning_capability(chat_config[:provider], chat_config[:model])[:valid_levels]
