@@ -19,6 +19,29 @@ RSpec.describe Email::ReplyToBuilder do
         expect(result).to include('care@example.com')
       end
 
+      context 'when reply_to_email is set' do
+        before { channel.update!(reply_to_email: 'reply@example.com') }
+
+        it 'uses reply_to_email instead of channel email' do
+          builder = described_class.new(inbox: inbox, message: current_message)
+          result = builder.build
+
+          expect(result).to include('reply@example.com')
+          expect(result).not_to include('care@example.com')
+        end
+      end
+
+      context 'when reply_to_email is nil' do
+        before { channel.update_column(:reply_to_email, nil) }
+
+        it 'falls back to channel email' do
+          builder = described_class.new(inbox: inbox, message: current_message)
+          result = builder.build
+
+          expect(result).to include('care@example.com')
+        end
+      end
+
       context 'with friendly inbox' do
         let(:inbox) do
           create(:inbox, channel: channel, account: account, greeting_enabled: true, greeting_message: 'Hello', sender_name_type: :friendly)

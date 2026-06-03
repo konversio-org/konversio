@@ -44,6 +44,8 @@ export default {
       allowedDomains: '',
       isUpdatingAllowedDomains: false,
       isSettingDefaults: false,
+      replyToEmail: '',
+      isUpdatingReplyToEmail: false,
     };
   },
   validations: {
@@ -83,6 +85,7 @@ export default {
         this.inbox.selected_feature_flags || []
       ).includes('allow_mobile_webview');
       this.allowedDomains = this.inbox.allowed_domains || '';
+      this.replyToEmail = this.inbox.reply_to_email || '';
       this.$nextTick(() => {
         this.isSettingDefaults = false;
       });
@@ -182,6 +185,24 @@ export default {
         useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
       } finally {
         this.isSyncingTemplates = false;
+      }
+    },
+    async updateReplyToEmail() {
+      this.isUpdatingReplyToEmail = true;
+      try {
+        const payload = {
+          id: this.inbox.id,
+          formData: false,
+          channel: {
+            reply_to_email: this.replyToEmail,
+          },
+        };
+        await this.$store.dispatch('inboxes/updateInbox', payload);
+        useAlert(this.$t('INBOX_MGMT.EDIT.API.SUCCESS_MESSAGE'));
+      } catch (error) {
+        useAlert(this.$t('INBOX_MGMT.EDIT.API.ERROR_MESSAGE'));
+      } finally {
+        this.isUpdatingReplyToEmail = false;
       }
     },
   },
@@ -350,6 +371,27 @@ export default {
   </div>
   <div v-else-if="isAnEmailChannel">
     <div>
+      <SettingsFieldSection
+        :label="$t('INBOX_MGMT.SETTINGS_POPUP.REPLY_TO_EMAIL_TITLE')"
+        :help-text="$t('INBOX_MGMT.SETTINGS_POPUP.REPLY_TO_EMAIL_SUB_TEXT')"
+      >
+        <div class="flex flex-1 justify-between items-center">
+          <woot-input
+            v-model="replyToEmail"
+            type="email"
+            class="flex-1 mr-2 [&>input]:!mb-0"
+            :placeholder="
+              $t('INBOX_MGMT.SETTINGS_POPUP.REPLY_TO_EMAIL_PLACEHOLDER')
+            "
+          />
+          <NextButton
+            :is-loading="isUpdatingReplyToEmail"
+            @click="updateReplyToEmail"
+          >
+            {{ $t('INBOX_MGMT.SETTINGS_POPUP.UPDATE') }}
+          </NextButton>
+        </div>
+      </SettingsFieldSection>
       <SettingsFieldSection
         :label="$t('INBOX_MGMT.SETTINGS_POPUP.FORWARD_EMAIL_TITLE')"
         :help-text="

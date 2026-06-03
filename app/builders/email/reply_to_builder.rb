@@ -3,7 +3,7 @@ class Email::ReplyToBuilder < Email::BaseBuilder
 
   def build
     reply_to = if inbox.email?
-                 channel.email
+                 channel.reply_to_email.presence || channel.email
                elsif inbound_email_enabled?
                  "reply+#{conversation.uuid}@#{account.inbound_email_domain}"
                else

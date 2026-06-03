@@ -47,12 +47,13 @@ class Channel::Email < ApplicationRecord
   end
 
   self.table_name = 'channel_email'
-  EDITABLE_ATTRS = [:email, :imap_enabled, :imap_login, :imap_password, :imap_address, :imap_port, :imap_enable_ssl,
+  EDITABLE_ATTRS = [:email, :reply_to_email, :imap_enabled, :imap_login, :imap_password, :imap_address, :imap_port, :imap_enable_ssl,
                     :smtp_enabled, :smtp_login, :smtp_password, :smtp_address, :smtp_port, :smtp_domain, :smtp_enable_starttls_auto,
                     :smtp_enable_ssl_tls, :smtp_openssl_verify_mode, :smtp_authentication, :provider, :verified_for_sending].freeze
 
   validates :email, uniqueness: true
   validates :forward_to_email, uniqueness: true
+  validates :reply_to_email, format: { with: URI::MailTo::EMAIL_REGEXP, message: 'must be a valid email address' }, allow_blank: true
 
   before_validation :ensure_forward_to_email, on: :create
 
