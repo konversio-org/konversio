@@ -1,6 +1,9 @@
 class Conversations::ResolutionJob < ApplicationJob
   queue_as :low
 
+  # Only live-chat channels get auto-resolved; async channels (email etc.) need human follow-up
+  AUTO_RESOLVE_CHANNEL_TYPES = %w[Channel::WebWidget Channel::Whatsapp].freeze
+
   def perform(account:)
     # limiting the number of conversations to be resolved to avoid any performance issues
     resolvable_conversations = conversation_scope(account).limit(Limits::BULK_ACTIONS_LIMIT)
@@ -22,9 +25,8 @@ class Conversations::ResolutionJob < ApplicationJob
                    account.conversations.resolvable_all(account.auto_resolve_after)
                  end
     # Exclude orphan conversations where contact was deleted but conversation cleanup is pending
-    # Exclude email inboxes — agents handle email threads manually
     base_scope.where.not(contact_id: nil)
               .joins(:inbox)
-              .where.not(inboxes: { channel_type: 'Channel::Email' })
+              .where(inboxes: { channel_type: AUTO_RESOLVE_CHANNEL_TYPES })
   end
 end
