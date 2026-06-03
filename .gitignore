@@ -111,3 +111,4 @@ mise.local.toml
 # Local agent tool state (Antigravity, etc.)
 .agent/
 .antigravitycli/
+.agents/skills/
