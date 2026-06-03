@@ -11,12 +11,9 @@ class AudioNotificationStore {
   }
 
   hasUnreadConversation = () => {
-    const mineConversation = this.store.getters.getMineChats({
-      assigneeType: 'me',
-      status: 'open',
-    });
-
-    return mineConversation.some(conv => conv.unread_count > 0);
+    const allConversations =
+      this.store.state.conversations?.allConversations ?? [];
+    return allConversations.some(conv => conv.unread_count > 0);
   };
 
   isMessageFromPendingConversation = (message = {}) => {
