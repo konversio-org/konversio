@@ -48,7 +48,13 @@ export const FEATURE_FLAGS = {
   CONVERSATION_REQUIRED_ATTRIBUTES: 'conversation_required_attributes',
 };
 
-// Konversio is 100% open source — there is no premium/enterprise tier, so no
-// feature is gated behind a paywall. Keeping this list empty makes
-// `isPremiumFeature` always false, so paywalls and premium upsells never render.
-export const PREMIUM_FEATURES = [];
+export const PREMIUM_FEATURES = [
+  FEATURE_FLAGS.SLA,
+  FEATURE_FLAGS.PILOT_CUSTOM_TOOLS,
+  FEATURE_FLAGS.CUSTOM_ROLES,
+  FEATURE_FLAGS.AUDIT_LOGS,
+  FEATURE_FLAGS.HELP_CENTER,
+  FEATURE_FLAGS.SAML,
+  FEATURE_FLAGS.CONVERSATION_REQUIRED_ATTRIBUTES,
+  FEATURE_FLAGS.ADVANCED_ASSIGNMENT,
+];
