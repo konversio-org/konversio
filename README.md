@@ -108,13 +108,6 @@ Translation contributions are welcome. Details on the Konversio translation work
 We use the [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The base branch is `develop`.
 If you are looking for a stable version, please use the `master` or tags labelled as `v1.x.x`.
 
-## Security
-
-Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
-
-## Community
-
-If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/cJXdrwS) server.
 
 ## Attribution & Contributors
 
