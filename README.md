@@ -120,4 +120,4 @@ If you need help or just want to hang out, come, say hi on our [Discord](https:/
 
 Konversio stands on the shoulders of a large open-source community. Original copyright and MIT license terms are preserved in [`LICENSE`](./LICENSE).
 
-*Konversio* &copy; 2025–2026, Konversio Inc — MIT License (Pilot and other original code).
+*Konversio* &copy; 2026, Konversio Inc — MIT License (Pilot and other original code).
