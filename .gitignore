@@ -112,3 +112,6 @@ mise.local.toml
 .agent/
 .antigravitycli/
 .agents/skills/
+
+# Internal specs / change proposals
+openspec/
