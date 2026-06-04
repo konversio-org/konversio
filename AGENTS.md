@@ -141,7 +141,7 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 - The `enterprise/` overlay and Captain AI have been removed; there is no OSS/Enterprise split to preserve.
 - Captain has been renamed to `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
 - Edit core files freely — no `prepend_mod_with` dance, no mirror-edits, no `spec/enterprise`.
-- **Pilot was built as a clean-room replacement for Captain.** Critical rule: **do not resurrect deleted `enterprise/captain/*` files from git history to reference when extending Pilot.**
+- **Pilot** is Konversio's own AI assistant feature. Critical rule: **do not resurrect deleted `enterprise/captain/*` files from git history when extending Pilot.**
 
 ## Branding / White-labeling note
 
