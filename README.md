@@ -1,37 +1,15 @@
-<img src="./.github/screenshots/header.png#gh-light-mode-only" width="100%" alt="Header light mode"/>
-<img src="./.github/screenshots/header-dark.png#gh-dark-mode-only" width="100%" alt="Header dark mode"/>
-
-___
-
 # Konversio
 
 The modern customer support platform, an open-source alternative to Intercom, Zendesk, Salesforce Service Cloud etc.
 
-<!-- @TODO: All badges below point at chatwoot/chatwoot (CircleCI, Docker, Crowdin, Discord, status, ArtifactHub). Replace with Konversio-owned equivalents or remove. -->
-<p>
-  <img src="https://img.shields.io/circleci/build/github/chatwoot/chatwoot" alt="CircleCI Badge">
-    <a href="https://hub.docker.com/r/chatwoot/chatwoot/"><img src="https://img.shields.io/docker/pulls/chatwoot/chatwoot" alt="Docker Pull Badge"></a>
-  <a href="https://hub.docker.com/r/chatwoot/chatwoot/"><img src="https://img.shields.io/docker/cloud/build/chatwoot/chatwoot" alt="Docker Build Badge"></a>
-  <img src="https://img.shields.io/github/commit-activity/m/chatwoot/chatwoot" alt="Commits-per-month">
-  <a title="Crowdin" target="_self" href="https://chatwoot.crowdin.com/chatwoot"><img src="https://badges.crowdin.net/e/37ced7eba411064bd792feb3b7a28b16/localized.svg"></a>
-  <a href="https://discord.gg/cJXdrwS"><img src="https://img.shields.io/discord/647412545203994635" alt="Discord"></a>
-  <a href="https://status.chatwoot.com"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fchatwoot%2Fstatus%2Fmaster%2Fapi%2Fchatwoot%2Fuptime.json" alt="uptime"></a>
-  <a href="https://status.chatwoot.com"><img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fchatwoot%2Fstatus%2Fmaster%2Fapi%2Fchatwoot%2Fresponse-time.json" alt="response time"></a>
-  <a href="https://artifacthub.io/packages/helm/chatwoot/chatwoot"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/artifact-hub" alt="Artifact HUB"></a>
-</p>
-
-
-<!-- @TODO: Dashboard screenshots are still Chatwoot's. Swap once Konversio UI diverges visibly. -->
-<img src="./.github/screenshots/dashboard.png#gh-light-mode-only" width="100%" alt="Chat dashboard dark mode"/>
-<img src="./.github/screenshots/dashboard-dark.png#gh-dark-mode-only" width="100%" alt="Chat dashboard"/>
 
 ---
 
 ## About Konversio
 
-Konversio is a hard fork of [Chatwoot Community Edition](https://github.com/chatwoot/chatwoot) v4.13.0, released under the MIT license as Konversio v0.0.1. We've kept only the MIT-licensed core — Chatwoot's Enterprise overlay (including **Captain AI**) is not included or redistributed.
+Konversio is an open-source customer support platform built on a MIT-licensed foundation, released under the MIT license. We've kept only the MIT-licensed core — no proprietary AI overlays are included or redistributed.
 
-On top of this foundation we're building **Pilot**, a fully open-source AI layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). Pilot was built clean-room — observed Captain's behavior as an end-user, wrote a spec, then implemented from the spec without ever reading Captain's source. See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full fork lineage and clean-room methodology. If AI was your only reason for considering Chatwoot Enterprise, Pilot removes that need. *(Pilot does not replicate other Enterprise features such as SSO or advanced role management.)*
+On top of this foundation we're building **Pilot**, a fully open-source AI layer with **bring-your-own-key** support for any LLM provider (OpenAI, Anthropic, Mistral, local models via Ollama, etc.). Pilot was built clean-room from a behavioral spec, without reading any proprietary source. See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full fork lineage and clean-room methodology.
 
 Self-hosting + BYOK means **no customer data flows through a vendor's AI sub-processor** — you control where data lives and which providers touch it. This makes Konversio a suitable building block for **EU-sovereign, GDPR-compliant deployments**. The software enables compliance; the deployment achieves it.
 
@@ -121,17 +99,15 @@ Publish help articles, FAQs, and guides through the built-in Help Center Portal.
 - Downloadable Reports for offline analysis and reporting.
 
 
-<!-- @TODO: Points at Chatwoot's Crowdin. Honest only if Konversio upstreams translation contributions — otherwise replace with Konversio's own process or remove. -->
 ## Translation process
 
-The translation process for Konversio web and mobile app is managed at [https://translate.chatwoot.com](https://translate.chatwoot.com) using Crowdin. Please read the [translation guide](https://www.chatwoot.com/docs/contributing/translating-chatwoot-to-your-language) for contributing to Konversio.
+Translation contributions are welcome. Details on the Konversio translation workflow are coming soon — watch this repo for updates.
 
 ## Branching model
 
 We use the [git-flow](https://nvie.com/posts/a-successful-git-branching-model/) branching model. The base branch is `develop`.
 If you are looking for a stable version, please use the `master` or tags labelled as `v1.x.x`.
 
-<!-- @TODO: Verify SECURITY.md — likely still routes vulnerability reports to security@chatwoot.com. Update to a Konversio contact. -->
 ## Security
 
 Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md) file.
@@ -140,11 +116,8 @@ Looking to report a vulnerability? Please refer our [SECURITY.md](./SECURITY.md)
 
 If you need help or just want to hang out, come, say hi on our [Discord](https://discord.gg/cJXdrwS) server.
 
-<!-- @TODO: Verify ./LICENSE actually contains Chatwoot's MIT copyright notice. If it was stripped during the fork, restore it — required for MIT compliance. -->
 ## Attribution & Contributors
 
-Konversio is built on the work of the [Chatwoot](https://github.com/chatwoot/chatwoot) team and its [wonderful contributors](https://www.chatwoot.com/docs/contributors). Original Chatwoot copyright and MIT license terms are preserved in [`LICENSE`](./LICENSE).
+Konversio stands on the shoulders of a large open-source community. Original copyright and MIT license terms are preserved in [`LICENSE`](./LICENSE).
 
-
-*Chatwoot* &copy; 2017–2025, Chatwoot Inc — MIT License.
 *Konversio* &copy; 2025–2026, Konversio Inc — MIT License (Pilot and other original code).
