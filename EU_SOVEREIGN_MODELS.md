@@ -27,9 +27,8 @@ Konversio is positioned as an EU-sovereign customer-support platform.
    stop. (See the in-repo failure handling in `Pilot::BaseTaskService` and
    the `[BACKEND_ERROR]` convention used by tools.)
 
-These constraints rule out the entire Captain reference architecture
-(`gpt-4o-mini` / `gpt-4.1-mini` on OpenAI), even though it is otherwise the
-faithful design Konversio's Pilot module reconstructs.
+These constraints rule out OpenAI-hosted inference (`gpt-4o-mini` /
+`gpt-4.1-mini`), even for operators who would otherwise prefer those models.
 
 ---
 
@@ -184,8 +183,8 @@ uplift is acceptable unless production traffic proves otherwise.
 
 ### OpenAI direct versus Scaleway
 
-For current Captain-equivalent comparisons, use the `all-openai` preset as
-the baseline and `all-scaleway` as the EU-sovereign replacement:
+Use the `all-openai` preset as the OpenAI baseline and `all-scaleway` as the
+EU-sovereign replacement:
 
 | Slot | OpenAI direct baseline | Scaleway EU replacement | EUR pricing impact |
 |---|---|---|---|
@@ -418,15 +417,12 @@ Document any deviation from the recommendation above in
 ## Related decisions and constraints
 
 - The fork-strategy doctrine: [`FORK_STRATEGY.md`](./FORK_STRATEGY.md).
-  Pilot is a clean-room reconstruction of Captain's behavior; do not
-  resurrect protected expression from git history when evaluating
+  Do not resurrect protected expression from git history when evaluating
   models or making changes here.
-- Captain (the upstream reference implementation) is best treated as a
-  `gpt-4.1-mini` baseline for current comparisons. This is OpenAI's mini
-  tier — i.e. roughly the same product class as Mistral Small 3.2 and
-  Gemma 4 26B-a4b. The reason Captain's auto-mode tool calling works
-  reliably and Mistral's does not is post-training on tool use, not raw
-  model capacity.
+- `gpt-4.1-mini` is OpenAI's mini tier — roughly the same product class as
+  Mistral Small 3.2 and Gemma 4 26B-a4b. The reason its auto-mode tool
+  calling works reliably and Mistral's does not is post-training on tool use,
+  not raw model capacity.
 - The slot architecture (chat / embedding / audio independently
   configurable per provider) is the structural reason a model swap is
   a config change rather than a code change. Preserve this property
