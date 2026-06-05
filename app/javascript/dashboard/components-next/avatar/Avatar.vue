@@ -165,6 +165,16 @@ const handleUploadAvatar = () => {
   fileInput.value.click();
 };
 
+const handleDrop = event => {
+  const [file] = event.dataTransfer.files;
+  if (file) {
+    emit('upload', {
+      file,
+      url: URL.createObjectURL(file),
+    });
+  }
+};
+
 const handleImageUpload = event => {
   const [file] = event.target.files;
   if (file) {
@@ -283,10 +293,12 @@ watch(
           class="absolute inset-0 z-10 flex items-center justify-center invisible w-full h-full transition-all duration-300 ease-in-out opacity-0 bg-n-alpha-black1 group-hover/avatar:visible group-hover/avatar:opacity-100"
           :class="borderRadiusClass"
           @click="handleUploadAvatar"
+          @dragover.prevent
+          @drop.prevent="handleDrop"
         >
           <Icon
             icon="i-lucide-upload"
-            class="text-white"
+            class="text-white pointer-events-none"
             :style="{ width: `${size / 2}px`, height: `${size / 2}px` }"
           />
           <input
