@@ -307,6 +307,7 @@ watch(
             type="file"
             accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
             class="hidden"
+            @click.stop
             @change="handleImageUpload"
           />
         </div>
