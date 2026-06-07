@@ -145,8 +145,12 @@ const handleAvatarDelete = async () => {
       const res = await PilotAssistantsAPI.deleteAvatar(props.assistant.id);
       const updated = res.data?.data || res.data;
       if (updated) {
-        // Sync the reverted avatar_url (back to default) into the store so
-        // lists, pickers, and the form preview reflect the removal.
+        // Drive the form preview off the server response (the default bot URL)
+        // directly — the editor can hold a stale assistant reference, so the
+        // computed fallback to props.assistant?.avatar_url won't react. Without
+        // this the old image lingers until a full page reload.
+        avatarPreview.value = updated.avatar_url || '';
+        // Sync the reverted record into the store so lists/pickers update too.
         store.commit('pilot/assistants/UPDATE_RECORD', updated);
       }
     } catch (e) {
