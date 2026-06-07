@@ -117,6 +117,17 @@ class Pilot::Assistant < ApplicationRecord
     account.pilot_custom_tools.enabled.where(slug: enabled_tool_slugs)
   end
 
+  # Assistant avatars must never be cropped — an assistant's logo/mark has to
+  # stay fully visible, unlike user headshots which are intentionally filled
+  # into a circle. Fit the image inside a 250x250 box and pad the remainder
+  # with transparency (alpha), emitting PNG so the alpha channel survives.
+  # This overrides Avatarable#avatar_url (which uses resize_to_fill).
+  def avatar_url
+    return '' unless avatar.attached? && avatar.representable?
+
+    url_for(avatar.representation(resize_and_pad: [250, 250, { alpha: true }], format: :png))
+  end
+
   # Final fallback when the assistant has no custom avatar attached
   # and the inbox also has none. This is the default bot glyph used across
   # the widget and dashboard for AI assistants (e.g. the value resolved at
