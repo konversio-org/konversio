@@ -163,6 +163,12 @@ const submit = async () => {
   error.value = '';
   isSubmitting.value = true;
 
+  // Capture the pending avatar file up front: dispatching the main save
+  // mutates the store record, which changes `props.assistant` and fires the
+  // `watch` that resets `avatarFile` to null. Reading the ref after the await
+  // would therefore skip the upload entirely.
+  const pendingAvatarFile = avatarFile.value;
+
   const payload = {
     name: name.value.trim(),
     description: description.value.trim(),
@@ -210,11 +216,11 @@ const submit = async () => {
     // IMPORTANT: capture the response from the avatar upload and sync it back
     // into local preview + the store, otherwise the form and list will revert
     // to the old avatar_url that was returned by the main text update.
-    if (avatarFile.value && savedId) {
+    if (pendingAvatarFile && savedId) {
       try {
         const res = await PilotAssistantsAPI.uploadAvatar(
           savedId,
-          avatarFile.value
+          pendingAvatarFile
         );
         const updated = res.data?.data || res.data;
         if (updated?.avatar_url) {
@@ -226,7 +232,13 @@ const submit = async () => {
           store.commit('pilot/assistants/UPDATE_RECORD', updated);
         }
       } catch (e) {
-        // Main save succeeded; avatar upload is best-effort for this MVP
+        // Main text save already succeeded, but the avatar upload failed
+        // (e.g. unsupported filetype, too big, or >512px). Surface it so the
+        // user isn't left thinking the avatar saved when it didn't.
+        useAlert(
+          e?.response?.data?.message || t('PILOT.SETTINGS.ERRORS.AVATAR_FAILED')
+        );
+        avatarPreview.value = '';
       }
     }
 
