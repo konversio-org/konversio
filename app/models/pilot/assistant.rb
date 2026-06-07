@@ -24,6 +24,8 @@
 class Pilot::Assistant < ApplicationRecord
   self.table_name = 'pilot_assistants'
 
+  include Avatarable
+
   belongs_to :account
 
   has_many :documents,
@@ -115,13 +117,10 @@ class Pilot::Assistant < ApplicationRecord
     account.pilot_custom_tools.enabled.where(slug: enabled_tool_slugs)
   end
 
-  # No avatar attachment support yet; subclasses or future migrations can
-  # override. Until then `avatar_url` is always nil so push_event_data
-  # falls through to `default_avatar_url`.
-  def avatar_url(*)
-    nil
-  end
-
+  # Final fallback when the assistant has no custom avatar attached
+  # and the inbox also has none. This is the default bot glyph used across
+  # the widget and dashboard for AI assistants (e.g. the value resolved at
+  # https://support.arnocoenen.art/assets/images/konversio_bot.svg).
   def default_avatar_url
     '/assets/images/konversio_bot.svg'
   end
