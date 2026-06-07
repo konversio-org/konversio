@@ -26,6 +26,11 @@ class Pilot::AssistantPolicy < ApplicationPolicy
     administrator?
   end
 
+  # Removing a custom avatar is an admin write, same as update.
+  def avatar?
+    administrator?
+  end
+
   def playground?
     account_user.present?
   end

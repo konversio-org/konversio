@@ -62,6 +62,7 @@ Rails.application.routes.draw do
             resources :assistants do
               member do
                 post :playground
+                delete :avatar
               end
               collection do
                 get :tools

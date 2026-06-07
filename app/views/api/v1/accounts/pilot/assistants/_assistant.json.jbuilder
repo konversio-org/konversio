@@ -1,5 +1,6 @@
 json.id assistant.id
 json.name assistant.name
+json.avatar_url assistant.avatar_url.presence || assistant.default_avatar_url
 json.description assistant.description
 json.config assistant.config
 json.enabled_tool_slugs assistant.enabled_tool_slugs

@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Avatar from 'next/avatar/Avatar.vue';
+import PilotAssistantsAPI from 'dashboard/api/pilot/assistants';
 
 const props = defineProps({
   assistant: {
@@ -51,6 +53,15 @@ const temperature = ref(0.1);
 const reasoningEffort = ref('off');
 const maxTokens = ref(null);
 
+// Avatar state (local preview + pending file for upload)
+const avatarFile = ref(null);
+const avatarPreview = ref('');
+
+const assistantAvatarSrc = computed(() => {
+  if (avatarPreview.value) return avatarPreview.value;
+  return props.assistant?.avatar_url || '';
+});
+
 const chatModelName = computed(
   () => currentAccount.value?.pilot_chat_model_name || ''
 );
@@ -62,6 +73,10 @@ const reasoningLevels = computed(
 );
 
 const loadAssistantData = () => {
+  // Reset any pending local avatar selection when the edited assistant changes
+  avatarFile.value = null;
+  avatarPreview.value = '';
+
   if (props.assistant) {
     name.value = props.assistant.name || '';
     description.value = props.assistant.description || '';
@@ -114,6 +129,36 @@ const fetchCustomTools = () => {
   store.dispatch('pilot/customTools/fetchPage', { page: 1 }).catch(() => {});
 };
 
+const handleAvatarUpload = ({ file, url }) => {
+  avatarFile.value = file;
+  avatarPreview.value = url || '';
+};
+
+const handleAvatarDelete = async () => {
+  // eslint-disable-next-line no-alert
+  if (!window.confirm(t('PILOT.SETTINGS.AVATAR_DELETE_CONFIRM'))) return;
+
+  avatarFile.value = null;
+  avatarPreview.value = '';
+  if (isEdit.value && props.assistant?.id) {
+    try {
+      const res = await PilotAssistantsAPI.deleteAvatar(props.assistant.id);
+      const updated = res.data?.data || res.data;
+      if (updated) {
+        // Drive the form preview off the server response (the default bot URL)
+        // directly — the editor can hold a stale assistant reference, so the
+        // computed fallback to props.assistant?.avatar_url won't react. Without
+        // this the old image lingers until a full page reload.
+        avatarPreview.value = updated.avatar_url || '';
+        // Sync the reverted record into the store so lists/pickers update too.
+        store.commit('pilot/assistants/UPDATE_RECORD', updated);
+      }
+    } catch (e) {
+      useAlert(t('PILOT.SETTINGS.ERRORS.AVATAR_DELETE_FAILED'));
+    }
+  }
+};
+
 watch(() => props.assistant, loadAssistantData, { immediate: true });
 watch(
   isToolsEnabled,
@@ -130,6 +175,12 @@ const submit = async () => {
   }
   error.value = '';
   isSubmitting.value = true;
+
+  // Capture the pending avatar file up front: dispatching the main save
+  // mutates the store record, which changes `props.assistant` and fires the
+  // `watch` that resets `avatarFile` to null. Reading the ref after the await
+  // would therefore skip the upload entirely.
+  const pendingAvatarFile = avatarFile.value;
 
   const payload = {
     name: name.value.trim(),
@@ -156,6 +207,8 @@ const submit = async () => {
   };
 
   try {
+    let savedId = isEdit.value ? props.assistant.id : null;
+
     if (isEdit.value) {
       await store.dispatch('pilot/assistants/update', {
         id: props.assistant.id,
@@ -167,9 +220,45 @@ const submit = async () => {
         'pilot/assistants/create',
         payload
       );
-      store.dispatch('pilot/assistants/setActive', newAssistant.id);
+      savedId = newAssistant.id;
+      store.dispatch('pilot/assistants/setActive', savedId);
       useAlert(t('PILOT.SETTINGS.TOAST.CREATED'));
     }
+
+    // Persist avatar file (if chosen) after the main record exists.
+    // IMPORTANT: capture the response from the avatar upload and sync it back
+    // into local preview + the store, otherwise the form and list will revert
+    // to the old avatar_url that was returned by the main text update.
+    if (pendingAvatarFile && savedId) {
+      try {
+        const res = await PilotAssistantsAPI.uploadAvatar(
+          savedId,
+          pendingAvatarFile
+        );
+        const updated = res.data?.data || res.data;
+        if (updated?.avatar_url) {
+          avatarPreview.value = updated.avatar_url;
+        }
+        if (updated) {
+          // Push the fresh record (with the real avatar_url) into the store
+          // so lists, pickers, and future editor mounts see the correct value.
+          store.commit('pilot/assistants/UPDATE_RECORD', updated);
+        }
+      } catch (e) {
+        // Main text save already succeeded, but the avatar upload failed
+        // (e.g. unsupported filetype, too big, or >512px). Surface it so the
+        // user isn't left thinking the avatar saved when it didn't.
+        useAlert(
+          e?.response?.data?.message || t('PILOT.SETTINGS.ERRORS.AVATAR_FAILED')
+        );
+        avatarPreview.value = '';
+      }
+    }
+
+    // Clear only the "dirty file" handle. Keep any server-returned preview
+    // so the form doesn't immediately flip back to the old default.
+    avatarFile.value = null;
+
     emit('saved');
   } catch (err) {
     error.value =
@@ -204,6 +293,23 @@ const submit = async () => {
         :label="t('PILOT.SETTINGS.FORM.CANCEL')"
         @click="emit('cancel')"
       />
+    </div>
+
+    <!-- Avatar -->
+    <div class="flex items-start gap-4">
+      <Avatar
+        :src="assistantAvatarSrc"
+        :name="name || 'Assistant'"
+        :size="56"
+        allow-upload
+        rounded-full
+        contain-image
+        @upload="handleAvatarUpload"
+        @delete="handleAvatarDelete"
+      />
+      <div class="pt-1 text-xs text-n-slate-11 max-w-[22rem]">
+        {{ t('PILOT.SETTINGS.FORM.AVATAR_HINT') }}
+      </div>
     </div>
 
     <div

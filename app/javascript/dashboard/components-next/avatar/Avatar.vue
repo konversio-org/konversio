@@ -28,6 +28,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Fit the whole image inside the frame (object-contain) instead of the
+  // default fill/crop. Use for logos/marks (e.g. AI assistant avatars) that
+  // must never be cropped — non-square images letterbox rather than clip.
+  containImage: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: String,
     default: null,
@@ -255,6 +262,7 @@ watch(
         v-if="src && isImageValid"
         :src="src"
         :alt="name"
+        :class="containImage ? 'w-full h-full object-contain' : ''"
         @error="invalidateCurrentImage"
       />
 
