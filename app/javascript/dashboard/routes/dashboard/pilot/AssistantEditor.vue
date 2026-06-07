@@ -135,13 +135,22 @@ const handleAvatarUpload = ({ file, url }) => {
 };
 
 const handleAvatarDelete = async () => {
+  // eslint-disable-next-line no-alert
+  if (!window.confirm(t('PILOT.SETTINGS.AVATAR_DELETE_CONFIRM'))) return;
+
   avatarFile.value = null;
   avatarPreview.value = '';
   if (isEdit.value && props.assistant?.id) {
     try {
-      await PilotAssistantsAPI.deleteAvatar(props.assistant.id);
+      const res = await PilotAssistantsAPI.deleteAvatar(props.assistant.id);
+      const updated = res.data?.data || res.data;
+      if (updated) {
+        // Sync the reverted avatar_url (back to default) into the store so
+        // lists, pickers, and the form preview reflect the removal.
+        store.commit('pilot/assistants/UPDATE_RECORD', updated);
+      }
     } catch (e) {
-      // Non-fatal for MVP; the preview is already cleared
+      useAlert(t('PILOT.SETTINGS.ERRORS.AVATAR_DELETE_FAILED'));
     }
   }
 };

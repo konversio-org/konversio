@@ -273,11 +273,13 @@
         "DELETE": "Delete",
         "VIEW_INBOXES": "View connected inboxes"
       },
+      "AVATAR_DELETE_CONFIRM": "Remove this assistant's custom avatar? It will revert to the default bot image.",
       "ERRORS": {
         "NAME_REQUIRED": "Name is required.",
         "SAVE_FAILED": "Failed to save assistant settings.",
         "DELETE_FAILED": "Failed to delete assistant.",
-        "AVATAR_FAILED": "Settings saved, but the avatar couldn't be uploaded. Use a PNG/JPEG/GIF up to 1 MB and 512×512 px."
+        "AVATAR_FAILED": "Settings saved, but the avatar couldn't be uploaded. Use a PNG/JPEG/GIF up to 1 MB and 512×512 px.",
+        "AVATAR_DELETE_FAILED": "Failed to remove the avatar. Please try again."
       },
       "TOAST": {
         "CREATED": "Assistant created successfully.",
