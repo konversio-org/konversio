@@ -206,18 +206,33 @@ const submit = async () => {
       useAlert(t('PILOT.SETTINGS.TOAST.CREATED'));
     }
 
-    // Persist avatar file (if chosen) after the main record exists
+    // Persist avatar file (if chosen) after the main record exists.
+    // IMPORTANT: capture the response from the avatar upload and sync it back
+    // into local preview + the store, otherwise the form and list will revert
+    // to the old avatar_url that was returned by the main text update.
     if (avatarFile.value && savedId) {
       try {
-        await PilotAssistantsAPI.uploadAvatar(savedId, avatarFile.value);
+        const res = await PilotAssistantsAPI.uploadAvatar(
+          savedId,
+          avatarFile.value
+        );
+        const updated = res.data?.data || res.data;
+        if (updated?.avatar_url) {
+          avatarPreview.value = updated.avatar_url;
+        }
+        if (updated) {
+          // Push the fresh record (with the real avatar_url) into the store
+          // so lists, pickers, and future editor mounts see the correct value.
+          store.commit('pilot/assistants/UPDATE_RECORD', updated);
+        }
       } catch (e) {
         // Main save succeeded; avatar upload is best-effort for this MVP
       }
     }
 
-    // Clear local avatar state
+    // Clear only the "dirty file" handle. Keep any server-returned preview
+    // so the form doesn't immediately flip back to the old default.
     avatarFile.value = null;
-    avatarPreview.value = '';
 
     emit('saved');
   } catch (err) {
