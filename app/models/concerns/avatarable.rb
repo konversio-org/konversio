@@ -33,9 +33,15 @@ module Avatarable
     acceptable_types = ['image/jpeg', 'image/png', 'image/gif'].freeze
     errors.add(:avatar, 'filetype not supported') unless acceptable_types.include?(avatar.content_type)
 
-    # Enforce reasonable pixel dimensions for avatars (small icons, not full photos)
-    return unless avatar.metadata[:width].present? && avatar.metadata[:height].present?
-    return unless avatar.metadata[:width] > 512 || avatar.metadata[:height] > 512
+    validate_avatar_dimensions
+  end
+
+  # Enforce reasonable pixel dimensions for avatars (small icons, not full photos).
+  def validate_avatar_dimensions
+    width = avatar.metadata[:width]
+    height = avatar.metadata[:height]
+    return if width.blank? || height.blank?
+    return unless width > 512 || height > 512
 
     errors.add(:avatar, 'dimensions are too large (maximum 512x512)')
   end
