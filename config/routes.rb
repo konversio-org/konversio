@@ -569,6 +569,9 @@ Rails.application.routes.draw do
   get 'hc/:slug/articles/:article_slug.png', to: 'public/api/v1/portals/articles#tracking_pixel'
   get 'hc/:slug/articles/:article_slug', to: 'public/api/v1/portals/articles#show'
 
+  # Public, content-hashed, CDN-cacheable assistant avatar (served by the widget).
+  get 'pilot/assistants/:id/avatar/:hash.png', to: 'pilot/assistant_avatars#show', as: :pilot_assistant_avatar
+
   # ----------------------------------------------------------------------
   # Used in mailer templates
   resource :app, only: [:index] do
