@@ -26,7 +26,7 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
 
   def avatar
     @assistant.avatar.purge if @assistant.avatar.attached?
-    @assistant
+    render :show
   end
 
   def playground
