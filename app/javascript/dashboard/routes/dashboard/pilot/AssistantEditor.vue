@@ -303,6 +303,7 @@ const submit = async () => {
         :size="56"
         allow-upload
         rounded-full
+        contain-image
         @upload="handleAvatarUpload"
         @delete="handleAvatarDelete"
       />
