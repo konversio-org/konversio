@@ -1,6 +1,6 @@
 class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseController
   before_action :ensure_feature_enabled
-  before_action :fetch_assistant, only: [:show, :update, :destroy, :playground]
+  before_action :fetch_assistant, only: [:show, :update, :destroy, :playground, :avatar]
   before_action :authorize_request
 
   def index
@@ -10,16 +10,23 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   def show; end
 
   def create
-    @assistant = Current.account.pilot_assistants.create!(assistant_params)
+    @assistant = Current.account.pilot_assistants.create!(assistant_params.except(:avatar_url))
+    process_avatar_from_url
   end
 
   def update
-    @assistant.update!(assistant_params)
+    @assistant.update!(assistant_params.except(:avatar_url))
+    process_avatar_from_url
   end
 
   def destroy
     @assistant.destroy!
     head :no_content
+  end
+
+  def avatar
+    @assistant.avatar.purge if @assistant.avatar.attached?
+    @assistant
   end
 
   def playground
@@ -64,7 +71,11 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   end
 
   def assistant_params
-    params.permit(:name, :description, :response_guidelines, :guardrails, enabled_tool_slugs: [], config: {})
+    params.permit(:name, :description, :response_guidelines, :guardrails, :avatar, :avatar_url, enabled_tool_slugs: [], config: {})
+  end
+
+  def process_avatar_from_url
+    ::Avatar::AvatarFromUrlJob.perform_later(@assistant, params[:avatar_url]) if params[:avatar_url].present?
   end
 
   def parsed_message_history

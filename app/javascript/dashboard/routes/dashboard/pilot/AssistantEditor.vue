@@ -4,6 +4,8 @@ import { useI18n } from 'vue-i18n';
 import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
+import Avatar from 'next/avatar/Avatar.vue';
+import PilotAssistantsAPI from 'dashboard/api/pilot/assistants';
 
 const props = defineProps({
   assistant: {
@@ -51,6 +53,15 @@ const temperature = ref(0.1);
 const reasoningEffort = ref('off');
 const maxTokens = ref(null);
 
+// Avatar state (local preview + pending file for upload)
+const avatarFile = ref(null);
+const avatarPreview = ref('');
+
+const assistantAvatarSrc = computed(() => {
+  if (avatarPreview.value) return avatarPreview.value;
+  return props.assistant?.avatar_url || '';
+});
+
 const chatModelName = computed(
   () => currentAccount.value?.pilot_chat_model_name || ''
 );
@@ -62,6 +73,10 @@ const reasoningLevels = computed(
 );
 
 const loadAssistantData = () => {
+  // Reset any pending local avatar selection when the edited assistant changes
+  avatarFile.value = null;
+  avatarPreview.value = '';
+
   if (props.assistant) {
     name.value = props.assistant.name || '';
     description.value = props.assistant.description || '';
@@ -114,6 +129,23 @@ const fetchCustomTools = () => {
   store.dispatch('pilot/customTools/fetchPage', { page: 1 }).catch(() => {});
 };
 
+const handleAvatarUpload = ({ file, url }) => {
+  avatarFile.value = file;
+  avatarPreview.value = url || '';
+};
+
+const handleAvatarDelete = async () => {
+  avatarFile.value = null;
+  avatarPreview.value = '';
+  if (isEdit.value && props.assistant?.id) {
+    try {
+      await PilotAssistantsAPI.deleteAvatar(props.assistant.id);
+    } catch (e) {
+      // Non-fatal for MVP; the preview is already cleared
+    }
+  }
+};
+
 watch(() => props.assistant, loadAssistantData, { immediate: true });
 watch(
   isToolsEnabled,
@@ -156,6 +188,8 @@ const submit = async () => {
   };
 
   try {
+    let savedId = isEdit.value ? props.assistant.id : null;
+
     if (isEdit.value) {
       await store.dispatch('pilot/assistants/update', {
         id: props.assistant.id,
@@ -167,9 +201,24 @@ const submit = async () => {
         'pilot/assistants/create',
         payload
       );
-      store.dispatch('pilot/assistants/setActive', newAssistant.id);
+      savedId = newAssistant.id;
+      store.dispatch('pilot/assistants/setActive', savedId);
       useAlert(t('PILOT.SETTINGS.TOAST.CREATED'));
     }
+
+    // Persist avatar file (if chosen) after the main record exists
+    if (avatarFile.value && savedId) {
+      try {
+        await PilotAssistantsAPI.uploadAvatar(savedId, avatarFile.value);
+      } catch (e) {
+        // Main save succeeded; avatar upload is best-effort for this MVP
+      }
+    }
+
+    // Clear local avatar state
+    avatarFile.value = null;
+    avatarPreview.value = '';
+
     emit('saved');
   } catch (err) {
     error.value =
@@ -204,6 +253,22 @@ const submit = async () => {
         :label="t('PILOT.SETTINGS.FORM.CANCEL')"
         @click="emit('cancel')"
       />
+    </div>
+
+    <!-- Avatar -->
+    <div class="flex items-start gap-4">
+      <Avatar
+        :src="assistantAvatarSrc"
+        :name="name || 'Assistant'"
+        :size="56"
+        allow-upload
+        rounded-full
+        @upload="handleAvatarUpload"
+        @delete="handleAvatarDelete"
+      />
+      <div class="pt-1 text-xs text-n-slate-11 max-w-[22rem]">
+        {{ t('PILOT.SETTINGS.FORM.AVATAR_HINT') }}
+      </div>
     </div>
 
     <div

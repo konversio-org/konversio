@@ -27,6 +27,7 @@ json.meta do
   json.pilot_assistants conversation.participating_pilot_assistants do |assistant|
     json.id assistant.id
     json.name assistant.name
+    json.avatar_url assistant.avatar_url.presence || assistant.default_avatar_url
   end
 end
 
