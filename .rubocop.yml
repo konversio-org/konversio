@@ -103,6 +103,7 @@ Rails/ApplicationController:
     - 'app/controllers/widget_tests_controller.rb'
     - 'app/controllers/widgets_controller.rb'
     - 'app/controllers/platform_controller.rb'
+    - 'app/controllers/pilot/assistant_avatars_controller.rb'
     - 'app/controllers/public_controller.rb'
     - 'app/controllers/survey/responses_controller.rb'
 
