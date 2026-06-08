@@ -32,7 +32,6 @@ class Pilot::CopilotThread < ApplicationRecord
 
   has_many :copilot_messages,
            class_name: 'Pilot::CopilotMessage',
-           foreign_key: :copilot_thread_id,
            inverse_of: :copilot_thread,
            dependent: :destroy
 

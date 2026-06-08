@@ -14,7 +14,6 @@ module Custom
           'get_contact'
         end
 
-
         def perform(tool_context, id:)
           account = account_for(tool_context)
           return 'Account context unavailable; cannot fetch contact.' if account.blank?
