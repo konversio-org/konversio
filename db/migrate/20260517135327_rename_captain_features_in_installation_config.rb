@@ -24,7 +24,11 @@ class RenameCaptainFeaturesInInstallationConfig < ActiveRecord::Migration[7.0]
     Array(value).each do |entry|
       next unless entry.is_a?(Hash)
 
-      key = entry.key?('name') ? 'name' : (entry.key?(:name) ? :name : nil)
+      key = if entry.key?('name')
+              'name'
+            else
+              (entry.key?(:name) ? :name : nil)
+            end
       next if key.nil?
       next unless mapping.key?(entry[key])
 

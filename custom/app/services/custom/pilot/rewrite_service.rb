@@ -44,7 +44,11 @@ module Custom
 
       def perform
         raise FeatureDisabledError, 'Pilot Rewrite is not enabled for this account' unless feature_enabled?(:rewrite)
-        raise ArgumentError, "Invalid operation: #{operation}. Allowed: #{ALLOWED_OPERATIONS.join(', ')}" unless ALLOWED_OPERATIONS.include?(operation)
+
+        unless ALLOWED_OPERATIONS.include?(operation)
+          raise ArgumentError,
+                "Invalid operation: #{operation}. Allowed: #{ALLOWED_OPERATIONS.join(', ')}"
+        end
 
         dispatch_event(:rewrite_started, operation: operation, text_length: text.to_s.length)
 
