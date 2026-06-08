@@ -81,6 +81,10 @@ jobs:
           - 6379:6379
         options: --entrypoint redis-server
 
+    env:
+      RAILS_ENV: test
+      POSTGRES_HOST: localhost
+
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
