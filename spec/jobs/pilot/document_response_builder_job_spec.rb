@@ -70,6 +70,7 @@ RSpec.describe Pilot::DocumentResponseBuilderJob do
   def stub_llm_response(content)
     response = instance_double(RubyLLM::Message, content: content)
     chat = instance_double(RubyLLM::Chat, with_instructions: nil, ask: response)
+    allow(chat).to receive(:with_params).and_return(chat)
     context = instance_double(RubyLLM::Context, chat: chat)
     allow(Llm::Config).to receive(:with_api_key).and_yield(context)
     allow(Llm::Config).to receive(:api_key).and_return('test-key')
