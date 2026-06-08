@@ -197,8 +197,8 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2
       tinykeys:
-        specifier: ^3.0.0
-        version: 3.0.0
+        specifier: ^4.0.0
+        version: 4.0.0
       turbolinks:
         specifier: ^5.2.0
         version: 5.2.0
@@ -4402,8 +4402,9 @@ packages:
     resolution: {integrity: sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g==}
     engines: {node: '>=12.0.0'}
 
-  tinykeys@3.0.0:
-    resolution: {integrity: sha512-nazawuGv5zx6MuDfDY0rmfXjuOGhD5XU2z0GLURQ1nzl0RUe9OuCJq+0u8xxJZINHe+mr7nw8PWYYZ9WhMFujw==}
+  tinykeys@4.0.0:
+    resolution: {integrity: sha512-z5bQRQHL1PSx3lGOZEAMM2oKp0EBtn5T5f7HJnaKPOzk6vEH0wUPvdHLeQ7F4tmkek8AgoTQISUFmn/5SNF2xA==}
+    engines: {node: '>=22'}
 
   tinyrainbow@3.1.0:
     resolution: {integrity: sha512-Bf+ILmBgretUrdJxzXM0SgXLZ3XfiaUuOj/IKQHuTXip+05Xn+uyEYdVg0kYDipTBcLrCVyUzAPz7QmArb0mmw==}
@@ -9475,7 +9476,7 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
 
-  tinykeys@3.0.0: {}
+  tinykeys@4.0.0: {}
 
   tinyrainbow@3.1.0: {}
 
