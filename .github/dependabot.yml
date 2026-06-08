@@ -1,0 +1,32 @@
+version: 2
+updates:
+  # JS dependencies (axios, vitest, etc.)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      # Batch routine version bumps into one PR to cut noise.
+      npm-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Ruby/Rails gems
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      bundler-minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Keep GitHub Actions pinned versions current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
