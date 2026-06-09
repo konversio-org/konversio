@@ -80,7 +80,7 @@ RSpec.describe Channel::Telegram do
       stub_request(:post, "https://api.telegram.org/bot#{telegram_channel.bot_token}/sendMessage")
         .with(
           body: "chat_id=123&text=#{
-            ERB::Util.url_encode('<strong>test</strong> <em>test</em> ~test~')
+            ERB::Util.url_encode('<strong>test</strong> <em>test</em> <del>test</del>')
           }&reply_markup=&parse_mode=HTML&reply_to_message_id="
         )
         .to_return(

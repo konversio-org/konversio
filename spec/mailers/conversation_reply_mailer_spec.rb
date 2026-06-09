@@ -640,7 +640,7 @@ RSpec.describe ConversationReplyMailer do
       end
 
       it 'renders the reply to email' do
-        expect(mail.reply_to).to eq([message&.conversation&.assignee&.email])
+        expect(mail.reply_to).to eq(["reply+#{conversation.uuid}@#{domain}"])
       end
 
       it 'sets the correct custom message id' do
@@ -658,9 +658,9 @@ RSpec.describe ConversationReplyMailer do
       let!(:message) { create(:message, conversation: conversation, account: account) }
       let(:mail) { described_class.reply_with_summary(message.conversation, message.id).deliver_now }
 
-      it 'set reply to email address as inbox email address' do
-        expect(mail.from).to eq([inbox.email_address])
-        expect(mail.reply_to).to eq([inbox.email_address])
+      it 'sets the from to the account support email and reply to as the conversation continuity address' do
+        expect(mail.from).to eq([account.support_email])
+        expect(mail.reply_to).to eq(["reply+#{conversation.uuid}@#{account.inbound_email_domain}"])
       end
     end
 

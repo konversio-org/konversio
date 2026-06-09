@@ -61,9 +61,11 @@ RSpec.describe 'Platform Accounts API', type: :request do
 
         json_response = response.parsed_body
         created_account = Account.find(json_response['id'])
-        expect(created_account.enabled_features.keys).to match_array(%w[inbox_management ip_lookup help_center])
+        expect(created_account.enabled_features.keys).to include('inbox_management', 'ip_lookup', 'help_center')
+        expect(created_account.enabled_features.keys).not_to include('disable_branding')
         expect(json_response['name']).to include('Test Account')
-        expect(json_response['features'].keys).to match_array(%w[inbox_management ip_lookup help_center])
+        expect(json_response['features'].keys).to include('inbox_management', 'ip_lookup', 'help_center')
+        expect(json_response['features'].keys).not_to include('disable_branding')
       end
 
       it 'creates an account with limits settings' do
@@ -192,7 +194,7 @@ RSpec.describe 'Platform Accounts API', type: :request do
         expect(response).to have_http_status(:success)
         account.reload
         expect(account.name).to eq('Test Account')
-        expect(account.enabled_features.keys).to match_array(%w[inbox_management ip_lookup help_center])
+        expect(account.enabled_features.keys).to include('inbox_management', 'ip_lookup', 'help_center')
         expect(account.enabled_features['channel_facebook']).to be_nil
         expect(account.limits['agents']).to eq(5)
         expect(account.limits['inboxes']).to eq(10)
