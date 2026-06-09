@@ -5,7 +5,7 @@ RSpec.describe 'Health Check', type: :request do
     it 'returns success status' do
       get '/health'
       expect(response).to have_http_status(:success)
-      expect(response.parsed_body['status']).to eq('woot')
+      expect(response.parsed_body['status']).to eq('konversio')
     end
   end
 end
