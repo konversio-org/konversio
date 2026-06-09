@@ -203,11 +203,11 @@ RSpec.describe Account do
         expect(account).to be_pilot_auto_resolve_legacy
       end
 
-      it 'treats the removed evaluated mode as legacy' do
+      it 'recognizes the evaluated auto-resolve mode' do
         account.settings = { 'pilot_auto_resolve_mode' => 'evaluated' }
 
-        expect(account.pilot_auto_resolve_mode).to eq('legacy')
-        expect(account).to be_pilot_auto_resolve_legacy
+        expect(account.pilot_auto_resolve_mode).to eq('evaluated')
+        expect(account).to be_pilot_auto_resolve_evaluated
       end
 
       it 'correctly gets and sets pilot_auto_resolve_mode' do
