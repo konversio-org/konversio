@@ -24,29 +24,40 @@ module Custom
       def perform
         raise FeatureDisabledError, 'Pilot Label Suggestion is not enabled for this account' unless feature_enabled?(:label_suggestion)
 
-        dispatch_event(:label_suggestion_started, conversation_id: conversation&.display_id)
+        dispatch_event(:label_suggestion_started, conversation_id: conversation_id)
 
-        response = ::Pilot::LabelSuggestionService.new(
-          account: account,
-          conversation_display_id: conversation.display_id
-        ).perform
-
+        response = call_core_service
         return [] if response.blank?
         raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?
 
         label_ids = extract_label_ids(response)
-        dispatch_event(:label_suggestion_completed, conversation_id: conversation&.display_id, label_count: label_ids.length)
+        dispatch_event(:label_suggestion_completed, conversation_id: conversation_id, label_count: label_ids.length)
 
         label_ids
       rescue FeatureDisabledError, Error
         raise
       rescue StandardError => e
-        Rails.logger.error("[pilot.label_suggestion] LLM error: #{e.class}: #{e.message}")
-        dispatch_event(:label_suggestion_failed, conversation_id: conversation&.display_id, error: e.message)
-        raise Error, e.message
+        handle_error(e)
       end
 
       private
+
+      def conversation_id
+        conversation&.display_id
+      end
+
+      def call_core_service
+        ::Pilot::LabelSuggestionService.new(
+          account: account,
+          conversation_display_id: conversation_id
+        ).perform
+      end
+
+      def handle_error(error)
+        Rails.logger.error("[pilot.label_suggestion] LLM error: #{error.class}: #{error.message}")
+        dispatch_event(:label_suggestion_failed, conversation_id: conversation_id, error: error.message)
+        raise Error, error.message
+      end
 
       def extract_label_ids(response)
         raw = response.is_a?(Hash) ? response[:message].to_s : response.to_s

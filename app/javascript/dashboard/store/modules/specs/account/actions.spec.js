@@ -85,35 +85,19 @@ describe('#actions', () => {
   });
 
   describe('#toggleDeletion', () => {
-    it('sends correct actions with delete action if API is success', async () => {
-      axios.post.mockResolvedValue({});
-      await actions.toggleDeletion({ commit }, { action_type: 'delete' });
+    it('sends correct actions if API is success', async () => {
+      axios.delete.mockResolvedValue({});
+      await actions.toggleDeletion({ commit });
       expect(commit.mock.calls).toEqual([
         [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: true }],
         [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: false }],
       ]);
-      expect(axios.post.mock.calls[0][1]).toEqual({
-        action_type: 'delete',
-      });
-    });
-
-    it('sends correct actions with undelete action if API is success', async () => {
-      axios.post.mockResolvedValue({});
-      await actions.toggleDeletion({ commit }, { action_type: 'undelete' });
-      expect(commit.mock.calls).toEqual([
-        [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: true }],
-        [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: false }],
-      ]);
-      expect(axios.post.mock.calls[0][1]).toEqual({
-        action_type: 'undelete',
-      });
+      expect(axios.delete).toHaveBeenCalled();
     });
 
     it('sends correct actions if API is error', async () => {
-      axios.post.mockRejectedValue({ message: 'Incorrect header' });
-      await expect(
-        actions.toggleDeletion({ commit }, { action_type: 'delete' })
-      ).rejects.toThrow(Error);
+      axios.delete.mockRejectedValue({ message: 'Incorrect header' });
+      await expect(actions.toggleDeletion({ commit })).rejects.toThrow(Error);
       expect(commit.mock.calls).toEqual([
         [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: true }],
         [types.default.SET_ACCOUNT_UI_FLAG, { isUpdating: false }],

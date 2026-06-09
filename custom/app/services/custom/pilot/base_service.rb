@@ -1,4 +1,3 @@
-# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Common parent for every Pilot sub-feature service. Centralises:

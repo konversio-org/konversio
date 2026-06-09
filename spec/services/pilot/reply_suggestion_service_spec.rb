@@ -15,8 +15,11 @@ RSpec.describe Pilot::ReplySuggestionService do
 
   before do
     account.enable_features!(:pilot, :pilot_tasks)
-    # Stub the API credentials check to bypass actually hitting OpenAI
+    # Stub the API credentials check to bypass actually hitting OpenAI. Also stub
+    # the resolved credential so the spec is hermetic: without this, execute_ruby_llm_request
+    # falls back to the ambient PILOT_LLM_* env and raises on a nil credential in CI.
     allow(service).to receive(:api_key_configured?).and_return(true)
+    allow(service).to receive(:llm_credential).and_return({ api_key: 'test-api-key', source: :system })
   end
 
   describe '#perform' do

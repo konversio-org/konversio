@@ -30,6 +30,7 @@ class CustomMarkdownRenderer
 
   private
 
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   def process_article_html(html)
     doc = Nokogiri::HTML.fragment(html)
 
@@ -133,6 +134,7 @@ class CustomMarkdownRenderer
 
     preceding_ok && succeeding_ok
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   def find_matching_embed(link_url)
     self.class.embed_regexes.each do |embed_key, regex|

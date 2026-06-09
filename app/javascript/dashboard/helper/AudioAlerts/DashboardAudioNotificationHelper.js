@@ -49,6 +49,9 @@ export class DashboardAudioNotificationHelper {
     try {
       this.syncChannel = new BroadcastChannel('konversio_conversation_sync');
       this.syncChannel.onmessage = event => {
+        if (!store || typeof store.commit !== 'function') {
+          return;
+        }
         if (event.data?.type === 'CONVERSATION_READ') {
           const { id, lastSeen } = event.data;
           store.commit('UPDATE_MESSAGE_UNREAD_COUNT', {

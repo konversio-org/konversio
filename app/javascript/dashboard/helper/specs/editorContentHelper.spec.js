@@ -67,7 +67,9 @@ describe('getContentNode', () => {
       const mockTransformer = {
         parse: vi.fn().mockReturnValue(mockNode),
       };
-      MessageMarkdownTransformer.mockImplementation(() => mockTransformer);
+      MessageMarkdownTransformer.mockImplementation(function () {
+        return mockTransformer;
+      });
 
       const result = getContentNode(
         editorView,

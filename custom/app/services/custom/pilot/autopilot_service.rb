@@ -3,7 +3,6 @@
 # copilot_service, etc.). Keeping this file consistent with the directory
 # convention is more valuable than the compact form the global cop prefers;
 # flipping just this file would make it the lone outlier in the dir.
-# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Drives a single Autopilot inference turn for an assistant: builds the

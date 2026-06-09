@@ -81,7 +81,7 @@ class Pilot::BaseTaskService
     { error: e.message, request_messages: messages }
   end
 
-  # rubocop:disable Metrics/CyclomaticComplexity, Metrics/ParameterLists
+  # rubocop:disable Metrics/ParameterLists
   def build_chat(context, model:, messages:, schema: nil, tools: [], params: {})
     # When the chat provider is openai-compatible (Nebius, Scaleway, OpenRouter,
     # custom slugs with _OPENAI_COMPATIBLE=true), pass provider + assume_model_exists
@@ -105,7 +105,7 @@ class Pilot::BaseTaskService
 
     chat
   end
-  # rubocop:enable Metrics/CyclomaticComplexity, Metrics/ParameterLists
+  # rubocop:enable Metrics/ParameterLists
 
   def add_messages_if_needed(chat, conversation_messages)
     return if conversation_messages.length == 1

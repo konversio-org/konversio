@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+process.env.TZ = 'UTC';
 
 /**
 What's going on with library mode?

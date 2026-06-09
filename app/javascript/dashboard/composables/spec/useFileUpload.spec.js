@@ -59,9 +59,11 @@ describe('useFileUpload', () => {
     });
 
     const mockBlob = { signed_id: 'test-blob' };
-    DirectUpload.mockImplementation(() => ({
-      create: callback => callback(null, mockBlob),
-    }));
+    DirectUpload.mockImplementation(function () {
+      return {
+        create: callback => callback(null, mockBlob),
+      };
+    });
 
     onFileUpload(mockFile);
 
@@ -136,9 +138,11 @@ describe('useFileUpload', () => {
       attachFile: mockAttachFile,
     });
 
-    DirectUpload.mockImplementation(() => ({
-      create: cb => cb(null, { signed_id: 'blob' }),
-    }));
+    DirectUpload.mockImplementation(function () {
+      return {
+        create: cb => cb(null, { signed_id: 'blob' }),
+      };
+    });
 
     onFileUpload(mockFile);
 
@@ -152,9 +156,11 @@ describe('useFileUpload', () => {
 
   it('handles direct upload errors', () => {
     const mockError = 'Upload failed';
-    DirectUpload.mockImplementation(() => ({
-      create: callback => callback(mockError, null),
-    }));
+    DirectUpload.mockImplementation(function () {
+      return {
+        create: callback => callback(mockError, null),
+      };
+    });
 
     const { onFileUpload } = useFileUpload({
       inbox,

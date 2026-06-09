@@ -1,4 +1,3 @@
-# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Generates a one-click reply draft for an agent on a given conversation.

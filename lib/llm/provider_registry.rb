@@ -159,23 +159,16 @@ module Llm::ProviderRegistry
       defaults = DEFAULTS[slug] || {}
       endpoint = resolve_endpoint(slug, defaults)
       api_key = api_key_for(slug)
-      label = ENV["PILOT_LLM_#{slug.upcase}_LABEL"].presence || defaults[:label] || slug.to_s
-      compat = resolve_openai_compatible(slug, defaults)
-      capabilities = resolve_capabilities(slug, defaults)
-
-      misconfigured_reason = nil
-      misconfigured_reason = 'Missing endpoint' if endpoint.blank?
-      misconfigured_reason ||= 'Missing API key' if api_key.blank?
 
       {
         slug: slug,
-        label: label,
+        label: ENV["PILOT_LLM_#{slug.upcase}_LABEL"].presence || defaults[:label] || slug.to_s,
         endpoint: endpoint,
-        openai_compatible: compat,
+        openai_compatible: resolve_openai_compatible(slug, defaults),
         api_key: api_key,
-        capabilities: capabilities,
+        capabilities: resolve_capabilities(slug, defaults),
         available: api_key.present? && endpoint.present?,
-        misconfigured_reason: misconfigured_reason
+        misconfigured_reason: resolve_misconfigured_reason(endpoint, api_key)
       }
     end
 
@@ -222,6 +215,13 @@ module Llm::ProviderRegistry
     end
 
     private
+
+    def resolve_misconfigured_reason(endpoint, api_key)
+      return 'Missing endpoint' if endpoint.blank?
+      return 'Missing API key' if api_key.blank?
+
+      nil
+    end
 
     def resolve_endpoint(slug, defaults)
       ENV["PILOT_LLM_#{slug.upcase}_ENDPOINT"].presence || defaults[:endpoint]

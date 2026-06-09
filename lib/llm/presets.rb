@@ -83,6 +83,7 @@ module Llm
       # Apply a preset: write the six slot rows + PILOT_LLM_PRESET in a
       # single transaction. Raises if the preset slug isn't found or any
       # slot fails capability validation.
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def apply!(slug)
         preset = find(slug)
         raise ArgumentError, "Unknown preset slug: #{slug}" if preset.nil?
@@ -112,6 +113,7 @@ module Llm
         GlobalConfig.clear_cache
         true
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
       private
 
@@ -141,6 +143,7 @@ module Llm
 
       OPTIONAL_SLOTS = %i[audio].freeze
 
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def validate(entry)
         slug = entry['slug'].to_s
         return drop(slug, 'missing slug') if slug.blank?
@@ -173,6 +176,7 @@ module Llm
 
         { slug: slug, label: label.presence || slug }.merge(slot_map)
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
       def drop(slug, reason)
         Rails.logger.warn("[Llm::Presets] dropping preset '#{slug}': #{reason}")
