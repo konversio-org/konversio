@@ -45,7 +45,7 @@ RSpec.describe Linear::IntegrationHelper do
     let(:account_id) { 1 }
     let(:client_secret) { 'test_secret' }
     let(:valid_token) do
-      JWT.encode({ sub: account_id, iat: Time.current.to_i }, client_secret, 'HS256')
+      client_secret ? JWT.encode({ sub: account_id, iat: Time.current.to_i }, client_secret, 'HS256') : 'unsigned.placeholder.token'
     end
 
     before do
