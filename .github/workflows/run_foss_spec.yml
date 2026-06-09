@@ -1,4 +1,4 @@
-name: Run Chatwoot CE spec
+name: Run Konversio spec
 permissions:
   contents: read
 on:
