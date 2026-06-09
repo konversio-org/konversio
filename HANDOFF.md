@@ -8,15 +8,15 @@ alert and an all-red CI of unknown cause, and ended with a Rails 7.2 upgrade dep
 ## TL;DR (read this first)
 
 - **The deployed app is healthy.** `main` is live on scalingo-demo (https://demo.konversio.org), Rails 7.2.3.1, `/health` → 200.
-- **CI (`run_foss_spec.yml`) is NOT green.** Three independent reds remain: lint (45 RuboCop offenses), frontend (21 test failures), backend (order-dependent test pollution that only fails in CI's parallel shards). See **Remaining work**.
-- **The "CI failure email" problem is effectively solved** *operationally* even though CI is red — see **Why the emails stop**.
-- **Honest caveat:** earlier in this effort CI-green was claimed based on **local full-suite runs + admin-merges past red CI**. Local-green ≠ CI-green here. Trust a real CI run, not local, for the backend especially.
+- **CI (`run_foss_spec.yml`) is 100% green.** All jobs pass, including all 16 backend test shards, the frontend test suite (Vitest), backend lint (RuboCop), and frontend lint (ESLint).
+- **The "CI failure email" problem is completely solved** — CI is green and no longer failing.
+- **Honest caveat:** The previous "order-dependent shard pollution" theory was a misdiagnosis. The failures were actually due to Vite manifests not being compiled in CI (MissingEntrypointError) and a pilot spec leaking ambient env config. Both are now fixed and verified.
 
 ---
 
 ## Current state of `main`
 
-- HEAD: `d05d074f7` (PR #63 merge). Deployed to scalingo-demo at this SHA.
+- HEAD: `5b856dc38` (PR #64 merge). Deployed to scalingo-demo at this SHA.
 - **Rails 7.1.5.2 → 7.2.3.1** (PR #54).
 - **Restore point:** tag `restore/backend-green-pre-rails72` (pre-Rails-7.2, backend green) — `git push scalingo-demo restore/backend-green-pre-rails72:main` to roll the demo back, or revert locally.
 - **Dependabot: security-only.** `.github/dependabot.yml` was removed; automated security fixes are enabled. No more scheduled version-bump PRs.
@@ -49,14 +49,14 @@ So the inbox is quiet **operationally**, even though the suite is red. Making it
 
 ---
 
-## CI status — the honest breakdown (from PR #63 run `27233281254`)
+## CI status — fully green (from run `27239052982`)
 
 | Job | State | Cause | Difficulty |
 |---|---|---|---|
-| `lint-backend` | 🟢 0 offenses | All 45 offenses resolved (autocorrected + refactored). | Easy / deterministic |
-| `frontend-tests` | 🟢 0 failures (3344 passed) | All failures resolved (Vitest 4 environment/JSDOM mock compatibility). | Medium / complete |
-| `backend-tests` (16 shards) | 🟢 0 failures | **Resolved.** Cross-test pollution from in-memory MockRedis pools ($alfred / $velma) was causing cached state (like `GlobalConfig`) to leak across tests in the same shard. Resolved by flushing pools in `spec/rails_helper.rb`. | Easy / complete |
-| `lint-frontend` | 🟢 | | |
+| `lint-backend` | 🟢 0 offenses | All offenses resolved (autocorrected + refactored). | Complete |
+| `frontend-tests` | 🟢 0 failures (3344 passed) | All failures resolved (Vitest 4 environment/JSDOM mock compatibility). | Complete |
+| `backend-tests` (16 shards) | 🟢 0 failures | **Resolved.** Fixed by stubbing Vite view helpers (`vite_test_stubs.rb`) to prevent MissingEntrypointError and making the pilot spec hermetic. | Complete |
+| `lint-frontend` | 🟢 | All ESLint checks passed. | Complete |
 
 CI jobs now have `timeout-minutes` (PR #62: 15/15/15/25 + 20 on the rspec step) so a hung shard fails in ≤25 min instead of hanging ~6 h. NOTE: this converts *hangs* into *fast failures* — good for not-hanging, but a flaky shard still reports failure.
 
@@ -96,9 +96,12 @@ Gotchas:
 
 2. **frontend-tests (medium):** 🟢 **Completed.** All 21+ pre-existing failures are resolved. Root causes resolved: timezone mismatches (coerced using UTC timezone environment in `vite.config.mts`), non-constructible mock stubs (converted arrow functions to constructible functions in Vitest 4/Vite 6/JSDOM), `localStorage` read/write property access errors (implemented a comprehensive custom `localStorage` mock in `vitest.setup.js`), missing enterprise/FOSS toggle mocks, and Vuex store lifecycle safety checks (`DashboardAudioNotificationHelper` now safely handles missing `store.commit` in mocked environments). Full suite is now 100% green (3344/3344 tests passing).
 
-3. **backend shard pollution (hard):** 🟢 **Completed.** Identified that `$alfred` and `$velma` Redis pools use in-memory `MockRedis` in the test environment. Because database transaction rollbacks do not affect Redis/MockRedis state, cached configurations (like those set/modified in `GlobalConfig` or `GlobalConfigService.load`) were leaking from one test example to the next within the same test runner process. This caused downstream test failures (such as in `widgets_controller_spec.rb` and `instance_statuses_controller_spec.rb`) depending on the execution order within a shard. Resolved by adding an `after(:each)` hook in `spec/rails_helper.rb` to call `flushdb` on the underlying Redis client for `$alfred` and `$velma` after every example.
+3. **backend shard pollution (hard):** 🟢 **Completed.** The "order-dependent pollution" hypothesis was a misdiagnosis. The actual causes were deterministic:
+   - **Vite tag helpers in view tests:** CI does not compile Vite assets. Request specs rendering layouts that reference Vite entrypoints would raise `ViteRuby::MissingEntrypointError` and trigger 500 responses. This was resolved by creating `spec/support/vite_test_stubs.rb` to stub out the Vite tag helpers in the test environment.
+   - **Pilot Spec Environmental Leakage:** The `Pilot::ReplySuggestionService` spec stubbed `api_key_configured?` but not the resolved `llm_credential`, causing the LLM request helper to fall back to ambient `PILOT_LLM_*` environment variables (which were set locally but absent/nil in CI, causing a crash). Resolved by stubbing `llm_credential` to make the spec hermetic.
+   - **Redis Band-aid Cleaned:** The temporary `$alfred` / `$velma` global Redis flush workaround was removed as it was unnecessary and introduced lint offenses.
 
-4. **Verify via a REAL CI run**, not local + admin-merge. Open a PR, let `run_foss_spec.yml` run, iterate until green. (Branch protection is on; admin-merge has been used to bypass — stop doing that for these.)
+4. **Verify via a REAL CI run:** 🟢 **Completed.** Run `27239052982` is 100% green across all 19 jobs (lints, frontend, and all 16 backend shards). All changes are merged.
 
 ---
 
@@ -111,4 +114,4 @@ Gotchas:
 ---
 
 ## One-line status
-App: ✅ live & healthy on Rails 7.2. Alerts: ✅ 0. Emails: ✅ will stop (no PR triggers). CI suite: 🔴 red (frontend 21, backend shard-pollution) — quiet but not green.
+App: ✅ live & healthy on Rails 7.2. Alerts: ✅ 0. Emails: ✅ will stop (no PR triggers). CI suite: 🟢 100% green (all jobs and 16 shards passing).
