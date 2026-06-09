@@ -20,7 +20,7 @@ class SuperAdmin::InstanceStatusesController < SuperAdmin::ApplicationController
   end
 
   def instance_meta
-    @metrics['Database Migrations'] = ActiveRecord::Base.connection.migration_context.needs_migration? ? 'pending' : 'completed'
+    @metrics['Database Migrations'] = ActiveRecord::Base.connection_pool.migration_context.needs_migration? ? 'pending' : 'completed'
   end
 
   def chatwoot_version
