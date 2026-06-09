@@ -16,21 +16,7 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
   def create
     raise ActionController::ParameterMissing, :message if params[:message].blank?
 
-    thread = nil
-    ActiveRecord::Base.transaction do
-      thread = Pilot::CopilotThread.create!(
-        account: Current.account,
-        user: Current.user,
-        title: derive_title(params[:message]),
-        assistant_id: params[:assistant_id]
-      )
-      Pilot::CopilotMessage.create!(
-        copilot_thread: thread,
-        account: Current.account,
-        message_type: :user,
-        message: { content: params[:message].to_s }
-      )
-    end
+    thread = create_thread_and_first_message(params[:message], params[:assistant_id])
 
     Pilot::CopilotInferenceJob.perform_later(
       thread_id: thread.id,
@@ -43,6 +29,24 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
   end
 
   private
+
+  def create_thread_and_first_message(message, assistant_id)
+    ActiveRecord::Base.transaction do
+      thread = Pilot::CopilotThread.create!(
+        account: Current.account,
+        user: Current.user,
+        title: derive_title(message),
+        assistant_id: assistant_id
+      )
+      Pilot::CopilotMessage.create!(
+        copilot_thread: thread,
+        account: Current.account,
+        message_type: :user,
+        message: { content: message.to_s }
+      )
+      thread
+    end
+  end
 
   def ensure_feature_enabled
     return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_copilot')

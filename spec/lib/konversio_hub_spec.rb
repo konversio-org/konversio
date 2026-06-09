@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ChatwootHub do
+describe KonversioHub do
   describe '.base_url' do
     it 'uses the static hub url' do
       expect(described_class::DEFAULT_BASE_URL).to eq('https://hub.2.chatwoot.com')

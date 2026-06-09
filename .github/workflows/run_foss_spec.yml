@@ -1,4 +1,4 @@
-name: Run Chatwoot CE spec
+name: Run Konversio spec
 permissions:
   contents: read
 on:
@@ -13,6 +13,7 @@ jobs:
   # Separate linting jobs for faster feedback
   lint-backend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -23,6 +24,7 @@ jobs:
 
   lint-frontend:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,6 +40,7 @@ jobs:
   # Frontend tests run in parallel with backend
   frontend-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -53,6 +56,7 @@ jobs:
   # Backend tests with parallelization
   backend-tests:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
@@ -80,6 +84,10 @@ jobs:
         ports:
           - 6379:6379
         options: --entrypoint redis-server
+
+    env:
+      RAILS_ENV: test
+      POSTGRES_HOST: localhost
 
     steps:
       - uses: actions/checkout@v4
@@ -112,6 +120,7 @@ jobs:
         run: bundle exec rake db:schema:load
 
       - name: Run backend tests (parallelized)
+        timeout-minutes: 20
         run: |
           # Get all spec files and split them using round-robin distribution
           # This ensures slow tests are distributed evenly across all nodes

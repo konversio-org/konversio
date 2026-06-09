@@ -112,3 +112,10 @@ mise.local.toml
 .agent/
 .antigravitycli/
 .agents/skills/
+
+# Internal specs / change proposals
+openspec/
+
+# Internal / sensitive docs — keep off public repo permanently
+docs/clean-room/
+docs/assistant-reasoning-tuning.md

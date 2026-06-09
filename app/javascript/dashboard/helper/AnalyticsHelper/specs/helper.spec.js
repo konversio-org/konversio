@@ -7,9 +7,11 @@ vi.mock('@amplitude/analytics-browser', () => ({
   setGroup: vi.fn(),
   groupIdentify: vi.fn(),
   track: vi.fn(),
-  Identify: vi.fn(() => ({
-    set: vi.fn(),
-  })),
+  Identify: vi.fn(function () {
+    return {
+      set: vi.fn(),
+    };
+  }),
 }));
 
 describe('helperObject', () => {

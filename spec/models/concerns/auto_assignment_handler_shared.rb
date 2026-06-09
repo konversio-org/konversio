@@ -18,6 +18,10 @@ shared_examples_for 'auto_assignment_handler' do
     end
 
     before do
+      # These examples cover the legacy (synchronous round-robin) assignment path.
+      # The fork enables assignment_v2 by default, which routes assignment through an
+      # async bulk job instead; disable it here so the legacy path under test is exercised.
+      account.disable_features('assignment_v2')
       create(:inbox_member, inbox: inbox, user: agent)
       allow(Redis::Alfred).to receive(:rpoplpush).and_return(agent.id)
     end

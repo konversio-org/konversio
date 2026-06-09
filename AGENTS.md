@@ -102,8 +102,8 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 
 ## Codex Workflow
 
-- Use a task branch, but keep edits in `/Users/rcoenen/Dev/Konversio` unless a real per-worktree bootstrap exists on disk.
-- Docker/OrbStack mounts `/Users/rcoenen/Dev/Konversio`; container-mode verification must run against that path.
+- Use a task branch, but keep edits in the main checkout directory unless a real per-worktree bootstrap exists on disk.
+- Docker/OrbStack mounts the main checkout directory; container-mode verification must run against that path.
 - Do not verify a separate git worktree with `docker compose exec rails ...` from the main checkout. That tests the main checkout, not the worktree.
 - The previously documented `.codex/environments/environment.toml` and `Procfile.worktree` flow is not present in this repo today. If those files are added later, follow their bootstrap instructions before using a separate worktree.
 
@@ -141,7 +141,7 @@ Genuine platform-level gotchas DO exist in this stack and are worth knowing — 
 - The `enterprise/` overlay and Captain AI have been removed; there is no OSS/Enterprise split to preserve.
 - Captain has been renamed to `Pilot::` throughout (namespace, DB tables, identifiers, frontend, specs).
 - Edit core files freely — no `prepend_mod_with` dance, no mirror-edits, no `spec/enterprise`.
-- **Pilot was built clean-room.** See [`FORK_STRATEGY.md`](./FORK_STRATEGY.md) for the full methodology. Critical rule for any work on Pilot: **do not resurrect deleted `enterprise/captain/*` files from git history to reference when extending Pilot.** No `git show 461d6ab36^:enterprise/captain/...`, no pasting that source into any tool. The Chinese Wall holds only if no protected expression flows in.
+- **Pilot** is Konversio's own AI assistant feature. Critical rule: **do not resurrect deleted `enterprise/captain/*` files from git history when extending Pilot.**
 
 ## Branding / White-labeling note
 

@@ -13,7 +13,6 @@ module Custom
           'get_conversation'
         end
 
-
         def perform(tool_context, display_id:)
           account = account_for(tool_context)
           return 'Account context unavailable; cannot fetch conversation.' if account.blank?

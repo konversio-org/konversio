@@ -2,20 +2,21 @@ class AddFeatureCitationToAssistantConfig < ActiveRecord::Migration[7.1]
   def up
     return unless KonversioApp.enterprise?
 
-    Captain::Assistant.find_each do |assistant|
-      assistant.update!(
-        config: assistant.config.merge('feature_citation' => true)
-      )
-    end
+    # Using raw SQL instead of Captain::Assistant (class no longer exists;
+    # renamed to Pilot::Assistant). Table is still captain_assistants at this
+    # point in the migration sequence (renamed by 20260517135325).
+    execute(<<~SQL)
+      UPDATE captain_assistants
+      SET config = jsonb_set(config, '{feature_citation}', 'true'::jsonb)
+    SQL
   end
 
   def down
     return unless KonversioApp.enterprise?
 
-    Captain::Assistant.find_each do |assistant|
-      config = assistant.config.dup
-      config.delete('feature_citation')
-      assistant.update!(config: config)
-    end
+    execute(<<~SQL)
+      UPDATE captain_assistants
+      SET config = config - 'feature_citation'
+    SQL
   end
 end

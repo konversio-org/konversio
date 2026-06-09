@@ -11,16 +11,16 @@ class SuperAdmin::InstanceStatusesController < SuperAdmin::ApplicationController
 
   def chatwoot_edition
     @metrics['Konversio edition'] = if KonversioApp.enterprise?
-                                     'Enterprise'
-                                   elsif KonversioApp.custom?
-                                     'Custom'
-                                   else
-                                     'Community'
-                                   end
+                                      'Enterprise'
+                                    elsif KonversioApp.custom?
+                                      'Custom'
+                                    else
+                                      'Community'
+                                    end
   end
 
   def instance_meta
-    @metrics['Database Migrations'] = ActiveRecord::Base.connection.migration_context.needs_migration? ? 'pending' : 'completed'
+    @metrics['Database Migrations'] = ActiveRecord::Base.connection_pool.migration_context.needs_migration? ? 'pending' : 'completed'
   end
 
   def chatwoot_version

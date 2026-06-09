@@ -62,44 +62,19 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
   def apply_slots(slot_params)
     raise ArgumentError, 'No slot configuration submitted.' if slot_params.blank?
 
-    parsed = SLOTS.each_with_object({}) do |slot, h|
-      row = slot_params[slot.to_s] || slot_params[slot] || {}
-      provider_val = row['provider'] || (row.respond_to?(:[]) ? row[:provider] : nil)
-      model_val = row['model'] || (row.respond_to?(:[]) ? row[:model] : nil)
-      h[slot] = {
-        provider: provider_val.to_s.presence,
-        model: model_val.to_s.strip.presence
-      }
-    end
-
-    SLOTS.each do |slot|
-      provider = parsed[slot][:provider]
-      model = parsed[slot][:model]
-      raise ArgumentError, "#{slot.capitalize} slot: provider is required." if provider.blank?
-      raise ArgumentError, "#{slot.capitalize} slot: model is required." if model.blank?
-
-      unless Llm::ProviderRegistry.providers_for(slot).map(&:to_s).include?(provider)
-        raise Llm::ProviderRegistry::CapabilityMismatch,
-              "#{slot.capitalize} slot: provider '#{provider}' is not available or does not declare the '#{slot}' capability."
-      end
-    end
+    parsed = parse_slots(slot_params)
+    validate_slots!(parsed)
 
     embedding_dim_override = resolve_embedding_dimensions_override(slot_params, parsed[:embedding][:model])
 
-    ActiveRecord::Base.transaction do
-      SLOTS.each do |slot|
-        write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", parsed[slot][:provider])
-        write_config("PILOT_LLM_#{slot.upcase}_MODEL", parsed[slot][:model])
-      end
-      persist_embedding_dimensions_override(embedding_dim_override)
-      matching = Llm::Presets.matching_current_config_for(parsed)
-      write_config(Llm::Presets::PRESET_CONFIG_KEY, matching || Llm::Presets::CUSTOM_SLUG)
-    end
+    save_slots!(parsed, embedding_dim_override)
     GlobalConfig.clear_cache
     Llm::Config.reset!
     Llm::Config.initialize!
 
+    # rubocop:disable Rails/I18nLocaleTexts
     flash.now[:notice] = 'LLM slot configuration updated. Sanity test results below.'
+    # rubocop:enable Rails/I18nLocaleTexts
     render_with_slot_tests
   end
 
@@ -207,6 +182,44 @@ class SuperAdmin::LlmSettingsController < SuperAdmin::ApplicationController
     match && match[1].to_i
   rescue ActiveRecord::StatementInvalid
     nil
+  end
+
+  def parse_slots(slot_params)
+    SLOTS.each_with_object({}) do |slot, h|
+      row = slot_params[slot.to_s] || slot_params[slot] || {}
+      provider_val = row['provider'] || (row.respond_to?(:[]) ? row[:provider] : nil)
+      model_val = row['model'] || (row.respond_to?(:[]) ? row[:model] : nil)
+      h[slot] = {
+        provider: provider_val.to_s.presence,
+        model: model_val.to_s.strip.presence
+      }
+    end
+  end
+
+  def validate_slots!(parsed)
+    SLOTS.each do |slot|
+      provider = parsed[slot][:provider]
+      model = parsed[slot][:model]
+      raise ArgumentError, "#{slot.capitalize} slot: provider is required." if provider.blank?
+      raise ArgumentError, "#{slot.capitalize} slot: model is required." if model.blank?
+
+      unless Llm::ProviderRegistry.providers_for(slot).map(&:to_s).include?(provider)
+        raise Llm::ProviderRegistry::CapabilityMismatch,
+              "#{slot.capitalize} slot: provider '#{provider}' is not available or does not declare the '#{slot}' capability."
+      end
+    end
+  end
+
+  def save_slots!(parsed, embedding_dim_override)
+    ActiveRecord::Base.transaction do
+      SLOTS.each do |slot|
+        write_config("PILOT_LLM_#{slot.upcase}_PROVIDER", parsed[slot][:provider])
+        write_config("PILOT_LLM_#{slot.upcase}_MODEL", parsed[slot][:model])
+      end
+      persist_embedding_dimensions_override(embedding_dim_override)
+      matching = Llm::Presets.matching_current_config_for(parsed)
+      write_config(Llm::Presets::PRESET_CONFIG_KEY, matching || Llm::Presets::CUSTOM_SLUG)
+    end
   end
 
   def write_config(name, value)

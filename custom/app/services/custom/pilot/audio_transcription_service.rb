@@ -1,4 +1,3 @@
-# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Transcribes a single audio attachment (e.g. a WhatsApp voice note) in

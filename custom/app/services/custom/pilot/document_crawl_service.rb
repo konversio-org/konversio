@@ -52,8 +52,24 @@ module Custom
                                   'Content-Type' => 'application/json')
         req.body = request_body(seed_url).to_json
 
-        response = http.request(req)
+        handle_start_response(http.request(req))
+      rescue JSON::ParserError => e
+        StartResult.new(success: false, error_code: 'crawl_parse_error', error_message: e.message)
+      end
 
+      def poll(job_id)
+        uri = URI.parse("https://api.firecrawl.dev/v1/crawl/#{job_id}")
+        http = build_http(uri)
+
+        req = Net::HTTP::Get.new(uri.request_uri, 'Authorization' => "Bearer #{firecrawl_api_key}")
+        handle_poll_response(http.request(req))
+      rescue JSON::ParserError => e
+        PollResult.new(status: :failed, pages: [], error_code: 'crawl_parse_error', error_message: e.message)
+      end
+
+      private
+
+      def handle_start_response(response)
         if response.is_a?(Net::HTTPSuccess)
           parsed = JSON.parse(response.body)
           job_id = parsed['id'] || parsed.dig('data', 'id')
@@ -65,17 +81,9 @@ module Custom
         else
           raise "crawl_start_5xx: Firecrawl HTTP #{response.code}"
         end
-      rescue JSON::ParserError => e
-        StartResult.new(success: false, error_code: 'crawl_parse_error', error_message: e.message)
       end
 
-      def poll(job_id)
-        uri = URI.parse("https://api.firecrawl.dev/v1/crawl/#{job_id}")
-        http = build_http(uri)
-
-        req = Net::HTTP::Get.new(uri.request_uri, 'Authorization' => "Bearer #{firecrawl_api_key}")
-        response = http.request(req)
-
+      def handle_poll_response(response)
         unless response.is_a?(Net::HTTPSuccess)
           raise "crawl_poll_http_error: Firecrawl HTTP #{response.code}" if response.code.to_i >= 500
 
@@ -83,10 +91,11 @@ module Custom
                                 error_message: "Firecrawl HTTP #{response.code}")
         end
 
-        parsed = JSON.parse(response.body)
-        firecrawl_status = parsed['status'].to_s
+        parsed_poll_result(JSON.parse(response.body))
+      end
 
-        case firecrawl_status
+      def parsed_poll_result(parsed)
+        case parsed['status'].to_s
         when 'completed'
           pages = extract_pages(parsed)
           if pages.empty?
@@ -103,11 +112,7 @@ module Custom
           # the partial set so the job can fan out child docs incrementally.
           PollResult.new(status: :in_progress, pages: extract_pages(parsed))
         end
-      rescue JSON::ParserError => e
-        PollResult.new(status: :failed, pages: [], error_code: 'crawl_parse_error', error_message: e.message)
       end
-
-      private
 
       def build_http(uri)
         http = Net::HTTP.new(uri.host, uri.port)

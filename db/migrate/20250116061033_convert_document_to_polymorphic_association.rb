@@ -2,14 +2,16 @@ class ConvertDocumentToPolymorphicAssociation < ActiveRecord::Migration[7.0]
   def up
     add_column :captain_assistant_responses, :documentable_type, :string
 
-    # rubocop:disable Rails/SkipsModelValidations
     if KonversioApp.enterprise?
-      Captain::AssistantResponse
-        .where
-        .not(document_id: nil)
-        .update_all(documentable_type: 'Captain::Document')
+      # Using raw SQL instead of Captain::AssistantResponse (class no longer exists;
+      # renamed to Pilot::AssistantResponse). Table is still captain_assistant_responses
+      # at this point in the migration sequence (renamed by 20260517135325).
+      execute(<<~SQL)
+        UPDATE captain_assistant_responses
+        SET documentable_type = 'Captain::Document'
+        WHERE document_id IS NOT NULL
+      SQL
     end
-    # rubocop:enable Rails/SkipsModelValidations
     remove_index :captain_assistant_responses, :document_id if index_exists?(
       :captain_assistant_responses, :document_id
     )

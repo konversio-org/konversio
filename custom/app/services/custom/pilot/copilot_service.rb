@@ -1,6 +1,5 @@
 require 'agents'
 
-# rubocop:disable Style/ClassAndModuleChildren
 module Custom
   module Pilot
     # Generates the assistant reply for a Copilot thread using the ai-agents

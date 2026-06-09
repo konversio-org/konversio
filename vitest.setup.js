@@ -15,3 +15,36 @@ config.global.stubs = {
   WootModalHeader: { template: '<div><slot/></div>' },
   NextButton: { template: '<button><slot/></button>' },
 };
+
+if (typeof window !== 'undefined') {
+  const localStorageMock = {
+    getItem(key) {
+      return this[key] === undefined ? null : this[key];
+    },
+    setItem(key, value) {
+      this[key] = String(value);
+    },
+    removeItem(key) {
+      delete this[key];
+    },
+    clear() {
+      Object.keys(this).forEach(key => {
+        delete this[key];
+      });
+    }
+  };
+  Object.defineProperties(localStorageMock, {
+    getItem: { enumerable: false },
+    setItem: { enumerable: false },
+    removeItem: { enumerable: false },
+    clear: { enumerable: false },
+  });
+
+  Object.defineProperty(window, 'localStorage', {
+    value: localStorageMock,
+    configurable: true,
+    enumerable: true,
+    writable: true
+  });
+  global.localStorage = localStorageMock;
+}

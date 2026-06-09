@@ -353,8 +353,12 @@ RSpec.describe ReplyMailbox do
     let(:conversation) { Conversation.where(inbox_id: channel_email.inbox).last }
 
     it 'shouldnt create a conversation in the channel' do
-      described_subject
-      expect(conversation.present?).to be(false)
+      # The fixture is sent from accounts@chatwoot.com, so the platform's own
+      # notification sender must match it for the loop-prevention check to fire.
+      with_modified_env MAILER_SENDER_EMAIL: 'Chatwoot <accounts@chatwoot.com>' do
+        described_subject
+        expect(conversation.present?).to be(false)
+      end
     end
   end
 

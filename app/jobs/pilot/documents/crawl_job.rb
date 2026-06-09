@@ -2,7 +2,6 @@ require 'net/http'
 require 'uri'
 require 'cgi'
 
-# rubocop:disable Style/ClassAndModuleChildren
 module Pilot
   module Documents
     # Long-running Sidekiq job that owns the async crawl lifecycle for a

@@ -97,7 +97,9 @@ describe('#actions', () => {
     it('sends correct mutations', async () => {
       const mockDate = new Date(1466424490000);
       getUuid.mockImplementationOnce(() => '1111');
-      const spy = vi.spyOn(global, 'Date').mockImplementation(() => mockDate);
+      const spy = vi.spyOn(global, 'Date').mockImplementation(function () {
+        return mockDate;
+      });
       const windowSpy = vi.spyOn(window, 'window', 'get');
       windowSpy.mockImplementation(() => ({
         WOOT_WIDGET: {
@@ -136,7 +138,9 @@ describe('#actions', () => {
     it('includes pending metadata when available', async () => {
       const mockDate = new Date(1466424490000);
       getUuid.mockImplementationOnce(() => '2222');
-      const spy = vi.spyOn(global, 'Date').mockImplementation(() => mockDate);
+      const spy = vi.spyOn(global, 'Date').mockImplementation(function () {
+        return mockDate;
+      });
       const state = {
         pendingCustomAttributes: { plan: 'enterprise' },
         pendingLabels: ['vip'],
@@ -158,7 +162,9 @@ describe('#actions', () => {
     it('sends correct mutations', () => {
       const mockDate = new Date(1466424490000);
       getUuid.mockImplementationOnce(() => '1111');
-      const spy = vi.spyOn(global, 'Date').mockImplementation(() => mockDate);
+      const spy = vi.spyOn(global, 'Date').mockImplementation(function () {
+        return mockDate;
+      });
       const thumbUrl = '';
       const attachment = { thumbUrl, fileType: 'file' };
       const state = { pendingCustomAttributes: {}, pendingLabels: [] };

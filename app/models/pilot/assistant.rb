@@ -26,6 +26,11 @@ class Pilot::Assistant < ApplicationRecord
 
   include Avatarable
 
+  # Assistant avatars are fit-and-padded (never cropped) into a transparent
+  # 250x250 PNG. Centralised so the model, controller, and prewarm job all
+  # build the exact same variant key.
+  AVATAR_VARIANT = { resize_and_pad: [250, 250, { alpha: true }], format: :png }.freeze
+
   belongs_to :account
 
   has_many :documents,
@@ -49,6 +54,9 @@ class Pilot::Assistant < ApplicationRecord
   has_many :messages, as: :sender, dependent: :nullify
 
   before_validation :normalize_enabled_tool_slugs
+  # Generate the padded variant as soon as a new avatar is attached so the
+  # first widget visitor never triggers cold libvips processing on request.
+  after_commit :prewarm_avatar_variant, if: :avatar_recently_attached?
 
   store_accessor :config,
                  :product_name,
@@ -117,15 +125,28 @@ class Pilot::Assistant < ApplicationRecord
     account.pilot_custom_tools.enabled.where(slug: enabled_tool_slugs)
   end
 
-  # Assistant avatars must never be cropped — an assistant's logo/mark has to
-  # stay fully visible, unlike user headshots which are intentionally filled
-  # into a circle. Fit the image inside a 250x250 box and pad the remainder
-  # with transparency (alpha), emitting PNG so the alpha channel survives.
-  # This overrides Avatarable#avatar_url (which uses resize_to_fill).
+  # Stable, content-hashed URL for the padded avatar (see AVATAR_VARIANT for
+  # the never-crop rationale). Unlike ActiveStorage's representation URL — which
+  # 302-redirects to an expiring signed blob URL the CDN can't cache — this URL
+  # is served directly by Pilot::AssistantAvatarsController with immutable cache
+  # headers, so Cloudflare and browsers cache it like any other static asset.
+  # The hash busts the cache only when the underlying avatar changes.
+  # Overrides Avatarable#avatar_url (which uses resize_to_fill).
   def avatar_url
     return '' unless avatar.attached? && avatar.representable?
 
-    url_for(avatar.representation(resize_and_pad: [250, 250, { alpha: true }], format: :png))
+    pilot_assistant_avatar_url(id: id, hash: avatar_cache_key)
+  end
+
+  # The padded PNG representation streamed to the widget. Shared by the
+  # controller (serving) and prewarm job (processing) so the variant key matches.
+  def avatar_variant
+    avatar.representation(**AVATAR_VARIANT)
+  end
+
+  # Short content fingerprint embedded in avatar_url for cache busting.
+  def avatar_cache_key
+    Digest::SHA1.hexdigest(avatar.blob.checksum)[0, 16]
   end
 
   # Final fallback when the assistant has no custom avatar attached
@@ -155,6 +176,14 @@ class Pilot::Assistant < ApplicationRecord
   end
 
   private
+
+  def avatar_recently_attached?
+    avatar.attached? && avatar.attachment.previously_new_record?
+  end
+
+  def prewarm_avatar_variant
+    Pilot::PrewarmAvatarJob.perform_later(self)
+  end
 
   def normalize_enabled_tool_slugs
     self.enabled_tool_slugs = self[:enabled_tool_slugs]

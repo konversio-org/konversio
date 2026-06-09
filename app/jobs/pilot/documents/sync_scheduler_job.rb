@@ -26,6 +26,16 @@ module Pilot
     class SyncSchedulerJob < ApplicationJob
       queue_as :scheduled_jobs
 
+      ELIGIBLE_SYNC_STATUS_SQL = <<~SQL.squish
+        (
+          (sync_status = :synced AND (last_synced_at IS NULL OR last_synced_at < :interval_cutoff))
+          OR
+          (sync_status = :failed AND (last_sync_attempted_at IS NULL OR last_sync_attempted_at < :interval_cutoff))
+          OR
+          (sync_status = :syncing AND last_sync_attempted_at < :stale_cutoff)
+        )
+      SQL
+
       def perform
         tick_start = Time.current
         counters = { accounts_scanned: 0, sources_enqueued: 0, sources_skipped_capped: 0, global_cap_hit: false }
@@ -92,19 +102,12 @@ module Pilot
           .where(account_id: account_id, status: ::Pilot::Document.statuses[:available])
           .where('external_link NOT LIKE ?', 'PDF:%')
           .where(
-            <<~SQL.squish, synced: ::Pilot::Document.sync_statuses[:synced],
-              (
-                (sync_status = :synced AND (last_synced_at IS NULL OR last_synced_at < :interval_cutoff))
-                OR
-                (sync_status = :failed AND (last_sync_attempted_at IS NULL OR last_sync_attempted_at < :interval_cutoff))
-                OR
-                (sync_status = :syncing AND last_sync_attempted_at < :stale_cutoff)
-              )
-            SQL
-                           failed: ::Pilot::Document.sync_statuses[:failed],
-                           syncing: ::Pilot::Document.sync_statuses[:syncing],
-                           interval_cutoff: interval_cutoff,
-                           stale_cutoff: stale_cutoff
+            ELIGIBLE_SYNC_STATUS_SQL,
+            synced: ::Pilot::Document.sync_statuses[:synced],
+            failed: ::Pilot::Document.sync_statuses[:failed],
+            syncing: ::Pilot::Document.sync_statuses[:syncing],
+            interval_cutoff: interval_cutoff,
+            stale_cutoff: stale_cutoff
           )
           .order(Arel.sql('last_sync_attempted_at ASC NULLS FIRST, id ASC'))
       end

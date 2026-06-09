@@ -11,10 +11,6 @@ checks the process environment first and falls back to the
 `installation_configs` table. The first read of an ENV-only value also writes
 it back to the DB so the Super Admin UI surfaces the effective value.
 
-> **Note:** Pilot does NOT read `PILOT_*` environment variables. If your
-> install previously ran the Pilot enterprise module, the `PILOT_*` keys
-> are inert from Pilot's perspective.
-
 ---
 
 ## Picking a provider

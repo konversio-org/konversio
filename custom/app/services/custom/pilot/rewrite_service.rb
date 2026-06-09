@@ -43,17 +43,11 @@ module Custom
       end
 
       def perform
-        raise FeatureDisabledError, 'Pilot Rewrite is not enabled for this account' unless feature_enabled?(:rewrite)
-        raise ArgumentError, "Invalid operation: #{operation}. Allowed: #{ALLOWED_OPERATIONS.join(', ')}" unless ALLOWED_OPERATIONS.include?(operation)
+        validate_operation_and_feature_enabled!
 
         dispatch_event(:rewrite_started, operation: operation, text_length: text.to_s.length)
 
-        response = ::Pilot::RewriteService.new(
-          account: account,
-          content: text,
-          operation: mit_operation
-        ).perform
-
+        response = call_core_service
         raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?
 
         rewritten = extract_rewritten(response)
@@ -63,12 +57,32 @@ module Custom
       rescue FeatureDisabledError, ArgumentError, Error
         raise
       rescue StandardError => e
-        Rails.logger.error("[pilot.rewrite] LLM error: #{e.class}: #{e.message}")
-        dispatch_event(:rewrite_failed, operation: operation, error: e.message)
-        raise Error, e.message
+        handle_error(e)
       end
 
       private
+
+      def validate_operation_and_feature_enabled!
+        raise FeatureDisabledError, 'Pilot Rewrite is not enabled for this account' unless feature_enabled?(:rewrite)
+
+        return if ALLOWED_OPERATIONS.include?(operation)
+
+        raise ArgumentError, "Invalid operation: #{operation}. Allowed: #{ALLOWED_OPERATIONS.join(', ')}"
+      end
+
+      def call_core_service
+        ::Pilot::RewriteService.new(
+          account: account,
+          content: text,
+          operation: mit_operation
+        ).perform
+      end
+
+      def handle_error(error)
+        Rails.logger.error("[pilot.rewrite] LLM error: #{error.class}: #{error.message}")
+        dispatch_event(:rewrite_failed, operation: operation, error: error.message)
+        raise Error, error.message
+      end
 
       def mit_operation
         TONE_TO_OPERATION[operation] || operation

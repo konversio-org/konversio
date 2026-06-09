@@ -1,3 +1,5 @@
+inherit_from: .rubocop_todo.yml
+
 plugins:
   - rubocop-performance
   - rubocop-rails
@@ -18,6 +20,7 @@ Metrics/ClassLength:
   Exclude:
     - 'app/models/message.rb'
     - 'app/models/conversation.rb'
+    - 'app/controllers/super_admin/llm_settings_controller.rb'
 
 Metrics/MethodLength:
   Max: 19
@@ -86,6 +89,7 @@ Metrics/BlockLength:
     - '**/routes.rb'
     - 'config/environments/*'
     - db/schema.rb
+    - 'app/models/concerns/featurable.rb'
 
 Metrics/ModuleLength:
   Exclude:
@@ -103,6 +107,7 @@ Rails/ApplicationController:
     - 'app/controllers/widget_tests_controller.rb'
     - 'app/controllers/widgets_controller.rb'
     - 'app/controllers/platform_controller.rb'
+    - 'app/controllers/pilot/assistant_avatars_controller.rb'
     - 'app/controllers/public_controller.rb'
     - 'app/controllers/survey/responses_controller.rb'
 
@@ -228,6 +233,7 @@ AllCops:
     - 'lib/tasks/auto_annotate_models.rake'
     - 'config/environments/**/*'
     - 'tmp/**/*'
+    - '_tmp/**/*'
     - 'storage/**/*'
     - 'db/migrate/20230426130150_init_schema.rb'
 

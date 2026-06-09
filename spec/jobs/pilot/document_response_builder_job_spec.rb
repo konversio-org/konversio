@@ -39,7 +39,7 @@ RSpec.describe Pilot::DocumentResponseBuilderJob do
         .to change { Pilot::AssistantResponse.where(documentable: document).count }.by(1)
     end
 
-    it 'dedups LLM pairs against responses from other documents' do
+    it 'keeps pairs that duplicate another document (dedup is per-document, not cross-document)' do
       other_document = create(:pilot_document, assistant: assistant, account: account, content: 'Existing refund policy')
       create(:pilot_assistant_response,
              assistant: assistant,
@@ -57,19 +57,18 @@ RSpec.describe Pilot::DocumentResponseBuilderJob do
 
       stub_llm_response(faqs_json)
 
-      deduper = instance_double(Custom::Pilot::FaqMiningDeduper, filter: [])
-      expect(Custom::Pilot::FaqMiningDeduper).to receive(:new)
-        .with(assistant: assistant, account: account)
-        .and_return(deduper)
-
+      # Each document is a self-contained knowledge source: a pair matching
+      # another document's response is still persisted for this document, so
+      # overlapping/versioned pages stay distinct for the reviewer to curate.
       expect { described_class.perform_now(document.id) }
-        .not_to(change(Pilot::AssistantResponse, :count))
+        .to change { document.responses.count }.by(1)
     end
   end
 
   def stub_llm_response(content)
     response = instance_double(RubyLLM::Message, content: content)
     chat = instance_double(RubyLLM::Chat, with_instructions: nil, ask: response)
+    allow(chat).to receive(:with_params).and_return(chat)
     context = instance_double(RubyLLM::Context, chat: chat)
     allow(Llm::Config).to receive(:with_api_key).and_yield(context)
     allow(Llm::Config).to receive(:api_key).and_return('test-key')
