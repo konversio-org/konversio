@@ -12,6 +12,7 @@ describe('useDarkMode', () => {
   beforeEach(() => {
     mockDarkMode = { value: 'light' };
     vi.mocked(useMapGetter).mockReturnValue(mockDarkMode);
+    window.matchMedia = vi.fn().mockReturnValue({ matches: false });
   });
 
   it('returns darkMode, prefersDarkMode', () => {

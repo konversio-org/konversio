@@ -25,30 +25,41 @@ module Custom
       def perform
         raise FeatureDisabledError, 'Pilot Follow-up is not enabled for this account' unless feature_enabled?(:follow_up)
 
-        dispatch_event(:follow_up_started, conversation_id: conversation&.display_id)
+        dispatch_event(:follow_up_started, conversation_id: conversation_id)
 
-        response = ::Pilot::FollowUpService.new(
-          account: account,
-          follow_up_context: build_follow_up_context,
-          user_message: clarifying_request,
-          conversation_display_id: conversation&.display_id
-        ).perform
-
+        response = call_core_service
         raise Error, response[:error] if response.is_a?(Hash) && response[:error].present?
 
         suggestions = extract_suggestions(response)
-        dispatch_event(:follow_up_completed, conversation_id: conversation&.display_id, suggestion_count: suggestions.length)
+        dispatch_event(:follow_up_completed, conversation_id: conversation_id, suggestion_count: suggestions.length)
 
         suggestions
       rescue FeatureDisabledError, Error
         raise
       rescue StandardError => e
-        Rails.logger.error("[pilot.follow_up] LLM error: #{e.class}: #{e.message}")
-        dispatch_event(:follow_up_failed, conversation_id: conversation&.display_id, error: e.message)
-        raise Error, e.message
+        handle_error(e)
       end
 
       private
+
+      def conversation_id
+        conversation&.display_id
+      end
+
+      def call_core_service
+        ::Pilot::FollowUpService.new(
+          account: account,
+          follow_up_context: build_follow_up_context,
+          user_message: clarifying_request,
+          conversation_display_id: conversation_id
+        ).perform
+      end
+
+      def handle_error(error)
+        Rails.logger.error("[pilot.follow_up] LLM error: #{error.class}: #{error.message}")
+        dispatch_event(:follow_up_failed, conversation_id: conversation_id, error: error.message)
+        raise Error, error.message
+      end
 
       # The MIT FollowUpService needs `event_name`, `original_context`, and
       # `last_response`. For the Utilities use-case, we synthesize a

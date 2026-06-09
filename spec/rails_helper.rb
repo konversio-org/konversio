@@ -79,6 +79,11 @@ RSpec.configure do |config|
   # OpenAPI response validation via Skooma
   path_to_openapi = Rails.root.join('swagger/swagger.json')
   config.include Skooma::RSpec[path_to_openapi], type: :request
+
+  config.after do
+    $alfred.with { |conn| conn.respond_to?(:redis) ? conn.redis.flushdb : conn.flushdb } if defined?($alfred)
+    $velma.with { |conn| conn.respond_to?(:redis) ? conn.redis.flushdb : conn.flushdb } if defined?($velma)
+  end
 end
 
 Shoulda::Matchers.configure do |config|

@@ -31,6 +31,7 @@ module Llm::SanityTester
 
   CACHE_KEY_PREFIX = 'llm_reasoning_supported:'.freeze
 
+  # rubocop:disable Metrics/ClassLength
   class << self
     def reasoning_supported_cached?(provider, model)
       key = "#{CACHE_KEY_PREFIX}#{provider.to_s.downcase}:#{model}"
@@ -91,7 +92,7 @@ module Llm::SanityTester
       { state: :connected, message: 'Provider responded successfully.' }
     end
 
-    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def probe_reasoning(config)
       provider = config[:provider]
       model = config[:model]
@@ -136,7 +137,7 @@ module Llm::SanityTester
       Rails.logger.error("[Llm::SanityTester] Reasoning probe failed for #{provider}/#{model}: #{e.message}")
       false
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
     def audio_slot_test(config)
       client = OpenAI::Client.new(access_token: config[:api_key], uri_base: "#{config[:endpoint]}/v1")
@@ -252,4 +253,5 @@ module Llm::SanityTester
       string.length > max ? "#{string[0, max]}…" : string
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

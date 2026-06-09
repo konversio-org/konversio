@@ -20,6 +20,7 @@ Metrics/ClassLength:
   Exclude:
     - 'app/models/message.rb'
     - 'app/models/conversation.rb'
+    - 'app/controllers/super_admin/llm_settings_controller.rb'
 
 Metrics/MethodLength:
   Max: 19
@@ -88,6 +89,7 @@ Metrics/BlockLength:
     - '**/routes.rb'
     - 'config/environments/*'
     - db/schema.rb
+    - 'app/models/concerns/featurable.rb'
 
 Metrics/ModuleLength:
   Exclude:
@@ -231,6 +233,7 @@ AllCops:
     - 'lib/tasks/auto_annotate_models.rake'
     - 'config/environments/**/*'
     - 'tmp/**/*'
+    - '_tmp/**/*'
     - 'storage/**/*'
     - 'db/migrate/20230426130150_init_schema.rb'
 

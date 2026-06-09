@@ -12,6 +12,7 @@ require 'uri'
 #   - render `request_template` / `response_template` as Liquid
 #   - resolve the endpoint host once and reject denied CIDR ranges
 #   - return a uniform `{ error:, message: }` hash to the LLM on any failure
+# rubocop:disable Metrics/ClassLength
 class Pilot::Tools::Executor
   RESPONSE_BYTE_LIMIT = 8 * 1024
   TRUNCATION_MARKER = '[...truncated]'
@@ -264,3 +265,4 @@ class Pilot::Tools::Executor
     error_hash
   end
 end
+# rubocop:enable Metrics/ClassLength

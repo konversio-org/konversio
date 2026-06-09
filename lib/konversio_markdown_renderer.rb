@@ -72,6 +72,7 @@ class KonversioMarkdownRenderer
     doc.to_html
   end
 
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   def process_article_html(html)
     doc = Nokogiri::HTML.fragment(html)
 
@@ -175,6 +176,7 @@ class KonversioMarkdownRenderer
 
     preceding_ok && succeeding_ok
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   def find_matching_embed(link_url)
     embed_regexes.each do |embed_key, regex|

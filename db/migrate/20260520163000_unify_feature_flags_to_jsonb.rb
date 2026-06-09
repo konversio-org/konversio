@@ -1,4 +1,5 @@
 class UnifyFeatureFlagsToJsonb < ActiveRecord::Migration[7.0]
+  # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
   def up
     # 1. Rename old bigint feature_flags column
     rename_column :accounts, :feature_flags, :legacy_feature_flags
@@ -58,6 +59,7 @@ class UnifyFeatureFlagsToJsonb < ActiveRecord::Migration[7.0]
     execute "CREATE INDEX index_accounts_on_feature_flags_pilot_coalesce ON accounts USING btree ((COALESCE(feature_flags ->> 'pilot', 'true')))"
     execute "CREATE INDEX index_accounts_on_feature_flags_pilot_briefing_coalesce ON accounts USING btree ((COALESCE(feature_flags ->> 'pilot_briefing', 'true')))"
   end
+  # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
   def down
     # Drop custom indexes

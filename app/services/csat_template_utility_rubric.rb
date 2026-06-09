@@ -1,4 +1,3 @@
-# rubocop:disable Metrics/ModuleLength
 module CsatTemplateUtilityRubric
   LANGUAGE_FALLBACKS = {
     'en' => {
@@ -122,4 +121,3 @@ module CsatTemplateUtilityRubric
     has_support_context && has_actionable_next_step
   end
 end
-# rubocop:enable Metrics/ModuleLength
