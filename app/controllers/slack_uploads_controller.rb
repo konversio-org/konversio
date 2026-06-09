@@ -4,9 +4,9 @@ class SlackUploadsController < ApplicationController
 
   def show
     if @blob
-      redirect_to blob_url
+      redirect_to blob_url, allow_other_host: true
     else
-      redirect_to avatar_url
+      redirect_to avatar_url, allow_other_host: true
     end
   end
 
