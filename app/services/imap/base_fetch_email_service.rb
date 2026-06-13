@@ -8,10 +8,13 @@ class Imap::BaseFetchEmailService
   end
 
   def perform
-    inbound_emails = fetch_emails
+    fetch_emails
+  ensure
+    # Always tear down the IMAP connection, even when fetch_emails raises.
+    # Without this the TLS socket + net-imap reader thread leak on every
+    # errored run (and IMAP errors are expected/rescued upstream), which
+    # slowly bloats the Sidekiq worker until it is OOM-killed.
     terminate_imap_connection
-
-    inbound_emails
   end
 
   private
@@ -113,10 +116,15 @@ class Imap::BaseFetchEmailService
   end
 
   def terminate_imap_connection
-    imap_client.logout
+    # Reference @imap_client directly (not the memoized accessor) so we never
+    # open a brand-new connection just to tear it down when fetch failed
+    # before a client was ever built.
+    return if @imap_client.nil?
+
+    @imap_client.logout
   rescue Net::IMAP::Error => e
     Rails.logger.info "Logout failed for #{channel.email} - #{e.message}."
-    imap_client.disconnect
+    @imap_client.disconnect
   end
 
   def build_mail_from_string(raw_email_content)

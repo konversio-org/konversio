@@ -64,5 +64,18 @@ RSpec.describe Imap::FetchEmailService do
         end
       end
     end
+
+    context 'when fetching fails after the imap connection is opened' do
+      it 'still terminates the imap connection so the socket is not leaked' do
+        allow(imap).to receive(:logout)
+        allow(imap).to receive(:search).and_raise(IOError.new('connection reset by peer'))
+
+        expect do
+          described_class.new(channel: imap_email_channel).perform
+        end.to raise_error(IOError)
+
+        expect(imap).to have_received(:logout)
+      end
+    end
   end
 end
