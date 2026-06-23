@@ -8,6 +8,12 @@
 html,
 body {
   @apply antialiased h-full;
+  height: var(--cw-widget-viewport-height, 100%);
+  overflow: hidden;
+}
+
+.widget-root {
+  height: var(--cw-widget-viewport-height, 100%);
 }
 
 .is-mobile {

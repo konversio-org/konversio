@@ -7,6 +7,7 @@ import App from '../widget/App.vue';
 import ActionCableConnector from '../widget/helpers/actionCable';
 import i18nMessages from '../widget/i18n';
 import router from '../widget/router';
+import { initViewportHeightListener } from '../widget/helpers/viewportHeight';
 import { directive as onClickaway } from 'vue3-click-away';
 import { domPurifyConfig } from '../shared/helpers/HTMLSanitizer';
 import { plugin, defaultConfig } from '@formkit/vue';
@@ -46,6 +47,7 @@ app.use(
 // Vue.config.productionTip = false;
 
 window.onload = () => {
+  initViewportHeightListener();
   window.WOOT_WIDGET = app.mount('#app');
   window.actionCable = new ActionCableConnector(
     window.WOOT_WIDGET,

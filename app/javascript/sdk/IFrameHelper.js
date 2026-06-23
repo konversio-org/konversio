@@ -50,6 +50,21 @@ const updateCampaignReadStatus = baseDomain => {
   });
 };
 
+const updateMobileViewportProperties = () => {
+  const viewport = window.visualViewport;
+  const height = viewport?.height || window.innerHeight;
+  const offsetTop = viewport?.offsetTop || 0;
+
+  document.documentElement.style.setProperty(
+    '--cw-widget-viewport-height',
+    `${height}px`
+  );
+  document.documentElement.style.setProperty(
+    '--cw-widget-viewport-top',
+    `${offsetTop}px`
+  );
+};
+
 export const IFrameHelper = {
   getUrl({ baseUrl, websiteToken }) {
     return `${baseUrl}/widget?website_token=${websiteToken}`;
@@ -87,6 +102,7 @@ export const IFrameHelper = {
     body.appendChild(widgetHolder);
     IFrameHelper.initPostMessageCommunication();
     IFrameHelper.initWindowSizeListener();
+    IFrameHelper.initViewportSizeListener();
     IFrameHelper.preventDefaultScroll();
   },
   getAppFrame: () => document.getElementById('chatwoot_live_chat_widget'),
@@ -114,6 +130,22 @@ export const IFrameHelper = {
   },
   initWindowSizeListener: () => {
     window.addEventListener('resize', () => IFrameHelper.toggleCloseButton());
+  },
+  initViewportSizeListener: () => {
+    updateMobileViewportProperties();
+    window.addEventListener('resize', updateMobileViewportProperties);
+    window.addEventListener(
+      'orientationchange',
+      updateMobileViewportProperties
+    );
+    window.visualViewport?.addEventListener(
+      'resize',
+      updateMobileViewportProperties
+    );
+    window.visualViewport?.addEventListener(
+      'scroll',
+      updateMobileViewportProperties
+    );
   },
   preventDefaultScroll: () => {
     widgetHolder.addEventListener('wheel', event => {
@@ -245,6 +277,7 @@ export const IFrameHelper = {
     },
 
     onBubbleToggle: isOpen => {
+      updateMobileViewportProperties();
       IFrameHelper.sendMessage('toggle-open', { isOpen });
       if (isOpen) {
         IFrameHelper.pushEvent('webwidget.triggered');

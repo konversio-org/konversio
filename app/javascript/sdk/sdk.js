@@ -2,6 +2,8 @@ export const SDK_CSS = `
 :root {
   --b-100: #F2F3F7;
   --s-700: #37546D;
+  --cw-widget-viewport-height: 100vh;
+  --cw-widget-viewport-top: 0px;
 }
 
 .woot-widget-holder {
@@ -240,10 +242,11 @@ export const SDK_CSS = `
 }
 
 @media only screen and (max-width: 667px) {
-  .woot-widget-holder {
-    height: 100%;
+  .woot-widget-holder:not(.has-unread-view) {
+    bottom: auto !important;
+    height: var(--cw-widget-viewport-height);
     right: 0;
-    top: 0;
+    top: var(--cw-widget-viewport-top);
     width: 100%;
  }
 
