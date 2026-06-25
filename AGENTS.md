@@ -17,11 +17,13 @@ bundle install
 pnpm install
 
 # Daily
-docker compose up -d postgres redis mailhog vite   # services only
-overmind start -f Procfile.host                    # Rails + Sidekiq on host
+docker compose up -d postgres redis mailhog       # datastores + mail only
+overmind start -f Procfile.host                    # Rails + Sidekiq + Vite on host
 ```
 
 App at `http://localhost:3000`. Vite HMR at `http://localhost:3036`.
+
+**Overmind `.env` gotcha:** Overmind (v2.5.1) auto-loads `.env` — which holds Docker service hostnames (`redis://redis:6379`, `POSTGRES_HOST=postgres`) — into every process and overrides even shell-exported vars, with no flag to disable it. On the host that makes Rails/Sidekiq die at boot with `Socket::ResolutionError` (can't resolve `redis`/`postgres`). `Procfile.host` works around this by having each command re-source `.env.development.local` (`set -a && . ./.env.development.local && set +a && <cmd>`) so the `localhost` overrides win. Vite also runs on host here (not in Docker), so do **not** add `vite` to the `docker compose up` line above.
 
 ### Container mode (full Linux parity)
 
