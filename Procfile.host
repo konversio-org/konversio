@@ -1,2 +1,7 @@
-backend: bin/rails s -p 3000
-worker:  dotenv bundle exec sidekiq -C config/sidekiq.yml
+# Host mode — Rails + Sidekiq + Vite run natively; only Postgres/Redis/Mailhog in Docker.
+# Overmind auto-loads `.env` (Docker hostnames) and overrides shell-exported vars with no
+# opt-out flag, so each command re-sources `.env.development.local` into its own shell to
+# force the localhost overrides to win before the process starts.
+backend: set -a && . ./.env.development.local && set +a && bin/rails s -p 3000
+worker:  set -a && . ./.env.development.local && set +a && dotenv bundle exec sidekiq -C config/sidekiq.yml
+vite:    bin/vite dev
