@@ -7,7 +7,7 @@ import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import Switch from 'dashboard/components-next/switch/Switch.vue';
 import Input from 'dashboard/components-next/input/Input.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
-import FluentIcon from 'shared/components/FluentIcon/Index.vue';
+import FluentIcon from 'shared/components/FluentIcon/DashboardIcon.vue';
 
 import AuthConfigFields from './AuthConfigFields.vue';
 import ParamSchemaEditor from './ParamSchemaEditor.vue';

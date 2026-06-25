@@ -31,10 +31,12 @@ export default {
     pathSource() {
       // To support icons with multiple paths
       const path = this.icons[`${this.icon}-${this.type}`];
-      if (path.constructor === Array) {
-        return path;
+      // Guard against an unknown icon name: a missing key must render nothing,
+      // never throw — one bad icon should not crash the whole component tree.
+      if (!path) {
+        return [];
       }
-      return [path];
+      return Array.isArray(path) ? path : [path];
     },
   },
 };

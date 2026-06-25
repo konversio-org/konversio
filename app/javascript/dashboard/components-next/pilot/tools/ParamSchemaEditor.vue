@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import ParamRowCard from './ParamRowCard.vue';
-import FluentIcon from 'shared/components/FluentIcon/Index.vue';
+import FluentIcon from 'shared/components/FluentIcon/DashboardIcon.vue';
 
 const props = defineProps({
   modelValue: {
