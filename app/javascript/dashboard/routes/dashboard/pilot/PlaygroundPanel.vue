@@ -14,6 +14,14 @@ const { t } = useI18n();
 // previews what the user will actually see instead of raw `*` markup.
 const formatAssistantMessage = content =>
   new MessageFormatter(content || '').formattedMessage;
+
+// Readable label for the "Tools used" line: `custom_nationality_check` ->
+// `Nationality Check`, `search_documentation` -> `Search Documentation`.
+const humanizeTool = name =>
+  String(name)
+    .replace(/^custom_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
 const store = useStore();
 
 const activeAssistantId = useMapGetter('pilot/assistants/getActiveId');
@@ -104,7 +112,13 @@ const sendMessage = async () => {
       messageHistory: payload.messageHistory,
     });
     if (res && res.reply) {
-      history.value.push({ role: 'assistant', content: res.reply });
+      history.value.push({
+        role: 'assistant',
+        content: res.reply,
+        tools: Array.isArray(res.invoked_tool_names)
+          ? res.invoked_tool_names
+          : [],
+      });
     }
   } catch (err) {
     error.value =
@@ -214,6 +228,25 @@ const sendMessage = async () => {
                 class="prose prose-bubble max-w-none"
               />
               <template v-else>{{ msg.content }}</template>
+            </div>
+
+            <!-- Tools-used metadata (assistant only): visible confirmation of
+                 which tools actually fired for this answer. -->
+            <div
+              v-if="msg.role === 'assistant' && msg.tools && msg.tools.length"
+              class="flex flex-wrap items-center gap-1.5 mt-1.5"
+            >
+              <span class="text-xxs text-n-slate-10">
+                {{ t('PILOT.PLAYGROUND.TOOLS.LABEL') }}
+              </span>
+              <span
+                v-for="tool in msg.tools"
+                :key="tool"
+                class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-n-alpha-1 text-xxs font-medium text-n-slate-11"
+              >
+                <span aria-hidden="true" class="i-lucide-wrench size-3" />
+                {{ humanizeTool(tool) }}
+              </span>
             </div>
           </div>
         </template>

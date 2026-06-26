@@ -38,7 +38,7 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
       source: 'playground'
     ).perform
 
-    render json: { reply: result.reply }, status: :ok
+    render json: { reply: result.reply, invoked_tool_names: result.invoked_tool_names }, status: :ok
   rescue Custom::Pilot::AutopilotService::FeatureDisabledError
     render json: { error: 'Pilot Autopilot is not enabled for this account' }, status: :forbidden
   rescue Custom::Pilot::AutopilotService::Error => e
