@@ -168,16 +168,16 @@ class Pilot::Tools::Executor
   def http_request(uri, resolved_ip, body)
     request = build_request(uri, body)
     apply_header_auth(request)
-    Net::HTTP.start(
-      resolved_ip,
-      uri.port,
-      use_ssl: uri.scheme == 'https',
-      open_timeout: HTTP_OPEN_TIMEOUT,
-      read_timeout: HTTP_READ_TIMEOUT
-    ) do |http|
-      request['Host'] = uri.host
-      http.request(request)
-    end
+    http = Net::HTTP.new(uri.host, uri.port)
+    # Connect to the pre-resolved, guarded IP (DNS-rebinding safe) while keeping
+    # the hostname as the address, so TLS SNI and certificate verification use
+    # the real host. SNI vhosts / CDNs (e.g. Cloudflare) reject a handshake made
+    # to a bare IP with no SNI.
+    http.ipaddr = resolved_ip
+    http.use_ssl = uri.scheme == 'https'
+    http.open_timeout = HTTP_OPEN_TIMEOUT
+    http.read_timeout = HTTP_READ_TIMEOUT
+    http.start { |conn| conn.request(request) }
   end
 
   def build_request(uri, body)
