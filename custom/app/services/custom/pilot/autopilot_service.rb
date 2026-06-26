@@ -19,6 +19,17 @@ module Custom
 
       DEFAULT_MAX_TURNS = 6
 
+      # Generalised tool-use directive injected into the system prompt.
+      # `%<catalog>s` is filled with the assistant's enabled custom tools.
+      CUSTOM_TOOLS_POLICY_TEMPLATE = <<~POLICY.freeze
+        Custom tool policy — follow exactly:
+        %<catalog>s
+
+        When a user's question falls within a tool's stated purpose, you MUST call that tool and answer from its result — on every turn, including follow-up questions. Do not answer such questions from your own knowledge.
+
+        The conversation history may already hold a result for a DIFFERENT subject (for example another country, order, or ID). Never reuse it: take the subject from the user's LATEST message and call the tool again for that subject before answering. State exactly what the tool returned — never add, infer, or drop details.
+      POLICY
+
       Result = Struct.new(:reply, :invoked_tool_names, :handover, :resolution, keyword_init: true) do
         def resolution?
           resolution == true
@@ -100,6 +111,7 @@ module Custom
         raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
 
         reply = extract_reply(run_result)
+        reply, invoked_tool_names = maybe_force_skipped_tool(reply, last_user, context, invoked_tool_names)
 
         evaluator = ::Custom::Pilot::HandoverEvaluator.new
         handover = evaluator.evaluate(
@@ -112,6 +124,27 @@ module Custom
         resolution = !handover.handover? && evaluator.resolution?(reply)
 
         Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover, resolution: resolution)
+      end
+
+      # Fix #2 — deterministic tool-skip guardrail. When the assistant answered
+      # an in-scope question WITHOUT calling the custom tool that should have
+      # handled it, re-run the turn ONCE with that tool forced and adopt the
+      # tool-grounded reply. A no-op (returns its inputs unchanged) on the happy
+      # path, off-topic turns, handoffs, and any forced-retry failure — the
+      # guard is best-effort and never hard-fails the turn.
+      def maybe_force_skipped_tool(reply, last_user, context, invoked_tool_names)
+        decision = ::Custom::Pilot::ToolSkipGuard.new(assistant: assistant).evaluate(
+          customer_message: last_user,
+          invoked_tool_names: invoked_tool_names
+        )
+        return [reply, invoked_tool_names] unless decision.retry?
+
+        forced_invoked = []
+        forced_runner = build_runner(forced_invoked, forced_tool: decision.forced_tool_slug)
+        forced_result = execute_runner(forced_runner, last_user, context, forced_invoked)
+        return [reply, invoked_tool_names] if forced_result.failed?
+
+        [extract_reply(forced_result), forced_invoked]
       end
 
       def execute_runner(runner, last_user, context, invoked_tool_names)
@@ -136,19 +169,50 @@ module Custom
         }
       end
 
-      def build_runner(invoked_tool_names)
+      def build_runner(invoked_tool_names, forced_tool: nil)
         agents = build_and_wire_agents
         runner = ::Agents::Runner.with_agents(*agents)
         runner.on_tool_start do |tool_name, *_rest|
           invoked_tool_names << tool_name.to_s
         end
         runner.on_chat_created do |chat, agent_name, _model, _context_wrapper|
-          if agent_name == assistant.name.parameterize(separator: '_').presence || agent_name == "assistant_#{assistant.id}"
-            params = ::Llm::Config.reasoning_params_for(assistant)
-            chat.with_params(**params) if params.any?
-          end
+          apply_chat_params(chat, forced_tool) if agent_name == assistant_agent_name
         end
         runner
+      end
+
+      # Sets the assistant chat's per-call params. Always applies the reasoning
+      # params (fix #1 path). When `forced_tool` is present (fix #2 retry) it
+      # ALSO pins the first model turn to that named tool, then reverts to auto
+      # the instant the tool call lands — `ruby_llm` fires `on_tool_call` before
+      # the continuation completion, so the continuation runs unconstrained and
+      # the run still terminates with final text (never `tool_choice: required`,
+      # which would re-force every turn until MaxTurnsExceeded).
+      #
+      # Both `with_params` calls MERGE `base` because `with_params` REPLACES the
+      # chat's param hash — a bare call would drop reasoning / max_tokens.
+      def apply_chat_params(chat, forced_tool)
+        base = ::Llm::Config.reasoning_params_for(assistant)
+
+        if forced_tool
+          chat.with_params(**base, tool_choice: { type: 'function', function: { name: forced_tool } })
+          flipped = false
+          chat.on_tool_call do |_tool_call|
+            next if flipped
+
+            flipped = true
+            chat.with_params(**base)
+          end
+        elsif base.any?
+          chat.with_params(**base)
+        end
+      end
+
+      # The assistant's agent name, computed once and reused by
+      # `build_assistant_agent` (to name the agent) and `build_runner` (to match
+      # the chat-created callback to the assistant's own chat).
+      def assistant_agent_name
+        @assistant_agent_name ||= assistant.name.parameterize(separator: '_').presence || "assistant_#{assistant.id}"
       end
 
       # The assistant is the primary agent; each enabled scenario becomes a
@@ -167,10 +231,10 @@ module Custom
 
       def build_assistant_agent
         ::Agents::Agent.new(
-          name: assistant.name.parameterize(separator: '_').presence || "assistant_#{assistant.id}",
+          name: assistant_agent_name,
           instructions: assistant_instructions,
           model: model_for(:autopilot),
-          temperature: (assistant.try(:temperature) || 0.7).to_f,
+          temperature: (assistant.try(:temperature) || 0.3).to_f,
           tools: assistant_tools
         )
       end
@@ -183,9 +247,23 @@ module Custom
           response_guidelines_section,
           guardrails_section,
           'Use the `search_documentation` tool whenever the user asks a factual or product question.',
+          custom_tools_policy,
           handover_policy,
           closing_policy
         ].compact.join("\n\n")
+      end
+
+      # Generalised policy for the assistant's enabled custom HTTP tools. Built
+      # from enabled_custom_tools so it covers any account-defined tool with no
+      # per-tool wording — it targets the multi-turn tool-skip and the reuse of
+      # a previous subject's result on follow-up turns. Nil (and dropped) when
+      # the assistant has no custom tools.
+      def custom_tools_policy
+        catalog = ::Custom::Pilot::CustomToolCatalog.for(assistant)
+        return nil if catalog.empty?
+
+        list = catalog.map { |entry| "- `#{entry.slug}`: #{entry.description}" }.join("\n")
+        format(CUSTOM_TOOLS_POLICY_TEMPLATE, catalog: list)
       end
 
       # Action C accelerator. Only present when auto-resolve is active for the
@@ -300,7 +378,7 @@ module Custom
           name: scenario.handoff_key,
           instructions: scenario.instruction.to_s,
           model: model_for(:autopilot),
-          temperature: (assistant.try(:temperature) || 0.7).to_f,
+          temperature: (assistant.try(:temperature) || 0.3).to_f,
           tools: ::Pilot::Tools::ScenarioResolver.call(scenario, account: account, assistant: assistant)
         )
       end
