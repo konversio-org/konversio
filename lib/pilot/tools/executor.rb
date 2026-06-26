@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'cgi'
 require 'json'
 require 'liquid'
 require 'net/http'
@@ -149,6 +150,7 @@ class Pilot::Tools::Executor
     return rendered_url if structured_error?(rendered_url)
 
     uri = URI.parse(rendered_url)
+    append_query_auth!(uri)
     # Resolve + guard the FINAL rendered host: an argument that injects a private
     # host (e.g. an SSRF attempt) is still caught here, after substitution.
     guard = Pilot::Tools::UrlGuard.resolve(uri.host, uri.port)
@@ -165,6 +167,7 @@ class Pilot::Tools::Executor
 
   def http_request(uri, resolved_ip, body)
     request = build_request(uri, body)
+    apply_header_auth(request)
     Net::HTTP.start(
       resolved_ip,
       uri.port,
@@ -189,6 +192,47 @@ class Pilot::Tools::Executor
     else
       Net::HTTP::Get.new(uri.request_uri)
     end
+  end
+
+  # Applies the tool's configured auth as a request header. Covers bearer,
+  # basic, and api_key with `header` placement (the default). api_key with
+  # `query` placement is applied to the URL earlier by append_query_auth!.
+  def apply_header_auth(request)
+    case @tool.auth_type.to_s
+    when 'bearer'
+      token = auth_config['token'].to_s
+      request['Authorization'] = "Bearer #{token}" if token.present?
+    when 'basic'
+      user = auth_config['username'].to_s
+      pass = auth_config['password'].to_s
+      request.basic_auth(user, pass) if user.present? || pass.present?
+    when 'api_key'
+      apply_api_key_header(request)
+    end
+  end
+
+  def apply_api_key_header(request)
+    return if auth_config['placement'].to_s == 'query'
+
+    name = auth_config['name'].to_s
+    request[name] = auth_config['value'].to_s if name.present?
+  end
+
+  # Appends an api_key credential to the URL query when the tool configures
+  # `query` placement. Runs before the SSRF guard, but only ever adds query
+  # params — the host the guard then resolves is unchanged.
+  def append_query_auth!(uri)
+    return unless @tool.auth_type.to_s == 'api_key' && auth_config['placement'].to_s == 'query'
+
+    name = auth_config['name'].to_s
+    return if name.blank?
+
+    param = "#{CGI.escape(name)}=#{CGI.escape(auth_config['value'].to_s)}"
+    uri.query = uri.query.present? ? "#{uri.query}&#{param}" : param
+  end
+
+  def auth_config
+    @tool.auth_config.is_a?(Hash) ? @tool.auth_config : {}
   end
 
   def extract_response(raw_body)
