@@ -5,8 +5,15 @@ import { useStore, useMapGetter } from 'dashboard/composables/store';
 
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import MessageFormatter from 'shared/helpers/MessageFormatter.js';
 
 const { t } = useI18n();
+
+// Render the assistant's markdown the same way customer channels do
+// (MessageFormatter -> sanitized HTML via markdown-it), so the Playground
+// previews what the user will actually see instead of raw `*` markup.
+const formatAssistantMessage = content =>
+  new MessageFormatter(content || '').formattedMessage;
 const store = useStore();
 
 const activeAssistantId = useMapGetter('pilot/assistants/getActiveId');
@@ -194,14 +201,19 @@ const sendMessage = async () => {
               }}
             </div>
             <div
-              class="p-3 rounded-lg text-sm leading-relaxed whitespace-pre-wrap break-words"
+              class="p-3 rounded-lg text-sm leading-relaxed break-words"
               :class="
                 msg.role === 'user'
-                  ? 'bg-n-slate-12 text-n-solid-1'
+                  ? 'bg-n-slate-12 text-n-solid-1 whitespace-pre-wrap'
                   : 'bg-n-alpha-1 border border-n-weak text-n-slate-12'
               "
             >
-              {{ msg.content }}
+              <span
+                v-if="msg.role === 'assistant'"
+                v-dompurify-html="formatAssistantMessage(msg.content)"
+                class="prose prose-bubble max-w-none"
+              />
+              <template v-else>{{ msg.content }}</template>
             </div>
           </div>
         </template>
