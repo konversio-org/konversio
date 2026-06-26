@@ -71,10 +71,16 @@ const onToggleEnabled = async enabled => {
         </h3>
         <div class="flex items-center gap-3">
           <!-- Switch Enabled (admin-only) -->
+          <!--
+            Bind to `update:model-value` (emits the correct NEW value), NOT
+            `@change` — the shared Switch emits the pre-toggle (inverted) value
+            on `change`, which made the enable toggle persist the opposite state
+            and "snap back" to off on reload. See store optimistic update.
+          -->
           <Switch
             v-if="isAdmin"
             :model-value="row.enabled"
-            @change="onToggleEnabled"
+            @update:model-value="onToggleEnabled"
           />
 
           <!-- Ellipsis Action Menu (admin-only) -->
