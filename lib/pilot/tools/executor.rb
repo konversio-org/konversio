@@ -135,9 +135,23 @@ class Pilot::Tools::Executor
     parse_error("Liquid render failed: #{e.message}")
   end
 
-  def perform_http(body, _args)
-    uri = URI.parse(@tool.endpoint_url)
-    guard = Pilot::Tools::UrlGuard.resolve(uri.host)
+  # Substitutes `{{ param }}` placeholders in the endpoint URL with the supplied
+  # arguments (e.g. .../nationality-check/{{ nationality }} -> .../BD). A static
+  # URL renders unchanged. The result is guarded after substitution.
+  def render_endpoint_url(args)
+    Liquid::Template.parse(@tool.endpoint_url).render!(args)
+  rescue Liquid::Error => e
+    parse_error("Liquid render failed: #{e.message}")
+  end
+
+  def perform_http(body, args)
+    rendered_url = render_endpoint_url(args)
+    return rendered_url if structured_error?(rendered_url)
+
+    uri = URI.parse(rendered_url)
+    # Resolve + guard the FINAL rendered host: an argument that injects a private
+    # host (e.g. an SSRF attempt) is still caught here, after substitution.
+    guard = Pilot::Tools::UrlGuard.resolve(uri.host, uri.port)
     return private_ip_error if guard.denied?
 
     response = http_request(uri, guard.ip, body)
