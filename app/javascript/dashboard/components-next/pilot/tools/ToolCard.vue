@@ -47,7 +47,13 @@ const onDelete = () => {
   emit('delete', props.row);
 };
 
-const onToggleEnabled = async enabled => {
+// Derive the new state by flipping the current row, NOT from the Switch's
+// emitted payload. The shared Switch is bound one-way here (no v-model
+// writeback), and in that mode its emitted value can be stale — so the toggle
+// was PATCHing the UNCHANGED value, the API returned 200 with no real change,
+// and the tool "snapped back" on reload. The row is the source of truth.
+const onToggleEnabled = async () => {
+  const enabled = !props.row.enabled;
   try {
     await store.dispatch('pilot/customTools/setEnabled', {
       id: props.row.id,
@@ -71,10 +77,16 @@ const onToggleEnabled = async enabled => {
         </h3>
         <div class="flex items-center gap-3">
           <!-- Switch Enabled (admin-only) -->
+          <!--
+            The handler ignores the Switch's emitted payload and flips
+            `row.enabled` itself — the shared Switch emits a stale value when
+            bound one-way (no v-model writeback), so trusting its payload made
+            the toggle PATCH the unchanged value and snap back on reload.
+          -->
           <Switch
             v-if="isAdmin"
             :model-value="row.enabled"
-            @change="onToggleEnabled"
+            @update:model-value="onToggleEnabled"
           />
 
           <!-- Ellipsis Action Menu (admin-only) -->
