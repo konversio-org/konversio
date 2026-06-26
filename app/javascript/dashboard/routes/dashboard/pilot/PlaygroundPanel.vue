@@ -241,10 +241,16 @@ const sendMessage = async () => {
 
       <!-- Input Form -->
       <form class="flex gap-2 items-end shrink-0" @submit.prevent="sendMessage">
+        <!--
+          h-11 matches the send button height; mb-0 clears a base textarea
+          margin-bottom that, with the form's `items-end`, aligned the input's
+          margin box (not its visible edge) to the bottom — leaving the send
+          button hanging ~16px below the field.
+        -->
         <textarea
           v-model="messageText"
           rows="1"
-          class="flex-1 p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9 resize-none max-h-32"
+          class="flex-1 p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9 resize-none h-11 mb-0"
           :placeholder="t('PILOT.PLAYGROUND.INPUT.PLACEHOLDER')"
           :disabled="isSending"
           @keydown.enter.prevent="sendMessage"
