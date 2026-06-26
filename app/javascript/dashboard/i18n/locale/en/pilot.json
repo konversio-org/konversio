@@ -355,6 +355,9 @@
       },
       "INPUT": {
         "PLACEHOLDER": "Type a message to test the assistant..."
+      },
+      "TOOLS": {
+        "LABEL": "Tools used:"
       }
     },
     "ACTIVITY": {
