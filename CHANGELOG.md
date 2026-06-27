@@ -45,6 +45,11 @@ surrounding workflow, verified live against a production endpoint.
 ### Changed
 
 - Pilot autopilot temperature lowered to 0.3 for steadier tool use.
+- Updated `markdown-it` 14.1.1 → 14.2.0 (the renderer behind assistant-message markdown).
+
+### Security
+
+- Updated `dompurify` 3.4.0 → 3.4.11, the HTML sanitizer that all rendered message content passes through.
 
 ## [0.0.1]
 
