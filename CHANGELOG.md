@@ -21,10 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.2] - 2026-06-26
 
-Pilot custom tools are now functional end to end. In 0.0.1 they could be
-configured in the UI but never actually worked against a real
-(authenticated, HTTPS) endpoint. This release fixes that and the
-surrounding workflow, verified live against a production endpoint.
+**Pilot's AI agents can now call your own backend APIs.** Custom tools let an
+assistant reach any HTTP endpoint you define — an order lookup, an eligibility
+check, any internal service — fetch live data, and answer from it. That turns
+the bot from a docs-and-FAQ responder into an intelligent layer over your real
+systems, and it reliably invokes the right tool when a question calls for it.
+
+In 0.0.1 these tools could be configured but never actually worked against a
+real (authenticated, HTTPS) endpoint. 0.0.2 makes them functional end to end —
+verified live against a production API.
 
 ### Added
 
