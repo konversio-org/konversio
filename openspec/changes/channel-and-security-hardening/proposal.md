@@ -1,0 +1,45 @@
+## Why
+
+Konversio forked Chatwoot at v4.13.0. Upstream releases v4.14.0 through v4.18.0 shipped a continuous stream of channel and security hardening that the fork has not yet absorbed: SSRF-safe outbound fetching, webhook signing and delivery hardening, upload and HTML-rendering hardening, session tracking and sign-in limits, widget identity verification improvements, per-account rate limits, agent/participant access checks, account-level guardrails (agent, inbox, and email limits), IMAP authentication options, and SMTP configuration independent of IMAP.
+
+Because Konversio is self-hosted only, every operator is directly exposed to these gaps: webhook endpoints can be used as SSRF primitives, the bare Active Storage direct-upload route allows anonymous blob creation, widget throttles are keyed on IP alone, and there is no way to run a Slack integration one-way or to rotate an inbox identity-verification secret without a console.
+
+All of the covered items live in upstream's MIT-licensed core tree, so this change ports them at code level with direct references to the upstream files.
+
+## What Changes
+
+- **Outbound fetch security**: rewrite `SafeFetch` into a modular `SafeFetch::RequestOptions` / `SafeFetch::Fetcher` / `SafeFetch::PrivateNetworkRequest` design on top of `ssrf_filter`; route all webhook delivery (`Webhooks::Trigger`) through `SafeFetch` instead of `RestClient`; add an explicit env opt-in (`SAFE_FETCH_ALLOW_PRIVATE_NETWORK`) for installations that legitimately reach private-network webhook endpoints; cap response size, enforce timeouts, validate content types, strip sensitive headers on cross-origin redirects, and reject CRLF in headers.
+- **Webhook platform**: retain subscription allowlisting and inbox lifecycle events (`inbox_created`, `inbox_updated` — already present), enrich webhook payloads via `webhook_data` presenters (account summary embedded in inbox events), gate API-token access and webhook delivery behind an account-level `api_and_webhooks_enabled?` check, verify Slack inbound webhook signatures (`SLACK_SIGNING_SECRET` with timestamp tolerance and constant-time comparison), and add an alerts-only (one-way) mode for the Slack integration.
+- **Upload, media, and rendering hardening**: block the bare Active Storage direct-upload route, strip internal blob metadata keys from direct-upload parameters, cap proxy streaming to a single byte range of bounded size, allow audio attachments to be served inline, extend the attachment allowlist with XML and PFX (PKCS#12) files including a generic-content-type-plus-extension fallback, sanitize link/image URLs in the markdown renderer (blocking `javascript:`, `vbscript:`, `file:`, and non-image `data:` URLs) and bound image sizing values, and use formula-injection-safe CSV generation (`CSVSafe`) with a UTF-8 BOM for all export paths.
+- **Session and sign-in security**: mark the session cookie `httponly` and `secure` when SSL is enforced, track per-device sessions in a new `user_sessions` table with a profile API to list and revoke sessions, cap concurrent sessions per user (`MAX_USER_SESSIONS`) with oldest-session eviction and a browser session-picker flow, merge credential headers before pre-authentication checks, return a distinct not-confirmed error code, and add encrypted transient secret storage in Redis (`Redis::SecureStorage`) for sensitive short-lived data.
+- **Access control and limits**: add Rack::Attack throttles for widget conversations/messages (keyed on IP + website token, env-tunable), widget contact updates, widget loads, transcript requests, per-account conversation deletion, per-account agent creation/deletion, and reports drilldown; extend the agent-bot endpoint allowlist (conversation `show`, labels `index`/`create`); require admin authorization for dashboard app management; validate conversation participants against the inbox's assignable agents; enforce agent and inbox limits inside the builders under account-level locks; reserve invitation e-mail capacity during agent creation; add a Redis-backed per-account outbound e-mail limit; and validate suspension metadata (category + reason) in the super admin accounts controller.
+- **Email channel configuration**: add a user-selectable IMAP authentication mechanism (`plain`, `login`, `cram-md5`) on email channels, decouple SMTP validation and delivery from IMAP so an inbox can send via SMTP without enabling IMAP, and make SMTP open/read timeouts env-configurable.
+- **Widget identity verification**: require HMAC only on the identity-binding path of widget contact updates (anonymous pre-chat updates keep working on HMAC-mandatory inboxes), compare hashes in constant time, and add an inbox endpoint to rotate the identity-verification secret for web widget and API inboxes.
+
+Out of scope: upstream's SAML fixes target the EE-only SAML feature, which Konversio does not ship (the `enterprise/` overlay was removed). See design.md.
+
+## Capabilities
+
+### New Capabilities
+- `outbound-fetch-security`: SSRF-safe outbound HTTP fetching with size, timeout, content-type, redirect, and header-safety controls, plus an explicit private-network opt-in; all webhook delivery flows through it.
+- `webhook-platform`: webhook payload enrichment, account-level API/webhook gating, Slack inbound signature verification, and Slack alerts-only mode.
+- `upload-media-and-rendering-security`: Active Storage direct-upload and streaming hardening, attachment type allowlisting (XML/PFX), markdown/HTML rendering sanitization, and CSV export safety.
+- `session-and-signin-security`: hardened session cookie, per-device session tracking and revocation, concurrent-session limits with eviction, sign-in hardening, and encrypted transient secret storage.
+- `access-control-and-limits`: Rack::Attack throttle coverage, agent-bot endpoint allowlist, dashboard app authorization, participant validation, agent/inbox limits with locking, outbound e-mail limits, and suspension metadata validation.
+- `email-channel-configuration`: selectable IMAP authentication mechanisms, SMTP configuration independent of IMAP, and env-tunable SMTP timeouts.
+- `widget-identity-verification`: HMAC enforcement scoped to identity-binding widget updates and rotation of the inbox identity-verification secret.
+
+### Modified Capabilities
+None.
+
+## Impact
+
+- `lib/safe_fetch.rb`, new `lib/safe_fetch/{request_options,fetcher,private_network_request}.rb`, `lib/webhooks/trigger.rb` (drop `rest-client` for delivery).
+- `app/models/webhook.rb`, `app/models/concerns/webhook_secretable.rb`, `app/listeners/webhook_listener.rb`, `app/presenters/inbox/event_data_presenter.rb`, `app/models/account.rb` (`api_and_webhooks_enabled?`, `webhook_data`), `app/controllers/api/v1/accounts/base_controller.rb`, `app/controllers/api/v1/accounts_controller.rb`, `app/controllers/api/v1/accounts/conversations/direct_uploads_controller.rb`.
+- `app/controllers/api/v1/integrations/webhooks_controller.rb` (Slack signature), `app/models/integrations/hook.rb` (`slack_alert_mode?`), `lib/integrations/slack/incoming_message_builder.rb`.
+- New `config/initializers/active_storage.rb`; `app/models/attachment.rb`; `lib/base_markdown_renderer.rb`, new `lib/markdown_renderer_url_sanitizer.rb`, `lib/custom_markdown_renderer.rb`, `app/javascript/shared/helpers/HTMLSanitizer.js`; `app/jobs/account/contacts_export_job.rb` and `app/views/**/*.csv.erb` (already partially on `CSVSafe`).
+- `config/initializers/session_store.rb`, new `app/models/user_session.rb` + migration, new `app/services/user_session_tracking_service.rb`, new `app/controllers/concerns/track_session_activity.rb`, new `app/controllers/api/v1/profile/sessions_controller.rb`, `app/controllers/devise_overrides/sessions_controller.rb`, `app/models/user.rb`, new `lib/redis/secure_storage.rb`, `config/routes.rb`.
+- `config/initializers/rack_attack.rb`, `app/controllers/concerns/access_token_auth_helper.rb`, new `app/policies/dashboard_app_policy.rb`, `app/controllers/api/v1/accounts/dashboard_apps_controller.rb`, `app/controllers/api/v1/accounts/conversations/participants_controller.rb`, `app/builders/agent_builder.rb`, `app/controllers/api/v1/accounts/agents_controller.rb`, new `lib/custom_exceptions/inbox/limit_exceeded.rb`, new `app/models/concerns/account_email_rate_limitable.rb`, `lib/custom_exceptions/account.rb`, `app/controllers/super_admin/accounts_controller.rb`.
+- `app/models/channel/email.rb` (+ migration for `imap_authentication`), new `app/services/imap/authentication.rb`, `app/helpers/api/v1/inboxes_helper.rb`, `app/services/imap/fetch_email_service.rb`, `app/mailers/conversation_reply_mailer_helper.rb`, `app/views/api/v1/models/_inbox.json.jbuilder`, IMAP/SMTP settings Vue components.
+- `app/controllers/api/v1/widget/contacts_controller.rb`, `app/controllers/api/v1/accounts/inboxes_controller.rb`, new `app/controllers/api/v1/accounts/concerns/inbox_secret_management.rb`, `config/routes.rb` (`rotate_hmac_token`), web widget settings UI.
+- English i18n only (`en.yml`, `en.json`) for new copy.
