@@ -276,3 +276,6 @@
 - name: pilot_audio_transcription
   display_name: Pilot Audio Transcription
   enabled: true
+- name: data_import
+  display_name: Data Import
+  enabled: true
