@@ -33,6 +33,58 @@ export const isValidBusinessData = businessData => {
   return businessData && businessData.business_id && businessData.waba_id;
 };
 
+const COEXISTENCE_FINISH_EVENT = 'FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING';
+
+const FINISH_EVENTS = ['FINISH', COEXISTENCE_FINISH_EVENT];
+
+// Terminal events that end the flow without a Cloud API phone number we can build an
+// inbox from. Embedded Signup v4 can emit any of them depending on the products
+// enabled on the configuration.
+const UNSUPPORTED_FINISH_EVENTS = [
+  'FINISH_ONLY_WABA',
+  'FINISH_OBO_MIGRATION',
+  'FINISH_GRANT_ONLY_API_ACCESS',
+];
+
+export const SIGNUP_RESULT = Object.freeze({
+  FINISH: 'finish',
+  UNSUPPORTED: 'unsupported',
+  CANCEL: 'cancel',
+  ERROR: 'error',
+  IGNORE: 'ignore',
+});
+
+// Maps a WA_EMBEDDED_SIGNUP payload onto the outcomes callers act on.
+export const classifySignupEvent = data => {
+  const event = data?.event;
+  if (typeof event !== 'string') return { type: SIGNUP_RESULT.IGNORE };
+
+  const errorMessage = data?.error_message;
+
+  if (FINISH_EVENTS.includes(event)) {
+    return {
+      type: SIGNUP_RESULT.FINISH,
+      isCoexistence: event === COEXISTENCE_FINISH_EVENT,
+    };
+  }
+
+  if (UNSUPPORTED_FINISH_EVENTS.includes(event)) {
+    return { type: SIGNUP_RESULT.UNSUPPORTED };
+  }
+
+  if (event.toUpperCase() === 'ERROR') {
+    return { type: SIGNUP_RESULT.ERROR, errorMessage };
+  }
+
+  if (event === 'CANCEL') {
+    return errorMessage
+      ? { type: SIGNUP_RESULT.ERROR, errorMessage }
+      : { type: SIGNUP_RESULT.CANCEL };
+  }
+
+  return { type: SIGNUP_RESULT.IGNORE };
+};
+
 export const createMessageHandler = onEmbeddedSignupData => {
   return event => {
     if (!event.origin.endsWith('facebook.com')) return;

@@ -53,6 +53,14 @@ RSpec.describe Instagram::CallbacksController do
         expect(response).to redirect_to(app_instagram_inbox_agents_url(account_id: account.id, inbox_id: Inbox.last.id))
       end
 
+      it 'redirects back to onboarding when the return hint is present' do
+        allow(controller).to receive(:instagram_token_return_to).and_return('onboarding')
+
+        get :show, params: valid_params
+
+        expect(response).to redirect_to(app_onboarding_inbox_setup_url(account_id: account.id))
+      end
+
       it 'updates existing channel with new token' do
         # Create an existing channel
         existing_channel = create(:channel_instagram, account: account, instagram_id: '12345', access_token: 'old_token')

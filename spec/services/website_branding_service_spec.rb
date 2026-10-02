@@ -39,6 +39,7 @@ RSpec.describe WebsiteBrandingService do
 
     before do
       stub_request(:get, url).to_return(status: 200, body: html_body, headers: { 'content-type' => 'text/html' })
+      allow(Resolv::DNS).to receive(:open).and_yield(instance_double(Resolv::DNS, :timeouts= => nil, :getresources => []))
     end
 
     it 'extracts basic brand info' do
@@ -147,5 +148,44 @@ RSpec.describe WebsiteBrandingService do
         expect(result[:logos].first[:url]).to eq('https://example.com/favicon.ico')
       end
     end
+
+    context 'with MX records' do
+      let(:resolver) { instance_double(Resolv::DNS) }
+
+      before do
+        allow(Resolv::DNS).to receive(:open).and_yield(resolver)
+        allow(resolver).to receive(:timeouts=)
+      end
+
+      it 'infers google from a google-hosted MX record' do
+        allow(resolver).to receive(:getresources).and_return([mx_record('aspmx.l.google.com')])
+
+        expect(described_class.new(email).perform[:email_provider]).to eq('google')
+      end
+
+      it 'infers microsoft from an outlook-hosted MX record' do
+        allow(resolver).to receive(:getresources).and_return([mx_record('acme-com.mail.protection.outlook.com')])
+
+        expect(described_class.new(email).perform[:email_provider]).to eq('microsoft')
+      end
+
+      it 'does not misclassify lookalike domains' do
+        allow(resolver).to receive(:getresources).and_return([mx_record('notgoogle.com')])
+
+        expect(described_class.new(email).perform[:email_provider]).to be_nil
+      end
+
+      it 'treats DNS failures as provider unknown while still storing brand data' do
+        allow(resolver).to receive(:getresources).and_raise(Resolv::ResolvError, 'timeout')
+
+        result = described_class.new(email).perform
+        expect(result[:email_provider]).to be_nil
+        expect(result[:title]).to eq('Acme Corp')
+      end
+    end
+  end
+
+  def mx_record(host)
+    instance_double(Resolv::DNS::Resource::IN::MX, exchange: host)
   end
 end

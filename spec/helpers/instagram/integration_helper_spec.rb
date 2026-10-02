@@ -95,4 +95,26 @@ RSpec.describe Instagram::IntegrationHelper do
       end
     end
   end
+
+  describe 'onboarding return hint' do
+    let(:account_id) { 1 }
+    let(:client_secret) { 'test_secret' }
+
+    before do
+      allow(GlobalConfigService).to receive(:load).with('INSTAGRAM_APP_SECRET', nil).and_return(client_secret)
+    end
+
+    it 'round-trips the return hint when present' do
+      token = generate_instagram_token(account_id, 'onboarding')
+
+      expect(verify_instagram_token(token)).to eq(account_id)
+      expect(instagram_token_return_to(token)).to eq('onboarding')
+    end
+
+    it 'omits the hint for non-onboarding requests' do
+      token = generate_instagram_token(account_id)
+
+      expect(instagram_token_return_to(token)).to be_nil
+    end
+  end
 end

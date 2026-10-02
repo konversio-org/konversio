@@ -15,6 +15,15 @@ export function useAccount() {
   const store = useStore();
   const getAccountFn = useMapGetter('accounts/getAccount');
   const isOnKonversioCloud = useMapGetter('globalConfig/isOnKonversioCloud');
+  // Compatibility alias retained for components (and ported upstream specs) that
+  // still key off the original getter name.
+  const isOnChatwootCloud = useMapGetter('globalConfig/isOnChatwootCloud');
+  const isMetaInboxCreationDisabled = useMapGetter(
+    'globalConfig/isMetaInboxCreationDisabled'
+  );
+  const isMetaMessageSendingDisabled = useMapGetter(
+    'globalConfig/isMetaMessageSendingDisabled'
+  );
   const isFeatureEnabledonAccount = useMapGetter(
     'accounts/isFeatureEnabledonAccount'
   );
@@ -52,6 +61,10 @@ export function useAccount() {
     });
   };
 
+  const finishOnboarding = async data => {
+    await store.dispatch('accounts/finishOnboarding', data);
+  };
+
   return {
     accountId,
     route,
@@ -60,6 +73,10 @@ export function useAccount() {
     accountScopedRoute,
     isCloudFeatureEnabled,
     isOnKonversioCloud,
+    isOnChatwootCloud,
+    isMetaInboxCreationDisabled,
+    isMetaMessageSendingDisabled,
     updateAccount,
+    finishOnboarding,
   };
 }

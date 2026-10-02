@@ -1,0 +1,8 @@
+module Pilot::OnboardingHelpCenter
+  GENERATION_KEY = 'help_center_generation_id'.freeze
+  DISCOVERY_LIMIT = 200
+  MIN_ARTICLES = 3
+  GENERATION_TTL = 1.day
+  SCRAPER_BASE_URL_KEY = 'PILOT_HELP_CENTER_SCRAPER_BASE_URL'.freeze
+  SCRAPER_API_KEY_KEY = 'PILOT_HELP_CENTER_SCRAPER_API_KEY'.freeze
+end

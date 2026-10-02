@@ -93,6 +93,9 @@ module Redis::RedisKeys
   ## Account Onboarding
   ACCOUNT_ONBOARDING_ENRICHMENT = 'ONBOARDING_ENRICHMENT::%<account_id>d'.freeze
 
+  ## Onboarding Help Center generation progress
+  PILOT_ONBOARDING_HELP_CENTER = 'PILOT_ONBOARDING_HELP_CENTER::%<generation_id>s'.freeze
+
   ## Account Email Rate Limiting
   ACCOUNT_OUTBOUND_EMAIL_COUNT_KEY = 'OUTBOUND_EMAIL_COUNT::%<account_id>d::%<date>s'.freeze
 end

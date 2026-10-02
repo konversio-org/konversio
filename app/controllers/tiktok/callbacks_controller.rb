@@ -20,6 +20,8 @@ class Tiktok::CallbacksController < ApplicationController
   def process_successful_authorization
     inbox, already_exists = find_or_create_inbox
 
+    return redirect_to app_onboarding_inbox_setup_url(account_id: account_id) if return_to == 'onboarding'
+
     if already_exists
       redirect_to app_tiktok_inbox_settings_url(account_id: account_id, inbox_id: inbox.id)
     else
@@ -121,6 +123,10 @@ class Tiktok::CallbacksController < ApplicationController
 
   def set_avatar(inbox, avatar_url)
     Avatar::AvatarFromUrlJob.perform_later(inbox, avatar_url)
+  end
+
+  def return_to
+    tiktok_token_return_to(params[:state])
   end
 
   def account_id

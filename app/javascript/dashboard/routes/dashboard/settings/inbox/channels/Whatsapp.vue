@@ -5,6 +5,7 @@ import { useI18n, I18nT } from 'vue-i18n';
 import Twilio from './Twilio.vue';
 import ThreeSixtyDialogWhatsapp from './360DialogWhatsapp.vue';
 import CloudWhatsapp from './CloudWhatsapp.vue';
+import WhatsappManualSetup from './WhatsappManualSetup.vue';
 import WhatsappEmbeddedSignup from './WhatsappEmbeddedSignup.vue';
 import ChannelSelector from 'dashboard/components/ChannelSelector.vue';
 
@@ -58,10 +59,7 @@ const selectProvider = providerValue => {
 };
 
 const shouldShowCloudWhatsapp = provider => {
-  return (
-    provider === PROVIDER_TYPES.WHATSAPP_MANUAL ||
-    (provider === PROVIDER_TYPES.WHATSAPP && !hasWhatsappAppId.value)
-  );
+  return provider === PROVIDER_TYPES.WHATSAPP && !hasWhatsappAppId.value;
 };
 
 const handleManualLinkClick = () => {
@@ -126,6 +124,11 @@ const handleManualLinkClick = () => {
             </I18nT>
           </div>
         </div>
+
+        <!-- Show guided manual setup -->
+        <WhatsappManualSetup
+          v-else-if="selectedProvider === PROVIDER_TYPES.WHATSAPP_MANUAL"
+        />
 
         <!-- Show manual setup -->
         <CloudWhatsapp v-else-if="shouldShowCloudWhatsapp(selectedProvider)" />

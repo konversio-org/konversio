@@ -34,6 +34,19 @@ RSpec.describe 'Google::CallbacksController', type: :request do
       expect(inbox.channel.imap_address).to eq 'imap.gmail.com'
     end
 
+    it 'redirects back to onboarding for an onboarding-tagged state' do
+      onboarding_state = account.to_sgid(expires_in: 15.minutes, for: 'onboarding').to_s
+
+      stub_request(:post, 'https://accounts.google.com/o/oauth2/token')
+        .with(body: { 'code' => code, 'grant_type' => 'authorization_code',
+                      'redirect_uri' => "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3000')}/google/callback" })
+        .to_return(status: 200, body: response_body_success.to_json, headers: { 'Content-Type' => 'application/json' })
+
+      get google_callback_url, params: { code: code, state: onboarding_state }
+
+      expect(response).to redirect_to app_onboarding_inbox_setup_url(account_id: account.id)
+    end
+
     it 'updates inbox channel config if inbox exists with imap_login and authentication is successful' do
       channel_email = create(:channel_email, account: account, imap_login: email)
       inbox = channel_email.inbox

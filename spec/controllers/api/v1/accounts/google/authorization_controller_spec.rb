@@ -47,6 +47,17 @@ RSpec.describe 'Google Authorization API', type: :request do
         decoded_account = GlobalID::Locator.locate_signed(params['state'].first, for: 'default')
         expect(decoded_account).to eq(account)
       end
+
+      it 'tags the state with the onboarding purpose when requested' do
+        post "/api/v1/accounts/#{account.id}/google/authorization",
+             headers: administrator.create_new_auth_token,
+             params: { return_to: 'onboarding' },
+             as: :json
+
+        state = CGI.parse(URI.parse(response.parsed_body['url']).query)['state'].first
+        expect(GlobalID::Locator.locate_signed(state, for: 'onboarding')).to eq(account)
+        expect(GlobalID::Locator.locate_signed(state, for: 'default')).to be_nil
+      end
     end
   end
 end
