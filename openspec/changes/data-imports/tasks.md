@@ -15,26 +15,28 @@ All items are a verbatim-or-adapted port of upstream MIT code (see `design.md`).
 9. - [x] **Jobs** — port `app/jobs/data_imports/base_job.rb`, `import_job.rb`, `contacts_page_job.rb`, `conversations_page_job.rb`, and the per-provider subclasses under `app/jobs/data_imports/intercom/` and `app/jobs/data_imports/freshdesk/` (queue `:low`, `retry_on` for client/rate-limit errors with provider-specific waits, `discard_on` for the Freshdesk ticket-limit error).
 10. - [x] **Controller + routes** — port `app/controllers/api/v1/accounts/data_imports_controller.rb` and add the `resources :data_imports` block (index/show/create + `validate_source`, `start`, `retry`, `abandon`, `error_logs`, `skip_logs`) to `config/routes.rb`.
 11. - [x] **Policy + finders + views** — port `app/policies/data_import_policy.rb` (administrator-only), `app/finders/data_import_error_finder.rb`, `app/finders/data_import_skip_log_finder.rb`, and `app/views/api/v1/accounts/data_imports/*.json.jbuilder`.
-12. - [ ] **Feature flag** — add `data_import` to `config/features.yml` (enabled by default for self-hosted; decide bit column — see design.md open question) and `FEATURE_FLAGS.DATA_IMPORT` to the frontend feature-flags module.
+12. - [x] **Feature flag** — add `data_import` to `config/features.yml` (enabled by default for self-hosted; decide bit column — see design.md open question) and `FEATURE_FLAGS.DATA_IMPORT` to the frontend feature-flags module.
 13. - [x] **Backend i18n** — port `data_imports.intercom.activities.*` translations and `errors.data_import.*` keys into `config/locales/en.yml` (en only per repo convention).
 14. - [x] **Legacy compatibility check** — confirm `app/jobs/data_import_job.rb` and `app/services/data_import/contact_manager.rb` still process CSV imports end-to-end after the model changes (upstream touched `contact_manager.rb` by one line).
 
 ### Frontend
 
-15. - [ ] **API client** — port `app/javascript/dashboard/api/dataImports.js` and register it in the API index.
-16. - [ ] **Routes** — port `app/javascript/dashboard/routes/dashboard/settings/data/data.routes.js` (Index + Show under `settings/data`, feature-flagged, administrator permission) and register in the settings route tree; add the sidebar entry to the settings navigation.
-17. - [ ] **Import list + dialog** — port `Index.vue` and `NewImportDialog.vue` (source picker from `importSources.js`, credential fields — access key for Intercom, domain + API key for Freshdesk — import-type checkboxes, validate-then-create flow).
-18. - [ ] **Import detail page** — port `Show.vue` and `components/` (`ImportDetailHeader`, `ImportSummaryTiles`, `ImportProgress`, `ImportErrorsSection`, `ImportSkipLogsSection`, `ImportLogSection`) plus `importStatus.js` helpers and the 5s polling lifecycle; wire start/retry/abandon buttons and skip/error-log CSV downloads.
-19. - [ ] **Frontend i18n** — port the new keys into `en.json` only.
-20. - [ ] **Frontend specs** — port the upstream specs under `routes/dashboard/settings/data/specs/` (`importSources`, `importStatus`, `ImportDetailHeader`, `NewImportDialog`, `pollingLifecycle`, `showActions`).
+15. - [x] **API client** — port `app/javascript/dashboard/api/dataImports.js` and register it in the API index.
+16. - [x] **Routes** — port `app/javascript/dashboard/routes/dashboard/settings/data/data.routes.js` (Index + Show under `settings/data`, feature-flagged, administrator permission) and register in the settings route tree; add the sidebar entry to the settings navigation.
+17. - [x] **Import list + dialog** — port `Index.vue` and `NewImportDialog.vue` (source picker from `importSources.js`, credential fields — access key for Intercom, domain + API key for Freshdesk — import-type checkboxes, validate-then-create flow).
+18. - [x] **Import detail page** — port `Show.vue` and `components/` (`ImportDetailHeader`, `ImportSummaryTiles`, `ImportProgress`, `ImportErrorsSection`, `ImportSkipLogsSection`, `ImportLogSection`) plus `importStatus.js` helpers and the 5s polling lifecycle; wire start/retry/abandon buttons and skip/error-log CSV downloads.
+19. - [x] **Frontend i18n** — port the new keys into `en.json` only.
+20. - [x] **Frontend specs** — port the upstream specs under `routes/dashboard/settings/data/specs/` (`importSources`, `importStatus`, `ImportDetailHeader`, `NewImportDialog`, `pollingLifecycle`, `showActions`).
 
 ### Validation
 
-21. - [ ] **Backend specs** — port upstream specs for `DataImport` model, `DataImports::Importer`, creation/restart/retry services, both providers' clients/validators/normalizers, jobs, controller, and policy; run `bundle exec rspec spec/models/data_import* spec/services/data_imports spec/jobs/data_imports spec/controllers/api/v1/accounts/data_imports_controller_spec.rb`.
-22. - [ ] **Legacy CSV regression** — run the existing CSV-import specs (`spec/jobs/data_import_job_spec.rb` and related) to prove the legacy path is untouched.
-23. - [ ] **Lint** — `bundle exec rubocop -a` on ported Ruby, `pnpm eslint` on ported Vue/JS.
+21. - [x] **Backend specs** — port upstream specs for `DataImport` model, `DataImports::Importer`, creation/restart/retry services, both providers' clients/validators/normalizers, jobs, controller, and policy; run `bundle exec rspec spec/models/data_import* spec/services/data_imports spec/jobs/data_imports spec/controllers/api/v1/accounts/data_imports_controller_spec.rb`.
+22. - [x] **Legacy CSV regression** — run the existing CSV-import specs (`spec/jobs/data_import_job_spec.rb` and related) to prove the legacy path is untouched.
+23. - [x] **Lint** — `bundle exec rubocop -a` on ported Ruby, `pnpm eslint` on ported Vue/JS.
 24. - [ ] **Manual smoke test (Intercom)** — with a test Intercom workspace: validate credentials, start a contacts+conversations import, watch progress/stats update, kill a worker mid-run and confirm Retry resumes from the cursor, abandon a run and confirm in-flight jobs stop, restart a failed run and confirm skip logs are retained and no duplicates are created.
 25. - [ ] **Manual smoke test (Freshdesk)** — with a trial Freshdesk account: verify domain normalization (subdomain-only and full-URL input), contacts import, and a ticket with public replies + a private note → one resolved conversation with the note as a private message; verify skip-log CSV download.
+
+> Tasks 24–25 are deferred: they require live Intercom/Freshdesk credentials that are not available in this environment. Ported unit/job/request specs exercise the same flows with stubbed clients.
 
 ## Dependencies / Order
 
