@@ -123,6 +123,15 @@ const onViewInboxes = id => {
   router.push(accountScopedRoute('pilot_inboxes', {}, { assistant_id: id }));
 };
 
+const onViewOverview = () => {
+  if (!activeAssistantId.value) return;
+  router.push(
+    accountScopedRoute('pilot_assistant_overview', {
+      assistantId: activeAssistantId.value,
+    })
+  );
+};
+
 const onSaved = () => {
   showEditor.value = false;
   editingAssistant.value = null;
@@ -156,12 +165,23 @@ const onCancel = () => {
               {{ t('PILOT.SETTINGS.HEADER.TITLE') }}
             </h1>
           </div>
-          <Button
-            :label="t('PILOT.SETTINGS.HEADER.CREATE_BUTTON')"
-            icon="i-lucide-plus"
-            size="sm"
-            @click="onCreateNew"
-          />
+          <div class="flex items-center gap-2">
+            <Button
+              v-if="activeAssistantId"
+              :label="t('PILOT.OVERVIEW.HEADER.OPEN')"
+              icon="i-lucide-chart-line"
+              size="sm"
+              color="slate"
+              variant="outline"
+              @click="onViewOverview"
+            />
+            <Button
+              :label="t('PILOT.SETTINGS.HEADER.CREATE_BUTTON')"
+              icon="i-lucide-plus"
+              size="sm"
+              @click="onCreateNew"
+            />
+          </div>
         </div>
 
         <TabBar
