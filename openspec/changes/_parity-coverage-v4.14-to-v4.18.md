@@ -34,13 +34,13 @@ Status: pending / written / validated / implemented
 | `audit-log-governance` | EE → requirements | v4.17.0 filter/search/sort audit logs; v4.18.0 message deletion audits, IP masking, location details | merged to main |
 | `pilot-conversation-outcomes` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain outcomes; episode-based outcome tracking, handoff reason categorization, lifecycle events | merged to main |
 | `pilot-agent-sessions-and-citations` | EE → requirements (CLEAN-ROOM) | v4.17.1 Captain reasoning/context; agent session records, citations in responses, trusted citation URLs | merged to main |
-| `pilot-faq-suggestions` | EE → requirements (CLEAN-ROOM) | v4.14.0 FAQ improvements; v4.16.2 FAQ suggestion review API and interface | written+validated |
-| `pilot-audiences-and-lifecycle` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain audiences, schedules, inactivity handling, knowledge usage; v4.18.0 assignment, scenario and tool controls | written+validated |
+| `pilot-faq-suggestions` | EE → requirements (CLEAN-ROOM) | v4.14.0 FAQ improvements; v4.16.2 FAQ suggestion review API and interface | merged to main |
+| `pilot-audiences-and-lifecycle` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain audiences, schedules, inactivity handling, knowledge usage; v4.18.0 assignment, scenario and tool controls | merged to main |
 | `pilot-assistant-analytics` | EE → requirements (CLEAN-ROOM) | v4.16.0 Captain assistant overview and drill-down analytics; v4.17.1 analytics improvements | written+validated |
 | `pilot-playground` | EE → requirements (CLEAN-ROOM) | v4.18.0 improved playground testing | merged to main |
 | `pilot-knowledge-auto-sync` | EE → requirements (CLEAN-ROOM) | v4.14.0 Captain document sync; document auto-sync service | merged to main |
 | `pilot-reply-suggestion` | EE → requirements (CLEAN-ROOM) | Copilot reply-suggestion mode (v4.16–4.17 era) | merged to main |
-| `pilot-response-integrity` | EE → requirements (CLEAN-ROOM) | multi-part responses with citations, channel-aware length limits, handoff consent protocol, false-promise detection (v4.16–4.18) | written+validated |
+| `pilot-response-integrity` | EE → requirements (CLEAN-ROOM) | multi-part responses with citations, channel-aware length limits, handoff consent protocol, false-promise detection (v4.16–4.18) | merged to main |
 
 ## Exclusions (with reasons)
 
@@ -114,6 +114,16 @@ Coordinator verification: rubocop 0 offenses; eslint 0 errors; rspec 251/0; full
 - `pilot-reply-suggestion` (`feat/pilot-reply-suggestion`) — copilot reply-draft backend + drawer UI, `reply_suggestion` flag. rspec 25/0, full vitest 3826/0.
 - `pilot-playground` (`feat/pilot-playground`) — session config/runner/run-report + playground UI. rspec 62/0, full vitest 3833/0.
 
+### Phase 3 — clean-room `pilot-*` (wave 2 merged to `main`)
+
+Wave 2 merged (merge commits `b62211901` response-integrity, `d249f7e4b` audiences-and-lifecycle, `fbc1cbf7a` faq-suggestions) — all three clean, no conflicts, no duplicate migration versions; schema.rb `version:` = `2026_10_04_000000` (max migration).
+
+Coordinator verification on merged `main`: rubocop 65 changed files 0 offenses (after adding `app/models/account.rb` to the `Metrics/ClassLength` exclude list — commit `47bf7de6a`); eslint 0 errors; rspec on changed specs 376 examples / 2 failures — both pre-existing `custom_tools POST /test` network/SSRF failures, independently confirmed failing at base `54ad9721e` by two wave agents; full vitest 400 files / 3875 tests, 0 failures.
+
+- `pilot-response-integrity` (`feat/pilot-response-integrity`, commits `3bd2224f3`…`56cf7519d`) — `Pilot::ReplyLengthBudget`, `Pilot::ReplyShortener` (rewrite-or-fail, raises on citation-index change), `Pilot::PromiseGuard` + `PromiseGuardService` wired into the inference job, channel length limits, handoff consent + disclosure, agent turn budget; builds on wave 1's `lib/pilot/structured_reply.rb`. rspec 103/0 on touched specs. Deferrals: task 12 (frontend toggle — no Pilot account-settings UI exists; setting is API-only), task 19 (live-LLM smoke).
+- `pilot-audiences-and-lifecycle` (`feat/pilot-audiences-and-lifecycle`, commits `384cbca61`…`1b7210f00`) — assistant lifecycle concern, audience tree validator/matcher/resolver, inactivity threshold sweep + resolution-message service, polymorphic AI assignee, assignment/assignable-agents/scenario/tool APIs, AssistantEditor audience+schedule+inactivity UI. 28/28 tasks; rspec change suites green; vitest 30/30; rails-runner smoke of task-28 paths pass. Deviation: sweep row-lock lives in `AutoResolveService` (transition owner) rather than the job. Deferral: browser click-through smoke.
+- `pilot-faq-suggestions` (`feat/pilot-faq-suggestions`, commits `6d828acf7`…`048ba3031`) — `Pilot::FaqSuggestion`/`FaqObservation` tables + models, matcher/approval/finder/policy, v1 review API, mining-job rework (deduper removed), suggestions page + review dialog + FAQs banner. Backend rspec 95 targeted + 103 request-spec green; full vitest 3867/0 in-worktree. Deferral: task 23 manual smoke (needs live LLM/embedding creds).
+
 ### Not yet started
 
-- Phase 3 waves 2–3: `pilot-response-integrity`, `pilot-audiences-and-lifecycle`, `pilot-faq-suggestions` (wave 2, needs the merged `structured_reply` contract); `pilot-assistant-analytics` (wave 3, depends on `pilot-conversation-outcomes`).
+- Phase 3 wave 3: `pilot-assistant-analytics` (depends on merged `pilot-conversation-outcomes`; must also honour `reporting-drilldowns` task 16 reopen-rate requirements).
