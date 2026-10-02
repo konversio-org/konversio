@@ -99,22 +99,14 @@ class Whatsapp::OneoffCampaignService
   end
 
   def deliver_template(recipient, destination, template_params)
-    guard_error = Whatsapp::AuthenticationTemplateGuard.new(
-      channel: channel, recipient: destination, template_params: template_params
-    ).error
+    guard_error = authentication_guard_error(destination, template_params)
     return recipient.mark_skipped!(guard_error) if guard_error
 
-    name, namespace, lang_code, processed_parameters = Whatsapp::TemplateProcessorService.new(
-      channel: channel, template_params: template_params
-    ).call
+    name, namespace, lang_code, processed_parameters = template_components(template_params)
     return recipient.mark_skipped!('Template name could not be resolved') if name.blank?
 
-    message_id = channel.send_template(destination, {
-                                         name: name,
-                                         namespace: namespace,
-                                         lang_code: lang_code,
-                                         parameters: processed_parameters
-                                       }, nil)
+    payload = template_payload(name, namespace, lang_code, processed_parameters)
+    message_id = channel.send_template(destination, payload, nil)
     return recipient.mark_sent!(message_id) if message_id.present?
 
     recipient.mark_failed!(message: 'WhatsApp provider did not return a message id')
@@ -122,6 +114,18 @@ class Whatsapp::OneoffCampaignService
     Rails.logger.error "Failed to send WhatsApp template message to #{destination}: #{e.message}"
     Rails.logger.error "Backtrace: #{e.backtrace.first(5).join('\n')}"
     recipient.mark_failed!(message: e.message)
+  end
+
+  def authentication_guard_error(destination, template_params)
+    Whatsapp::AuthenticationTemplateGuard.new(channel: channel, recipient: destination, template_params: template_params).error
+  end
+
+  def template_components(template_params)
+    Whatsapp::TemplateProcessorService.new(channel: channel, template_params: template_params).call
+  end
+
+  def template_payload(name, namespace, lang_code, parameters)
+    { name: name, namespace: namespace, lang_code: lang_code, parameters: parameters }
   end
 
   def rendered_message_content(contact)

@@ -32,14 +32,10 @@ RSpec.describe 'Campaign Analytics API', type: :request do
           as: :json
 
       expect(response).to have_http_status(:success)
-      json = response.parsed_body
-      expect(json['audience']).to eq(5)
-      expect(json['sent']).to eq(4)
-      expect(json['delivered']).to eq(2)
-      expect(json['read']).to eq(1)
-      expect(json['failed']).to eq(1)
-      expect(json['skipped']).to eq(1)
-      expect(json['status_counts']).to include('queued' => 0, 'read' => 1)
+      expect(response.parsed_body).to include(
+        'audience' => 5, 'sent' => 4, 'delivered' => 2, 'read' => 1, 'failed' => 1, 'skipped' => 1
+      )
+      expect(response.parsed_body['status_counts']).to include('queued' => 0, 'read' => 1)
     end
 
     it 'denies agents' do

@@ -1,5 +1,12 @@
 class CreatePilotCampaignRecipients < ActiveRecord::Migration[7.2]
   def change
+    create_recipients_table
+    add_recipient_indexes
+  end
+
+  private
+
+  def create_recipients_table
     create_table :pilot_campaign_recipients do |t|
       t.references :account, null: false, foreign_key: { on_delete: :cascade }
       t.references :campaign, null: false, foreign_key: { on_delete: :cascade }
@@ -19,7 +26,9 @@ class CreatePilotCampaignRecipients < ActiveRecord::Migration[7.2]
 
       t.timestamps
     end
+  end
 
+  def add_recipient_indexes
     add_index :pilot_campaign_recipients, [:account_id, :campaign_id]
     add_index :pilot_campaign_recipients, [:campaign_id, :status]
     add_index :pilot_campaign_recipients, [:campaign_id, :contact_id], unique: true
