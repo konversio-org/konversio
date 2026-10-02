@@ -145,7 +145,7 @@
     "lint-staged": "^16.2.7",
     "postcss": "^8.5.10",
     "postcss-preset-env": "^8.5.1",
-    "prettier": "^3.3.3",
+    "prettier": "^3.9.9",
     "prosemirror-model": "^1.22.3",
     "rollup-plugin-visualizer": "7.0.1",
     "sass": "^1.100.0",
