@@ -11,6 +11,8 @@ class Instagram::CallbacksController < ApplicationController
     end
 
     process_successful_authorization
+  rescue CustomExceptions::Inbox::LimitExceeded => e
+    render_error_response(e)
   rescue StandardError => e
     handle_error(e)
   end

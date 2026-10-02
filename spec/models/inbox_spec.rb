@@ -388,4 +388,28 @@ RSpec.describe Inbox do
       end
     end
   end
+
+  describe 'account inbox limit' do
+    let(:account) { create(:account) }
+
+    it 'creates an inbox while under the account limit' do
+      account.update!(limits: { 'inboxes' => 2 })
+
+      expect { create(:inbox, account: account) }.to change(described_class, :count).by(1)
+    end
+
+    it 'raises when the account has reached its inbox limit' do
+      account.update!(limits: { 'inboxes' => 1 })
+      create(:inbox, account: account)
+
+      expect { create(:inbox, account: account) }.to raise_error(CustomExceptions::Inbox::LimitExceeded)
+      expect(account.reload.inboxes.count).to eq(1)
+    end
+
+    it 'honors a per-account override that lowers the limit' do
+      account.update!(limits: { 'inboxes' => 0 })
+
+      expect { create(:inbox, account: account) }.to raise_error(CustomExceptions::Inbox::LimitExceeded)
+    end
+  end
 end

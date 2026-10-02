@@ -114,10 +114,4 @@ module Api::V1::InboxesHelper
       'sms' => Current.account.sms_channels
     }[permitted_params[:channel][:type]]
   end
-
-  def validate_limit
-    return unless Current.account.inboxes.count >= Current.account.usage_limits[:inboxes]
-
-    raise CustomExceptions::Inbox::LimitExceeded.new({})
-  end
 end

@@ -15,6 +15,8 @@ class Api::V1::Accounts::CallbacksController < Api::V1::Accounts::BaseController
       set_instagram_id(page_access_token, facebook_channel)
       set_avatar(@facebook_inbox, page_id)
     end
+  rescue CustomExceptions::Inbox::LimitExceeded => e
+    render_error_response(e)
   rescue StandardError => e
     KonversioExceptionTracker.new(e).capture_exception
     Rails.logger.error "Error in register_facebook_page: #{e.message}"

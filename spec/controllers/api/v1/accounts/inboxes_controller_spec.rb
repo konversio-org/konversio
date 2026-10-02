@@ -508,6 +508,22 @@ RSpec.describe 'Inboxes API', type: :request do
         json_response = response.parsed_body
         expect(json_response['allow_messages_after_resolved']).to be true
       end
+
+      context 'when the account has reached its inbox limit' do
+        before do
+          account.update!(limits: { 'inboxes' => account.inboxes.count })
+        end
+
+        it 'returns payment required with the limit error payload' do
+          post "/api/v1/accounts/#{account.id}/inboxes",
+               headers: admin.create_new_auth_token,
+               params: valid_params,
+               as: :json
+
+          expect(response).to have_http_status(:payment_required)
+          expect(response.parsed_body['error']).to eq('Account limit exceeded. Upgrade to a higher plan')
+        end
+      end
     end
   end
 
