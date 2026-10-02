@@ -1,0 +1,15 @@
+You are preparing a short performance brief for a customer support lead about the AI assistant "{{ assistant_name }}".
+
+Reporting period: {{ period_label }} ({{ period_start }} to {{ period_end }}).
+Write your observations in {{ language }}.
+
+Below is the assistant's structured analytics report for this period as JSON. It contains overview metrics (each packed as a current value, a comparison-period value, and a trend; a null value means the period predates the start of outcome tracking), a resolution flow breakdown, and a resolution trend series.
+
+{{ report_json }}
+
+Guidelines:
+1. Surface at most three observations that would most help the support lead decide what to do next — a notable shift between periods, an unusually high or low rate, a dominant handoff driver, or a meaningful CSAT gap.
+2. Ground every observation strictly in the numbers above. Never invent causes, events, or figures that are not present in the report.
+3. Keep each observation to a single short sentence that a busy lead can act on.
+4. If nothing in the data is noteworthy, return an empty list rather than filler.
+5. Respond only with the structured output: a "points" array of at most three strings.

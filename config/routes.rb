@@ -67,9 +67,16 @@ Rails.application.routes.draw do
               member do
                 post :playground
                 delete :avatar
+                get :drilldown
               end
               collection do
                 get :tools
+              end
+              resource :analytics, only: [], controller: 'assistant_analytics' do
+                get :overview
+                get :resolution_flow
+                get :resolution_trend
+                get :overview_summary
               end
               resources :inboxes, only: [:index, :create, :destroy], param: :inbox_id
               resources :scenarios
