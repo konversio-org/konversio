@@ -7,4 +7,5 @@ json.meta do
   json.per_page Api::V1::Accounts::Pilot::DocumentsController::PER_PAGE
   json.total_count @documents.total_count
   json.total_pages @documents.total_pages
+  json.sync_interval_hours Current.account.pilot_document_sync_interval_hours
 end
