@@ -29,7 +29,11 @@ describe('Upload Helpers', () => {
       expect(axios.post).toHaveBeenCalledWith(
         '/api/v1/accounts/1602/upload',
         expect.any(FormData),
-        { headers: { 'Content-Type': 'multipart/form-data' } }
+        {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          signal: undefined,
+          onUploadProgress: expect.any(Function),
+        }
       );
 
       expect(result).toEqual({

@@ -47,7 +47,7 @@ describe('#actions', () => {
     it('sends correct actions if API is success', async () => {
       axios.post.mockResolvedValue({ data: conversationList[0] });
       await actions.create(
-        { commit },
+        { commit, state: { records: { 4: conversationList } } },
         {
           params: {
             inboxId: 1,
@@ -76,7 +76,7 @@ describe('#actions', () => {
     it('sends correct actions with files if API is success', async () => {
       axios.post.mockResolvedValue({ data: conversationList[0] });
       await actions.create(
-        { commit },
+        { commit, state: { records: { 4: conversationList } } },
         {
           params: {
             inboxId: 1,
@@ -105,7 +105,7 @@ describe('#actions', () => {
     it('sends correct actions actions if API is success for whatsapp conversation', async () => {
       axios.post.mockResolvedValue({ data: conversationList[0] });
       await actions.create(
-        { commit },
+        { commit, state: { records: { 4: conversationList } } },
         {
           params: {
             inboxId: 1,
