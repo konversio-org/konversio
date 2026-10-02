@@ -24,6 +24,11 @@
       "EMPTY_MESSAGE": "Nothing here yet",
       "TRY_THESE_PROMPTS": "Try these prompts",
       "BOUND_CONVERSATION_INTRO": "Bound to conversation #{id}",
+      "REPLY_SUGGESTION": {
+        "QUICK_ACTION": "Suggest a reply",
+        "REQUEST_MESSAGE": "Draft a suggested reply for this conversation.",
+        "INSERT": "Insert into reply"
+      },
       "PROMPTS": {
         "SUMMARIZE": {
           "LABEL": "Summarize this conversation",

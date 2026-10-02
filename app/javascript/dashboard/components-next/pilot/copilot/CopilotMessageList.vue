@@ -13,9 +13,13 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  canSuggestReply: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(['useSuggestion']);
+const emit = defineEmits(['useSuggestion', 'suggestReply', 'insertReply']);
 
 const { t } = useI18n();
 const route = useRoute();
@@ -140,6 +144,16 @@ watch(
         </div>
       </div>
 
+      <button
+        v-if="canSuggestReply"
+        type="button"
+        class="flex w-full items-center justify-center gap-2 rounded-lg bg-n-violet-9 px-3 py-2 text-sm font-medium text-white transition-colors hover:enabled:!bg-n-violet-10"
+        @click="emit('suggestReply')"
+      >
+        <span class="i-lucide-sparkles size-4 flex-shrink-0" />
+        {{ t('PILOT.COPILOT.REPLY_SUGGESTION.QUICK_ACTION') }}
+      </button>
+
       <div class="space-y-2">
         <span class="block text-xs text-n-slate-10">
           {{ t('PILOT.COPILOT.TRY_THESE_PROMPTS') }}
@@ -171,9 +185,27 @@ watch(
       <!-- Assistant message -->
       <div
         v-else-if="item.kind === 'assistant'"
-        class="self-start max-w-[85%] rounded-lg bg-n-alpha-2 text-n-slate-12 px-3 py-2 text-sm whitespace-pre-wrap break-words"
+        class="self-start max-w-[85%] flex flex-col gap-1"
       >
-        {{ item.msg.message?.content }}
+        <div
+          class="rounded-lg px-3 py-2 text-sm whitespace-pre-wrap break-words"
+          :class="
+            item.msg.message?.reply_suggestion
+              ? 'bg-n-violet-2 text-n-violet-12 border border-n-violet-5'
+              : 'bg-n-alpha-2 text-n-slate-12'
+          "
+        >
+          {{ item.msg.message?.content }}
+        </div>
+        <button
+          v-if="item.msg.message?.reply_suggestion"
+          type="button"
+          class="self-start inline-flex items-center gap-1 rounded-md border border-n-weak bg-n-slate-2 px-2 py-1 text-xs text-n-slate-11 transition-colors hover:bg-n-slate-3 hover:text-n-slate-12"
+          @click="emit('insertReply', item.msg.message?.content)"
+        >
+          <span class="i-lucide-corner-down-left size-3.5 flex-shrink-0" />
+          {{ t('PILOT.COPILOT.REPLY_SUGGESTION.INSERT') }}
+        </button>
       </div>
 
       <!-- Grouped steps (one per user→assistant exchange) -->

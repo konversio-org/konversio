@@ -10,10 +10,11 @@ class PilotCopilotAPI extends ApiClient {
     return axios.get(this.url);
   }
 
-  createThread({ message, assistantId, conversationId }) {
+  createThread({ message, assistantId, conversationId, requestType }) {
     const payload = { message };
     if (assistantId) payload.assistant_id = assistantId;
     if (conversationId) payload.conversation_id = conversationId;
+    if (requestType) payload.request_type = requestType;
     return axios.post(this.url, payload);
   }
 

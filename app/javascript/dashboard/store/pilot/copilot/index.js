@@ -86,7 +86,7 @@ export const actions = {
 
   async createThread(
     { commit, dispatch },
-    { message, assistantId, conversationId }
+    { message, assistantId, conversationId, requestType }
   ) {
     commit(types.SET_UI_FLAG, { isCreatingThread: true });
     commit(types.SET_AWAITING_RESPONSE, true);
@@ -95,6 +95,7 @@ export const actions = {
         message,
         assistantId,
         conversationId,
+        requestType,
       });
       const thread = data?.data || data;
       commit(types.ADD_THREAD, thread);

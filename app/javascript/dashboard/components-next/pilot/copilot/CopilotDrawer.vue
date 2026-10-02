@@ -1,8 +1,12 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
 import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
+import { emitter } from 'shared/helpers/mitt';
+import { BUS_EVENTS } from 'shared/constants/busEvents';
+import { MESSAGE_TYPE } from 'shared/constants/messages';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import PilotFaceIcon from 'dashboard/components-next/pilot/PilotFaceIcon.vue';
 import CopilotMessageList from './CopilotMessageList.vue';
@@ -11,6 +15,7 @@ const POLL_INTERVAL_MS = 3000;
 
 const { t } = useI18n();
 const store = useStore();
+const route = useRoute();
 const drawer = useCopilotDrawer();
 
 const activeThreadId = useMapGetter('pilot/copilot/getActiveThreadId');
@@ -19,10 +24,34 @@ const isAwaitingResponse = useMapGetter('pilot/copilot/getIsAwaitingResponse');
 const boundConversationId = useMapGetter(
   'pilot/copilot/getBoundConversationId'
 );
+const selectedChat = useMapGetter('getSelectedChat');
 
 const inputText = ref('');
 const composingNewThread = ref(false);
 const pollTimer = ref(null);
+
+const selectedConversationId = computed(
+  () => route.params.conversationId || route.params.conversation_id || null
+);
+
+const latestPublicMessage = computed(() => {
+  const chatMessages = selectedChat.value?.messages || [];
+  return [...chatMessages]
+    .reverse()
+    .find(
+      message =>
+        !message.private &&
+        [MESSAGE_TYPE.INCOMING, MESSAGE_TYPE.OUTGOING].includes(
+          message.message_type
+        )
+    );
+});
+
+const canSuggestReply = computed(
+  () =>
+    route.path.includes('/conversations') &&
+    latestPublicMessage.value?.message_type === MESSAGE_TYPE.INCOMING
+);
 
 const placeholder = computed(() =>
   composingNewThread.value || !activeThreadId.value
@@ -106,6 +135,36 @@ const handleSubmit = async message => {
   }
 };
 
+const handleSuggestReply = async () => {
+  const conversationId = selectedConversationId.value;
+  if (!conversationId) return;
+  inputText.value = '';
+  try {
+    await store.dispatch('pilot/copilot/createThread', {
+      message: t('PILOT.COPILOT.REPLY_SUGGESTION.REQUEST_MESSAGE'),
+      conversationId,
+      requestType: 'reply_suggestion',
+    });
+    composingNewThread.value = false;
+    startPollingForActive();
+  } catch (err) {
+    composingNewThread.value = true;
+  }
+};
+
+const handleInsertReply = content => {
+  if (!content) return;
+  emitter.emit(BUS_EVENTS.INSERT_INTO_RICH_EDITOR, content);
+};
+
+watch(selectedConversationId, (id, previousId) => {
+  if (String(id) === String(previousId)) return;
+  store.dispatch('pilot/copilot/resetActiveThread');
+  store.dispatch('pilot/copilot/setBoundConversation', id);
+  composingNewThread.value = true;
+  inputText.value = '';
+});
+
 const handleKeydown = event => {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
@@ -182,7 +241,10 @@ onUnmounted(() => {
       <CopilotMessageList
         :messages="messages"
         :is-awaiting-response="isAwaitingResponse"
+        :can-suggest-reply="canSuggestReply"
         @use-suggestion="handleSubmit"
+        @suggest-reply="handleSuggestReply"
+        @insert-reply="handleInsertReply"
       />
 
       <footer
