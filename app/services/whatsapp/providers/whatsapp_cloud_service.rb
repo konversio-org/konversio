@@ -16,6 +16,7 @@ class Whatsapp::Providers::WhatsappCloudService < Whatsapp::Providers::BaseServi
 
     request_body = {
       messaging_product: 'whatsapp',
+      recipient_type: 'individual', # Only individual messages supported (not group messages)
       # BSUID -> `recipient`; phone number -> `to` (see recipient_params in the base provider).
       **recipient_params(phone_number),
       type: 'template',
