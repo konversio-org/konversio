@@ -10,16 +10,30 @@
 # activity, and dispatches telemetry. The conversation is left `open` — no
 # resume timer; native auto-resolve closes it if the customer abandons it.
 class Custom::Pilot::HandoffService
-  def self.call(conversation:, assistant:, reason:, message:)
-    new(conversation: conversation, assistant: assistant, reason: reason, message: message).call
+  # `source` and `reason_category` describe the handoff for outcome recording
+  # and are distinct from the human-readable `reason` shown on the timeline;
+  # keeping them as explicit keywords keeps every call site self-describing.
+  # rubocop:disable Metrics/ParameterLists
+  def self.call(conversation:, assistant:, reason:, message:, source: 'inference', reason_category: nil)
+    new(
+      conversation: conversation,
+      assistant: assistant,
+      reason: reason,
+      message: message,
+      source: source,
+      reason_category: reason_category
+    ).call
   end
 
-  def initialize(conversation:, assistant:, reason:, message:)
+  def initialize(conversation:, assistant:, reason:, message:, source: 'inference', reason_category: nil)
     @conversation = conversation
     @assistant = assistant
     @reason = reason
     @message = message
+    @source = source
+    @reason_category = reason_category
   end
+  # rubocop:enable Metrics/ParameterLists
 
   def call
     @conversation.bot_handoff! unless @conversation.open?
@@ -29,6 +43,7 @@ class Custom::Pilot::HandoffService
     post_message if @message.present?
     append_activity_message
     dispatch_handover_event(transitioned_at)
+    emit_lifecycle_event(transitioned_at)
   end
 
   private
@@ -85,5 +100,18 @@ class Custom::Pilot::HandoffService
     )
   rescue StandardError => e
     Rails.logger.error("[pilot.handoff_service] handover dispatch failed: #{e.class}: #{e.message}")
+  end
+
+  # Domain event consumed by `PilotOutcomeListener` to stamp the handoff on the
+  # covering episode. Dispatched separately from the telemetry event above and
+  # failure-isolated by `Pilot::ConversationEvents`.
+  def emit_lifecycle_event(transitioned_at)
+    ::Pilot::ConversationEvents.handed_off(
+      conversation: @conversation,
+      assistant: @assistant,
+      source: @source,
+      reason_category: @reason_category.presence || 'other',
+      at: transitioned_at
+    )
   end
 end

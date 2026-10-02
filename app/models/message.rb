@@ -285,6 +285,18 @@ class Message < ApplicationRecord
     '[Attachment]' if attachments.any?
   end
 
+  # True when the message is a public, outgoing reply authored by a human
+  # agent (or echoed back from an external channel). Automation-rule and
+  # campaign messages deliberately do not qualify: they would otherwise
+  # falsify "a human took over" signals. Used by first-reply reporting and by
+  # Pilot outcome recording.
+  def human_response?
+    outgoing? &&
+      content_attributes['automation_rule_id'].blank? &&
+      additional_attributes['campaign_id'].blank? &&
+      (sender.is_a?(User) || content_attributes['external_echo'].present?)
+  end
+
   private
 
   def prevent_message_flooding
@@ -359,17 +371,6 @@ class Message < ApplicationRecord
   def set_waiting_since_on_incoming_message
     # Set waiting_since when customer sends a message (if currently blank)
     conversation.update(waiting_since: created_at) if incoming? && conversation.waiting_since.blank?
-  end
-
-  def human_response?
-    # if the sender is not a user, it's not a human response
-    # if automation rule id is present, it's not a human response
-    # if campaign id is present, it's not a human response
-    # external echo messages are responses sent from the native app (WhatsApp Business, Instagram)
-    outgoing? &&
-      content_attributes['automation_rule_id'].blank? &&
-      additional_attributes['campaign_id'].blank? &&
-      (sender.is_a?(User) || content_attributes['external_echo'].present?)
   end
 
   def bot_response?

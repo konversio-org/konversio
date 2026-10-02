@@ -24,6 +24,11 @@ module Events::Types
   CONVERSATION_RESOLVED = 'conversation.resolved'
   CONVERSATION_PILOT_INFERENCE_RESOLVED = 'conversation.pilot_inference_resolved'
   CONVERSATION_PILOT_INFERENCE_HANDOFF = 'conversation.pilot_inference_handoff'
+  # Pilot conversation lifecycle events. Resolution is observed by outcome
+  # recording through the core `conversation.resolved` event (per the
+  # pilot-conversation-lifecycle-events spec), so only handoff needs a
+  # dedicated Pilot event here.
+  PILOT_CONVERSATION_HANDED_OFF = 'pilot.conversation.handed_off'
 
   CONVERSATION_STATUS_CHANGED = 'conversation.status_changed'
   CONVERSATION_CONTACT_CHANGED = 'conversation.contact_changed'
