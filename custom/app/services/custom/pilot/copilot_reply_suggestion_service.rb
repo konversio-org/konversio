@@ -277,8 +277,12 @@ module Custom
         }
       end
 
+      # Resolves the requesting user's UI locale with a fallback to the
+      # account locale, reusing the platform's SwitchLocale resolution.
       def localized(key)
-        switch_locale_using_account_locale { I18n.t(key) }
+        switch_locale_using_account_locale do
+          I18n.t(key, default: I18n.t(key, locale: account&.locale.presence || I18n.default_locale))
+        end
       end
     end
     # rubocop:enable Metrics/ClassLength
