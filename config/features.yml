@@ -276,3 +276,6 @@
 - name: pilot_audio_transcription
   display_name: Pilot Audio Transcription
   enabled: true
+- name: delayed_automations
+  display_name: Delayed Automations
+  enabled: false
