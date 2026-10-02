@@ -60,6 +60,7 @@ class Account < ApplicationRecord
   store_accessor :settings, :keep_pending_on_bot_failure
   store_accessor :settings, :pilot_auto_resolve_mode
   store_accessor :settings, :pilot_document_sync_interval
+  store_accessor :settings, :pilot_false_promise_guard_enabled
   include AccountPilotAutoResolve
 
   audited except: :updated_at, on: [:update]

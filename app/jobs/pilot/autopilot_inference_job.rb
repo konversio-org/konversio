@@ -37,7 +37,12 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     record_eligibility(message, conversation, assistant)
 
     result = run_inference_with_typing(conversation, assistant, message)
-    dispatch_inference_outcome(result, conversation, assistant)
+    guard_outcome = ::Custom::Pilot::PromiseGuardService.call(
+      conversation: conversation, assistant: assistant, run_result: result
+    )
+    return if guard_outcome.handed_off?
+
+    dispatch_inference_outcome(guard_outcome.result, conversation, assistant)
   rescue ::Custom::Pilot::AutopilotService::FeatureDisabledError => e
     Rails.logger.warn("[pilot.autopilot_inference_job] feature disabled msg=#{message_id}: #{e.message}")
   rescue ::Custom::Pilot::AutopilotService::Error => e
