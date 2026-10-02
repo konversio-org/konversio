@@ -6,14 +6,26 @@ class Voice::OutboundCallFactory
   end
 
   def perform!
+    validate!
+
+    call = create_call!
+    call.broadcast_voice_call_event(:created, accepted_by_agent_id: call.accepted_by_agent_id)
+    call
+  end
+
+  private
+
+  def validate!
     raise ArgumentError, 'Contact phone number required' if contact.phone_number.blank?
     raise ArgumentError, 'Agent required' if user.blank?
+  end
 
+  def create_call!
     # Claim a reused, unassigned conversation for the caller; a new conversation
     # gets the assignee at creation instead.
     claim_for_caller = conversation.present? && conversation.assigned_entity.nil?
 
-    call = ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
       contact_inbox = ensure_contact_inbox!
       target = conversation || create_conversation!(contact_inbox)
       # Dial before locking so the provider round-trip doesn't hold a row lock.
@@ -24,11 +36,7 @@ class Voice::OutboundCallFactory
       record.update!(message_id: message.id)
       record
     end
-    call.broadcast_voice_call_event(:created, accepted_by_agent_id: call.accepted_by_agent_id)
-    call
   end
-
-  private
 
   def ensure_contact_inbox!
     ContactInbox.find_or_create_by!(contact_id: contact.id, inbox_id: inbox.id) do |record|

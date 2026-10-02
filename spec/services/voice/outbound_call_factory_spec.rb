@@ -9,7 +9,7 @@ RSpec.describe Voice::OutboundCallFactory do
   let(:call_sid) { 'CA-outbound-1' }
 
   before do
-    channel.update_column(:voice_enabled, true)
+    channel.update_column(:voice_enabled, true) # rubocop:disable Rails/SkipsModelValidations
     allow(channel).to receive(:initiate_call).and_return({ call_sid: call_sid })
   end
 

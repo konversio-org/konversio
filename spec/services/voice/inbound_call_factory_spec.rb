@@ -7,7 +7,7 @@ RSpec.describe Voice::InboundCallFactory do
   let(:from_number) { '+15550001111' }
   let(:call_sid) { 'CA1234567890abcdef' }
 
-  before { channel.update_column(:voice_enabled, true) }
+  before { channel.update_column(:voice_enabled, true) } # rubocop:disable Rails/SkipsModelValidations
 
   def perform_factory(sid: call_sid, caller: nil)
     described_class.perform!(
@@ -17,7 +17,7 @@ RSpec.describe Voice::InboundCallFactory do
     )
   end
 
-  it 'creates a contact, open conversation, ringing call and voice_call message' do
+  it 'creates a contact, open conversation, ringing call and voice_call message', :aggregate_failures do
     call = perform_factory
 
     expect(call).to be_twilio
@@ -35,8 +35,9 @@ RSpec.describe Voice::InboundCallFactory do
   it 'is idempotent for the same provider call id' do
     first = perform_factory
 
-    expect { @second = perform_factory }.not_to change(Call, :count)
-    expect(@second.id).to eq(first.id)
+    second = nil
+    expect { second = perform_factory }.not_to change(Call, :count)
+    expect(second.id).to eq(first.id)
     expect(Call.where(provider_call_id: call_sid).count).to eq(1)
   end
 

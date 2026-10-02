@@ -35,7 +35,7 @@ class Pilot::SpeechToTextService
   def perform
     raise NotConfigured, 'Pilot speech-to-text is not configured' unless self.class.configured?
 
-    response = post_transcription
+    response = blob.open { |file| post_transcription(file) }
     raise PermanentError, "Transcription failed with status #{response.status}" unless response.success?
 
     text = parse_text(response.body)
@@ -61,10 +61,10 @@ class Pilot::SpeechToTextService
     "#{config[:endpoint]}/v1/audio/transcriptions"
   end
 
-  def post_transcription
+  def post_transcription(file)
     connection.post(transcription_url) do |req|
       req.headers['Authorization'] = "Bearer #{api_key}"
-      req.body = { model: config[:model], file: file_part }
+      req.body = { model: config[:model], file: file_part(file) }
     end
   end
 
@@ -74,8 +74,8 @@ class Pilot::SpeechToTextService
     nil
   end
 
-  def file_part
-    Faraday::Multipart::FilePart.new(blob.download, blob.content_type || 'audio/wav', filename)
+  def file_part(file)
+    Faraday::Multipart::FilePart.new(file, blob.content_type || 'audio/wav', filename)
   end
 
   def filename
