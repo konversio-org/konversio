@@ -90,6 +90,23 @@ RSpec.describe AccountEmailRateLimitable do
       expect(account.emails_sent_today).to eq(2)
     end
 
+    it 'does not overshoot under concurrent reservations' do
+      account.update!(limits: { 'emails' => 1 })
+      results = Concurrent::Array.new
+      barrier = Concurrent::CyclicBarrier.new(2)
+
+      threads = Array.new(2) do
+        Thread.new do
+          barrier.wait
+          results << account.reserve_email_send_capacity
+        end
+      end
+      threads.each(&:join)
+
+      expect(results.count(true)).to eq(1)
+      expect(account.emails_sent_today).to eq(1)
+    end
+
     it 'unwatches the counter when capacity is exhausted' do
       redis = instance_double(Redis)
       key = format(Redis::Alfred::ACCOUNT_OUTBOUND_EMAIL_COUNT_KEY, account_id: account.id, date: Time.zone.today.to_s)

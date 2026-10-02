@@ -140,6 +140,24 @@ RSpec.describe '/api/v1/accounts/{account.id}/channels/twilio_channel', type: :r
 
           expect(response).to have_http_status(:unprocessable_entity)
         end
+
+        context 'when the account has reached its inbox limit' do # rubocop:disable RSpec/NestedGroups
+          before do
+            account.update!(limits: { 'inboxes' => account.inboxes.count })
+          end
+
+          it 'returns payment required instead of a generic creation error' do
+            allow(twilio_client).to receive(:messages).and_return(message_double)
+            allow(message_double).to receive(:list).and_return([])
+
+            post api_v1_account_channels_twilio_channel_path(account),
+                 params: params,
+                 headers: admin.create_new_auth_token
+
+            expect(response).to have_http_status(:payment_required)
+            expect(response.parsed_body['error']).to eq('Account limit exceeded. Upgrade to a higher plan')
+          end
+        end
       end
 
       context 'with user as agent' do

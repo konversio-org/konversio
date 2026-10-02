@@ -78,6 +78,7 @@ class Inbox < ApplicationRecord
 
   enum sender_name_type: { friendly: 0, professional: 1 }
 
+  before_create :ensure_within_account_inbox_limit
   after_destroy :delete_round_robin_agents
 
   after_create_commit :dispatch_create_event
@@ -247,6 +248,12 @@ class Inbox < ApplicationRecord
 
   def ensure_valid_max_assignment_limit
     # overridden in enterprise/app/models/enterprise/inbox.rb
+  end
+
+  def ensure_within_account_inbox_limit
+    return if account.inboxes.count < account.usage_limits[:inboxes]
+
+    raise CustomExceptions::Inbox::LimitExceeded.new({})
   end
 
   def delete_round_robin_agents
