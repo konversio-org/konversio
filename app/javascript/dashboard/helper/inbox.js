@@ -44,6 +44,24 @@ export const getInboxVoiceIcon = (channelType, medium) => {
   );
 };
 
+export const getVoiceCallProvider = inbox => {
+  if (!inbox) return null;
+
+  // Callers pass either snake_case (raw API) or camelCase (camelcaseKeys) shapes.
+  const channelType = inbox.channel_type || inbox.channelType;
+  const voiceEnabled = inbox.voice_enabled || inbox.voiceEnabled;
+
+  if (!voiceEnabled) return null;
+
+  if (channelType === INBOX_TYPES.TWILIO) return VOICE_CALL_PROVIDERS.TWILIO;
+  if (channelType === INBOX_TYPES.WHATSAPP)
+    return VOICE_CALL_PROVIDERS.WHATSAPP;
+
+  return null;
+};
+
+export const isVoiceCallEnabled = inbox => getVoiceCallProvider(inbox) !== null;
+
 const INBOX_ICON_MAP_FILL = {
   [INBOX_TYPES.WEB]: 'i-ri-global-fill',
   [INBOX_TYPES.FB]: 'i-ri-messenger-fill',

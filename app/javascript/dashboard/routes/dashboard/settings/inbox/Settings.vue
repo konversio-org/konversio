@@ -23,8 +23,11 @@ import GreetingsEditor from 'shared/components/GreetingsEditor.vue';
 import ConfigurationPage from './settingsPage/ConfigurationPage.vue';
 import CustomerSatisfactionPage from './settingsPage/CustomerSatisfactionPage.vue';
 import CollaboratorsPage from './settingsPage/CollaboratorsPage.vue';
+import VoiceConfigurationPage from './settingsPage/VoiceConfigurationPage.vue';
+import WhatsappCallingPage from './settingsPage/WhatsappCallingPage.vue';
 import BotConfiguration from './components/BotConfiguration.vue';
 import AccountHealth from './components/AccountHealth.vue';
+import TwilioHealth from './components/TwilioHealth.vue';
 import { FEATURE_FLAGS } from '../../../../featureFlags';
 import SenderNameExamplePreview from './components/SenderNameExamplePreview.vue';
 import LockToSingleConversationPreview from './components/LockToSingleConversationPreview.vue';
@@ -47,6 +50,9 @@ export default {
     CollaboratorsPage,
     ConfigurationPage,
     CustomerSatisfactionPage,
+    VoiceConfigurationPage,
+    WhatsappCallingPage,
+    TwilioHealth,
     FacebookReauthorize,
     GreetingsEditor,
     PreChatFormSettings,
@@ -203,6 +209,24 @@ export default {
           ...visibleToAllChannelTabs,
           {
             key: 'whatsapp-health',
+            name: this.$t('INBOX_MGMT.TABS.ACCOUNT_HEALTH'),
+          },
+          {
+            key: 'whatsapp-calling',
+            name: this.$t('INBOX_MGMT.TABS.CALLS'),
+          },
+        ];
+      }
+
+      if (this.isATwilioSMSChannel) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'voice',
+            name: this.$t('INBOX_MGMT.TABS.VOICE'),
+          },
+          {
+            key: 'twilio-health',
             name: this.$t('INBOX_MGMT.TABS.ACCOUNT_HEALTH'),
           },
         ];
@@ -439,7 +463,7 @@ export default {
     async fetchHealthData() {
       if (!this.inbox) return;
 
-      if (!this.isAWhatsAppCloudChannel) {
+      if (!this.isAWhatsAppCloudChannel && !this.isATwilioSMSChannel) {
         return;
       }
 
@@ -1230,6 +1254,24 @@ export default {
         <div v-if="selectedTabKey === 'whatsapp-health'">
           <AccountHealth
             :health-data="healthData"
+            :is-registering-webhook="isRegisteringWebhook"
+            @register-webhook="registerWebhook"
+          />
+        </div>
+        <div
+          v-if="selectedTabKey === 'whatsapp-calling'"
+          class="mx-6 max-w-4xl"
+        >
+          <WhatsappCallingPage :inbox="inbox" />
+        </div>
+        <div v-if="selectedTabKey === 'voice'" class="mx-6 max-w-4xl">
+          <VoiceConfigurationPage :inbox="inbox" />
+        </div>
+        <div v-if="selectedTabKey === 'twilio-health'" class="mx-6 max-w-4xl">
+          <TwilioHealth
+            :health-data="healthData"
+            :is-loading="isLoadingHealth"
+            :error="healthError"
             :is-registering-webhook="isRegisteringWebhook"
             @register-webhook="registerWebhook"
           />

@@ -56,6 +56,27 @@ class Inboxes extends CacheEnabledApiClient {
   rotateHmacToken(inboxId) {
     return axios.post(`${this.url}/${inboxId}/rotate_hmac_token`);
   }
+
+  enableWhatsappCalling(inboxId) {
+    return axios.post(`${this.url}/${inboxId}/enable_whatsapp_calling`);
+  }
+
+  disableWhatsappCalling(inboxId) {
+    return axios.post(`${this.url}/${inboxId}/disable_whatsapp_calling`);
+  }
+
+  setInboundCalls(inboxId, enabled) {
+    return axios.post(`${this.url}/${inboxId}/set_inbound_calls`, {
+      inbound_calls_enabled: enabled,
+    });
+  }
+
+  setCallRecording(inboxId, { recordingEnabled, transcriptionEnabled }) {
+    return axios.post(`${this.url}/${inboxId}/set_call_recording`, {
+      recording_enabled: recordingEnabled,
+      transcription_enabled: transcriptionEnabled,
+    });
+  }
 }
 
 export default new Inboxes();

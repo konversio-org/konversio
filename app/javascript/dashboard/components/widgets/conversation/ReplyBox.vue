@@ -418,6 +418,9 @@ export default {
       return `draft-${this.conversationIdByRoute}-${this.replyType}`;
     },
     audioRecordFormat() {
+      if (this.isAWhatsAppCloudChannel) {
+        return AUDIO_FORMATS.OGG;
+      }
       if (this.isAWhatsAppChannel || this.isATelegramChannel) {
         return AUDIO_FORMATS.MP3;
       }
@@ -1137,6 +1140,10 @@ export default {
       };
       return file && this.onFileUpload(autoRecordedFile);
     },
+    onRecordError() {
+      this.toggleAudioRecorder();
+      useAlert(this.$t('CONVERSATION.REPLYBOX.AUDIO_CONVERSION_FAILED'));
+    },
     toggleTyping(status) {
       const conversationId = this.currentChat.id;
       const isPrivate = this.isPrivate;
@@ -1411,6 +1418,7 @@ export default {
           :audio-record-format="audioRecordFormat"
           @recorder-progress-changed="onRecordProgressChanged"
           @finish-record="onFinishRecorder"
+          @record-error="onRecordError"
           @play="recordingAudioState = 'playing'"
           @pause="recordingAudioState = 'paused'"
         />
