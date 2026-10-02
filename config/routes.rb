@@ -389,6 +389,7 @@ Rails.application.routes.draw do
             post :verify
             post :backup_codes
           end
+          resources :sessions, only: [:index, :destroy]
         end
       end
 

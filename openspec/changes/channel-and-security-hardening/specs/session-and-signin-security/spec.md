@@ -129,3 +129,5 @@ The system SHALL provide an encrypted Redis storage helper (AES-256-GCM authenti
 - Then an encryption-not-configured error is raised
 
 needs investigation: the exact upstream v4.18.0 call sites that adopt this helper (which OAuth/SAML/onboarding flows store through it) must be confirmed during implementation; until then, only flows that currently stash secrets in plain Redis are migrated.
+
+investigated (2026-10-01): upstream v4.18.0's only `Redis::SecureStorage` call site is `app/services/shopify/pending_installation.rb` (Shopify app-install payload staging), which is part of the newer Shopify overhaul Konversio does not have. No Konversio flow currently stashes secrets in plain Redis, so the module is ported with no call-site migrations.
