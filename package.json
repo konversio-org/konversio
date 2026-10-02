@@ -37,7 +37,7 @@
     "@breezystack/lamejs": "^1.2.7",
     "@chatwoot/ninja-keys": "1.2.3",
     "@chatwoot/pico-search": "0.6.2",
-    "@chatwoot/prosemirror-schema": "1.4.5",
+    "@chatwoot/prosemirror-schema": "1.4.6",
     "@chatwoot/utils": "^0.0.52",
     "@formkit/core": "^1.7.2",
     "@formkit/vue": "^1.7.2",
