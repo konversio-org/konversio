@@ -35,6 +35,13 @@
 class Pilot::Document < ApplicationRecord
   self.table_name = 'pilot_documents'
 
+  # Synthetic `external_link` prefix for file-backed markdown rows, mirroring
+  # the PDF placeholder. Keeps the per-assistant source-link uniqueness
+  # constraint intact for sources that have no web URL.
+  MARKDOWN_LINK_PREFIX = 'MD:'
+
+  include PilotMarkdownDocumentable
+
   belongs_to :assistant, class_name: 'Pilot::Assistant'
   belongs_to :account
   has_many :responses,
@@ -46,7 +53,8 @@ class Pilot::Document < ApplicationRecord
   enum :status, { in_progress: 0, available: 1, failed: 2 }
   enum :sync_status, { syncing: 0, synced: 1, failed: 2 }, prefix: :sync
 
-  store_accessor :metadata, :crawl_job_id, :error_message
+  store_accessor :metadata, :crawl_job_id, :error_message,
+                 :content_fingerprint, :last_sync_failure_category, :refresh_phase
 
   validates :external_link, presence: true, unless: -> { pdf_file.attached? }
   validates :external_link, uniqueness: { scope: :assistant_id }, allow_blank: true
@@ -70,6 +78,42 @@ class Pilot::Document < ApplicationRecord
     return true if pdf_file.attached? && pdf_file.blob.content_type == 'application/pdf'
 
     external_link&.ends_with?('.pdf')
+  end
+
+  # File-backed documents (uploaded PDF or markdown) have no web page to
+  # re-fetch and no customer-resolvable source URL.
+  def file_document?
+    pdf_document? || markdown_document?
+  end
+
+  def web_document?
+    !file_document?
+  end
+
+  # A document is eligible for refresh only when it is a URL-backed source.
+  # Callers additionally require `available?` for manual refreshes.
+  def syncable?
+    web_document? && external_link.present?
+  end
+
+  # True when the document's last successful sync is older than its account's
+  # effective refresh cadence. Never-synced documents are stale.
+  def sync_stale?(interval_hours = account&.pilot_document_sync_interval_hours || Pilot::SyncLimits::DEFAULT_REFRESH_INTERVAL_HOURS)
+    return true if last_synced_at.blank?
+
+    last_synced_at < interval_hours.hours.ago
+  end
+
+  def sync_in_progress?
+    sync_status == 'syncing'
+  end
+
+  # The URL shown to end customers as a citation, or nil when the document is
+  # file-backed or fails the network-level eligibility checks.
+  def customer_visible_source_url
+    return nil if file_document?
+
+    ::Pilot::CitationUrlValidator.eligible_url(external_link)
   end
 
   private

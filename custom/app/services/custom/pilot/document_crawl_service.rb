@@ -1,4 +1,5 @@
 require 'net/http'
+require 'openssl'
 require 'uri'
 
 module Custom
@@ -37,6 +38,19 @@ module Custom
         end
       end
 
+      # Single-page scrape result used by document refreshes (the multi-page
+      # crawl path stays reserved for initial ingestion).
+      ScrapeResult = Struct.new(:success, :content, :title, :error_code, :error_message, :failure_category, :transient,
+                                keyword_init: true) do
+        def success?
+          success == true
+        end
+
+        def transient?
+          transient == true
+        end
+      end
+
       DEFAULT_TIMEOUT_SECONDS = 30
       # Page-count cap is the real governor; depth is set effectively
       # unbounded so Firecrawl walks the whole site within the page cap.
@@ -67,7 +81,56 @@ module Custom
         PollResult.new(status: :failed, pages: [], error_code: 'crawl_parse_error', error_message: e.message)
       end
 
+      # Single-page scrape of one URL, classified permanent/transient so the
+      # refresh path can decide whether to retry.
+      def scrape(url)
+        uri = URI.parse('https://api.firecrawl.dev/v1/scrape')
+        http = build_http(uri)
+
+        req = Net::HTTP::Post.new(uri.request_uri,
+                                  'Authorization' => "Bearer #{firecrawl_api_key}",
+                                  'Content-Type' => 'application/json')
+        req.body = { url: url, formats: ['markdown'], onlyMainContent: false }.to_json
+        handle_scrape_response(http.request(req))
+      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ETIMEDOUT => e
+        scrape_failure('scrape_timeout', e.message, category: :timeout, transient: true)
+      rescue Errno::ECONNREFUSED, Errno::ECONNRESET, Errno::EHOSTUNREACH, Errno::ENETUNREACH, SocketError, OpenSSL::SSL::SSLError => e
+        scrape_failure('scrape_connection_error', e.message, category: :connection, transient: true)
+      rescue JSON::ParserError => e
+        scrape_failure('scrape_parse_error', e.message, category: :unexpected, transient: false)
+      end
+
       private
+
+      def handle_scrape_response(response)
+        if response.code.to_i >= 500
+          return scrape_failure("scrape_http_#{response.code}", "HTTP #{response.code}", category: :server_error,
+                                                                                         transient: true)
+        end
+        return classify_scrape_client_error(response) unless response.is_a?(Net::HTTPSuccess)
+
+        data = JSON.parse(response.body)
+        payload = data['data'] || data
+        markdown = payload['markdown'].to_s
+        return scrape_failure('scrape_empty', 'Scraped page produced no markdown', category: :empty_body, transient: false) if markdown.strip.blank?
+
+        ScrapeResult.new(success: true, content: markdown, title: payload.dig('metadata', 'title').presence)
+      end
+
+      def classify_scrape_client_error(response)
+        code = response.code.to_i
+        category = case code
+                   when 404, 410 then :not_found
+                   when 401, 403 then :access_denied
+                   else :http_error
+                   end
+        scrape_failure("scrape_http_#{code}", "HTTP #{code}", category: category, transient: false)
+      end
+
+      def scrape_failure(error_code, message, category:, transient:)
+        ScrapeResult.new(success: false, error_code: error_code, error_message: message, failure_category: category,
+                         transient: transient)
+      end
 
       def handle_start_response(response)
         if response.is_a?(Net::HTTPSuccess)
