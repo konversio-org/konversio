@@ -172,7 +172,7 @@ module Pilot
             language: language,
             status: :attached
           )
-          suggestion.increment!(:source_count)
+          suggestion.update!(source_count: suggestion.source_count + 1)
         end
         true
       rescue ActiveRecord::RecordNotUnique

@@ -47,7 +47,7 @@ RSpec.describe Pilot::Conversations::FaqMiningJob do
   end
 
   describe '#perform happy path' do
-    it 'creates an open suggestion with an attached observation and source count of one' do
+    it 'creates an open suggestion with source count of one' do
       expect do
         described_class.perform_now(conversation.id)
       end.to change { Pilot::FaqSuggestion.where(assistant: assistant).count }.by(1)
@@ -58,7 +58,12 @@ RSpec.describe Pilot::Conversations::FaqMiningJob do
       expect(suggestion.answer).to eq(pair.answer)
       expect(suggestion.language).to eq('en')
       expect(suggestion.source_count).to eq(1)
+    end
 
+    it 'attaches an observation with the generated text to the new suggestion' do
+      described_class.perform_now(conversation.id)
+
+      suggestion = Pilot::FaqSuggestion.where(assistant: assistant).last
       observation = suggestion.observations.last
       expect(observation.status).to eq('attached')
       expect(observation.conversation).to eq(conversation)

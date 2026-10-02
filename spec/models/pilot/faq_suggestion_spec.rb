@@ -44,8 +44,8 @@ RSpec.describe Pilot::FaqSuggestion do
     end
 
     it 'does not schedule a refresh for unrelated updates' do
-      suggestion = create(:pilot_faq_suggestion, assistant: assistant)
-      suggestion.increment!(:source_count)
+      suggestion = create(:pilot_faq_suggestion, assistant: assistant, embedding: Array.new(1536, 0.01))
+      suggestion.update!(source_count: suggestion.source_count + 1)
       expect(Pilot::UpdateFaqSuggestionEmbeddingJob).to have_received(:perform_later).once
     end
 

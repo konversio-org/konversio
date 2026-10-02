@@ -8,11 +8,13 @@ RSpec.describe Custom::Pilot::FaqSuggestionMatcher do
   let(:matcher) { described_class.new(assistant: assistant, account: account) }
   let(:candidate_vector) { [1.0] + Array.new(1535, 0.0) }
   let(:other_vector) { [0.0, 1.0] + Array.new(1534, 0.0) }
+  let(:embedder) { instance_double(Custom::Pilot::EmbeddingService) }
 
   before do
     allow(Pilot::UpdateFaqSuggestionEmbeddingJob).to receive(:perform_later)
     allow(Pilot::UpdateEmbeddingJob).to receive(:perform_later)
-    allow_any_instance_of(Custom::Pilot::EmbeddingService).to receive(:embed).and_return(candidate_vector)
+    allow(Custom::Pilot::EmbeddingService).to receive(:new).and_return(embedder)
+    allow(embedder).to receive(:embed).and_return(candidate_vector)
   end
 
   def store_embedding(record, vector)
@@ -137,7 +139,7 @@ RSpec.describe Custom::Pilot::FaqSuggestionMatcher do
 
   context 'when embedding the candidate fails' do
     it 'routes to create' do
-      allow_any_instance_of(Custom::Pilot::EmbeddingService).to receive(:embed).and_raise(StandardError, 'boom')
+      allow(embedder).to receive(:embed).and_raise(StandardError, 'boom')
 
       expect(match.route).to eq(:create)
     end
