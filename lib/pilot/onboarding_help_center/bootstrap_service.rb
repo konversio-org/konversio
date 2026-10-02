@@ -57,7 +57,7 @@ class Pilot::OnboardingHelpCenter::BootstrapService
     url = Array(brand_info[:logos]).first&.dig(:url)
     return if url.blank?
 
-    SafeFetch.fetch(url, validate_content_type: true, max_bytes: LOGO_MAX_BYTES) do |result|
+    SafeFetch.fetch(url, validate_content_type: true, allowed_content_type_prefixes: ['image/'], max_bytes: LOGO_MAX_BYTES) do |result|
       portal.logo.attach(io: result.tempfile, filename: result.filename, content_type: result.content_type)
     end
   rescue SafeFetch::Error, ActiveStorage::Error => e
