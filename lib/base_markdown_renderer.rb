@@ -3,6 +3,8 @@ require 'uri'
 require 'cgi'
 
 class BaseMarkdownRenderer
+  include MarkdownRendererUrlSanitizer
+
   def render(doc_or_text)
     html = if doc_or_text.is_a?(String)
              Commonmarker.to_html(doc_or_text, options: { extension: { strikethrough: true } })
@@ -12,28 +14,29 @@ class BaseMarkdownRenderer
              doc_or_text.to_s
            end
 
-    adjust_image_tags(html)
+    process_html(html)
   end
 
   private
 
-  def adjust_image_tags(html)
+  def process_html(html)
     doc = Nokogiri::HTML.fragment(html)
+    sanitize_dangerous_urls(doc)
+    adjust_image_tags(doc)
+    doc.to_html
+  end
+
+  # Use inline style instead of HTML width/height attributes: email clients
+  # and the in-app Letter view both run images through CSS (e.g. prose /
+  # lettersanitizer's `img { height: auto }`) which overrides presentational
+  # attributes. Inline style has higher specificity and survives.
+  def adjust_image_tags(doc)
     doc.css('img').each do |img|
       src = img['src']
       next if src.blank?
 
-      begin
-        parsed_url = URI.parse(src)
-        query_params = CGI.parse(parsed_url.query || '')
-        height = query_params['cw_image_height']&.first
-        if height
-          img['height'] = height
-          img['width'] = 'auto'
-        end
-      rescue URI::InvalidURIError
-      end
+      sizing_style = extract_image_sizing_style(src)
+      img['style'] = sizing_style if sizing_style
     end
-    doc.to_html
   end
 end

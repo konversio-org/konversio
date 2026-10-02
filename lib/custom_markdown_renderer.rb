@@ -4,6 +4,8 @@ require 'cgi'
 require 'yaml'
 
 class CustomMarkdownRenderer
+  include MarkdownRendererUrlSanitizer
+
   CONFIG_PATH = Rails.root.join('config/markdown_embeds.yml')
 
   def self.config
@@ -34,12 +36,17 @@ class CustomMarkdownRenderer
   def process_article_html(html)
     doc = Nokogiri::HTML.fragment(html)
 
+    sanitize_dangerous_urls(doc)
+
     # 1. Wrap tables in tableWrapper
     doc.css('table').each do |table|
       table.replace("<div class=\"tableWrapper\">#{table.to_html}</div>")
     end
 
-    # 2. Process embedded links
+    # 2. Process images
+    adjust_image_tags(doc)
+
+    # 3. Process embedded links
     doc.css('a').each do |a|
       link_url = a['href']
       next if link_url.blank?
@@ -55,7 +62,7 @@ class CustomMarkdownRenderer
       end
     end
 
-    # 3. Process superscripts (^text^) in text nodes
+    # 4. Process superscripts (^text^) in text nodes
     doc.xpath('.//text()').each do |text_node|
       next if %w[script style code pre].include?(text_node.parent&.name)
 
@@ -75,6 +82,16 @@ class CustomMarkdownRenderer
     end
 
     doc.to_html
+  end
+
+  def adjust_image_tags(doc)
+    doc.css('img').each do |img|
+      src = img['src']
+      next if src.blank?
+
+      sizing_style = extract_image_sizing_style(src)
+      img['style'] = sizing_style if sizing_style
+    end
   end
 
   def isolated_link?(a)
@@ -152,8 +169,10 @@ class CustomMarkdownRenderer
     return nil unless embed_config
 
     template = embed_config['template']
+    # Use gsub (not format) so CSS `%` values in templates don't need escaping.
+    # Captured values are HTML-escaped since they land inside HTML attribute contexts.
     match_data.named_captures.each do |var_name, value|
-      template = template.gsub("%{#{var_name}}", value)
+      template = template.gsub("%{#{var_name}}", CGI.escapeHTML(value))
     end
     template
   end
