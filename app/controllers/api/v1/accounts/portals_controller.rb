@@ -3,6 +3,7 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
 
   before_action :fetch_portal, except: [:index, :create]
   before_action :check_authorization
+  before_action :validate_analytics_params, only: [:create, :update]
   before_action :set_current_page, only: [:index]
 
   def index
@@ -78,6 +79,20 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
     params.permit(:id, :email)
   end
 
+  # Analytics keys inject tracking scripts into every public page, so reject
+  # anything that isn't a known key paired with a plain string before it is saved.
+  def validate_analytics_params
+    analytics = params.dig(:portal, :config, :analytics)
+    return if analytics.blank?
+
+    valid = analytics.respond_to?(:each_pair) &&
+            analytics.keys.all? { |key| Portal::ANALYTICS_CONFIG_FORMATS.key?(key.to_s) } &&
+            analytics.values.all?(String)
+    return if valid
+
+    render json: { error: I18n.t('portals.analytics.invalid_configuration') }, status: :unprocessable_entity
+  end
+
   def portal_params
     params.require(:portal).permit(
       :id, :color, :custom_domain, :header_text, :homepage_link,
@@ -87,10 +102,14 @@ class Api::V1::Accounts::PortalsController < Api::V1::Accounts::BaseController
   end
 
   def config_param_keys
-    [:default_locale, :layout, { allowed_locales: [] }, { draft_locales: [] },
-     { social_profiles: %i[facebook x instagram linkedin youtube tiktok github whatsapp] },
-     { locale_translations: locale_translation_keys.index_with { %i[name page_title header_text] } },
-     { popular_content: popular_content_keys.index_with { { category_ids: [], article_ids: [] } } }]
+    keys = [:default_locale, :layout, { allowed_locales: [] }, { draft_locales: [] },
+            { social_profiles: %i[facebook x instagram linkedin youtube tiktok github whatsapp] },
+            { locale_translations: locale_translation_keys.index_with { %i[name page_title header_text] } },
+            { popular_content: popular_content_keys.index_with { { category_ids: [], article_ids: [] } } }]
+    # Analytics values are injected into every public page, so they stay
+    # administrator-only even for knowledge-base editors who manage the portal.
+    keys << { analytics: Portal::ANALYTICS_CONFIG_FORMATS.keys.map(&:to_sym) } if Current.account_user&.administrator?
+    keys
   end
 
   def locale_translation_keys

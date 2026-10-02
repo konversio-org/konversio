@@ -46,14 +46,39 @@ class Portal < ApplicationRecord
   validates :color, format: { with: /\A#(?:\h{3}|\h{6})\z/ }, allow_blank: true
   before_validation :normalize_config
   validate :validate_config
+  validate :validate_analytics
   validates_with JsonSchemaValidator,
                  schema: PortalConfigSchema::CONFIG_PARAMS_SCHEMA,
                  attribute_resolver: ->(record) { record.config }
 
   scope :active, -> { where(archived: false) }
 
+  # Analytics id fields and the shape each must match. The formats keep values safe
+  # to interpolate into the public page's tracking snippets. Add a provider here and
+  # its snippet in app/views/layouts/_portal_analytics.html.erb.
+  ANALYTICS_CONFIG_FORMATS = {
+    'gtm_container_id' => /\AGTM-[A-Z0-9]+\z/,
+    'ga4_measurement_id' => /\AG-[A-Z0-9]+\z/,
+    'hotjar_site_id' => /\A\d+\z/,
+    'plausible_domain' => /\A[a-z0-9]([a-z0-9.-]*[a-z0-9])?\z/i,
+    'amplitude_api_key' => /\A[a-z0-9]+\z/i,
+    'clarity_project_id' => /\A[a-z0-9]+\z/i,
+    'meta_pixel_id' => /\A\d+\z/
+  }.freeze
+
   CONFIG_JSON_KEYS = %w[allowed_locales default_locale draft_locales website_token path_prefix social_profiles layout
-                        locale_translations popular_content].freeze
+                        locale_translations popular_content analytics].freeze
+
+  def analytics
+    value = config_value('analytics')
+    value.is_a?(Hash) ? value : {}
+  end
+
+  # Reader per analytics id (e.g. portal.ga4_measurement_id) so the tracking
+  # partials stay declarative.
+  ANALYTICS_CONFIG_FORMATS.each_key do |key|
+    define_method(key) { analytics[key].presence }
+  end
 
   # Max number of recommended categories/articles shown per locale.
   POPULAR_CATEGORY_LIMIT = 3
@@ -144,6 +169,15 @@ class Portal < ApplicationRecord
     denied_keys = config.keys - CONFIG_JSON_KEYS
     errors.add(:config, "in portal on #{denied_keys.join(',')} is not supported.") if denied_keys.any?
     errors.add(:config, 'default locale cannot be drafted.') if draft_locale?(default_locale)
+  end
+
+  def validate_analytics
+    ANALYTICS_CONFIG_FORMATS.each do |key, format|
+      value = analytics[key]
+      next if value.blank?
+
+      errors.add(:config, "#{key.humanize} is invalid") unless value.to_s.match?(format)
+    end
   end
 
   def normalize_locale_codes(locale_codes)

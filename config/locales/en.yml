@@ -585,6 +585,8 @@ en:
       invalid_status: 'Invalid status value'
       locale_not_available: 'That language is not enabled for this portal'
       translation_unavailable: 'Article translation is not available on this account'
+    analytics:
+      invalid_configuration: 'Analytics configuration is invalid'
     send_instructions:
       email_required: 'Email is required'
       invalid_email_format: 'Invalid email format'

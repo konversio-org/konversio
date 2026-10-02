@@ -192,7 +192,8 @@ RSpec.describe 'Api::V1::Accounts::Portals', type: :request do
             'layout' => 'classic',
             'social_profiles' => {},
             'locale_translations' => {},
-            'popular_content' => {}
+            'popular_content' => {},
+            'analytics' => {}
           }
         )
       end
@@ -294,6 +295,67 @@ RSpec.describe 'Api::V1::Accounts::Portals', type: :request do
         portal.reload
         expect(portal.channel_web_widget_id).to be_nil
         expect(response.parsed_body['inbox']).to be_nil
+      end
+
+      it 'persists validated analytics identifiers for an administrator' do
+        put "/api/v1/accounts/#{account.id}/portals/#{portal.slug}",
+            params: {
+              portal: {
+                config: {
+                  analytics: {
+                    ga4_measurement_id: 'G-ABC123',
+                    plausible_domain: 'docs.example.com'
+                  }
+                }
+              }
+            },
+            headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:success)
+        expect(portal.reload.analytics).to include(
+          'ga4_measurement_id' => 'G-ABC123',
+          'plausible_domain' => 'docs.example.com'
+        )
+        expect(response.parsed_body.dig('config', 'analytics')).to include('ga4_measurement_id' => 'G-ABC123')
+      end
+
+      it 'rejects an analytics identifier whose format is invalid' do
+        put "/api/v1/accounts/#{account.id}/portals/#{portal.slug}",
+            params: { portal: { config: { analytics: { gtm_container_id: 'not-a-container' } } } },
+            headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(portal.reload.analytics).to eq({})
+      end
+
+      it 'rejects an unknown analytics key' do
+        put "/api/v1/accounts/#{account.id}/portals/#{portal.slug}",
+            params: { portal: { config: { analytics: { custom_tracker: 'abc' } } } },
+            headers: admin.create_new_auth_token
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(portal.reload.analytics).to eq({})
+      end
+
+      it 'rejects non-string analytics values' do
+        put "/api/v1/accounts/#{account.id}/portals/#{portal.slug}",
+            params: { portal: { config: { analytics: { hotjar_site_id: 123 } } } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(portal.reload.analytics).to eq({})
+      end
+    end
+
+    context 'when it is an authenticated agent' do
+      it 'is not allowed to update the portal and leaves analytics untouched' do
+        put "/api/v1/accounts/#{account.id}/portals/#{portal.slug}",
+            params: { portal: { config: { analytics: { ga4_measurement_id: 'G-ABC123' } } } },
+            headers: agent.create_new_auth_token
+
+        expect(response).to have_http_status(:unauthorized)
+        expect(portal.reload.analytics).to eq({})
       end
     end
   end

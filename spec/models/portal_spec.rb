@@ -150,4 +150,53 @@ RSpec.describe Portal do
       expect(portal.display_title).to eq('Help Center | Acme')
     end
   end
+
+  describe 'analytics configuration' do
+    let(:account) { create(:account) }
+
+    it 'accepts valid identifiers for every provider' do
+      portal = build(:portal, account: account, config: {
+                       analytics: {
+                         gtm_container_id: 'GTM-ABC123',
+                         ga4_measurement_id: 'G-ABC123',
+                         hotjar_site_id: '1234567',
+                         plausible_domain: 'docs.example.com',
+                         amplitude_api_key: 'a1b2c3',
+                         clarity_project_id: 'abcd1234ef',
+                         meta_pixel_id: '1234567890'
+                       }
+                     })
+
+      expect(portal).to be_valid
+    end
+
+    it 'rejects a GTM container id without the prefix' do
+      portal = build(:portal, account: account, config: { analytics: { gtm_container_id: 'ABC123' } })
+
+      expect(portal).not_to be_valid
+      expect(portal.errors[:config]).to include(a_string_matching(/Gtm container is invalid/))
+    end
+
+    it 'rejects a non-numeric hotjar site id' do
+      portal = build(:portal, account: account, config: { analytics: { hotjar_site_id: 'abc' } })
+
+      expect(portal).not_to be_valid
+    end
+
+    it 'rejects a plausible domain with invalid characters' do
+      portal = build(:portal, account: account, config: { analytics: { plausible_domain: 'bad domain!' } })
+
+      expect(portal).not_to be_valid
+    end
+
+    it 'exposes reader methods and an empty hash when unset' do
+      portal = create(:portal, account: account)
+
+      expect(portal.analytics).to eq({})
+      expect(portal.ga4_measurement_id).to be_nil
+
+      portal.update!(config: { analytics: { ga4_measurement_id: 'G-XYZ789' } })
+      expect(portal.ga4_measurement_id).to eq('G-XYZ789')
+    end
+  end
 end
