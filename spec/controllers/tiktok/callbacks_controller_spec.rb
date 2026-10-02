@@ -73,6 +73,16 @@ RSpec.describe 'TikTok Callbacks', type: :request do
     expect(response).to redirect_to(app_tiktok_inbox_agents_url(account_id: account.id, inbox_id: inbox.id))
   end
 
+  it 'redirects back to onboarding when the return hint is present' do
+    onboarding_state = JWT.encode({ sub: account.id, iat: Time.current.to_i, return_to: 'onboarding' }, client_secret, 'HS256')
+
+    with_modified_env TIKTOK_APP_ID: client_id, TIKTOK_APP_SECRET: client_secret do
+      get '/tiktok/callback', params: { code: 'valid_code', state: onboarding_state }
+    end
+
+    expect(response).to redirect_to(app_onboarding_inbox_setup_url(account_id: account.id))
+  end
+
   it 'updates an existing channel and redirects to settings' do
     existing_channel = create(
       :channel_tiktok,

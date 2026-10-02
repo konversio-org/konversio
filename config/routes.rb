@@ -29,6 +29,7 @@ Rails.application.routes.draw do
     get '/app/accounts/:account_id/settings/inboxes/:inbox_id', to: 'dashboard#index', as: 'app_instagram_inbox_settings'
     get '/app/accounts/:account_id/settings/inboxes/:inbox_id', to: 'dashboard#index', as: 'app_tiktok_inbox_settings'
     get '/app/accounts/:account_id/settings/inboxes/:inbox_id', to: 'dashboard#index', as: 'app_email_inbox_settings'
+    get '/app/accounts/:account_id/onboarding/inbox-setup', to: 'dashboard#index', as: 'app_onboarding_inbox_setup'
 
     resource :widget, only: [:show]
     namespace :survey do
@@ -54,6 +55,9 @@ Rails.application.routes.draw do
             resource :contact_merge, only: [:create]
           end
           resource :bulk_actions, only: [:create]
+          resource :onboarding, only: [:update] do
+            get :help_center_generation
+          end
           resources :agents, only: [:index, :create, :update, :destroy] do
             post :bulk_create, on: :collection
           end
@@ -300,6 +304,10 @@ Rails.application.routes.draw do
 
           namespace :whatsapp do
             resource :authorization, only: [:create]
+            post 'manual/preview', to: 'manual_setup#preview'
+            post 'manual/connect', to: 'manual_setup#connect'
+            get 'manual/:inbox_id/webhook_status', to: 'manual_setup#webhook_status'
+            post 'manual/:inbox_id/setup_webhook', to: 'manual_setup#setup_webhook'
           end
 
           resources :webhooks, only: [:index, :create, :update, :destroy]
