@@ -358,6 +358,52 @@
       },
       "TOOLS": {
         "LABEL": "Tools used:"
+      },
+      "SETUP": {
+        "TOGGLE": "Test setup",
+        "INVALID_TEMPORARY": "Complete every temporary scenario before running a test.",
+        "KNOWLEDGE_TOO_LONG": "Knowledge text exceeds the character limit.",
+        "TABS": {
+          "KNOWLEDGE": "Knowledge",
+          "SCENARIOS": "Scenarios",
+          "GUIDELINES": "Guidelines",
+          "GUARDRAILS": "Guardrails"
+        },
+        "KNOWLEDGE": {
+          "INCLUDE": "Include temporary knowledge in this run",
+          "PLACEHOLDER": "Paste reference text to test...",
+          "COUNTER": "{count} / {limit} characters",
+          "TOO_LONG": "Over the character limit"
+        },
+        "SCENARIOS": {
+          "NONE": "No enabled persisted scenarios.",
+          "TEMPORARY_LABEL": "Temporary scenario {index}",
+          "REMOVE": "Remove temporary scenario",
+          "TITLE_PLACEHOLDER": "Title",
+          "DESCRIPTION_PLACEHOLDER": "Description",
+          "INSTRUCTION_PLACEHOLDER": "Instruction",
+          "ADD": "Add temporary scenario"
+        },
+        "RULES": {
+          "ADD": "Add",
+          "ADD_PLACEHOLDER": "Add a rule for this run..."
+        }
+      },
+      "RUN_REPORT": {
+        "HANDLED_BY": "Handled by",
+        "TEMPORARY_BADGE": "Temporary",
+        "MILLISECONDS": "ms",
+        "KNOWLEDGE_ATTACHED": "Temporary knowledge attached",
+        "KNOWLEDGE_NONE": "No temporary knowledge",
+        "NO_EVENTS": "No events recorded.",
+        "STATUS": {
+          "RUNNING": "Running",
+          "COMPLETED": "Completed",
+          "FAILED": "Failed"
+        }
+      },
+      "ERRORS": {
+        "INFERENCE": "Inference failed"
       }
     },
     "ACTIVITY": {

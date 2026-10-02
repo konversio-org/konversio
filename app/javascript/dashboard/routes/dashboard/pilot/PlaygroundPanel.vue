@@ -6,6 +6,11 @@ import { useStore, useMapGetter } from 'dashboard/composables/store';
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import MessageFormatter from 'shared/helpers/MessageFormatter.js';
+import PlaygroundRunReport from './PlaygroundRunReport.vue';
+import {
+  usePlaygroundSession,
+  KNOWLEDGE_TEXT_LIMIT,
+} from './usePlaygroundSession';
 
 const { t } = useI18n();
 
@@ -22,23 +27,76 @@ const humanizeTool = name =>
     .replace(/^custom_/, '')
     .replace(/_/g, ' ')
     .replace(/\b\w/g, char => char.toUpperCase());
+
 const store = useStore();
 
 const activeAssistantId = useMapGetter('pilot/assistants/getActiveId');
 const assistants = useMapGetter('pilot/assistants/getRecords');
 const uiFlags = useMapGetter('pilot/autopilot/getUIFlags');
 
+const {
+  includedScenarioIds,
+  temporaryScenarios,
+  guidelines,
+  guardrails,
+  knowledge,
+  activeScenarios,
+  characterCount,
+  knowledgeExceedsLimit,
+  temporaryErrors,
+  isTemporaryValid,
+  playgroundConfig,
+  load,
+  toggleScenario,
+  addTemporaryScenario,
+  removeTemporaryScenario,
+  addGuideline,
+  addGuardrail,
+} = usePlaygroundSession();
+
 const selectedAssistantId = ref(activeAssistantId.value);
 const messageText = ref('');
 const history = ref([]);
 const error = ref('');
+const configErrors = ref({});
+const showSetup = ref(false);
+const activeTab = ref('knowledge');
+const newGuideline = ref('');
+const newGuardrail = ref('');
 const messagesContainerRef = ref(null);
 
+const TABS = ['knowledge', 'scenarios', 'guidelines', 'guardrails'];
+
 const isSending = computed(() => uiFlags.value.isSendingPlayground);
+
+const configErrorEntries = computed(() =>
+  Object.entries(configErrors.value).flatMap(([field, messages]) =>
+    (Array.isArray(messages) ? messages : [messages]).map(message => ({
+      field,
+      message,
+    }))
+  )
+);
 
 const clearHistory = () => {
   history.value = [];
   error.value = '';
+  configErrors.value = {};
+};
+
+const selectAssistant = async id => {
+  if (!id) return;
+  await load(id);
+};
+
+const addGuidelineEntry = () => {
+  addGuideline(newGuideline.value);
+  newGuideline.value = '';
+};
+
+const addGuardrailEntry = () => {
+  addGuardrail(newGuardrail.value);
+  newGuardrail.value = '';
 };
 
 onMounted(async () => {
@@ -53,19 +111,22 @@ onMounted(async () => {
     selectedAssistantId.value = assistants.value[0].id;
     store.dispatch('pilot/assistants/setActive', assistants.value[0].id);
   }
+  await selectAssistant(selectedAssistantId.value);
 });
 
-watch(selectedAssistantId, () => {
-  if (selectedAssistantId.value) {
-    store.dispatch('pilot/assistants/setActive', selectedAssistantId.value);
+watch(selectedAssistantId, async newId => {
+  if (newId) {
+    store.dispatch('pilot/assistants/setActive', newId);
     clearHistory();
+    await selectAssistant(newId);
   }
 });
 
-watch(activeAssistantId, newId => {
+watch(activeAssistantId, async newId => {
   if (newId && newId !== selectedAssistantId.value) {
     selectedAssistantId.value = newId;
     clearHistory();
+    await selectAssistant(newId);
   }
 });
 
@@ -83,6 +144,16 @@ const sendMessage = async () => {
   if (!currentMsg || isSending.value) return;
 
   error.value = '';
+  configErrors.value = {};
+
+  if (!isTemporaryValid.value) {
+    error.value = t('PILOT.PLAYGROUND.SETUP.INVALID_TEMPORARY');
+    return;
+  }
+  if (knowledgeExceedsLimit.value) {
+    error.value = t('PILOT.PLAYGROUND.SETUP.KNOWLEDGE_TOO_LONG');
+    return;
+  }
 
   // De-duplication check: if the latest history item has content == currentMsg and role == 'user',
   // we do NOT append a duplicate message in the history list.
@@ -97,19 +168,18 @@ const sendMessage = async () => {
     apiHistory = [...history.value];
   }
 
-  const payload = {
-    messageContent: currentMsg,
-    messageHistory: apiHistory.map(h => ({ role: h.role, content: h.content })),
-  };
-
   messageText.value = '';
   scrollToBottom();
 
   try {
     const res = await store.dispatch('pilot/autopilot/sendPlaygroundMessage', {
       assistantId: selectedAssistantId.value,
-      messageContent: payload.messageContent,
-      messageHistory: payload.messageHistory,
+      messageContent: currentMsg,
+      messageHistory: apiHistory.map(h => ({
+        role: h.role,
+        content: h.content,
+      })),
+      playgroundConfig: playgroundConfig.value || undefined,
     });
     if (res && res.reply) {
       history.value.push({
@@ -118,11 +188,14 @@ const sendMessage = async () => {
         tools: Array.isArray(res.invoked_tool_names)
           ? res.invoked_tool_names
           : [],
+        runReport: res.run_report || null,
       });
     }
   } catch (err) {
+    const data = err?.response?.data;
+    if (data?.errors) configErrors.value = data.errors;
     error.value =
-      err?.response?.data?.error || err?.message || 'Inference failed';
+      data?.error || err?.message || t('PILOT.PLAYGROUND.ERRORS.INFERENCE');
   } finally {
     scrollToBottom();
   }
@@ -149,15 +222,25 @@ const sendMessage = async () => {
               {{ t('PILOT.PLAYGROUND.HEADER.TITLE') }}
             </h1>
           </div>
-          <Button
-            v-if="history.length > 0"
-            :label="t('PILOT.PLAYGROUND.HEADER.CLEAR_BUTTON')"
-            icon="i-lucide-trash-2"
-            size="sm"
-            variant="faded"
-            color="slate"
-            @click="clearHistory"
-          />
+          <div class="flex items-center gap-2">
+            <Button
+              :label="t('PILOT.PLAYGROUND.SETUP.TOGGLE')"
+              icon="i-lucide-settings-2"
+              size="sm"
+              variant="faded"
+              color="slate"
+              @click="showSetup = !showSetup"
+            />
+            <Button
+              v-if="history.length > 0"
+              :label="t('PILOT.PLAYGROUND.HEADER.CLEAR_BUTTON')"
+              icon="i-lucide-trash-2"
+              size="sm"
+              variant="faded"
+              color="slate"
+              @click="clearHistory"
+            />
+          </div>
         </div>
       </div>
     </header>
@@ -165,6 +248,207 @@ const sendMessage = async () => {
     <main
       class="flex-1 overflow-hidden flex flex-col max-w-5xl w-full mx-auto p-6 gap-4"
     >
+      <!-- Test-setup panel -->
+      <section
+        v-if="showSetup"
+        class="shrink-0 rounded-xl border border-n-weak bg-n-solid-1"
+      >
+        <nav class="flex gap-1 border-b border-n-weak px-2 pt-2">
+          <button
+            v-for="tab in TABS"
+            :key="tab"
+            type="button"
+            class="px-3 py-1.5 text-xs font-medium rounded-t-lg"
+            :class="
+              activeTab === tab
+                ? 'bg-n-alpha-1 text-n-slate-12'
+                : 'text-n-slate-10'
+            "
+            @click="activeTab = tab"
+          >
+            {{ t(`PILOT.PLAYGROUND.SETUP.TABS.${tab.toUpperCase()}`) }}
+          </button>
+        </nav>
+
+        <div class="p-4 text-sm text-n-slate-12">
+          <!-- Knowledge -->
+          <div v-if="activeTab === 'knowledge'" class="flex flex-col gap-2">
+            <label class="flex items-center gap-2 text-xs text-n-slate-11">
+              <input v-model="knowledge.included" type="checkbox" />
+              {{ t('PILOT.PLAYGROUND.SETUP.KNOWLEDGE.INCLUDE') }}
+            </label>
+            <textarea
+              v-model="knowledge.text"
+              rows="4"
+              class="p-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9 resize-y"
+              :placeholder="t('PILOT.PLAYGROUND.SETUP.KNOWLEDGE.PLACEHOLDER')"
+            />
+            <div class="flex items-center justify-between text-xxs">
+              <span class="text-n-slate-10">
+                {{
+                  t('PILOT.PLAYGROUND.SETUP.KNOWLEDGE.COUNTER', {
+                    count: characterCount,
+                    limit: KNOWLEDGE_TEXT_LIMIT,
+                  })
+                }}
+              </span>
+              <span v-if="knowledgeExceedsLimit" class="text-n-ruby-11">
+                {{ t('PILOT.PLAYGROUND.SETUP.KNOWLEDGE.TOO_LONG') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Scenarios -->
+          <div
+            v-else-if="activeTab === 'scenarios'"
+            class="flex flex-col gap-3"
+          >
+            <div v-if="activeScenarios.length" class="flex flex-col gap-1.5">
+              <label
+                v-for="scenario in activeScenarios"
+                :key="scenario.id"
+                class="flex items-center gap-2 text-xs text-n-slate-11"
+              >
+                <input
+                  type="checkbox"
+                  :checked="includedScenarioIds.includes(scenario.id)"
+                  @change="toggleScenario(scenario.id, $event.target.checked)"
+                />
+                {{ scenario.title }}
+              </label>
+            </div>
+            <p v-else class="text-xxs text-n-slate-10">
+              {{ t('PILOT.PLAYGROUND.SETUP.SCENARIOS.NONE') }}
+            </p>
+
+            <div
+              v-for="(draft, index) in temporaryScenarios"
+              :key="draft.clientId"
+              class="rounded-lg border border-n-weak p-3 flex flex-col gap-2"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-xxs font-medium text-n-slate-10">
+                  {{
+                    t('PILOT.PLAYGROUND.SETUP.SCENARIOS.TEMPORARY_LABEL', {
+                      index: index + 1,
+                    })
+                  }}
+                </span>
+                <button
+                  type="button"
+                  class="i-lucide-trash-2 size-4 text-n-slate-10"
+                  :aria-label="t('PILOT.PLAYGROUND.SETUP.SCENARIOS.REMOVE')"
+                  @click="removeTemporaryScenario(index)"
+                />
+              </div>
+              <input
+                v-model="draft.title"
+                class="p-2 rounded-lg border bg-n-solid-1 text-sm"
+                :class="
+                  temporaryErrors[index]?.title
+                    ? 'border-n-ruby-9'
+                    : 'border-n-container'
+                "
+                :placeholder="
+                  t('PILOT.PLAYGROUND.SETUP.SCENARIOS.TITLE_PLACEHOLDER')
+                "
+              />
+              <input
+                v-model="draft.description"
+                class="p-2 rounded-lg border bg-n-solid-1 text-sm"
+                :class="
+                  temporaryErrors[index]?.description
+                    ? 'border-n-ruby-9'
+                    : 'border-n-container'
+                "
+                :placeholder="
+                  t('PILOT.PLAYGROUND.SETUP.SCENARIOS.DESCRIPTION_PLACEHOLDER')
+                "
+              />
+              <textarea
+                v-model="draft.instruction"
+                rows="2"
+                class="p-2 rounded-lg border bg-n-solid-1 text-sm resize-y"
+                :class="
+                  temporaryErrors[index]?.instruction
+                    ? 'border-n-ruby-9'
+                    : 'border-n-container'
+                "
+                :placeholder="
+                  t('PILOT.PLAYGROUND.SETUP.SCENARIOS.INSTRUCTION_PLACEHOLDER')
+                "
+              />
+            </div>
+
+            <Button
+              :label="t('PILOT.PLAYGROUND.SETUP.SCENARIOS.ADD')"
+              icon="i-lucide-plus"
+              size="sm"
+              variant="faded"
+              color="slate"
+              @click="addTemporaryScenario"
+            />
+          </div>
+
+          <!-- Guidelines -->
+          <div
+            v-else-if="activeTab === 'guidelines'"
+            class="flex flex-col gap-2"
+          >
+            <label
+              v-for="entry in guidelines"
+              :key="entry.value"
+              class="flex items-center gap-2 text-xs text-n-slate-11"
+            >
+              <input v-model="entry.included" type="checkbox" />
+              {{ entry.value }}
+            </label>
+            <div class="flex gap-2">
+              <input
+                v-model="newGuideline"
+                class="flex-1 p-2 rounded-lg border border-n-container bg-n-solid-1 text-sm"
+                :placeholder="t('PILOT.PLAYGROUND.SETUP.RULES.ADD_PLACEHOLDER')"
+                @keydown.enter.prevent="addGuidelineEntry"
+              />
+              <Button
+                :label="t('PILOT.PLAYGROUND.SETUP.RULES.ADD')"
+                size="sm"
+                variant="faded"
+                color="slate"
+                @click="addGuidelineEntry"
+              />
+            </div>
+          </div>
+
+          <!-- Guardrails -->
+          <div v-else class="flex flex-col gap-2">
+            <label
+              v-for="entry in guardrails"
+              :key="entry.value"
+              class="flex items-center gap-2 text-xs text-n-slate-11"
+            >
+              <input v-model="entry.included" type="checkbox" />
+              {{ entry.value }}
+            </label>
+            <div class="flex gap-2">
+              <input
+                v-model="newGuardrail"
+                class="flex-1 p-2 rounded-lg border border-n-container bg-n-solid-1 text-sm"
+                :placeholder="t('PILOT.PLAYGROUND.SETUP.RULES.ADD_PLACEHOLDER')"
+                @keydown.enter.prevent="addGuardrailEntry"
+              />
+              <Button
+                :label="t('PILOT.PLAYGROUND.SETUP.RULES.ADD')"
+                size="sm"
+                variant="faded"
+                color="slate"
+                @click="addGuardrailEntry"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Error alert -->
       <div
         v-if="error"
@@ -172,6 +456,19 @@ const sendMessage = async () => {
         role="alert"
       >
         {{ error }}
+      </div>
+
+      <div
+        v-if="configErrorEntries.length"
+        class="p-3 rounded-lg bg-n-ruby-3 border border-n-ruby-6 text-xs text-n-ruby-11 shrink-0"
+        role="alert"
+      >
+        <p
+          v-for="entry in configErrorEntries"
+          :key="`${entry.field}:${entry.message}`"
+        >
+          {{ `${entry.field}: ${entry.message}` }}
+        </p>
       </div>
 
       <!-- Messages Pane -->
@@ -248,6 +545,11 @@ const sendMessage = async () => {
                 {{ humanizeTool(tool) }}
               </span>
             </div>
+
+            <PlaygroundRunReport
+              v-if="msg.role === 'assistant' && msg.runReport"
+              :report="msg.runReport"
+            />
           </div>
         </template>
 

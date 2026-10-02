@@ -13,12 +13,12 @@
 
 ### Frontend
 
-9. - [ ] **API client** — extend the playground call in `app/javascript/dashboard/api/pilot/autopilot.js` to accept and post the optional `playgroundConfig` payload.
-10. - [ ] **Session state composable** — add a playground session composable (e.g. `app/javascript/dashboard/routes/dashboard/pilot/usePlaygroundSession.js`): load persisted scenarios and current rules; track included persisted scenario ids, temporary scenario drafts (with generated client identifiers), included guideline/guardrail lists, knowledge text and its inclusion flag; compose the `playground_config` payload; validate temporary scenario completeness client-side.
-11. - [ ] **Test-setup panel** — extend `PlaygroundPanel.vue` (or a sibling setup component) with tabs for Knowledge (textarea with character count against the 10,000 cap and an include toggle), Scenarios (persisted scenario checkboxes plus a temporary scenario editor with title/description/instruction), Guidelines, and Guardrails (rule lists with per-rule include toggles and temporary additions).
-12. - [ ] **Run-report display** — render a collapsible run report under each playground assistant response: duration, final handler (with a "temporary" badge for temporary scenarios), ordered tool events with status, sanitized arguments, and result previews, and handoff events with from/to/reason.
-13. - [ ] **i18n** — add English keys for the setup panel and run report under the Pilot playground namespace in `app/javascript/dashboard/i18n/locale/en.json` only.
-14. - [ ] **Frontend specs** — add/extend specs for the session composable (payload composition, validation) and the run-report rendering.
+9. - [x] **API client** — extend the playground call in `app/javascript/dashboard/api/pilot/autopilot.js` to accept and post the optional `playgroundConfig` payload.
+10. - [x] **Session state composable** — add a playground session composable (e.g. `app/javascript/dashboard/routes/dashboard/pilot/usePlaygroundSession.js`): load persisted scenarios and current rules; track included persisted scenario ids, temporary scenario drafts (with generated client identifiers), included guideline/guardrail lists, knowledge text and its inclusion flag; compose the `playground_config` payload; validate temporary scenario completeness client-side.
+11. - [x] **Test-setup panel** — extend `PlaygroundPanel.vue` (or a sibling setup component) with tabs for Knowledge (textarea with character count against the 10,000 cap and an include toggle), Scenarios (persisted scenario checkboxes plus a temporary scenario editor with title/description/instruction), Guidelines, and Guardrails (rule lists with per-rule include toggles and temporary additions).
+12. - [x] **Run-report display** — render a collapsible run report under each playground assistant response: duration, final handler (with a "temporary" badge for temporary scenarios), ordered tool events with status, sanitized arguments, and result previews, and handoff events with from/to/reason.
+13. - [x] **i18n** — add English keys for the setup panel and run report under the Pilot playground namespace in `app/javascript/dashboard/i18n/locale/en.json` only.
+14. - [x] **Frontend specs** — add/extend specs for the session composable (payload composition, validation) and the run-report rendering.
 
 ### Validation
 
