@@ -19,7 +19,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  clickable: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const emit = defineEmits(['itemClick']);
 
 ChartJS.register(Title, Tooltip, BarElement, CategoryScale, LinearScale);
 
@@ -67,8 +73,14 @@ const defaultChartOptions = {
   },
 };
 
+const onClick = (event, elements) => {
+  if (!props.clickable || !elements || elements.length === 0) return;
+
+  emit('itemClick', { index: elements[0].index });
+};
+
 const options = computed(() => {
-  return { ...defaultChartOptions, ...props.chartOptions };
+  return { ...defaultChartOptions, ...props.chartOptions, onClick };
 });
 </script>
 

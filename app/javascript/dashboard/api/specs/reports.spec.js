@@ -11,6 +11,7 @@ describe('#Reports API', () => {
     expect(reportsAPI).toHaveProperty('update');
     expect(reportsAPI).toHaveProperty('delete');
     expect(reportsAPI).toHaveProperty('getReports');
+    expect(reportsAPI).toHaveProperty('getDrilldown');
     expect(reportsAPI).toHaveProperty('getSummary');
     expect(reportsAPI).toHaveProperty('getAgentReports');
     expect(reportsAPI).toHaveProperty('getLabelReports');
@@ -78,6 +79,63 @@ describe('#Reports API', () => {
           until: 1621621800,
           business_hours: true,
         },
+      });
+    });
+
+    it('#getDrilldown', () => {
+      reportsAPI.getDrilldown({
+        metric: 'incoming_messages_count',
+        bucketTimestamp: 1621103400,
+        from: 1621103400,
+        to: 1621621800,
+        type: 'inbox',
+        id: 1,
+        groupBy: 'day',
+        businessHours: false,
+        page: 2,
+        perPage: 25,
+      });
+      expect(axiosMock.get).toHaveBeenCalledWith('/api/v2/reports/drilldown', {
+        params: {
+          metric: 'incoming_messages_count',
+          bucket_timestamp: 1621103400,
+          since: 1621103400,
+          until: 1621621800,
+          type: 'inbox',
+          id: 1,
+          group_by: 'day',
+          business_hours: false,
+          timezone_offset: -0,
+          page: 2,
+          per_page: 25,
+        },
+      });
+    });
+
+    it('#getDrilldown with abort signal', () => {
+      const controller = new AbortController();
+
+      reportsAPI.getDrilldown({
+        metric: 'incoming_messages_count',
+        bucketTimestamp: 1621103400,
+        signal: controller.signal,
+      });
+
+      expect(axiosMock.get).toHaveBeenCalledWith('/api/v2/reports/drilldown', {
+        params: {
+          metric: 'incoming_messages_count',
+          bucket_timestamp: 1621103400,
+          since: undefined,
+          until: undefined,
+          type: 'account',
+          id: undefined,
+          group_by: undefined,
+          business_hours: undefined,
+          timezone_offset: -0,
+          page: undefined,
+          per_page: undefined,
+        },
+        signal: controller.signal,
       });
     });
 
