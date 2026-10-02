@@ -334,8 +334,10 @@ class KonversioMarkdownRenderer
     return nil unless config
 
     template = config['template']
+    # Captured values land inside HTML attributes, so escape them before
+    # substitution; an unescaped quote in a crafted URL would break out.
     match_data.named_captures.each do |var_name, value|
-      template = template.gsub("%{#{var_name}}", value)
+      template = template.gsub("%{#{var_name}}", CGI.escapeHTML(value))
     end
     template
   end

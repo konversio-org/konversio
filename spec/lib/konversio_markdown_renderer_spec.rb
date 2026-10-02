@@ -144,4 +144,31 @@ RSpec.describe KonversioMarkdownRenderer do
       expect(output).to include('padding-bottom: 62.5%; height: 0; width: 100%; height: auto;')
     end
   end
+
+  describe 'embed capture escaping' do
+    def render_article(markdown)
+      described_class.new(markdown).render_article.to_s
+    end
+
+    it 'HTML-escapes a crafted captured value so it cannot break out of the src attribute' do
+      output = render_article('[video](https://www.youtube.com/watch?v=abc"onload="alert(1))')
+      iframe = Nokogiri::HTML.fragment(output).at_css('iframe')
+
+      expect(iframe['onload']).to be_nil
+      expect(iframe['src']).to include('alert(1)')
+    end
+
+    it 'accepts a query string after the video id' do
+      output = render_article('[video](https://www.youtube.com/watch?v=VIDEO_ID&t=30)')
+
+      expect(output).to include('https://www.youtube-nocookie.com/embed/VIDEO_ID')
+    end
+
+    it 'does not upgrade a link that is inline with other text' do
+      output = render_article('Watch [this](https://www.youtube.com/watch?v=xyz) tutorial')
+
+      expect(output).to include('<a href="https://www.youtube.com/watch?v=xyz">this</a>')
+      expect(output).not_to include('youtube-nocookie.com/embed')
+    end
+  end
 end
