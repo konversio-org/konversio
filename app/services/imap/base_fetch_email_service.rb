@@ -110,7 +110,7 @@ class Imap::BaseFetchEmailService
 
   def build_imap_client
     imap = Net::IMAP.new(channel.imap_address, port: channel.imap_port, ssl: true)
-    imap.authenticate(authentication_type, channel.imap_login, imap_password)
+    Imap::Authentication.authenticate!(imap, authentication_type, channel.imap_login, imap_password)
     imap.select('INBOX')
     imap
   end
