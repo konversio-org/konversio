@@ -86,6 +86,11 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   # Extracted from `perform` to keep that method's complexity under
   # the project's rubocop thresholds.
   def dispatch_inference_outcome(result, conversation, assistant)
+    message = deliver_inference_outcome(result, conversation, assistant)
+    capture_session(result, conversation, assistant, message)
+  end
+
+  def deliver_inference_outcome(result, conversation, assistant)
     if fresh_handover?(result, conversation)
       return process_handover(conversation, assistant, result) if agents_available?(conversation.inbox)
 
@@ -94,7 +99,20 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
 
     return resolve_after_reply(conversation, assistant, result) if fresh_resolution?(result, conversation)
 
-    post_reply(conversation, assistant, result.reply)
+    post_reply(conversation, assistant, result)
+  end
+
+  # Failure-isolated post-delivery capture. Runs after the message has been
+  # created and outside any delivery transaction; the recorder swallows its own
+  # errors so a session bug can never affect a delivered reply.
+  def capture_session(result, conversation, assistant, message)
+    ::Pilot::AgentSessionRecorder.call(
+      assistant: assistant,
+      subject: conversation,
+      result_message: message,
+      run_result: result.respond_to?(:run_result) ? result.run_result : nil,
+      llm_model: result.respond_to?(:llm_model) ? result.llm_model : nil
+    )
   end
 
   # Action C: the assistant signalled the conversation is finished. Post its
@@ -105,12 +123,13 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   end
 
   def resolve_after_reply(conversation, assistant, result)
-    post_reply(conversation, assistant, result.reply)
+    message = post_reply(conversation, assistant, result)
     ::Custom::Pilot::ConversationResolver.resolve!(
       conversation: conversation,
       assistant: assistant,
       reason: 'agentic_close'
     )
+    message
   end
 
   def fresh_handover?(result, conversation)
@@ -164,11 +183,13 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     )
   end
 
-  def post_reply(conversation, assistant, reply)
-    content = reply.to_s
-                   .sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '')
-                   .sub(::Custom::Pilot::HandoverEvaluator::RESOLUTION_SENTINEL, '')
-                   .strip
+  # Builds the outgoing message from the run's structured reply: each part's
+  # text followed by its citations as numbered links resolved server-side to
+  # trusted URLs. Handoff/resolution sentinels are stripped from part text
+  # before delivery, and the ordered parts are persisted on the message.
+  def post_reply(conversation, assistant, result)
+    structured = strip_sentinels(result.structured_reply || ::Pilot::StructuredReply.parse(result.reply))
+    content = structured.render(citation_urls_for(result)).to_s.strip
     return if content.blank?
 
     conversation.messages.create!(
@@ -176,8 +197,22 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
       account_id: conversation.account_id,
       inbox_id: conversation.inbox_id,
       sender: assistant,
-      content: content
+      content: content,
+      additional_attributes: { 'pilot_response_parts' => structured.as_message_parts }
     )
+  end
+
+  def citation_urls_for(result)
+    result.respond_to?(:citation_urls) ? (result.citation_urls || {}) : {}
+  end
+
+  def strip_sentinels(structured)
+    structured.transform_texts do |text|
+      text.to_s
+          .sub(::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL, '')
+          .sub(::Custom::Pilot::HandoverEvaluator::RESOLUTION_SENTINEL, '')
+          .strip
+    end
   end
 
   # Normal LLM-signalled handover: post the assistant's configured

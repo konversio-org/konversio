@@ -116,8 +116,24 @@ module Custom
         content = extract_final_content(result)
         record = persist_assistant_reply(content)
         @persisted_assistant_message = record
+        capture_session(result, record)
         dispatch_event(:copilot_inference_completed, thread_id: thread&.id, length: content.to_s.length)
         content
+      end
+
+      # Failure-isolated session capture for copilot runs. Copilot replies are
+      # plain text (no structured parts), so knowledge attribution stays empty;
+      # the run context is still recorded.
+      def capture_session(result, record)
+        return if bound_assistant.blank? || record.blank?
+
+        ::Pilot::AgentSessionRecorder.call(
+          assistant: bound_assistant,
+          subject: thread,
+          result_message: record,
+          run_result: result,
+          llm_model: model_for(:copilot)
+        )
       end
 
       def build_agent
