@@ -279,6 +279,194 @@ RSpec.describe Custom::Pilot::AutopilotService do
     end
   end
 
+  describe 'length budget disclosure' do
+    it 'tells the model the budget when the conversation resolves one' do
+      channel = create(:channel_sms, account: account)
+      conversation = create(:conversation, account: account, inbox: channel.inbox)
+
+      service = described_class.new(assistant: assistant, conversation: conversation)
+
+      expect(service.send(:assistant_instructions)).to include('within 320 characters')
+    end
+
+    it 'omits the length section when no budget resolves' do
+      service = described_class.new(assistant: assistant, message: 'hi')
+
+      expect(service.send(:assistant_instructions)).not_to include('Reply length limit')
+    end
+  end
+
+  describe 'consent and commitments instructions' do
+    let(:service) { described_class.new(assistant: assistant, message: 'hi') }
+
+    it 'encodes consent-gated handoff execution with a mandate override' do
+      instructions = service.send(:assistant_instructions)
+
+      expect(instructions).to include('Executing a handoff')
+      expect(instructions).to include('mandates a transfer')
+      expect(instructions).to include('overrides every other rule in this section')
+    end
+
+    it 'constrains handoff offers to genuinely stuck conversations' do
+      instructions = service.send(:assistant_instructions)
+
+      expect(instructions).to include('Never make that offer as your first response')
+    end
+
+    it 'forbids claiming a transfer that was not executed' do
+      instructions = service.send(:assistant_instructions)
+
+      expect(instructions).to include('Claiming a transfer that did not happen is strictly forbidden')
+    end
+
+    it 'forbids promises of work after the reply is sent' do
+      instructions = service.send(:assistant_instructions)
+
+      expect(instructions).to include('Never promise work that would happen after your reply is sent')
+    end
+
+    it 'suppresses re-offers while a handoff is pending' do
+      conversation = create(:conversation, account: account)
+      conversation.update!(additional_attributes: { 'pilot_handoff' => { 'state' => 'handoff_requested' } })
+      service = described_class.new(assistant: assistant, conversation: conversation)
+
+      instructions = service.send(:assistant_instructions)
+
+      expect(instructions).to include('ALREADY been requested')
+      expect(instructions).not_to include('Executing a handoff')
+    end
+  end
+
+  describe 'turn budget' do
+    let(:service) { described_class.new(assistant: assistant, message: 'hi') }
+
+    it 'defaults to a conservative budget not exceeding 10 when unconfigured' do
+      InstallationConfig.where(name: 'PILOT_AUTOPILOT_MAX_TURNS').delete_all
+      GlobalConfig.clear_cache
+      with_modified_env('PILOT_AUTOPILOT_MAX_TURNS' => nil) do
+        expect(service.send(:max_turns)).to be_between(1, 10)
+        expect(service.send(:max_turns)).to eq(described_class::DEFAULT_MAX_TURNS)
+      end
+    end
+
+    it 'honors a valid configured budget' do
+      allow(GlobalConfigService).to receive(:load).with('PILOT_AUTOPILOT_MAX_TURNS', 6).and_return('4')
+
+      expect(service.send(:max_turns)).to eq(4)
+    end
+
+    it 'falls back to the default for non-positive or unparsable configuration' do
+      %w[0 -3 abc].each do |value|
+        allow(GlobalConfigService).to receive(:load).with('PILOT_AUTOPILOT_MAX_TURNS', 6).and_return(value)
+
+        expect(service.send(:max_turns)).to eq(described_class::DEFAULT_MAX_TURNS), "expected #{value.inspect} to fall back"
+      end
+    end
+
+    it 'treats turn-budget exhaustion as a run failure' do
+      service = described_class.new(assistant: assistant, message: 'loop forever')
+      fake_result = double('RunResult',
+                           output: 'Conversation ended: Exceeded maximum turns: 6',
+                           failed?: true,
+                           error: Agents::Runner::MaxTurnsExceeded.new('Exceeded maximum turns: 6'))
+      fake_runner = double('AgentRunner', on_tool_start: nil, on_chat_created: nil)
+      allow(fake_runner).to receive(:run).and_return(fake_result)
+      allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
+      allow(Rails.logger).to receive(:error)
+
+      expect { service.perform }.to raise_error(described_class::Error, /turn budget/)
+    end
+  end
+
+  describe 'rewrite-or-fail length enforcement' do
+    let(:channel) { create(:channel_widget, account: account) }
+    let(:conversation) { create(:conversation, account: account, inbox: channel.inbox) }
+    let(:service) { described_class.new(assistant: assistant, conversation: conversation) }
+    let(:run_result) { double('RunResult') }
+
+    before do
+      allow(Pilot::ReplyLengthBudget).to receive(:for).with(conversation).and_return(100)
+      allow(service).to receive(:build_citation_urls).and_return({})
+    end
+
+    it 'delivers within-budget replies untouched' do
+      structured = Pilot::StructuredReply.new([{ text: 'short reply', citations: [] }])
+
+      expect(Pilot::ReplyShortener).not_to receive(:call)
+
+      expect(service.send(:enforce_length_budget, structured, run_result)).to eq(structured)
+    end
+
+    it 'runs exactly one shortening pass for an over-budget reply and delivers the shortened form' do
+      structured = Pilot::StructuredReply.new([{ text: 'x' * 150, citations: [] }])
+      shortened = Pilot::StructuredReply.new([{ text: 'x' * 50, citations: [] }])
+
+      expect(Pilot::ReplyShortener).to receive(:call).once.with(
+        run_result: run_result,
+        structured_reply: structured,
+        text_budget: 100,
+        citations_enabled: true,
+        model: kind_of(String)
+      ).and_return(shortened)
+
+      expect(service.send(:enforce_length_budget, structured, run_result)).to eq(shortened)
+    end
+
+    it 'raises when the reply still exceeds the budget after shortening' do
+      structured = Pilot::StructuredReply.new([{ text: 'x' * 150, citations: [] }])
+      still_long = Pilot::StructuredReply.new([{ text: 'x' * 120, citations: [] }])
+      allow(Pilot::ReplyShortener).to receive(:call).and_return(still_long)
+
+      expect { service.send(:enforce_length_budget, structured, run_result) }
+        .to raise_error(described_class::Error, /still exceeds the channel length budget/)
+    end
+
+    it 'fails without a rewrite attempt when citation markup alone exceeds the budget' do
+      structured = Pilot::StructuredReply.new([{ text: 'short', citations: [1] }])
+      allow(service).to receive(:build_citation_urls).and_return({ 1 => "https://example.com/#{'a' * 200}" })
+
+      expect(Pilot::ReplyShortener).not_to receive(:call)
+
+      expect { service.send(:enforce_length_budget, structured, run_result) }
+        .to raise_error(described_class::Error, /citations alone exceed/)
+    end
+
+    it 'propagates a shortener invariant violation as a service error' do
+      structured = Pilot::StructuredReply.new([{ text: 'x' * 150, citations: [] }])
+      allow(Pilot::ReplyShortener).to receive(:call).and_raise(Pilot::ReplyShortener::Error, 'part count changed')
+
+      expect { service.send(:enforce_length_budget, structured, run_result) }
+        .to raise_error(Pilot::ReplyShortener::Error, /part count/)
+    end
+
+    it 'does not enforce when no budget applies' do
+      allow(Pilot::ReplyLengthBudget).to receive(:for).with(conversation).and_return(nil)
+      structured = Pilot::StructuredReply.new([{ text: 'x' * 500, citations: [] }])
+
+      expect(Pilot::ReplyShortener).not_to receive(:call)
+
+      expect(service.send(:enforce_length_budget, structured, run_result)).to eq(structured)
+    end
+
+    it 'enforces through perform: an over-budget run reply is shortened before delivery' do
+      allow(Pilot::ReplyLengthBudget).to receive(:for).and_call_original
+      create(:message, account: account, inbox: conversation.inbox, conversation: conversation, content: 'hello')
+      long_reply = 'y' * 11_000
+      fake_result = double('RunResult', output: long_reply, failed?: false, error: nil)
+      fake_runner = double('AgentRunner', on_tool_start: nil, on_chat_created: nil)
+      allow(fake_runner).to receive(:run).and_return(fake_result)
+      allow(Agents::Runner).to receive(:with_agents).and_return(fake_runner)
+      shortened = Pilot::StructuredReply.new([{ text: 'concise answer', citations: [] }])
+      allow(Pilot::ReplyShortener).to receive(:call).and_return(shortened)
+
+      result = service.perform
+
+      expect(Pilot::ReplyShortener).to have_received(:call).once
+      expect(result.reply).to eq('concise answer')
+      expect(result.structured_reply).to eq(shortened)
+    end
+  end
+
   def stub_documentation_results(*rows)
     allow(Custom::Pilot::EmbeddingService).to receive(:new)
       .and_return(instance_double(Custom::Pilot::EmbeddingService, embed: [0.1] * 1536))

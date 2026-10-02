@@ -150,13 +150,7 @@ module Custom
         )
         structured_reply = enforce_length_budget(structured_reply, effective_run_result)
         reply = structured_reply.plain_text
-
-        evaluator = ::Custom::Pilot::HandoverEvaluator.new
-        handover = evaluator.evaluate(assistant_reply: reply, customer_message: last_user,
-                                      invoked_tool_names: invoked_tool_names)
-        # Handover wins over resolution: only treat `[resolved]` as a close
-        # signal when no handover fired this turn.
-        resolution = !handover.handover? && evaluator.resolution?(reply)
+        handover, resolution = evaluate_signals(reply, last_user, invoked_tool_names)
 
         Result.new(
           reply: reply,
@@ -168,6 +162,17 @@ module Custom
           run_result: effective_run_result,
           llm_model: model_for(:autopilot)
         )
+      end
+
+      # Handover/resolution intent, evaluated on the assembled plain text
+      # (sentinel tokens included). Handover wins over resolution: only treat
+      # `[resolved]` as a close signal when no handover fired this turn.
+      def evaluate_signals(reply, last_user, invoked_tool_names)
+        evaluator = ::Custom::Pilot::HandoverEvaluator.new
+        handover = evaluator.evaluate(assistant_reply: reply, customer_message: last_user,
+                                      invoked_tool_names: invoked_tool_names)
+        resolution = !handover.handover? && evaluator.resolution?(reply)
+        [handover, resolution]
       end
 
       # Rewrite-or-fail length enforcement. Measures the fully rendered customer
