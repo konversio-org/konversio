@@ -71,6 +71,9 @@ RSpec.describe Custom::Pilot::Tools::SearchDocumentation do
       # stub the ActiveRecord ordering call.
       allow(Custom::Pilot::EmbeddingService).to receive(:new)
         .and_return(instance_double(Custom::Pilot::EmbeddingService, embed: [0.1] * 1536))
+      # These examples cover the legacy Source-line toggle, which only runs
+      # when structured citations are off (the default is on).
+      assistant.update!(config: assistant.config.merge('feature_citation' => false))
     end
 
     it 'defaults new assistants to citation_behavior "on"' do
