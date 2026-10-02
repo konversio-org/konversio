@@ -82,6 +82,50 @@ RSpec.describe 'Super Admin accounts API', type: :request do
       end
     end
 
+    context 'when re-saving an already suspended account' do
+      before do
+        account.update!(
+          status: :suspended,
+          internal_attributes: {
+            'suspensions' => [{ 'category' => 'spam', 'reason' => 'first note', 'suspended_at' => 1.week.ago.iso8601 }]
+          }
+        )
+      end
+
+      it 'updates the latest event in place without appending' do
+        patch "/super_admin/accounts/#{account.id}",
+              params: suspension_params(suspension_category: 'other', suspension_reason: 'corrected note')
+
+        expect(response).to have_http_status(:redirect)
+        history = account.reload.suspension_history
+        expect(history.size).to eq(1)
+        expect(history.last).to include('category' => 'other', 'reason' => 'corrected note')
+      end
+    end
+
+    context 'when reactivating a suspended account' do
+      before do
+        account.update!(
+          status: :suspended,
+          internal_attributes: {
+            'suspensions' => [{ 'category' => 'spam', 'reason' => 'first note', 'suspended_at' => 1.week.ago.iso8601 }]
+          }
+        )
+      end
+
+      it 'does not require suspension metadata and leaves history unchanged' do
+        history_before = account.suspension_history
+
+        patch "/super_admin/accounts/#{account.id}",
+              params: { account: { name: account.name, locale: account.locale, status: 'active' } }
+
+        expect(response).to have_http_status(:redirect)
+        account.reload
+        expect(account).to be_active
+        expect(account.suspension_history).to eq(history_before)
+      end
+    end
+
     context 'when updating a legacy suspended account with no history' do
       before { account.update!(status: :suspended) }
 
