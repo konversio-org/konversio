@@ -46,6 +46,7 @@ import pilotDocuments from './pilot/documents';
 import pilotFaqs from './pilot/faqs';
 import pilotAutopilot from './pilot/autopilot';
 import pilotCustomTools from './pilot/tools';
+import pilotAgentSessions from './pilot/agentSessions';
 import portals from './modules/helpCenterPortals';
 import reports from './modules/reports';
 import sidebarSortPreferences from './modules/sidebarSortPreferences';
@@ -107,6 +108,7 @@ export default createStore({
     'pilot/faqs': pilotFaqs,
     'pilot/autopilot': pilotAutopilot,
     'pilot/customTools': pilotCustomTools,
+    'pilot/agentSessions': pilotAgentSessions,
     portals,
     reports,
     sidebarSortPreferences,

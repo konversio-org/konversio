@@ -411,6 +411,20 @@
         "DETACH_FAILED": "Failed to detach inbox."
       },
       "CONFIRM_DETACH": "Are you sure you want to detach this inbox? Autopilot will stop replying to customer messages on this channel."
+    },
+    "PILOT_SESSION": {
+      "TRIGGER": "View AI run details",
+      "TITLE": "AI response details",
+      "LOADING": "Loading run details...",
+      "EMPTY": "No run details are available for this message.",
+      "MODEL": "Model",
+      "SOURCES": "Sources cited",
+      "NO_SOURCES": "No knowledge sources were cited.",
+      "USED_FAQS": "Knowledge entries used",
+      "SCENARIOS": "Scenarios involved",
+      "STEPS": "Run steps",
+      "NO_STEPS": "No steps were recorded.",
+      "TOOL_CALL": "Called {tool}"
     }
   }
 }

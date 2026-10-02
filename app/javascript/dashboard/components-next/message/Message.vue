@@ -45,6 +45,7 @@ import WhatsappFlowResponseBubble from './bubbles/WhatsappFlowResponse.vue';
 import WhatsappReferral from './bubbles/Text/WhatsappReferral.vue';
 
 import MessageError from './MessageError.vue';
+import PilotSessionPopover from './PilotSessionPopover.vue';
 import ContextMenu from 'dashboard/modules/conversations/components/MessageContextMenu.vue';
 import { useBranding } from 'shared/composables/useBranding';
 
@@ -193,6 +194,14 @@ const variant = computed(() => {
 
   return variants[props.messageType] || MESSAGE_VARIANTS.USER;
 });
+
+// A Pilot assistant run message: the raw stored sender type is the assistant
+// class, while the serialized sender keeps the legacy bot type.
+const isPilotAssistantMessage = computed(
+  () =>
+    props.senderType === 'Pilot::Assistant' ||
+    props.sender?.type === SENDER_TYPES.PILOT_ASSISTANT
+);
 
 const isBotOrAgentMessage = computed(() => {
   if (props.messageType === MESSAGE_TYPES.ACTIVITY) {
@@ -585,13 +594,22 @@ provideMessageContext({
         />
         <Component :is="componentToRender" />
       </div>
-      <MessageError
-        v-if="contentAttributes.externalError"
-        class="[grid-area:meta]"
+      <div
+        v-if="isPilotAssistantMessage || contentAttributes.externalError"
+        class="[grid-area:meta] flex items-center gap-2"
         :class="flexOrientationClass"
-        :error="contentAttributes.externalError"
-        @retry="emit('retry')"
-      />
+      >
+        <PilotSessionPopover
+          v-if="isPilotAssistantMessage"
+          :message-id="props.id"
+          :created-at="props.createdAt"
+        />
+        <MessageError
+          v-if="contentAttributes.externalError"
+          :error="contentAttributes.externalError"
+          @retry="emit('retry')"
+        />
+      </div>
     </div>
     <div v-if="shouldShowContextMenu" class="context-menu-wrap">
       <ContextMenu
