@@ -73,6 +73,7 @@ module Pilot
 
         @document.update!(
           sync_status: :failed,
+          last_sync_attempted_at: Time.current,
           metadata: (@document.metadata || {}).merge(
             'last_sync_failure_category' => category.to_s,
             'refresh_phase' => nil
