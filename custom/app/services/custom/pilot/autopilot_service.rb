@@ -51,7 +51,7 @@ module Custom
       # API and force every caller (job, controller, specs) to rewrap.
       # rubocop:disable Metrics/ParameterLists
       def initialize(assistant:, conversation: nil, message: nil, message_history: nil, account: nil, source: 'production',
-                     runtime_config: nil, run_callbacks: nil)
+                     runtime_config: nil, run_callbacks: nil, repair_directive: nil, repair_draft: nil)
         # rubocop:enable Metrics/ParameterLists
         @assistant = assistant
         @conversation = conversation
@@ -60,6 +60,8 @@ module Custom
         @source = source.to_s
         @runtime_config = runtime_config
         @run_callbacks = run_callbacks || {}
+        @repair_directive = repair_directive
+        @repair_directive_draft = repair_draft
         super(account: account || assistant&.account)
       end
 
@@ -123,19 +125,31 @@ module Custom
         context = build_context(history_without_last_user(history))
 
         run_result = execute_runner(runner, last_user, context, invoked_tool_names)
+        raise Error, "Pilot autopilot exhausted its turn budget of #{max_turns} turns" if turn_budget_exhausted?(run_result)
         raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
 
         build_result(run_result, last_user, context, invoked_tool_names)
       end
 
+      # Turn-budget exhaustion is a run failure: the runner's partial output
+      # ("Conversation ended: ...") must never reach the customer. Raised here
+      # so the error path in `Pilot::AutopilotInferenceJob` hands the
+      # conversation off to a human instead of delivering a partial answer.
+      def turn_budget_exhausted?(run_result)
+        run_result.error.is_a?(::Agents::Runner::MaxTurnsExceeded)
+      end
+
       # Turns a successful runner result into a `Result`, applying the tool-skip
-      # guard and evaluating handover/resolution on the assembled plain text.
+      # guard, the channel length-budget enforcement, and evaluating
+      # handover/resolution on the assembled plain text of the final reply.
       def build_result(run_result, last_user, context, invoked_tool_names)
         structured_reply = extract_structured_reply(run_result)
-        reply, invoked_tool_names, structured_reply = maybe_force_skipped_tool(
-          reply: structured_reply.plain_text, last_user: last_user, context: context,
-          invoked_tool_names: invoked_tool_names, structured_reply: structured_reply
+        invoked_tool_names, structured_reply, effective_run_result = maybe_force_skipped_tool(
+          last_user: last_user, context: context,
+          invoked_tool_names: invoked_tool_names, structured_reply: structured_reply, run_result: run_result
         )
+        structured_reply = enforce_length_budget(structured_reply, effective_run_result)
+        reply = structured_reply.plain_text
 
         evaluator = ::Custom::Pilot::HandoverEvaluator.new
         handover = evaluator.evaluate(assistant_reply: reply, customer_message: last_user,
@@ -150,10 +164,46 @@ module Custom
           handover: handover,
           resolution: resolution,
           structured_reply: structured_reply,
-          citation_urls: build_citation_urls(run_result),
-          run_result: run_result,
+          citation_urls: build_citation_urls(effective_run_result),
+          run_result: effective_run_result,
           llm_model: model_for(:autopilot)
         )
+      end
+
+      # Rewrite-or-fail length enforcement. Measures the fully rendered customer
+      # message (part texts plus citation link markup) against the channel
+      # budget. Over budget: exactly one shortening pass runs; a reply that
+      # still does not fit — or whose citation markup alone overflows — raises
+      # so the job's error path hands the conversation off. No-ops when no
+      # budget resolves (e.g. playground runs without a conversation).
+      def enforce_length_budget(structured_reply, run_result)
+        budget = reply_length_budget
+        return structured_reply if budget.nil?
+
+        citation_urls = build_citation_urls(run_result)
+        rendered_length = structured_reply.render(citation_urls).length
+        return structured_reply if rendered_length <= budget
+
+        text_budget = budget - (rendered_length - structured_reply.plain_text.length)
+        raise Error, "Reply citations alone exceed the channel length budget of #{budget} characters" unless text_budget.positive?
+
+        shortened = ::Pilot::ReplyShortener.call(
+          run_result: run_result,
+          structured_reply: structured_reply,
+          text_budget: text_budget,
+          citations_enabled: assistant.citations_enabled?,
+          model: model_for(:autopilot)
+        )
+        shortened_length = shortened.render(citation_urls).length
+        raise Error, "Reply still exceeds the channel length budget after shortening (#{shortened_length} > #{budget})" if shortened_length > budget
+
+        shortened
+      end
+
+      def reply_length_budget
+        return @reply_length_budget if defined?(@reply_length_budget)
+
+        @reply_length_budget = ::Pilot::ReplyLengthBudget.for(conversation)
       end
 
       # Fix #2 — deterministic tool-skip guardrail. When the assistant answered
@@ -161,21 +211,21 @@ module Custom
       # handled it, re-run the turn ONCE with that tool forced and adopt the
       # tool-grounded reply. A no-op (returns its inputs unchanged) on the happy
       # path, off-topic turns, handoffs, and any forced-retry failure — the
-      # guard is best-effort and never hard-fails the turn.
-      def maybe_force_skipped_tool(reply:, last_user:, context:, invoked_tool_names:, structured_reply:)
+      # guard is best-effort and never hard-fails the turn. Returns the tool
+      # names, structured reply, and run result the rest of the turn should use.
+      def maybe_force_skipped_tool(last_user:, context:, invoked_tool_names:, structured_reply:, run_result:)
         decision = ::Custom::Pilot::ToolSkipGuard.new(assistant: assistant).evaluate(
           customer_message: last_user,
           invoked_tool_names: invoked_tool_names
         )
-        return [reply, invoked_tool_names, structured_reply] unless decision.retry?
+        return [invoked_tool_names, structured_reply, run_result] unless decision.retry?
 
         forced_invoked = []
         forced_runner = build_runner(forced_invoked, forced_tool: decision.forced_tool_slug)
         forced_result = execute_runner(forced_runner, last_user, context, forced_invoked)
-        return [reply, invoked_tool_names, structured_reply] if forced_result.failed?
+        return [invoked_tool_names, structured_reply, run_result] if forced_result.failed?
 
-        forced_structured = extract_structured_reply(forced_result)
-        [forced_structured.plain_text, forced_invoked, forced_structured]
+        [forced_invoked, extract_structured_reply(forced_result), forced_result]
       end
 
       def execute_runner(runner, last_user, context, invoked_tool_names)
@@ -290,11 +340,41 @@ module Custom
           guardrails_section,
           'Use the `search_documentation` tool whenever the user asks a factual or product question.',
           citation_policy,
+          length_budget_section,
           custom_tools_policy,
           playground_knowledge_section,
+          repair_directive_section,
           handover_policy,
+          commitments_policy,
           closing_policy
         ].compact.join("\n\n")
+      end
+
+      # Channel length budget disclosure. Telling the model the budget at
+      # generation time keeps the common case out of the rewrite-or-fail path.
+      # Nil (and dropped) when no budget resolves — e.g. playground runs.
+      def length_budget_section
+        budget = reply_length_budget
+        return nil if budget.nil?
+
+        <<~BUDGET.strip
+          Reply length limit — follow exactly:
+
+          This conversation happens on a channel that accepts at most #{budget} characters per message. Keep your whole reply within #{budget} characters, formatting included. If a complete answer cannot fit, give the most important points briefly rather than leaving the reply unfinished.
+        BUDGET
+      end
+
+      # Guard-repair runs only: the previous draft was withheld by the reply
+      # integrity guard, so this run must produce a verifiable replacement.
+      # Marked internal; never shown to the customer.
+      def repair_directive_section
+        return nil if @repair_directive.blank?
+
+        <<~REPAIR.strip
+          Internal revision directive — never shown to the customer:
+
+          #{@repair_directive}
+        REPAIR
       end
 
       # Playground-only: inject the tester-supplied knowledge snippet into every
@@ -417,28 +497,49 @@ module Custom
         "#{heading}:\n#{list.map { |item| "- #{item}" }.join("\n")}"
       end
 
+      # Consent-first handoff protocol. A real handoff may execute only on an
+      # explicit customer request, an accepted offer, or a guideline/guardrail
+      # mandate (which overrides the consent defaults). Offers are limited to
+      # genuinely stuck conversations, and the model must never claim a
+      # transfer it did not execute via the sentinel token.
       def handover_policy
         return handover_pending_policy if handoff_already_requested?
 
         sentinel = ::Custom::Pilot::HandoverEvaluator::HANDOVER_SENTINEL
         <<~HANDOVER.strip
-          Scope and escalation policy — follow exactly:
+          Scope and handoff consent policy — follow exactly:
 
-          Stay inside your configured role and guardrails. Only state product facts that come from `search_documentation` results. If a message is off-topic, personal, or outside your scope, briefly and politely decline and steer the user back to what you can help with — follow your guardrails. Declining an out-of-scope message is NOT an escalation and must NOT end with the token below.
+          Stay inside your configured role and guardrails. Only state product facts that come from `search_documentation` results. If a message is off-topic, personal, or outside your scope, briefly and politely decline and steer the user back to what you can help with — follow your guardrails. Declining an out-of-scope message is NOT a handoff and must NOT end with the token below.
 
-          When you cannot answer a genuine in-scope question from `search_documentation`, ask one focused clarifying question before doing anything else. A single missed lookup is not a reason to escalate.
+          When you cannot answer a genuine in-scope question from `search_documentation`, ask one focused clarifying question before doing anything else. A single missed lookup is never a reason to involve a human.
 
-          Escalate to a human ONLY when one of these is true:
-            1. The user explicitly asks for a human, agent, operator, or live person — directly or indirectly (e.g. "speak to a human", "real person", "I need someone", "talk to a person").
-            2. The user has a genuine in-scope need you still cannot resolve after consulting documentation and asking your clarifying question.
-            3. The request needs an action, permission, or expertise you do not have.
-            4. Repeated attempts to help have already failed.
+          Offering a human: you may offer to connect the customer with a human only when they are genuinely stuck — they repeat the same request after your clarifying question, reject the clarification path, the request needs an action, permission, or expertise you do not have, or several genuine attempts to help have already failed. Never make that offer as your first response to a question you simply have not answered yet.
 
-          To escalate you MUST end your reply with the literal token `#{sentinel}`. The system parses this token to transfer the conversation to a human; without it your reply is sent as a normal message and the user stays with you. Format an escalation as ONE short sentence followed by the token, e.g.:
+          Executing a handoff: transfer the conversation to a human ONLY when one of these is true:
+            1. The customer explicitly asks for a human, agent, operator, or live person — directly or indirectly.
+            2. The customer accepts an offer you made to connect them with a human.
+            3. A response guideline or guardrail configured above mandates a transfer for the situation at hand. Such a mandate overrides every other rule in this section and needs no customer request.
+
+          To execute the handoff you MUST end your reply with the literal token `#{sentinel}`. The system parses this token to perform the transfer; without it your reply is sent as a normal message and the customer stays with you. Format a handoff as ONE short sentence followed by the token, e.g.:
             Let me get a human to help with that. #{sentinel}
+
+          Honesty about transfers: never tell the customer they have been transferred, escalated, or connected to a human — and never say a teammate has been notified or will take over — unless you ended that very reply with the token above. Claiming a transfer that did not happen is strictly forbidden.
 
           Never invent fallbacks: do not mention a "reception", "front desk", "support page", "contact form", "FAQ section", "knowledge base", URL, email, phone number, or category that did not come from a tool result. Do not apologise at length or list topics.
         HANDOVER
+      end
+
+      # No unkeepable promises: the model may only describe actions it
+      # completed within the current turn via a tool; anything that would
+      # happen after the reply is sent is off-limits.
+      def commitments_policy
+        <<~COMMITMENTS.strip
+          Commitments — follow exactly:
+
+          Never promise work that would happen after your reply is sent. Do not say you will check on something later, monitor or track anything, follow up, get back to the customer, or notify, email, or call them — and do not commit to escalating, refunding, cancelling, booking, or changing anything — unless you complete that action right now, in this turn, using an available tool, before describing it as done.
+
+          When you cannot settle the customer's request in this turn, do exactly one of these instead: answer from what you can verify now, ask one concrete clarifying question, or offer to connect the customer with a human (without claiming a transfer has already happened).
+        COMMITMENTS
       end
 
       # When a handoff has already been requested, the conversation is
@@ -530,12 +631,16 @@ module Custom
       end
 
       def build_context(prior_history)
+        history = prior_history.map { |h| { role: h[:role].to_sym, content: h[:content] } }
+        # Guard-repair runs: the withheld draft rides at the end of the run
+        # context so the model can see exactly what it must not repeat.
+        history << { role: :assistant, content: @repair_directive_draft } if @repair_directive_draft.present?
         {
           session_id: "#{assistant.account_id}_#{conversation&.display_id || SecureRandom.hex(4)}",
           account_id: assistant.account_id,
           assistant_id: assistant.id,
           conversation_id: conversation&.display_id,
-          conversation_history: prior_history.map { |h| { role: h[:role].to_sym, content: h[:content] } },
+          conversation_history: history,
           state: build_state
         }
       end
