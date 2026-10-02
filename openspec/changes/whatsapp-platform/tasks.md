@@ -2,7 +2,7 @@
 
 ### Backend
 
-1. - [ ] **Campaign lifecycle (MIT port)** — port `app/models/campaign.rb` changes: add `processing` to `campaign_status`, `started_at`/`completed_at` columns (migration), `trigger!` guard with `with_lock` (`mark_processing!`), `set_completed_at` callback; drop the `include_mod_with` trailer.
+1. - [x] **Campaign lifecycle (MIT port)** — port `app/models/campaign.rb` changes: add `processing` to `campaign_status`, `started_at`/`completed_at` columns (migration), `trigger!` guard with `with_lock` (`mark_processing!`), `set_completed_at` callback; drop the `include_mod_with` trailer.
 2. - [ ] **Campaign template variables (MIT port)** — port `app/services/whatsapp/liquid_template_processor_service.rb`, `app/services/whatsapp/template_content_renderer_service.rb`, and the `template_processor_service.rb` changes (named vs positional body params, TEXT header params); verify required drops (`ContactDrop`, `UserDrop`, `InboxDrop`, `AccountDrop`) exist, port if missing.
 3. - [ ] **BSUID regexes (MIT port)** — add `WHATSAPP_BSUID_PATTERN`/`_REGEX`, `WHATSAPP_WAMID_TOKEN_PATTERN`/`_REGEX`, and the updated `TWILIO_CHANNEL_WHATSAPP_REGEX`/`WHATSAPP_CHANNEL_REGEX` to `lib/regex_helper.rb`.
 4. - [ ] **Identity services (MIT port)** — port `app/services/whatsapp/incoming_message_identifier_helper.rb`, `identifier_sync_service.rb`, `identity_source_id_orderer.rb`, `user_id_rotation_service.rb`, `in_reply_to_message_finder.rb`, `webhook_channel_finder_service.rb`, `contact_inbox_source_id_resolver.rb`, plus `phone_normalizers/*` and `phone_number_normalization_service.rb` changes; wire into `incoming_message_base_service.rb` / `incoming_message_whatsapp_cloud_service.rb` per upstream.
