@@ -25,6 +25,76 @@ RSpec.describe 'Super Admin accounts API', type: :request do
     end
   end
 
+  describe 'PATCH /super_admin/accounts/{account_id}' do
+    before { sign_in(super_admin, scope: :super_admin) }
+
+    def suspension_params(overrides = {})
+      {
+        account: {
+          name: account.name,
+          locale: account.locale,
+          status: 'suspended'
+        }.merge(overrides)
+      }
+    end
+
+    context 'when suspending an active account' do
+      it 'requires a suspension category' do
+        patch "/super_admin/accounts/#{account.id}", params: suspension_params(suspension_reason: 'Abusive usage')
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(account.reload).to be_active
+        expect(account.suspension_history).to be_empty
+      end
+
+      it 'requires a suspension reason' do
+        patch "/super_admin/accounts/#{account.id}", params: suspension_params(suspension_category: 'spam')
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(account.reload).to be_active
+      end
+
+      it 'rejects a reason longer than 256 characters' do
+        patch "/super_admin/accounts/#{account.id}",
+              params: suspension_params(suspension_category: 'spam', suspension_reason: 'a' * 257)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(account.reload).to be_active
+      end
+
+      it 'rejects a category outside the allowed list' do
+        patch "/super_admin/accounts/#{account.id}",
+              params: suspension_params(suspension_category: 'made_up', suspension_reason: 'Abusive usage')
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(account.reload).to be_active
+      end
+
+      it 'suspends the account and records the suspension in history' do
+        patch "/super_admin/accounts/#{account.id}",
+              params: suspension_params(suspension_category: 'spam', suspension_reason: 'Abusive usage')
+
+        expect(response).to have_http_status(:redirect)
+        account.reload
+        expect(account).to be_suspended
+        expect(account.suspension_history.last).to include('category' => 'spam', 'reason' => 'Abusive usage')
+        expect(account.suspension_history.last['suspended_at']).to be_present
+      end
+    end
+
+    context 'when updating a legacy suspended account with no history' do
+      before { account.update!(status: :suspended) }
+
+      it 'does not require metadata' do
+        patch "/super_admin/accounts/#{account.id}",
+              params: { account: { name: 'Renamed account', locale: account.locale, status: 'suspended' } }
+
+        expect(response).to have_http_status(:redirect)
+        expect(account.reload.name).to eq('Renamed account')
+      end
+    end
+  end
+
   describe 'POST /super_admin/accounts/{account_id}/reset_cache' do
     before do
       create(:label, account: account)

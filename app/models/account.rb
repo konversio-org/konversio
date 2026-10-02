@@ -40,6 +40,9 @@ class Account < ApplicationRecord
     flag_query_mode: :bit_operator,
     check_for_column: false
   }.freeze
+  SUSPENSION_CATEGORIES = %w[spam non_payment other].freeze
+
+  attr_accessor :suspension_category, :suspension_reason
 
   validates :name, presence: true
   validates :domain, length: { maximum: 100 }
@@ -147,6 +150,10 @@ class Account < ApplicationRecord
 
   def api_and_webhooks_enabled?
     !suspended?
+  end
+
+  def suspension_history
+    internal_attributes['suspensions'] || []
   end
 
   def inbound_email_domain

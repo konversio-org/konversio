@@ -38,6 +38,21 @@ en:
       accounts:
         selected_feature_flags: Feature Access
   super_admin:
+    account_suspension:
+      categories:
+        spam: 'Spam'
+        non_payment: 'Non-payment'
+        other: 'Other'
+      form:
+        category: 'Suspension category'
+        category_prompt: 'Select a category'
+        reason: 'Suspension reason'
+        reason_hint: 'Enter a reason of up to 256 characters.'
+      history:
+        suspended_at: 'Suspended at'
+        category: 'Category'
+        reason: 'Reason'
+        empty: 'No suspension history recorded.'
     account_features:
       disabled: Disabled
       enabled: Enabled
@@ -62,8 +77,13 @@ en:
     saml_not_available: SAML authentication is not available in this installation.
     inbox_deletetion_response: Your inbox deletion request will be processed in some time.
 
+  profile_settings:
+    sessions:
+      cannot_revoke_current: You cannot revoke the current session.
+
   errors:
     account:
+      email_limit_exceeded: The daily email limit for this account has been reached
       reporting_timezone:
         invalid: is not a valid timezone
       support_email:
