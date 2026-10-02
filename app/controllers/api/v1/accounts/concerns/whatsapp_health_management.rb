@@ -16,6 +16,20 @@ module Api::V1::Accounts::Concerns::WhatsappHealthManagement
     render status: :internal_server_error, json: { error: e.message }
   end
 
+  def message_templates
+    unless whatsapp_channel?
+      return render status: :unprocessable_entity, json: { error: 'Message templates are only available for WhatsApp channels' }
+    end
+
+    templates, last_sync_attempt_at, name_key = message_template_data
+    templates = templates.select { |template| template[name_key] == params[:name] } if params[:name].present?
+
+    render json: {
+      payload: templates,
+      meta: { last_sync_attempt_at: last_sync_attempt_at }
+    }
+  end
+
   def health
     health_data = Whatsapp::HealthService.new(@inbox.channel).fetch_health_status
     render json: health_data
@@ -51,5 +65,11 @@ module Api::V1::Accounts::Concerns::WhatsappHealthManagement
     elsif @inbox.twilio? && @inbox.channel.whatsapp?
       Channels::Twilio::TemplatesSyncJob.perform_later(@inbox.channel)
     end
+  end
+
+  def message_template_data
+    return [@inbox.channel.message_templates.presence || [], @inbox.channel.message_templates_last_updated, 'name'] unless @inbox.twilio_whatsapp?
+
+    [@inbox.channel.content_templates&.dig('templates') || [], @inbox.channel.content_templates_last_updated, 'friendly_name']
   end
 end
