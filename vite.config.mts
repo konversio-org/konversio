@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
 import ruby from 'vite-plugin-ruby';
 import vue from '@vitejs/plugin-vue';
 import yaml from '@rollup/plugin-yaml';
-import { aliases, vueOptions } from './vite.shared';
+import { aliases, vueOptions } from './config/vite/shared';
 
 const isTestMode = process.env.TEST === 'true';
 
@@ -61,7 +61,7 @@ export default defineConfig({
         inline: ['tinykeys', '@material/mwc-icon'],
       },
     },
-    setupFiles: ['fake-indexeddb/auto', 'vitest.setup.js'],
+    setupFiles: ['fake-indexeddb/auto', 'config/test/setup.js'],
     mockReset: true,
     clearMocks: true,
   },

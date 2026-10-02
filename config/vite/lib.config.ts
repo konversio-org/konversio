@@ -5,14 +5,14 @@
  * as a single IIFE file (`inlineDynamicImports: true`), which is incompatible
  * with multiple entrypoints. So the SDK gets its own pipeline:
  *
- *   vite build --config vite.lib.config.ts  → public/packs/js/sdk.js
+ *   vite build --config config/vite/lib.config.ts  → public/packs/js/sdk.js
  *
  * The `assets:precompile` rake task runs this alongside the main app build.
  */
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 import { defineConfig, type Plugin } from 'vite';
 import path from 'path';
-import { aliases } from './vite.shared';
+import { aliases } from './shared';
 
 const compressedSdkPlugin = {
   name: 'compress-sdk',
@@ -55,7 +55,7 @@ export default defineConfig({
       },
     },
     lib: {
-      entry: path.resolve(__dirname, './app/javascript/entrypoints/sdk.js'),
+      entry: path.resolve(__dirname, '../../app/javascript/entrypoints/sdk.js'),
       formats: ['iife'],
       name: 'sdk',
     },

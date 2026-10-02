@@ -1,17 +1,17 @@
 import path from 'path';
 import { defineConfig, type PluginOption } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { aliases } from './vite.shared';
+import { aliases } from './shared';
 
 export default defineConfig({
   plugins: [
     visualizer({
-      filename: path.resolve(__dirname, 'tmp/bundle-analysis/sdk.html'),
+      filename: path.resolve(__dirname, '../../tmp/bundle-analysis/sdk.html'),
       title: 'Konversio SDK bundle analysis',
       template: 'treemap',
       gzipSize: true,
       brotliSize: true,
-      projectRoot: __dirname,
+      projectRoot: path.resolve(__dirname, '../..'),
     }) as PluginOption,
   ],
   build: {
@@ -25,7 +25,7 @@ export default defineConfig({
       },
     },
     lib: {
-      entry: path.resolve(__dirname, './app/javascript/entrypoints/sdk.js'),
+      entry: path.resolve(__dirname, '../../app/javascript/entrypoints/sdk.js'),
       formats: ['iife'],
       name: 'sdk',
     },

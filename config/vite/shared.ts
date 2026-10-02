@@ -11,7 +11,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // PR bumps lit or ninja-keys.
 const litPath = path.resolve(
   __dirname,
-  'node_modules/.pnpm/lit@2.2.6/node_modules/lit'
+  '../../node_modules/.pnpm/lit@2.2.6/node_modules/lit'
 );
 
 export const aliases = {

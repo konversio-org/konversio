@@ -36,7 +36,7 @@ run:
 	@if [ -f ./.overmind.sock ]; then \
 		echo "Overmind is already running. Use 'make force_run' to start a new instance."; \
 	else \
-		overmind start -f Procfile.dev; \
+		overmind start -f config/procfiles/dev; \
 	fi
 
 force_run:
@@ -46,13 +46,13 @@ force_run:
 	@rm -f ./.overmind.sock
 	@rm -f tmp/pids/*.pid
 	@echo "Cleanup complete"
-	overmind start -f Procfile.dev
+	overmind start -f config/procfiles/dev
 
 force_run_tunnel:
 	lsof -ti:3000 | xargs kill -9 2>/dev/null || true
 	rm -f ./.overmind.sock
 	rm -f tmp/pids/*.pid
-	overmind start -f Procfile.tunnel
+	overmind start -f config/procfiles/tunnel
 
 debug:
 	overmind connect backend
