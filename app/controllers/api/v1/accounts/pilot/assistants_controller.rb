@@ -15,7 +15,13 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   end
 
   def update
-    @assistant.update!(assistant_params.except(:avatar_url))
+    @assistant.with_lock do
+      attrs = assistant_params.except(:avatar_url)
+      # Merge partial config updates over the persisted config (inside the
+      # lock) so concurrent edits to different keys don't clobber each other.
+      attrs[:config] = @assistant.config.deep_merge(attrs[:config].to_unsafe_h) if attrs[:config].present?
+      @assistant.update!(attrs)
+    end
     process_avatar_from_url
   end
 

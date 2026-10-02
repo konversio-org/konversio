@@ -58,6 +58,13 @@ class Pilot::CustomTool < ApplicationRecord
     }
   end
 
+  # Number of enabled scenarios still referencing this tool's slug. Drives
+  # the confirm-before-disable flow: disabling never strips the reference, so
+  # re-enabling the tool restores behavior without any scenario edit.
+  def referencing_enabled_scenarios_count
+    account.pilot_scenarios.enabled.where('tools @> ?', [slug].to_json).count
+  end
+
   private
 
   def generate_slug

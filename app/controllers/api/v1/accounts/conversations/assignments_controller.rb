@@ -28,6 +28,13 @@ class Api::V1::Accounts::Conversations::AssignmentsController < Api::V1::Account
       render partial: 'api/v1/models/agent', formats: [:json], locals: { resource: resource }
     when AgentBot
       render partial: 'api/v1/models/agent_bot_slim', formats: [:json], locals: { resource: resource }
+    when Pilot::Assistant
+      render json: {
+        id: resource.id,
+        name: resource.name,
+        avatar_url: resource.avatar_url.presence || resource.default_avatar_url,
+        assignee_type: 'Pilot::Assistant'
+      }
     else
       render json: nil
     end

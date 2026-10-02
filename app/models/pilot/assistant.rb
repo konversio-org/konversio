@@ -25,6 +25,7 @@ class Pilot::Assistant < ApplicationRecord
   self.table_name = 'pilot_assistants'
 
   include Avatarable
+  include PilotAssistantLifecycle
 
   # Assistant avatars are fit-and-padded (never cropped) into a transparent
   # 250x250 PNG. Centralised so the model, controller, and prewarm job all
