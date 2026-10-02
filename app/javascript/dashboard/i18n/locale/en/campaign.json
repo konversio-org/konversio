@@ -89,7 +89,8 @@
       "CARD": {
         "STATUS": {
           "COMPLETED": "Completed",
-          "SCHEDULED": "Scheduled"
+          "SCHEDULED": "Scheduled",
+          "PROCESSING": "Processing"
         },
         "CAMPAIGN_DETAILS": {
           "SENT_FROM": "Sent from",
@@ -152,7 +153,8 @@
         "CAMPAIGN_DETAILS": {
           "SENT_FROM": "Sent from",
           "ON": "on"
-        }
+        },
+        "ANALYTICS": "View analytics"
       },
       "CREATE": {
         "TITLE": "Create WhatsApp campaign",
@@ -199,6 +201,32 @@
             "ERROR_MESSAGE": "There was an error. Please try again."
           }
         }
+      },
+      "ANALYTICS_DASHBOARD": {
+        "TITLE": "Campaign analytics",
+        "ERROR": "Could not load campaign analytics. Please try again.",
+        "LOADING": "Loading analytics",
+        "METRICS": {
+          "AUDIENCE": "Audience",
+          "SENT": "Sent",
+          "DELIVERED": "Delivered",
+          "READ": "Read",
+          "FAILED": "Failed",
+          "SKIPPED": "Skipped"
+        },
+        "BREAKDOWN": "Recipients by status",
+        "FILTERS": {
+          "ALL": "All statuses"
+        },
+        "TABLE": {
+          "CONTACT": "Contact",
+          "PHONE": "Phone",
+          "STATUS": "Status",
+          "ERROR": "Error"
+        },
+        "EMPTY": "No recipients match this filter.",
+        "PREV": "Previous",
+        "NEXT": "Next"
       }
     },
     "CONFIRM_DELETE": {

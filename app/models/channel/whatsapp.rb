@@ -8,13 +8,17 @@
 #  phone_number                   :string           not null
 #  provider                       :string           default("default")
 #  provider_config                :jsonb
+#  phone_number_health            :jsonb            not null
+#  phone_number_health_checked_at :datetime
+#  phone_number_health_error      :string
 #  created_at                     :datetime         not null
 #  updated_at                     :datetime         not null
 #  account_id                     :integer          not null
 #
 # Indexes
 #
-#  index_channel_whatsapp_on_phone_number  (phone_number) UNIQUE
+#  index_channel_whatsapp_on_phone_number                    (phone_number) UNIQUE
+#  index_channel_whatsapp_on_phone_number_health_checked_at  (phone_number_health_checked_at)
 #
 
 class Channel::Whatsapp < ApplicationRecord
@@ -60,8 +64,20 @@ class Channel::Whatsapp < ApplicationRecord
   delegate :media_url, to: :provider_service
   delegate :api_headers, to: :provider_service
 
-  def setup_webhooks
-    perform_webhook_setup
+  # Konversio is self-hosted: the channel's own API key is always the template access token.
+  # The upstream Chatwoot Cloud business-management-token branch is out of scope.
+  def template_access_token
+    provider_config['api_key']
+  end
+
+  def send_contact_info_request(identifier, message)
+    raise NotImplementedError, 'Contact information requests require a WhatsApp Cloud provider' unless provider == 'whatsapp_cloud'
+
+    Whatsapp::Providers::WhatsappCloudContactInfoRequestService.perform(self, identifier, message)
+  end
+
+  def setup_webhooks(is_coexistence: nil)
+    perform_webhook_setup(is_coexistence: is_coexistence)
   rescue StandardError => e
     Rails.logger.error "[WHATSAPP] Webhook setup failed: #{e.message}"
     prompt_reauthorization!
@@ -77,11 +93,12 @@ class Channel::Whatsapp < ApplicationRecord
     errors.add(:provider_config, 'Invalid Credentials') unless provider_service.validate_provider_config?
   end
 
-  def perform_webhook_setup
-    business_account_id = provider_config['business_account_id']
-    api_key = provider_config['api_key']
+  def perform_webhook_setup(is_coexistence: nil)
+    webhook_setup_service(is_coexistence: is_coexistence).perform
+  end
 
-    Whatsapp::WebhookSetupService.new(self, business_account_id, api_key).perform
+  def webhook_setup_service(is_coexistence: nil)
+    Whatsapp::WebhookSetupService.new(self, provider_config['business_account_id'], provider_config['api_key'], is_coexistence: is_coexistence)
   end
 
   def teardown_webhooks
@@ -89,8 +106,9 @@ class Channel::Whatsapp < ApplicationRecord
   end
 
   def should_auto_setup_webhooks?
-    # Only auto-setup webhooks for whatsapp_cloud provider with manual setup
-    # Embedded signup calls setup_webhooks explicitly in EmbeddedSignupService
-    provider == 'whatsapp_cloud' && provider_config['source'] != 'embedded_signup'
+    # Embedded signup and Manual V2 run webhook setup explicitly so their API
+    # responses can reflect the real result instead of swallowing callback errors.
+    explicitly_configured_sources = %w[embedded_signup manual_setup_v2]
+    provider == 'whatsapp_cloud' && explicitly_configured_sources.exclude?(provider_config['source'])
   end
 end
