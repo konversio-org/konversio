@@ -27,9 +27,10 @@ export default {
     },
   },
   setup() {
-    const { agentsList } = useAgentsList();
+    const { agentsList, aiAssigneesList } = useAgentsList();
     return {
       agentsList,
+      aiAssigneesList,
     };
   },
   data() {
@@ -95,11 +96,15 @@ export default {
           .dispatch('assignAgent', {
             conversationId: this.currentChat.id,
             agentId,
+            assigneeType: agent?.assignee_type,
           })
           .then(() => {
             useAlert(this.$t('CONVERSATION.CHANGE_AGENT'));
           });
       },
+    },
+    agentOptions() {
+      return [...this.agentsList, ...this.aiAssigneesList];
     },
     assignedTeam: {
       get() {
@@ -231,7 +236,7 @@ export default {
         </template>
       </ContactDetailsItem>
       <MultiselectDropdown
-        :options="agentsList"
+        :options="agentOptions"
         :selected-item="assignedAgent"
         :multiselector-title="$t('AGENT_MGMT.MULTI_SELECTOR.TITLE.AGENT')"
         :multiselector-placeholder="$t('AGENT_MGMT.MULTI_SELECTOR.PLACEHOLDER')"

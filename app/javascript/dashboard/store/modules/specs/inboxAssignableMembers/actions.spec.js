@@ -19,6 +19,10 @@ describe('#actions', () => {
           types.SET_INBOX_ASSIGNABLE_AGENTS,
           { inboxId: '1', members: agentsData },
         ],
+        [
+          types.SET_INBOX_ASSIGNABLE_AI_ASSIGNEES,
+          { inboxId: '1', members: [] },
+        ],
         [types.SET_INBOX_ASSIGNABLE_AGENTS_UI_FLAG, { isFetching: false }],
       ]);
     });
