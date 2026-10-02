@@ -15,7 +15,6 @@ class Pilot::FaqSuggestion < ApplicationRecord
   belongs_to :account
   has_many :observations,
            class_name: 'Pilot::FaqObservation',
-           foreign_key: :faq_suggestion_id,
            inverse_of: :faq_suggestion,
            dependent: :delete_all
 

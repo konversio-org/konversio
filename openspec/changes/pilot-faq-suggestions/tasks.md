@@ -16,20 +16,20 @@
 
 ### Frontend
 
-12. - [ ] **API client** — `app/javascript/dashboard/api/pilot/faqSuggestions.js`: account-scoped client with `get` (page, search, assistantId, status default `open`, abort signal), `show`, `update`, `approve`, `dismiss`.
-13. - [ ] **Store module** — `app/javascript/dashboard/store/pilot/faqSuggestions/` (follow the existing pilot store factory pattern): records/meta/ui flags, `fetchOpenCount` (page-1 open query, stores `meta.total_count`, stale-request guard), `approve`/`dismiss` removing the record locally.
-14. - [ ] **Suggestions page** — list page for an assistant's open suggestions: debounced search, pagination, per-card question/answer/source-count display, quick approve/dismiss, review-dialog launcher; URL query kept in sync with page/search; route registration under the pilot routes file.
-15. - [ ] **Review dialog** — editable question/answer (required, trimmed), loads `show` for the source-conversation list (each row deep-links to the conversation), save / approve / dismiss actions, error and success alerts via i18n.
-16. - [ ] **Entry point** — on the FAQs page (`app/javascript/dashboard/components-next/pilot/faqs/PilotFaqsPage.vue`), show a banner with the open-suggestion count linking to the suggestions page; fetch the count when the selected assistant changes.
-17. - [ ] **i18n** — English-only strings in `en.json` for the new page, dialog, banner, and alerts.
+12. - [x] **API client** — `app/javascript/dashboard/api/pilot/faqSuggestions.js`: account-scoped client with `get` (page, search, assistantId, status default `open`, abort signal), `show`, `update`, `approve`, `dismiss`.
+13. - [x] **Store module** — `app/javascript/dashboard/store/pilot/faqSuggestions/` (follow the existing pilot store factory pattern): records/meta/ui flags, `fetchOpenCount` (page-1 open query, stores `meta.total_count`, stale-request guard), `approve`/`dismiss` removing the record locally.
+14. - [x] **Suggestions page** — list page for an assistant's open suggestions: debounced search, pagination, per-card question/answer/source-count display, quick approve/dismiss, review-dialog launcher; URL query kept in sync with page/search; route registration under the pilot routes file.
+15. - [x] **Review dialog** — editable question/answer (required, trimmed), loads `show` for the source-conversation list (each row deep-links to the conversation), save / approve / dismiss actions, error and success alerts via i18n.
+16. - [x] **Entry point** — on the FAQs page (`app/javascript/dashboard/components-next/pilot/faqs/PilotFaqsPage.vue`), show a banner with the open-suggestion count linking to the suggestions page; fetch the count when the selected assistant changes.
+17. - [x] **i18n** — English-only strings in `en.json` for the new page, dialog, banner, and alerts.
 
 ### Validation
 
-18. - [ ] **Model specs** — suggestion enum/validation/embedding-refresh behavior; observation validations (attached requires same-account suggestion); partial unique index behavior.
-19. - [ ] **Job/routing specs** — extend `spec/jobs/pilot/conversations/faq_mining_job_spec.rb`: routing to discard (approved match, dismissed match), attach with source_count increment, create-new path, idempotent re-mining of the same conversation, judgment-failure raises, non-open/conflict re-route.
-20. - [ ] **Approval service spec** — converts to approved response with edits applied, refuses non-open, atomic under concurrency.
-21. - [ ] **Request specs** — index filters/pagination/search, show observation scoping for non-admin agents, update/approve/dismiss open-only enforcement, finder scoping (agent sees only suggestions observed in accessible conversations).
-22. - [ ] **Frontend specs** — store module actions; suggestions page fetch/search/pagination; review dialog save/approve/dismiss flows (mirror the existing pilot component spec conventions).
+18. - [x] **Model specs** — suggestion enum/validation/embedding-refresh behavior; observation validations (attached requires same-account suggestion); partial unique index behavior.
+19. - [x] **Job/routing specs** — extend `spec/jobs/pilot/conversations/faq_mining_job_spec.rb`: routing to discard (approved match, dismissed match), attach with source_count increment, create-new path, idempotent re-mining of the same conversation, judgment-failure raises, non-open/conflict re-route.
+20. - [x] **Approval service spec** — converts to approved response with edits applied, refuses non-open, atomic under concurrency.
+21. - [x] **Request specs** — index filters/pagination/search, show observation scoping for non-admin agents, update/approve/dismiss open-only enforcement, finder scoping (agent sees only suggestions observed in accessible conversations).
+22. - [x] **Frontend specs** — store module actions; suggestions page fetch/search/pagination; review dialog save/approve/dismiss flows (mirror the existing pilot component spec conventions).
 23. - [ ] **Manual smoke test** — enable `feature_faq` on an assistant, resolve a conversation with human replies, verify an open suggestion with one observation appears; resolve a similar conversation, verify source_count increments instead of a new record; dismiss, resolve a similar conversation, verify no new suggestion; approve with an edit, verify the approved FAQ appears in the knowledge base.
 
 ## Dependencies / Order

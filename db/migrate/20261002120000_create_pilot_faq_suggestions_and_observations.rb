@@ -1,5 +1,12 @@
 class CreatePilotFaqSuggestionsAndObservations < ActiveRecord::Migration[7.1]
   def change
+    create_suggestions_table
+    create_observations_table
+  end
+
+  private
+
+  def create_suggestions_table
     create_table :pilot_faq_suggestions do |t|
       t.string :question, null: false
       t.text :answer, null: false
@@ -15,7 +22,9 @@ class CreatePilotFaqSuggestionsAndObservations < ActiveRecord::Migration[7.1]
       t.index :assistant_id, name: 'index_pilot_faq_suggestions_on_assistant_id'
       t.index :embedding, name: 'vector_idx_pilot_faq_suggestions_embedding', using: :ivfflat, opclass: :vector_cosine_ops
     end
+  end
 
+  def create_observations_table
     create_table :pilot_faq_observations do |t|
       t.bigint :account_id, null: false
       t.bigint :conversation_id, null: false

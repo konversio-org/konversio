@@ -177,6 +177,7 @@ Rails/SkipsModelValidations:
     - 'app/jobs/pilot/conversations/faq_mining_job.rb'
     - 'app/jobs/pilot/documents/sync_scheduler_job.rb'
     - 'app/jobs/pilot/update_embedding_job.rb'
+    - 'app/jobs/pilot/update_faq_suggestion_embedding_job.rb'
     - 'db/migrate/20260519220000_enable_pilot_flags_by_default.rb'
     - 'db/migrate/20260520163000_unify_feature_flags_to_jsonb.rb'
     - 'spec/builders/email/reply_to_builder_spec.rb'
