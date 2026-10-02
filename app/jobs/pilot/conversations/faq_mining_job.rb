@@ -119,7 +119,8 @@ module Pilot
         language = ::Pilot::FaqSuggestion.language_for(conversation)
         matcher = ::Custom::Pilot::FaqSuggestionMatcher.new(assistant: assistant, account: assistant.account)
         pairs.each do |pair|
-          route_candidate(matcher, assistant, conversation, pair_value(pair, :question), pair_value(pair, :answer), language)
+          candidate = { question: pair_value(pair, :question), answer: pair_value(pair, :answer) }
+          route_candidate(matcher, assistant, conversation, candidate, language)
         end
       end
 
@@ -129,21 +130,21 @@ module Pilot
         pair[key] || pair[key.to_s]
       end
 
-      def route_candidate(matcher, assistant, conversation, question, answer, language)
+      def route_candidate(matcher, assistant, conversation, candidate, language)
         MAX_ROUTE_ATTEMPTS.times do
-          result = matcher.match(question: question, answer: answer, language: language)
+          result = matcher.match(question: candidate[:question], answer: candidate[:answer], language: language)
           case result.route
           when :duplicate
             return
           when :knowledge, :dismissed
-            record_discarded_observation(conversation, question, answer, language)
+            record_discarded_observation(conversation, candidate, language)
             return
           when :attach
             # false means the suggestion changed or was decided between the
             # match and the attach — re-route the candidate.
-            return if attach_observation(result.record, conversation, question, answer, language)
+            return if attach_observation(result.record, conversation, candidate, language)
           when :create
-            create_suggestion(assistant, conversation, question, answer, language)
+            create_suggestion(assistant, conversation, candidate, language)
             return
           end
         end
@@ -156,7 +157,7 @@ module Pilot
       # caller re-routes the candidate. Idempotent per conversation: a
       # conversation contributes at most one attached observation per
       # suggestion (also enforced by a partial unique index).
-      def attach_observation(suggestion, conversation, question, answer, language)
+      def attach_observation(suggestion, conversation, candidate, language)
         matched_question = suggestion.question
         matched_answer = suggestion.answer
 
@@ -167,8 +168,8 @@ module Pilot
 
           suggestion.observations.create!(
             conversation: conversation,
-            generated_question: question,
-            generated_answer: answer,
+            generated_question: candidate[:question],
+            generated_answer: candidate[:answer],
             language: language,
             status: :attached
           )
@@ -179,16 +180,16 @@ module Pilot
         true
       end
 
-      def create_suggestion(assistant, conversation, question, answer, language)
+      def create_suggestion(assistant, conversation, candidate, language)
         suggestion = ::Pilot::FaqSuggestion.new(
-          assistant: assistant, question: question, answer: answer, language: language, source_count: 1
+          assistant: assistant, question: candidate[:question], answer: candidate[:answer], language: language, source_count: 1
         )
         ActiveRecord::Base.transaction do
           suggestion.save!
           suggestion.observations.create!(
             conversation: conversation,
-            generated_question: question,
-            generated_answer: answer,
+            generated_question: candidate[:question],
+            generated_answer: candidate[:answer],
             language: language,
             status: :attached
           )
@@ -197,11 +198,11 @@ module Pilot
         Rails.logger.warn("[pilot.faq_mining] invalid candidate: #{e.message}")
       end
 
-      def record_discarded_observation(conversation, question, answer, language)
+      def record_discarded_observation(conversation, candidate, language)
         ::Pilot::FaqObservation.create!(
           conversation: conversation,
-          generated_question: question,
-          generated_answer: answer,
+          generated_question: candidate[:question],
+          generated_answer: candidate[:answer],
           language: language,
           status: :discarded
         )
