@@ -12,9 +12,6 @@ import {
 } from 'dashboard/helper/portalHelper';
 import ArticlePendingChangesPopover from 'dashboard/components-next/HelpCenter/Pages/ArticleEditorPage/ArticlePendingChangesPopover.vue';
 
-import { useMapGetter } from 'dashboard/composables/store.js';
-import { useConfig } from 'dashboard/composables/useConfig';
-import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import EmojiIcon from 'dashboard/components-next/emoji-icon-picker/EmojiIcon.vue';
 import CardLayout from 'dashboard/components-next/CardLayout.vue';
@@ -87,21 +84,6 @@ const [showActionsDropdown, toggleDropdown] = useToggle();
 
 const pendingChangesPopoverRef = useTemplateRef('pendingChangesPopoverRef');
 
-const currentAccountId = useMapGetter('getCurrentAccountId');
-const isFeatureEnabledonAccount = useMapGetter(
-  'accounts/isFeatureEnabledonAccount'
-);
-const { isEnterprise } = useConfig();
-
-const isTranslationAvailable = computed(
-  () =>
-    isEnterprise &&
-    isFeatureEnabledonAccount.value(
-      currentAccountId.value,
-      FEATURE_FLAGS.CAPTAIN_TASKS
-    )
-);
-
 const articleMenuItems = computed(() => {
   const commonItems = Object.entries(ARTICLE_MENU_ITEMS).reduce(
     (acc, [key, item]) => {
@@ -114,9 +96,7 @@ const articleMenuItems = computed(() => {
   const statusItems = (
     ARTICLE_MENU_OPTIONS[props.status] ||
     ARTICLE_MENU_OPTIONS[ARTICLE_STATUSES.PUBLISHED]
-  )
-    .filter(key => key !== 'translate' || isTranslationAvailable.value)
-    .map(key => commonItems[key]);
+  ).map(key => commonItems[key]);
 
   const draftItems = props.hasPendingChanges
     ? [
