@@ -216,6 +216,44 @@ describe Conversations::FilterService do
         expect(result[:count][:all_count]).to be 1
       end
 
+      context 'with multi-label filters' do
+        before do
+          user_2_assigned_conversation.update_labels(%w[support urgent])
+          en_conversation_1.update_labels('support')
+          en_conversation_2.update_labels('billing')
+        end
+
+        it 'not_equal_to excludes conversations carrying any of the listed labels' do
+          params[:payload] = [
+            {
+              attribute_key: 'labels',
+              filter_operator: 'not_equal_to',
+              values: %w[support urgent],
+              query_operator: nil
+            }.with_indifferent_access
+          ]
+          result = filter_service.new(params, user_1, account).perform
+          ids = result[:conversations].pluck(:id)
+          expect(ids).to include(en_conversation_2.id)
+          expect(ids).not_to include(user_2_assigned_conversation.id, en_conversation_1.id)
+          expect(result[:count][:all_count]).to be 2
+        end
+
+        it 'equal_to matches conversations carrying any of the listed labels' do
+          params[:payload] = [
+            {
+              attribute_key: 'labels',
+              filter_operator: 'equal_to',
+              values: %w[support urgent],
+              query_operator: nil
+            }.with_indifferent_access
+          ]
+          result = filter_service.new(params, user_1, account).perform
+          ids = result[:conversations].pluck(:id).uniq
+          expect(ids).to contain_exactly(user_2_assigned_conversation.id, en_conversation_1.id)
+        end
+      end
+
       it 'filter conversations by is_present filter_operator' do
         params[:payload] = [
           {

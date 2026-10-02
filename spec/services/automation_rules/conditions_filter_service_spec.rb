@@ -198,6 +198,53 @@ RSpec.describe AutomationRules::ConditionsFilterService do
           conversation.add_labels(['feature'])
           expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(false)
         end
+
+        it 'will return true when conversation has no labels at all' do
+          conversation.update_labels([])
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(true)
+        end
+      end
+
+      context 'when filter_operator is not_equal_to with multiple values' do
+        before do
+          rule.conditions = [
+            { 'values': %w[feature enhancement], 'attribute_key': 'labels', 'query_operator': nil, 'filter_operator': 'not_equal_to' }
+          ]
+          rule.save
+        end
+
+        it 'will return false when conversation carries any of the listed labels' do
+          conversation.add_labels(['feature'])
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(false)
+        end
+
+        it 'will return true when conversation carries none of the listed labels' do
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(true)
+        end
+
+        it 'will return true when conversation has no labels at all' do
+          conversation.update_labels([])
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(true)
+        end
+      end
+
+      context 'when filter_operator is equal_to with multiple values' do
+        before do
+          rule.conditions = [
+            { 'values': %w[feature bug], 'attribute_key': 'labels', 'query_operator': nil, 'filter_operator': 'equal_to' }
+          ]
+          rule.save
+        end
+
+        it 'will return true when conversation carries any of the listed labels' do
+          conversation.add_labels(['feature'])
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(true)
+        end
+
+        it 'will return false when conversation carries none of the listed labels' do
+          conversation.update_labels(['documentation'])
+          expect(described_class.new(rule, conversation, { changed_attributes: {} }).perform).to be(false)
+        end
       end
 
       context 'when filter_operator is is_present' do
