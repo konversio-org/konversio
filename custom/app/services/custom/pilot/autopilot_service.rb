@@ -30,7 +30,11 @@ module Custom
         The conversation history may already hold a result for a DIFFERENT subject (for example another country, order, or ID). Never reuse it: take the subject from the user's LATEST message and call the tool again for that subject before answering. State exactly what the tool returned — never add, infer, or drop details.
       POLICY
 
-      Result = Struct.new(:reply, :invoked_tool_names, :handover, :resolution, keyword_init: true) do
+      Result = Struct.new(
+        :reply, :invoked_tool_names, :handover, :resolution,
+        :structured_reply, :citation_urls, :run_result, :llm_model,
+        keyword_init: true
+      ) do
         def resolution?
           resolution == true
         end
@@ -110,20 +114,35 @@ module Custom
         run_result = execute_runner(runner, last_user, context, invoked_tool_names)
         raise Error, run_result.error&.message.presence || 'Agents::Runner reported failure with no error attached' if run_result.failed?
 
-        reply = extract_reply(run_result)
-        reply, invoked_tool_names = maybe_force_skipped_tool(reply, last_user, context, invoked_tool_names)
+        build_result(run_result, last_user, context, invoked_tool_names)
+      end
+
+      # Turns a successful runner result into a `Result`, applying the tool-skip
+      # guard and evaluating handover/resolution on the assembled plain text.
+      def build_result(run_result, last_user, context, invoked_tool_names)
+        structured_reply = extract_structured_reply(run_result)
+        reply, invoked_tool_names, structured_reply = maybe_force_skipped_tool(
+          reply: structured_reply.plain_text, last_user: last_user, context: context,
+          invoked_tool_names: invoked_tool_names, structured_reply: structured_reply
+        )
 
         evaluator = ::Custom::Pilot::HandoverEvaluator.new
-        handover = evaluator.evaluate(
-          assistant_reply: reply,
-          customer_message: last_user,
-          invoked_tool_names: invoked_tool_names
-        )
+        handover = evaluator.evaluate(assistant_reply: reply, customer_message: last_user,
+                                      invoked_tool_names: invoked_tool_names)
         # Handover wins over resolution: only treat `[resolved]` as a close
         # signal when no handover fired this turn.
         resolution = !handover.handover? && evaluator.resolution?(reply)
 
-        Result.new(reply: reply, invoked_tool_names: invoked_tool_names, handover: handover, resolution: resolution)
+        Result.new(
+          reply: reply,
+          invoked_tool_names: invoked_tool_names,
+          handover: handover,
+          resolution: resolution,
+          structured_reply: structured_reply,
+          citation_urls: build_citation_urls(run_result),
+          run_result: run_result,
+          llm_model: model_for(:autopilot)
+        )
       end
 
       # Fix #2 — deterministic tool-skip guardrail. When the assistant answered
@@ -132,19 +151,20 @@ module Custom
       # tool-grounded reply. A no-op (returns its inputs unchanged) on the happy
       # path, off-topic turns, handoffs, and any forced-retry failure — the
       # guard is best-effort and never hard-fails the turn.
-      def maybe_force_skipped_tool(reply, last_user, context, invoked_tool_names)
+      def maybe_force_skipped_tool(reply:, last_user:, context:, invoked_tool_names:, structured_reply:)
         decision = ::Custom::Pilot::ToolSkipGuard.new(assistant: assistant).evaluate(
           customer_message: last_user,
           invoked_tool_names: invoked_tool_names
         )
-        return [reply, invoked_tool_names] unless decision.retry?
+        return [reply, invoked_tool_names, structured_reply] unless decision.retry?
 
         forced_invoked = []
         forced_runner = build_runner(forced_invoked, forced_tool: decision.forced_tool_slug)
         forced_result = execute_runner(forced_runner, last_user, context, forced_invoked)
-        return [reply, invoked_tool_names] if forced_result.failed?
+        return [reply, invoked_tool_names, structured_reply] if forced_result.failed?
 
-        [extract_reply(forced_result), forced_invoked]
+        forced_structured = extract_structured_reply(forced_result)
+        [forced_structured.plain_text, forced_invoked, forced_structured]
       end
 
       def execute_runner(runner, last_user, context, invoked_tool_names)
@@ -247,6 +267,7 @@ module Custom
           response_guidelines_section,
           guardrails_section,
           'Use the `search_documentation` tool whenever the user asks a factual or product question.',
+          citation_policy,
           custom_tools_policy,
           handover_policy,
           closing_policy
@@ -264,6 +285,28 @@ module Custom
 
         list = catalog.map { |entry| "- `#{entry.slug}`: #{entry.description}" }.join("\n")
         format(CUSTOM_TOOLS_POLICY_TEMPLATE, catalog: list)
+      end
+
+      # Structured-reply contract. When citations are enabled, the model must
+      # return an ordered parts list with bracketed source indexes drawn only
+      # from `search_documentation` results; the server resolves those indexes
+      # to trusted URLs. URLs are forbidden anywhere in the reply text. When
+      # citations are off this section is omitted and the plain path is kept.
+      def citation_policy
+        return nil unless assistant.citations_enabled?
+
+        <<~CITATION.strip
+          Source citation policy — follow exactly:
+
+          Return your reply as JSON with this exact shape:
+            {"reasoning":"<brief internal note, never shown to the customer>","parts":[{"text":"<customer-visible text>","source_indexes":[1,2]}]}
+
+          - Put ALL customer-visible text inside `parts[].text`. Never include a URL, a markdown link, a `Source:` line, or any other source reference in `text`.
+          - `source_indexes` may contain ONLY the bracketed index numbers shown in `search_documentation` results. Never invent an index and never put a URL or file path there.
+          - Use `[]` in `source_indexes` when a part relies on no knowledge result.
+          - Split the reply into multiple parts only when different parts rely on different sources; otherwise return a single part.
+          - `reasoning` is internal and is never shown to the customer.
+        CITATION
       end
 
       # Action C accelerator. Only present when auto-resolve is active for the
@@ -450,6 +493,21 @@ module Custom
         return output[:response] || output['response'] || output.to_s if output.is_a?(Hash)
 
         output.to_s
+      end
+
+      # Normalises any runner output into structured parts. Plain or
+      # unstructured output degrades to a single citation-free part.
+      def extract_structured_reply(run_result)
+        ::Pilot::StructuredReply.parse(run_result.output)
+      end
+
+      # Index→customer-visible URL map for the run, resolved entirely from
+      # server-side knowledge records. Empty when citations are disabled.
+      def build_citation_urls(run_result)
+        return {} unless assistant.citations_enabled?
+
+        mapping = assistant.citation_index_to_document_id(run_result)
+        assistant.trusted_citation_urls(mapping)
       end
 
       def max_turns

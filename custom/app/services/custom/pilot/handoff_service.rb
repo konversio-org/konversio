@@ -35,15 +35,18 @@ class Custom::Pilot::HandoffService
   end
   # rubocop:enable Metrics/ParameterLists
 
+  # Returns the customer-visible message posted for the handoff (or nil when
+  # no message copy was supplied) so callers can link a run session to it.
   def call
     @conversation.bot_handoff! unless @conversation.open?
     transitioned_at = Time.zone.now
 
     mark_handoff_requested!(transitioned_at.iso8601)
-    post_message if @message.present?
+    message = post_message if @message.present?
     append_activity_message
     dispatch_handover_event(transitioned_at)
     emit_lifecycle_event(transitioned_at)
+    message
   end
 
   private

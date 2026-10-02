@@ -53,6 +53,10 @@ class Pilot::Assistant < ApplicationRecord
   has_many :inboxes, through: :pilot_inboxes
   has_many :conversation_outcomes, class_name: 'Pilot::ConversationOutcome', dependent: :destroy_async
   has_many :messages, as: :sender, dependent: :nullify
+  has_many :agent_sessions,
+           class_name: 'Pilot::AgentSession',
+           inverse_of: :assistant,
+           dependent: :destroy_async
 
   before_validation :normalize_enabled_tool_slugs
   # Generate the padded variant as soon as a new avatar is attached so the
@@ -78,6 +82,10 @@ class Pilot::Assistant < ApplicationRecord
 
   DEFAULT_MAX_HISTORY = 15
 
+  # Run-state key under which the knowledge search records the ordered results
+  # it offered the model, each with its source index, FAQ id, and document id.
+  KNOWLEDGE_SOURCES_STATE_KEY = :pilot_knowledge_sources
+
   validates :name, presence: true
   validates :account_id, presence: true
   validates :reasoning_effort, inclusion: { in: %w[off low medium high], allow_nil: true }
@@ -88,6 +96,52 @@ class Pilot::Assistant < ApplicationRecord
   # PDF-origin matches; URL-origin matches always surface the URL.
   def citation_behavior
     config&.dig('citation_behavior').presence || 'on'
+  end
+
+  # Whether the assistant produces structured replies whose parts cite
+  # knowledge sources by index. Defaults on; when off the assistant keeps the
+  # plain-text reply path and no citation instructions reach the prompt.
+  def citations_enabled?
+    feature_citation != false
+  end
+
+  # The ordered knowledge sources a run offered the model, read from the run's
+  # state. Each entry is a hash with `index`, `faq_id`, and `document_id`.
+  def citation_sources(run_result)
+    context = run_result.respond_to?(:context) ? run_result.context : run_result
+    return [] unless context.is_a?(Hash)
+
+    state = context[:state] || context['state']
+    return [] unless state.is_a?(Hash)
+
+    sources = state[KNOWLEDGE_SOURCES_STATE_KEY] || state[KNOWLEDGE_SOURCES_STATE_KEY.to_s]
+    Array(sources)
+  end
+
+  # Extracts the run's index→document-id mapping from its state.
+  def citation_index_to_document_id(run_result)
+    citation_sources(run_result).each_with_object({}) do |source, mapping|
+      index = source[:index] || source['index']
+      document_id = source[:document_id] || source['document_id']
+      next if index.blank? || document_id.blank?
+
+      mapping[index.to_i] = document_id
+    end
+  end
+
+  # Resolves an index→document-id mapping to index→customer-visible URL,
+  # keeping only eligible documents. Empty when the assistant's citation
+  # config is disabled.
+  def trusted_citation_urls(index_to_document_id)
+    return {} unless citations_enabled?
+
+    mapping = index_to_document_id.to_h.transform_keys(&:to_i)
+    documents_by_id = documents.where(id: mapping.values.compact.uniq).index_by(&:id)
+
+    mapping.each_with_object({}) do |(index, document_id), urls|
+      url = documents_by_id[document_id]&.customer_visible_source_url
+      urls[index] = url if url.present?
+    end
   end
 
   # Whether the Autopilot keeps answering customer messages while a

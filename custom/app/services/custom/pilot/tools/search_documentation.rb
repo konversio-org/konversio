@@ -32,7 +32,7 @@ module Custom
                                .limit(DEFAULT_LIMIT)
           return 'No matching documentation found.' if results.empty?
 
-          format_results(results, assistant_for(tool_context))
+          format_results(results, assistant_for(tool_context), tool_context)
         rescue StandardError => e
           Rails.logger.error("[pilot.tools.search_documentation] #{e.class}: #{e.message}")
           "[BACKEND_ERROR] Documentation search failed: #{e.class.name}: #{e.message}. " \
@@ -65,9 +65,27 @@ module Custom
           ::Pilot::Assistant.find_by(id: assistant_id)
         end
 
-        def format_results(results, assistant)
+        def format_results(results, assistant, tool_context)
+          return format_indexed_results(results, tool_context) if assistant&.citations_enabled?
+
           citation_off = assistant&.citation_behavior.to_s == 'off'
           results.map { |r| format_single(r, citation_off: citation_off) }.join("\n---\n")
+        end
+
+        # Structured-citations path: prefix every result with a stable,
+        # run-global index and record the index→source mapping in run state so
+        # the pipeline and session recorder can attribute what was offered.
+        # No `Source:` lines are emitted here, so the structured mechanism owns
+        # all customer-visible source surfacing.
+        def format_indexed_results(results, tool_context)
+          sources = (tool_context.state[::Pilot::Assistant::KNOWLEDGE_SOURCES_STATE_KEY] ||= [])
+          offset = sources.length
+
+          results.each_with_index.map do |result, position|
+            index = offset + position + 1
+            sources << { index: index, faq_id: result.id, document_id: result.documentable_id }
+            "[#{index}] Q: #{result.try(:question)}\nA: #{result.try(:answer)}"
+          end.join("\n---\n")
         end
 
         def format_single(result, citation_off:)

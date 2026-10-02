@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_03_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_03_000002) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1090,6 +1090,35 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_000001) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "pilot_agent_sessions", force: :cascade do |t|
+    t.integer "session_kind", null: false
+    t.string "subject_type", null: false
+    t.bigint "subject_id", null: false
+    t.string "result_type"
+    t.bigint "result_id"
+    t.bigint "account_id", null: false
+    t.bigint "assistant_id", null: false
+    t.bigint "user_id"
+    t.string "llm_model"
+    t.jsonb "offered_faq_ids", default: [], null: false
+    t.jsonb "used_faq_ids", default: [], null: false
+    t.jsonb "consulted_document_ids", default: [], null: false
+    t.jsonb "cited_document_ids", default: [], null: false
+    t.jsonb "scenario_ids", default: [], null: false
+    t.jsonb "run_context", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "result_type", "result_id"], name: "index_pilot_agent_sessions_on_account_result"
+    t.index ["account_id", "session_kind", "created_at"], name: "index_pilot_agent_sessions_on_account_kind_created_at"
+    t.index ["account_id", "subject_type", "subject_id"], name: "index_pilot_agent_sessions_on_account_subject"
+    t.index ["account_id"], name: "index_pilot_agent_sessions_on_account_id"
+    t.index ["assistant_id"], name: "index_pilot_agent_sessions_on_assistant_id"
+    t.index ["cited_document_ids"], name: "index_pilot_agent_sessions_on_cited_document_ids", using: :gin
+    t.index ["consulted_document_ids"], name: "index_pilot_agent_sessions_on_consulted_document_ids", using: :gin
+    t.index ["used_faq_ids"], name: "index_pilot_agent_sessions_on_used_faq_ids", using: :gin
+    t.index ["user_id"], name: "index_pilot_agent_sessions_on_user_id"
+  end
+
   create_table "pilot_assistant_responses", force: :cascade do |t|
     t.string "question", null: false
     t.text "answer", null: false
@@ -1546,6 +1575,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_000001) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "pilot_agent_sessions", "accounts"
+  add_foreign_key "pilot_agent_sessions", "pilot_assistants", column: "assistant_id"
+  add_foreign_key "pilot_agent_sessions", "users"
   add_foreign_key "pilot_campaign_recipients", "accounts", on_delete: :cascade
   add_foreign_key "pilot_campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "pilot_campaign_recipients", "contacts", on_delete: :cascade
