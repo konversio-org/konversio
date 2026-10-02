@@ -485,6 +485,9 @@ en:
       completed_tool_call: 'Completed %{function_name} tool call'
       invalid_tool_call: 'Invalid tool call'
       tool_not_available: 'Tool not available'
+      reply_suggestion:
+        discarded: 'The conversation has moved on since this suggestion was requested, so no draft was generated.'
+        failed: 'We could not generate a suggested reply for this conversation. Please try again.'
     documents:
       limit_exceeded: 'Document limit exceeded'
       pdf_format_error: 'must be a PDF file'

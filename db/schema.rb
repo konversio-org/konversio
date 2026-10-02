@@ -1224,6 +1224,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_010001) do
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "available_for_reply_drafting", default: false, null: false
     t.index ["account_id", "slug"], name: "index_pilot_custom_tools_on_account_id_and_slug", unique: true
     t.index ["account_id"], name: "index_pilot_custom_tools_on_account_id"
   end

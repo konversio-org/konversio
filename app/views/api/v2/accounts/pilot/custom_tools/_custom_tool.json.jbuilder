@@ -10,5 +10,6 @@ json.param_schema custom_tool.param_schema
 json.request_template custom_tool.request_template
 json.response_template custom_tool.response_template
 json.enabled custom_tool.enabled
+json.available_for_reply_drafting custom_tool.available_for_reply_drafting
 json.created_at custom_tool.created_at.to_i
 json.updated_at custom_tool.updated_at.to_i
