@@ -283,3 +283,6 @@
 - name: delayed_automations
   display_name: Delayed Automations
   enabled: false
+- name: data_import
+  display_name: Data Import
+  enabled: true
