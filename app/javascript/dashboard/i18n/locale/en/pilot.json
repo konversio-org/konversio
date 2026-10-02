@@ -330,6 +330,12 @@
         "SEND_MESSAGE_LABEL": "Send resolution message",
         "SEND_MESSAGE_HINT": "Post the resolution message to the customer when an idle conversation is auto-resolved. When off, the conversation is resolved silently."
       },
+      "PROMISE_GUARD": {
+        "TITLE": "Reply promise guard",
+        "DESCRIPTION": "Check every autopilot reply for promises of work the assistant cannot perform after the reply is sent. Unsafe replies are regenerated once; if they still cannot be verified, the conversation is handed off to a human instead.",
+        "UPDATED": "Promise guard preference updated.",
+        "UPDATE_FAILED": "Failed to update the promise guard preference."
+      },
       "TABLE": {
         "NAME": "Name",
         "DESCRIPTION": "Description",
