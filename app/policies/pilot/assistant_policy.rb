@@ -35,6 +35,28 @@ class Pilot::AssistantPolicy < ApplicationPolicy
     account_user.present?
   end
 
+  # Analytics reads are open to any account member who can view the assistant.
+  def overview?
+    account_user.present?
+  end
+
+  def resolution_flow?
+    account_user.present?
+  end
+
+  def resolution_trend?
+    account_user.present?
+  end
+
+  def overview_summary?
+    account_user.present?
+  end
+
+  # Listing the conversations behind a metric is administrator-only.
+  def drilldown?
+    administrator?
+  end
+
   def tools?
     administrator?
   end

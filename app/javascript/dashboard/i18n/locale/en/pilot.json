@@ -587,6 +587,97 @@
         "DISMISS": "Failed to dismiss suggestion",
         "RETRY": "Retry"
       }
+    },
+    "OVERVIEW": {
+      "HEADER": {
+        "TITLE": "Assistant overview",
+        "SUBTITLE": "How {name} is performing",
+        "OPEN": "Overview"
+      },
+      "RANGE": {
+        "LAST_7_DAYS": "Last 7 days",
+        "LAST_30_DAYS": "Last 30 days",
+        "LAST_90_DAYS": "Last 90 days",
+        "THIS_WEEK": "This week",
+        "LAST_WEEK": "Last week",
+        "THIS_MONTH": "This month",
+        "LAST_MONTH": "Last month",
+        "LABEL": "Reporting period"
+      },
+      "METRICS": {
+        "CONVERSATIONS_INVOLVED": "Conversations involved",
+        "AUTONOMOUS_RESOLUTIONS": "Autonomous resolutions",
+        "AUTONOMOUS_RESOLUTION_RATE": "Auto-resolution rate",
+        "HANDOFFS": "Handoffs",
+        "HANDOFF_RATE": "Handoff rate",
+        "ESTIMATED_HOURS_SAVED": "Estimated hours saved",
+        "ESTIMATED_HOURS_SAVED_HINT": "Estimate based on an assumed 2 minutes of agent effort per AI reply",
+        "CONVERSATION_DEPTH": "Conversation depth",
+        "REOPEN_RATE": "Reopen after resolution",
+        "DURABLE_RESOLUTION_RATE": "Durable resolution rate",
+        "AUTONOMOUS_CSAT": "Autonomous CSAT",
+        "ASSISTED_CSAT": "Assisted CSAT",
+        "HUMAN_ONLY_CSAT": "Human-only CSAT",
+        "MEDIAN_RESOLUTION_TIME": "Median time to resolution",
+        "INSUFFICIENT_HISTORY": "Insufficient history",
+        "VS_PREVIOUS": "vs {value} previously",
+        "DRILLDOWN_HINT": "View conversations"
+      },
+      "FLOW": {
+        "TITLE": "Resolution flow",
+        "INVOLVED": "Involved",
+        "AUTONOMOUS": "Resolved autonomously",
+        "HANDED_OFF": "Handed off",
+        "CLOSED_WITH_TEAM": "Closed with the team",
+        "STAYED_CLOSED": "Stayed closed",
+        "REOPENED": "Reopened",
+        "REASONS_TITLE": "Handoff reasons",
+        "OTHER_REASONS": "Other reasons",
+        "UNCATEGORIZED": "Uncategorized",
+        "REASON_CUSTOMER_ESCALATION": "Customer escalation",
+        "REASON_KNOWLEDGE_GAP": "Knowledge gap",
+        "REASON_POLICY_REFUSAL": "Policy refusal",
+        "REASON_SYSTEM_FAILURE": "System failure",
+        "REASON_QUOTA_EXHAUSTED": "Quota exhausted",
+        "REASON_OTHER": "Other",
+        "EMPTY": "No flow data for this period yet."
+      },
+      "TREND": {
+        "TITLE": "Resolution trend",
+        "MEASURE_COUNTS": "Counts",
+        "MEASURE_RATE": "Resolution rate",
+        "INVOLVED": "Involved",
+        "AUTONOMOUS": "Autonomous",
+        "RATE": "Rate",
+        "PREVIOUS_RATE": "Previously {value}",
+        "PREVIOUS_RATE_NONE": "No comparison data",
+        "EMPTY": "No trend data for this period yet."
+      },
+      "CSAT": {
+        "TITLE": "Customer satisfaction",
+        "AUTONOMOUS": "Resolved by Pilot",
+        "ASSISTED": "Resolved with Pilot's help",
+        "HUMAN_ONLY": "No Pilot involvement",
+        "NO_RATINGS": "No ratings yet"
+      },
+      "SUMMARY": {
+        "GREETING": "Hi {name}, here is what stands out",
+        "LOADING": "Writing your summary...",
+        "EMPTY": "Not enough activity in this period to summarize yet.",
+        "ERROR": "The summary could not be generated right now.",
+        "PREVIOUS": "Previous point",
+        "NEXT": "Next point"
+      },
+      "DRILLDOWN": {
+        "LOAD_MORE": "Load more",
+        "EMPTY": "No conversations found for this metric and period.",
+        "ERROR": "Failed to load conversations.",
+        "RESULT_COUNT": "{count} conversations"
+      },
+      "ERROR": {
+        "GENERIC": "Failed to load the overview.",
+        "RETRY": "Retry"
+      }
     }
   }
 }

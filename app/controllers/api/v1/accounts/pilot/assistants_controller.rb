@@ -1,6 +1,6 @@
 class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseController
   before_action :ensure_feature_enabled
-  before_action :fetch_assistant, only: [:show, :update, :destroy, :playground, :avatar]
+  before_action :fetch_assistant, only: [:show, :update, :destroy, :playground, :avatar, :drilldown]
   before_action :authorize_request
 
   def index
@@ -52,6 +52,15 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
 
   def tools
     render json: tools_registry, status: :ok
+  end
+
+  def drilldown
+    window = Pilot::Analytics::ReportingWindow.new(range: params[:range], timezone_offset: params[:timezone_offset])
+    render json: Pilot::Analytics::DrilldownQuery.new(
+      assistant: @assistant, window: window, metric: params[:metric], page: params[:page], per_page: params[:per_page]
+    ).build
+  rescue Pilot::Analytics::DrilldownQuery::UnsupportedMetricError
+    render json: { error: 'Unsupported drilldown metric' }, status: :unprocessable_entity
   end
 
   private
