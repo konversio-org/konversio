@@ -21,7 +21,7 @@ RSpec.describe Pilot::OnboardingHelpCenter::BootstrapService do
   end
 
   describe '#perform' do
-    it 'creates a branded portal, links the web widget, and starts generation' do
+    it 'creates a branded portal, links the web widget, and starts generation' do # rubocop:disable RSpec/MultipleExpectations
       create(:channel_widget, account: account)
 
       portal = service.perform

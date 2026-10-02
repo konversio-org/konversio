@@ -14,9 +14,9 @@ RSpec.describe Whatsapp::ManualSetupService do
   end
 
   before do
-    allow_any_instance_of(Whatsapp::ManualSetupValidationService).to receive(:perform).and_return(preview)
-    allow_any_instance_of(Channel::Whatsapp).to receive(:sync_templates)
-    allow_any_instance_of(Channel::Whatsapp).to receive(:validate_provider_config)
+    allow_any_instance_of(Whatsapp::ManualSetupValidationService).to receive(:perform).and_return(preview) # rubocop:disable RSpec/AnyInstance
+    allow_any_instance_of(Channel::Whatsapp).to receive(:sync_templates) # rubocop:disable RSpec/AnyInstance
+    allow_any_instance_of(Channel::Whatsapp).to receive(:validate_provider_config) # rubocop:disable RSpec/AnyInstance
     webhook = instance_double(Whatsapp::WebhookSetupService, perform: nil, registration_error: nil)
     allow(Whatsapp::WebhookSetupService).to receive(:new).and_return(webhook)
   end

@@ -74,7 +74,7 @@ RSpec.describe Whatsapp::ManualSetupValidationService do
       channel = create(:channel_whatsapp, provider: 'whatsapp_cloud',
                                           phone_number: '+19998887777',
                                           sync_templates: false, validate_provider_config: false)
-      channel.update_column(:provider_config, channel.provider_config.merge('phone_number_id' => phone_number_id))
+      channel.update_column(:provider_config, channel.provider_config.merge('phone_number_id' => phone_number_id)) # rubocop:disable Rails/SkipsModelValidations
 
       expect { service.perform }.to raise_error(ArgumentError, /already used by another WhatsApp inbox/)
     end

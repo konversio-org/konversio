@@ -23,8 +23,8 @@ RSpec.describe Whatsapp::ManualWebhookStatusService do
 
   before do
     allow(Whatsapp::FacebookApiClient).to receive(:new).with('token').and_return(api_client)
-    allow_any_instance_of(Whatsapp::WebhookSetupService).to receive(:perform)
-    allow_any_instance_of(Whatsapp::WebhookSetupService).to receive(:registration_error).and_return(nil)
+    allow_any_instance_of(Whatsapp::WebhookSetupService).to receive(:perform) # rubocop:disable RSpec/AnyInstance
+    allow_any_instance_of(Whatsapp::WebhookSetupService).to receive(:registration_error).and_return(nil) # rubocop:disable RSpec/AnyInstance
   end
 
   describe '#perform' do
