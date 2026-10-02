@@ -86,13 +86,27 @@ class Pilot::Analytics::OverviewReport
   end
 
   def derived_values(prefix, counts)
+    rate_values(counts).merge(activity_values(counts), score_values(prefix))
+  end
+
+  def rate_values(counts)
     {
       autonomous_rate: ratio(counts[:autonomous], counts[:involved]),
       handoff_rate: ratio(counts[:handoffs], counts[:involved]),
       reopen_rate: ratio(counts[:reopened], counts[:autonomous]),
-      durable_rate: counts[:durable_judged].zero? ? nil : (counts[:durable_held].to_f / counts[:durable_judged]).round(4),
+      durable_rate: counts[:durable_judged].zero? ? nil : (counts[:durable_held].to_f / counts[:durable_judged]).round(4)
+    }
+  end
+
+  def activity_values(counts)
+    {
       hours_saved: (counts[:replies] * ASSUMED_HANDLING_MINUTES_PER_REPLY / 60.0).round(1),
-      depth: counts[:reply_conversations].zero? ? 0 : (counts[:replies].to_f / counts[:reply_conversations]).round(2),
+      depth: counts[:reply_conversations].zero? ? 0 : (counts[:replies].to_f / counts[:reply_conversations]).round(2)
+    }
+  end
+
+  def score_values(prefix)
+    {
       autonomous_csat: episode_aggregates["#{prefix}_autonomous_csat"]&.to_f&.round(2),
       assisted_csat: episode_aggregates["#{prefix}_assisted_csat"]&.to_f&.round(2),
       human_only_csat: csat_aggregates["#{prefix}_human_only_csat"]&.to_f&.round(2),
