@@ -18,13 +18,13 @@
 
 ### Frontend
 
-14. - [ ] **API client** — update `app/javascript/dashboard/api/auditLogs.js` to send the full filter object as query params instead of only `page`.
-15. - [ ] **Store module** — update `app/javascript/dashboard/store/modules/auditlogs.js`: pass filters through, default `perPage` 25, guard against stale responses when a newer fetch has started, reset records/meta on failed fetches.
-16. - [ ] **Filter helper** — extend `app/javascript/dashboard/helper/auditlogHelper.js`: supported event-type list grouped by domain (access events; staff, team and inbox membership; account and channel configuration; conversation and message removal), route-query → filter-object parsing with validation, filter-object → clean-route-query building, and a message-deletion rendering key that interpolates the conversation display number from the snapshot.
-17. - [ ] **Filters component** — new component next to `app/javascript/dashboard/routes/dashboard/settings/auditlogs/Index.vue`: event-type dropdown (grouped, single-select, "all events" default), sort dropdown (newest/oldest), and a date-range picker emitting start/end-of-day unix timestamps; emit partial filter updates to the page.
-18. - [ ] **Page rework** — update `app/javascript/dashboard/routes/dashboard/settings/auditlogs/Index.vue`: debounced actor search (500 ms, ignored below 3 characters) synced both ways with the `q` query param without clobbering in-progress typing; all filter state driven by the route query; clear-filters action; total-count display; distinct empty state for "no matches" vs "no entries"; third column shows resolved location falling back to the (masked) address, with the header reflecting the account's full-IP flag.
-19. - [ ] **Route meta** — update `app/javascript/dashboard/routes/dashboard/settings/auditlogs/audit.routes.js`: add `reuseOnQueryChange: true` and include the self-hosted installation type so the page is reachable on Konversio installs.
-20. - [ ] **i18n** — add all new strings to `app/javascript/dashboard/i18n/locale/en/auditLogs.json` only (other locales via community); write original copy — do not reuse upstream phrasing.
+14. - [x] **API client** — update `app/javascript/dashboard/api/auditLogs.js` to send the full filter object as query params instead of only `page`.
+15. - [x] **Store module** — update `app/javascript/dashboard/store/modules/auditlogs.js`: pass filters through, default `perPage` 25, guard against stale responses when a newer fetch has started, reset records/meta on failed fetches.
+16. - [x] **Filter helper** — extend `app/javascript/dashboard/helper/auditlogHelper.js`: supported event-type list grouped by domain (access events; staff, team and inbox membership; account and channel configuration; conversation and message removal), route-query → filter-object parsing with validation, filter-object → clean-route-query building, and a message-deletion rendering key that interpolates the conversation display number from the snapshot.
+17. - [x] **Filters component** — new component next to `app/javascript/dashboard/routes/dashboard/settings/auditlogs/Index.vue`: event-type dropdown (grouped, single-select, "all events" default), sort dropdown (newest/oldest), and a date-range picker emitting start/end-of-day unix timestamps; emit partial filter updates to the page.
+18. - [x] **Page rework** — update `app/javascript/dashboard/routes/dashboard/settings/auditlogs/Index.vue`: debounced actor search (500 ms, ignored below 3 characters) synced both ways with the `q` query param without clobbering in-progress typing; all filter state driven by the route query; clear-filters action; total-count display; distinct empty state for "no matches" vs "no entries"; third column shows resolved location falling back to the (masked) address, with the header reflecting the account's full-IP flag.
+19. - [x] **Route meta** — update `app/javascript/dashboard/routes/dashboard/settings/auditlogs/audit.routes.js`: add `reuseOnQueryChange: true` and include the self-hosted installation type so the page is reachable on Konversio installs.
+20. - [x] **i18n** — add all new strings to `app/javascript/dashboard/i18n/locale/en/auditLogs.json` only (other locales via community); write original copy — do not reuse upstream phrasing.
 
 ### Validation
 
@@ -32,7 +32,7 @@
 22. - [x] **Controller specs** — `spec/controllers/api/v1/accounts/audit_logs_controller_spec.rb`: admin gate; feature-off empty result; each filter and sort; pagination meta; message entries serve no payload and no body key; masked vs full address per flag; location presence.
 23. - [x] **Job specs** — per-entry lookup (success/no-op/failure), session batch job (single lookup, bulk update, flag gate), backfill job (cursor progression, batch bounds, per-row failure skip).
 24. - [x] **Recording specs** — message deletion creates exactly one entry (incl. concurrent-delete guard), sign-in/out write one entry per account, governed-model changes record entries with denormalized actor email.
-25. - [ ] **Frontend specs** — helper parsing/building and grouping, filters component emissions, store stale-response guard.
+25. - [x] **Frontend specs** — helper parsing/building and grouping, filters component emissions, store stale-response guard.
 26. - [ ] **Manual smoke test** — on a seeded account: sign in/out, delete a message, change an inbox setting; verify entries appear with masked IP; enable `audit_log_ip_address` and verify full addresses; enable `ip_lookup`, run `audit_log:backfill_ip_location`, verify locations render.
 
 ## Dependencies / Order

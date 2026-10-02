@@ -7,7 +7,7 @@ const state = {
   records: [],
   meta: {
     currentPage: 1,
-    perPage: 15,
+    perPage: 25,
     totalEntries: 0,
   },
   uiFlags: {
@@ -27,11 +27,17 @@ const getters = {
   },
 };
 
-const actions = {
-  async fetch({ commit }, { page } = {}) {
+// Monotonic token so a slow, superseded request cannot overwrite fresher results.
+let latestFetchId = 0;
+
+export const actions = {
+  async fetch({ commit }, filters = {}) {
+    latestFetchId += 1;
+    const fetchId = latestFetchId;
     commit(types.default.SET_AUDIT_LOGS_UI_FLAG, { fetchingList: true });
     try {
-      const response = await AuditLogsAPI.get({ page });
+      const response = await AuditLogsAPI.get(filters);
+      if (fetchId !== latestFetchId) return null;
       const { audit_logs: logs = [] } = response.data;
       const {
         total_entries: totalEntries,
@@ -47,6 +53,13 @@ const actions = {
       commit(types.default.SET_AUDIT_LOGS_UI_FLAG, { fetchingList: false });
       return logs;
     } catch (error) {
+      if (fetchId !== latestFetchId) return null;
+      commit(types.default.SET_AUDIT_LOGS, []);
+      commit(types.default.SET_AUDIT_LOGS_META, {
+        totalEntries: 0,
+        perPage: 25,
+        currentPage: 1,
+      });
       commit(types.default.SET_AUDIT_LOGS_UI_FLAG, { fetchingList: false });
       return throwErrorMessage(error);
     }
