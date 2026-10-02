@@ -286,7 +286,7 @@ GEM
       http (>= 3.0)
       ruby2_keywords
     email-provider-info (0.0.1)
-    email_reply_trimmer (0.1.13)
+    email_reply_trimmer (0.4.0)
     erb (6.0.7)
     erubi (1.13.1)
     et-orbi (1.4.0)
