@@ -1,32 +1,16 @@
 require 'rails_helper'
 
 describe PortalHelper do
-  describe '#generate_portal_bg_color' do
-    context 'when theme is dark' do
-      it 'returns the correct color mix with black' do
-        expect(helper.generate_portal_bg_color('#ff0000', 'dark')).to eq(
-          'color-mix(in srgb, #ff0000 20%, black)'
-        )
-      end
+  describe '#html_lang_attribute' do
+    it 'returns the locale unchanged when it has no region suffix' do
+      expect(helper.html_lang_attribute('en')).to eq('en')
+      expect(helper.html_lang_attribute(:fr)).to eq('fr')
     end
 
-    context 'when theme is not dark' do
-      it 'returns the correct color mix with white' do
-        expect(helper.generate_portal_bg_color('#ff0000', 'light')).to eq(
-          'color-mix(in srgb, #ff0000 20%, white)'
-        )
-      end
-    end
-
-    context 'when provided with various colors' do
-      it 'adjusts the color mix appropriately' do
-        expect(helper.generate_portal_bg_color('#00ff00', 'dark')).to eq(
-          'color-mix(in srgb, #00ff00 20%, black)'
-        )
-        expect(helper.generate_portal_bg_color('#0000ff', 'light')).to eq(
-          'color-mix(in srgb, #0000ff 20%, white)'
-        )
-      end
+    it 'converts underscores to hyphens for BCP 47 compliance' do
+      expect(helper.html_lang_attribute('pt_BR')).to eq('pt-BR')
+      expect(helper.html_lang_attribute(:zh_CN)).to eq('zh-CN')
+      expect(helper.html_lang_attribute('zh_TW')).to eq('zh-TW')
     end
   end
 
@@ -140,7 +124,7 @@ describe PortalHelper do
     context 'when theme is not present' do
       it 'returns the correct link' do
         expect(helper.generate_home_link('portal_slug', 'en', nil, true)).to eq(
-          '/hc/portal_slug/en'
+          '/hc/portal_slug/en?show_plain_layout=true'
         )
       end
     end
@@ -148,7 +132,7 @@ describe PortalHelper do
     context 'when theme is present and plain layout is enabled' do
       it 'returns the correct link' do
         expect(helper.generate_home_link('portal_slug', 'en', 'dark', true)).to eq(
-          '/hc/portal_slug/en?theme=dark'
+          '/hc/portal_slug/en?show_plain_layout=true&theme=dark'
         )
       end
     end
@@ -172,7 +156,7 @@ describe PortalHelper do
                  theme: nil,
                  is_plain_layout_enabled: true
                )).to eq(
-                 '/hc/portal_slug/en/categories/category_slug'
+                 '/hc/portal_slug/en/categories/category_slug?show_plain_layout=true'
                )
       end
     end
@@ -186,7 +170,7 @@ describe PortalHelper do
                  theme: 'dark',
                  is_plain_layout_enabled: true
                )).to eq(
-                 '/hc/portal_slug/en/categories/category_slug?theme=dark'
+                 '/hc/portal_slug/en/categories/category_slug?show_plain_layout=true&theme=dark'
                )
       end
     end
@@ -210,7 +194,7 @@ describe PortalHelper do
     context 'when theme is not present' do
       it 'returns the correct link' do
         expect(helper.generate_article_link('portal_slug', 'article_slug', nil, true)).to eq(
-          '/hc/portal_slug/articles/article_slug'
+          '/hc/portal_slug/articles/article_slug?show_plain_layout=true'
         )
       end
     end
@@ -218,7 +202,7 @@ describe PortalHelper do
     context 'when theme is present and plain layout is enabled' do
       it 'returns the correct link' do
         expect(helper.generate_article_link('portal_slug', 'article_slug', 'dark', true)).to eq(
-          '/hc/portal_slug/articles/article_slug?theme=dark'
+          '/hc/portal_slug/articles/article_slug?show_plain_layout=true&theme=dark'
         )
       end
     end

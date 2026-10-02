@@ -189,6 +189,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_01_120000) do
     t.string "slug", null: false
     t.integer "position"
     t.string "locale", default: "en", null: false
+    t.string "draft_title"
+    t.text "draft_content"
     t.index ["account_id"], name: "index_articles_on_account_id"
     t.index ["associated_article_id"], name: "index_articles_on_associated_article_id"
     t.index ["author_id"], name: "index_articles_on_author_id"
@@ -335,6 +337,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_01_120000) do
     t.bigint "parent_category_id"
     t.bigint "associated_category_id"
     t.string "icon", default: ""
+    t.string "icon_color", default: ""
     t.index ["associated_category_id"], name: "index_categories_on_associated_category_id"
     t.index ["locale", "account_id"], name: "index_categories_on_locale_and_account_id"
     t.index ["locale"], name: "index_categories_on_locale"
