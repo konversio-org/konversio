@@ -9,6 +9,10 @@ class PilotPreferencesAPI extends ApiClient {
   fetch() {
     return axios.get(this.url);
   }
+
+  update(payload) {
+    return axios.patch(this.url, payload);
+  }
 }
 
 export default new PilotPreferencesAPI();
