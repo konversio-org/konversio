@@ -211,6 +211,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_000001) do
     t.boolean "enabled", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "exclude_older_than_hours", default: 168
     t.index ["account_id", "name"], name: "index_assignment_policies_on_account_id_and_name", unique: true
     t.index ["account_id"], name: "index_assignment_policies_on_account_id"
     t.index ["enabled"], name: "index_assignment_policies_on_enabled"
@@ -254,6 +255,25 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_000001) do
     t.index ["user_id", "user_type"], name: "user_index"
   end
 
+  create_table "automation_rule_pending_executions", force: :cascade do |t|
+    t.bigint "automation_rule_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "account_id", null: false
+    t.bigint "message_id"
+    t.datetime "due_at", null: false
+    t.string "episode_key", null: false
+    t.integer "status", default: 0, null: false
+    t.string "skip_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_automation_rule_pending_executions_on_account_id"
+    t.index ["automation_rule_id", "conversation_id", "episode_key"], name: "uniq_automation_pending_execution_episode", unique: true
+    t.index ["automation_rule_id"], name: "index_automation_rule_pending_executions_on_automation_rule_id"
+    t.index ["conversation_id"], name: "index_automation_rule_pending_executions_on_conversation_id"
+    t.index ["status", "due_at"], name: "index_automation_rule_pending_executions_on_status_and_due_at"
+    t.index ["status", "updated_at"], name: "index_automation_pending_executions_on_status_and_updated_at"
+  end
+
   create_table "automation_rules", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "name", null: false
@@ -264,6 +284,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_000001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "active", default: true, null: false
+    t.integer "execution_delay"
     t.index ["account_id"], name: "index_automation_rules_on_account_id"
   end
 
@@ -626,6 +647,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_000001) do
     t.text "cached_label_list"
     t.bigint "assignee_agent_bot_id"
     t.integer "suggested_label_ids", default: [], null: false, array: true
+    t.datetime "status_changed_at"
     t.index ["account_id", "display_id"], name: "index_conversations_on_account_id_and_display_id", unique: true
     t.index ["account_id", "id"], name: "index_conversations_on_id_and_account_id"
     t.index ["account_id", "inbox_id", "status", "assignee_id"], name: "conv_acid_inbid_stat_asgnid_idx"
