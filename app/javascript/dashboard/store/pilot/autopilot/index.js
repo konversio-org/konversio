@@ -157,7 +157,7 @@ export const actions = {
   // Playground
   async sendPlaygroundMessage(
     { commit },
-    { assistantId, messageContent, messageHistory }
+    { assistantId, messageContent, messageHistory, playgroundConfig }
   ) {
     commit(types.SET_UI_FLAG, { isSendingPlayground: true });
     commit(types.SET_LAST_ERROR, null);
@@ -165,6 +165,7 @@ export const actions = {
       const { data } = await PilotAutopilotAPI.playground(assistantId, {
         messageContent,
         messageHistory,
+        playgroundConfig,
       });
       return data;
     } catch (err) {

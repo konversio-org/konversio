@@ -184,6 +184,45 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Assistants', type: :request do
              as: :json
       end.not_to change(Conversation, :count)
     end
+
+    it 'returns a run report when a playground_config is supplied' do
+      post playground_url,
+           params: {
+             message_content: 'Hi',
+             message_history: [{ role: 'user', content: 'Hi' }],
+             playground_config: { knowledge_text: 'Refunds take 30 days.' }
+           },
+           headers: agent.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['reply']).to eq('Hello there!')
+      run_report = response.parsed_body['run_report']
+      expect(run_report['handler']).to include('type' => 'assistant', 'temporary' => false)
+      expect(run_report['knowledge_attached']).to be(true)
+      expect(run_report['duration_ms']).to be_a(Integer)
+      expect(run_report['events']).to eq([])
+    end
+
+    it 'returns 422 with field-keyed errors when the config is invalid' do
+      post playground_url,
+           params: { message_content: 'Hi', playground_config: { knowledge_text: 'x' * 10_001 } },
+           headers: agent.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['errors']).to have_key('knowledge_text')
+    end
+
+    it 'returns 422 keyed to the configuration field when the config is not an object' do
+      post playground_url,
+           params: { message_content: 'Hi', playground_config: 'nope' },
+           headers: agent.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response.parsed_body['errors']).to have_key('playground_config')
+    end
   end
 
   describe 'GET /api/v1/accounts/:account_id/pilot/assistants/tools' do

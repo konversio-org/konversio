@@ -30,15 +30,13 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   end
 
   def playground
-    result = Custom::Pilot::AutopilotService.new(
-      assistant: @assistant,
-      message: params[:message_content],
-      message_history: parsed_message_history,
-      account: Current.account,
-      source: 'playground'
-    ).perform
-
-    render json: { reply: result.reply, invoked_tool_names: result.invoked_tool_names }, status: :ok
+    if params[:playground_config].nil?
+      render_legacy_playground
+    else
+      render_configured_playground
+    end
+  rescue Pilot::Playground::SessionConfig::Invalid => e
+    render json: { error: 'Invalid playground configuration', errors: e.errors }, status: :unprocessable_entity
   rescue Custom::Pilot::AutopilotService::FeatureDisabledError
     render json: { error: 'Pilot Autopilot is not enabled for this account' }, status: :forbidden
   rescue Custom::Pilot::AutopilotService::Error => e
@@ -51,6 +49,33 @@ class Api::V1::Accounts::Pilot::AssistantsController < Api::V1::Accounts::BaseCo
   end
 
   private
+
+  # Backward-compatible path: no configuration payload means run with the
+  # assistant's persisted scenarios, rules, and knowledge, and return the
+  # original response shape.
+  def render_legacy_playground
+    result = Custom::Pilot::AutopilotService.new(
+      assistant: @assistant,
+      message: params[:message_content],
+      message_history: parsed_message_history,
+      account: Current.account,
+      source: 'playground'
+    ).perform
+
+    render json: { reply: result.reply, invoked_tool_names: result.invoked_tool_names }, status: :ok
+  end
+
+  def render_configured_playground
+    result = Pilot::Playground::SessionRunner.call(
+      assistant: @assistant,
+      payload: params[:playground_config],
+      message: params[:message_content],
+      message_history: parsed_message_history,
+      account: Current.account
+    )
+
+    render json: result, status: :ok
+  end
 
   def ensure_feature_enabled
     return if Current.account.feature_enabled?('pilot') && Current.account.feature_enabled?('pilot_autopilot')
