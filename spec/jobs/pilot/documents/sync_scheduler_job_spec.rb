@@ -4,6 +4,8 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
   let(:account) { create(:account) }
   let(:assistant) { create(:pilot_assistant, account: account) }
   let(:fresh_time) { Time.current }
+  # Daily cadence (default): due window is half the interval (12h). 25h ago is
+  # comfortably past it.
   let(:stale_attempt_time) { fresh_time - (Pilot::SyncLimits::DEFAULT_REFRESH_INTERVAL + 1.hour) }
 
   before do
@@ -29,27 +31,31 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
     )
   end
 
-  def crawl_jobs
-    ActiveJob::Base.queue_adapter.enqueued_jobs.select { |j| j[:job] == Pilot::Documents::CrawlJob }
+  def refresh_jobs
+    ActiveJob::Base.queue_adapter.enqueued_jobs.select { |j| j[:job] == Pilot::Documents::RefreshJob }
+  end
+
+  def refresh_job_ids
+    refresh_jobs.map { |j| j[:args].first }
   end
 
   describe 'eligibility filter' do
-    it 'enqueues synced docs whose refresh window has elapsed' do
+    it 'enqueues synced docs whose cadence window has elapsed' do
       doc = make_synced_doc(last_synced_at: stale_attempt_time)
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).to include(doc.id)
+      expect(refresh_job_ids).to include(doc.id)
       expect(doc.reload.sync_status).to eq('syncing')
       expect(doc.last_sync_attempted_at).to be > stale_attempt_time
     end
 
-    it 'skips synced docs still within the refresh window' do
+    it 'skips synced docs still within the due window' do
       doc = make_synced_doc(last_synced_at: 5.minutes.ago)
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).not_to include(doc.id)
+      expect(refresh_job_ids).not_to include(doc.id)
       expect(doc.reload.sync_status).to eq('synced')
     end
 
@@ -63,7 +69,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).to include(doc.id)
+      expect(refresh_job_ids).to include(doc.id)
     end
 
     it 'recovers stuck syncing rows past STALE_TIMEOUT' do
@@ -78,7 +84,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).to include(doc.id)
+      expect(refresh_job_ids).to include(doc.id)
     end
 
     it 'leaves syncing rows alone when they are still within STALE_TIMEOUT' do
@@ -91,7 +97,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).not_to include(doc.id)
+      expect(refresh_job_ids).not_to include(doc.id)
     end
 
     it 'skips initial-crawl (in_progress) rows regardless of sync_status' do
@@ -101,14 +107,11 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
         status: :in_progress, sync_status: :synced,
         last_synced_at: stale_attempt_time
       )
-      # The Pilot::Document model auto-enqueues CrawlJob for in_progress
-      # rows on create. Clear that out so we can assert the scheduler
-      # itself does NOT additionally pick up the row.
       ActiveJob::Base.queue_adapter.enqueued_jobs.clear
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).not_to include(doc.id)
+      expect(refresh_job_ids).not_to include(doc.id)
     end
 
     it 'skips PDF-backed sources' do
@@ -122,7 +125,21 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).not_to include(doc.id)
+      expect(refresh_job_ids).not_to include(doc.id)
+    end
+
+    it 'skips markdown-backed sources' do
+      doc = create(
+        :pilot_document,
+        assistant: assistant, account: account,
+        external_link: 'MD: notes_2026-01-01.md',
+        status: :available, sync_status: :synced,
+        last_synced_at: stale_attempt_time
+      )
+
+      described_class.perform_now
+
+      expect(refresh_job_ids).not_to include(doc.id)
     end
 
     it 'skips accounts without pilot_autopilot' do
@@ -131,7 +148,55 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.map { |j| j[:args].first }).not_to include(doc.id)
+      expect(refresh_job_ids).not_to include(doc.id)
+    end
+  end
+
+  describe 'per-account cadence' do
+    it 'does not enqueue a weekly account document synced two days ago' do
+      account.pilot_document_sync_interval = 'weekly'
+      account.save!
+      doc = make_synced_doc(last_synced_at: 2.days.ago)
+
+      described_class.perform_now
+
+      expect(refresh_job_ids).not_to include(doc.id)
+    end
+
+    it 'enqueues a weekly account document past the half-interval due window' do
+      account.pilot_document_sync_interval = 'weekly'
+      account.save!
+      doc = make_synced_doc(last_synced_at: 5.days.ago)
+
+      described_class.perform_now
+
+      expect(refresh_job_ids).to include(doc.id)
+    end
+
+    it 'renders a late jittered execution eligible again at the next cadence window' do
+      account.pilot_document_sync_interval = 'daily'
+      account.save!
+      # Executed late in the previous daily window and is now just past the 12h
+      # half-interval due window, so it is due again on the next tick instead
+      # of waiting a full 24h.
+      doc = make_synced_doc(last_synced_at: 13.hours.ago)
+
+      described_class.perform_now
+
+      expect(refresh_job_ids).to include(doc.id)
+    end
+
+    it 'enqueues refreshes with a delay bounded by the cadence jitter window' do
+      account.pilot_document_sync_interval = 'daily'
+      account.save!
+      make_synced_doc(last_synced_at: stale_attempt_time)
+
+      described_class.perform_now
+
+      max_seconds = account.pilot_document_sync_jitter_hours.hours.to_i
+      delay = refresh_jobs.first[:at].to_f - Time.current.to_f
+      expect(delay).to be >= 0
+      expect(delay).to be <= max_seconds
     end
   end
 
@@ -142,7 +207,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.size).to eq(3)
+      expect(refresh_jobs.size).to eq(3)
     end
 
     it 'enforces the global hourly cap across accounts' do
@@ -152,7 +217,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      expect(crawl_jobs.size).to eq(2)
+      expect(refresh_jobs.size).to eq(2)
     end
   end
 
@@ -160,8 +225,6 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
     it 'orders by last_sync_attempted_at ASC NULLS FIRST (never-attempted first)' do
       stub_const('Pilot::SyncLimits::PER_ACCOUNT_HOURLY_CAP', 2)
 
-      # Three candidates: one never attempted (NULL), one attempted long ago,
-      # one attempted more recently but still past the refresh window.
       never_attempted = create(
         :pilot_document,
         assistant: assistant, account: account,
@@ -174,7 +237,7 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
 
       described_class.perform_now
 
-      enqueued_ids = crawl_jobs.map { |j| j[:args].first }
+      enqueued_ids = refresh_job_ids
       expect(enqueued_ids).to include(never_attempted.id, attempted_long_ago.id)
       expect(enqueued_ids.size).to eq(2)
     end
@@ -183,13 +246,13 @@ RSpec.describe Pilot::Documents::SyncSchedulerJob do
       docs = Array.new(2) { make_synced_doc(last_synced_at: stale_attempt_time) }
 
       described_class.perform_now
-      first_tick_count = crawl_jobs.size
+      first_tick_count = refresh_jobs.size
 
       ActiveJob::Base.queue_adapter.enqueued_jobs.clear
       described_class.perform_now
 
       expect(first_tick_count).to eq(2)
-      expect(crawl_jobs).to be_empty
+      expect(refresh_jobs).to be_empty
       docs.each { |d| expect(d.reload.sync_status).to eq('syncing') }
     end
   end

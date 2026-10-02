@@ -22,6 +22,10 @@ class Pilot::DocumentPolicy < ApplicationPolicy
     administrator?
   end
 
+  def refresh?
+    administrator?
+  end
+
   private
 
   def administrator?

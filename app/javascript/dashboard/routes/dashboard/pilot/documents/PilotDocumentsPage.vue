@@ -7,6 +7,7 @@ import { useAlert } from 'dashboard/composables';
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
+import PilotPreferencesAPI from 'dashboard/api/pilot/preferences';
 import DocumentList from './DocumentList.vue';
 import AddDocumentDialog from './AddDocumentDialog.vue';
 import DocumentsPagerFooter from './DocumentsPagerFooter.vue';
@@ -28,8 +29,29 @@ const STATUS_FILTERS = [
   { value: 'failed', key: 'FAILED' },
 ];
 
+const SOURCE_FILTERS = [
+  { value: null, key: 'ALL' },
+  { value: 'web', key: 'WEB' },
+  { value: 'pdf', key: 'PDF' },
+  { value: 'markdown', key: 'MARKDOWN' },
+];
+
+const SYNC_FILTERS = [
+  { value: null, key: 'ALL' },
+  { value: 'stale', key: 'STALE' },
+  { value: 'synced', key: 'SYNCED' },
+  { value: 'syncing', key: 'SYNCING' },
+  { value: 'failed', key: 'FAILED' },
+];
+
+const CADENCE_OPTIONS = ['daily', 'weekly', 'monthly'];
+
 const selectedAssistantId = ref(activeAssistantId.value);
 const selectedStatus = ref(null);
+const selectedSource = ref(null);
+const selectedSyncState = ref(null);
+const syncInterval = ref('daily');
+const isSavingCadence = ref(false);
 const addDialogRef = ref(null);
 
 const isLoading = computed(() => uiFlags.value.isFetching);
@@ -48,13 +70,42 @@ const errorMessage = computed(() => {
 const fetchDocuments = (page = 1) => {
   store.dispatch('pilot/documents/setAssistant', selectedAssistantId.value);
   store.dispatch('pilot/documents/setStatus', selectedStatus.value);
+  store.dispatch('pilot/documents/setSource', selectedSource.value);
+  store.dispatch('pilot/documents/setSyncState', selectedSyncState.value);
   return store
     .dispatch('pilot/documents/fetch', {
       assistantId: selectedAssistantId.value,
       status: selectedStatus.value,
+      source: selectedSource.value,
+      syncState: selectedSyncState.value,
       page,
     })
     .catch(() => {});
+};
+
+const fetchPreferences = async () => {
+  try {
+    const { data } = await PilotPreferencesAPI.fetch();
+    if (data?.document_sync_interval) {
+      syncInterval.value = data.document_sync_interval;
+    }
+  } catch (_e) {
+    // Non-fatal: the cadence selector keeps its default.
+  }
+};
+
+const onCadenceChange = async () => {
+  isSavingCadence.value = true;
+  try {
+    await PilotPreferencesAPI.update({
+      pilot_document_sync_interval: syncInterval.value,
+    });
+    useAlert(t('PILOT_DOCUMENTS.CADENCE.UPDATED'));
+  } catch (_e) {
+    useAlert(t('PILOT_DOCUMENTS.CADENCE.UPDATE_FAILED'));
+  } finally {
+    isSavingCadence.value = false;
+  }
 };
 
 onMounted(async () => {
@@ -69,10 +120,13 @@ onMounted(async () => {
     selectedAssistantId.value = assistants.value[0].id;
   }
   fetchDocuments(1);
+  fetchPreferences();
 });
 
 watch(selectedAssistantId, () => fetchDocuments(1));
 watch(selectedStatus, () => fetchDocuments(1));
+watch(selectedSource, () => fetchDocuments(1));
+watch(selectedSyncState, () => fetchDocuments(1));
 
 // Auto-refresh while any visible document is still being crawled. Stops
 // once every row on the current page has settled (available/failed).
@@ -125,11 +179,31 @@ const onDelete = async id => {
 
 const onPageChange = page => fetchDocuments(page);
 
+const onRefresh = async id => {
+  try {
+    await store.dispatch('pilot/documents/refresh', id);
+    useAlert(t('PILOT_DOCUMENTS.TOAST.REFRESH_STARTED'));
+    await fetchDocuments(meta.value.current_page || 1);
+  } catch (_e) {
+    useAlert(t('PILOT_DOCUMENTS.TOAST.REFRESH_FAILED'));
+  }
+};
+
 const onStatusChange = value => {
   selectedStatus.value = value;
 };
 
+const onSourceChange = value => {
+  selectedSource.value = value;
+};
+
+const onSyncStateChange = value => {
+  selectedSyncState.value = value;
+};
+
 const isStatusActive = value => selectedStatus.value === value;
+const isSourceActive = value => selectedSource.value === value;
+const isSyncStateActive = value => selectedSyncState.value === value;
 </script>
 
 <template>
@@ -148,16 +222,41 @@ const isStatusActive = value => selectedStatus.value === value;
               {{ t('PILOT_DOCUMENTS.HEADER.TITLE') }}
             </h1>
           </div>
-          <Button
-            :label="t('PILOT_DOCUMENTS.HEADER.ADD_BUTTON')"
-            icon="i-lucide-plus"
-            size="sm"
-            @click="onAdd"
-          />
+          <div class="flex items-center gap-3 flex-wrap">
+            <label
+              class="flex items-center gap-2 text-xs text-n-slate-11"
+              for="pilot-document-cadence"
+            >
+              <span>{{ t('PILOT_DOCUMENTS.CADENCE.LABEL') }}</span>
+              <select
+                id="pilot-document-cadence"
+                v-model="syncInterval"
+                :disabled="isSavingCadence"
+                class="h-8 px-2 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9 disabled:opacity-60"
+                @change="onCadenceChange"
+              >
+                <option
+                  v-for="option in CADENCE_OPTIONS"
+                  :key="option"
+                  :value="option"
+                >
+                  {{
+                    t(`PILOT_DOCUMENTS.CADENCE.OPTIONS.${option.toUpperCase()}`)
+                  }}
+                </option>
+              </select>
+            </label>
+            <Button
+              :label="t('PILOT_DOCUMENTS.HEADER.ADD_BUTTON')"
+              icon="i-lucide-plus"
+              size="sm"
+              @click="onAdd"
+            />
+          </div>
         </div>
         <nav
           :aria-label="t('PILOT_DOCUMENTS.STATUS_FILTER.ARIA')"
-          class="flex items-center gap-2 pb-3 flex-wrap"
+          class="flex items-center gap-2 pb-2 flex-wrap"
         >
           <button
             v-for="filter in STATUS_FILTERS"
@@ -172,6 +271,49 @@ const isStatusActive = value => selectedStatus.value === value;
             @click="onStatusChange(filter.value)"
           >
             {{ t(`PILOT_DOCUMENTS.STATUS_FILTER.${filter.key}`) }}
+          </button>
+        </nav>
+        <nav
+          :aria-label="t('PILOT_DOCUMENTS.SOURCE_FILTER.ARIA')"
+          class="flex items-center gap-2 pb-3 flex-wrap"
+        >
+          <span class="text-xs font-medium text-n-slate-10">
+            {{ t('PILOT_DOCUMENTS.SOURCE_FILTER.LABEL') }}
+          </span>
+          <button
+            v-for="filter in SOURCE_FILTERS"
+            :key="filter.key"
+            type="button"
+            class="text-xs font-medium inline-flex items-center h-7 px-3 rounded-full border transition-colors"
+            :class="
+              isSourceActive(filter.value)
+                ? 'bg-n-slate-12 text-n-solid-1 border-n-slate-12'
+                : 'bg-n-solid-2 text-n-slate-11 border-n-container hover:bg-n-alpha-1'
+            "
+            @click="onSourceChange(filter.value)"
+          >
+            {{ t(`PILOT_DOCUMENTS.SOURCE_FILTER.${filter.key}`) }}
+          </button>
+          <span
+            aria-hidden="true"
+            class="h-5 w-px bg-n-weak mx-1 hidden sm:inline-block"
+          />
+          <span class="text-xs font-medium text-n-slate-10">
+            {{ t('PILOT_DOCUMENTS.SYNC_FILTER.LABEL') }}
+          </span>
+          <button
+            v-for="filter in SYNC_FILTERS"
+            :key="`sync-${filter.key}`"
+            type="button"
+            class="text-xs font-medium inline-flex items-center h-7 px-3 rounded-full border transition-colors"
+            :class="
+              isSyncStateActive(filter.value)
+                ? 'bg-n-slate-12 text-n-solid-1 border-n-slate-12'
+                : 'bg-n-solid-2 text-n-slate-11 border-n-container hover:bg-n-alpha-1'
+            "
+            @click="onSyncStateChange(filter.value)"
+          >
+            {{ t(`PILOT_DOCUMENTS.SYNC_FILTER.${filter.key}`) }}
           </button>
         </nav>
       </div>
@@ -212,6 +354,7 @@ const isStatusActive = value => selectedStatus.value === value;
           :has-error="!!errorMessage"
           @delete="onDelete"
           @add="onAdd"
+          @refresh="onRefresh"
         />
 
         <DocumentsPagerFooter

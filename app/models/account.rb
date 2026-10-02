@@ -59,6 +59,7 @@ class Account < ApplicationRecord
   store_accessor :settings, :reporting_timezone
   store_accessor :settings, :keep_pending_on_bot_failure
   store_accessor :settings, :pilot_auto_resolve_mode
+  store_accessor :settings, :pilot_document_sync_interval
   include AccountPilotAutoResolve
 
   audited except: :updated_at, on: [:update]
@@ -129,6 +130,23 @@ class Account < ApplicationRecord
   before_validation :validate_limit_keys
   after_create_commit :notify_creation
   after_destroy :remove_account_sequences
+
+  # Effective knowledge-refresh cadence key: the account override when it is a
+  # valid cadence, otherwise the installation-wide default.
+  def pilot_document_sync_interval_key
+    stored = self[:settings].to_h['pilot_document_sync_interval']
+    return stored if ::Pilot::SyncLimits::REFRESH_INTERVALS_HOURS.key?(stored)
+
+    ::Pilot::SyncLimits.default_interval_key
+  end
+
+  def pilot_document_sync_interval_hours
+    ::Pilot::SyncLimits.interval_hours(pilot_document_sync_interval_key)
+  end
+
+  def pilot_document_sync_jitter_hours
+    ::Pilot::SyncLimits.jitter_hours(pilot_document_sync_interval_key)
+  end
 
   def agents
     users.where(account_users: { role: :agent })

@@ -1,16 +1,20 @@
 class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseController
   PER_PAGE = 25
   MAX_PDF_BYTES = 25.megabytes
+  SYNC_STATE_FILTERS = %w[stale synced syncing failed].freeze
+  SOURCE_FILTERS = %w[web pdf markdown].freeze
 
   before_action :ensure_feature_enabled
   before_action :load_assistant, only: [:create]
-  before_action :load_document, only: [:show, :destroy]
+  before_action :load_document, only: [:show, :destroy, :refresh]
   before_action :authorize_request
 
   def index
     scope = Current.account.pilot_documents.ordered
     scope = scope.where(assistant_id: params[:assistant_id]) if params[:assistant_id].present?
     scope = scope.where(status: params[:status]) if params[:status].present?
+    scope = apply_sync_state_filter(scope)
+    scope = apply_source_filter(scope)
 
     @documents = scope.page(current_page).per(PER_PAGE)
   end
@@ -21,16 +25,32 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
     @document = @assistant.documents.new(
       account: Current.account,
       external_link: document_params[:external_link],
+      markdown_content: document_params[:markdown_content],
       status: :in_progress
     )
     attach_pdf_if_present
+    attach_markdown_if_present
     validate_source!
     @document.save!
 
     # `after_create_commit :enqueue_crawl_job` on `Pilot::Document` enqueues
-    # `Pilot::Documents::CrawlJob`, which owns the full ingestion lifecycle
-    # (Firecrawl crawl for URLs, pdf-reader for PDFs).
+    # `Pilot::Documents::CrawlJob` for URL/PDF ingestion. Markdown documents
+    # become `available` during validation, so no crawl is enqueued for them.
     render :show, status: :created
+  end
+
+  def refresh
+    unless @document.available? && @document.syncable?
+      return render json: { error: 'Only available web documents can be refreshed' }, status: :unprocessable_entity
+    end
+
+    @document.update!(
+      sync_status: :syncing,
+      last_sync_attempted_at: Time.current,
+      metadata: (@document.metadata || {}).merge('last_sync_failure_category' => nil, 'refresh_phase' => 'queued')
+    )
+    ::Pilot::Documents::RefreshJob.perform_later(@document.id)
+    head :accepted
   end
 
   def destroy
@@ -71,8 +91,36 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
     render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
   end
 
+  def apply_sync_state_filter(scope)
+    state = params[:sync_state].presence
+    return scope unless SYNC_STATE_FILTERS.include?(state)
+
+    case state
+    when 'stale'
+      scope.where(status: :available).where('last_synced_at IS NULL OR last_synced_at < ?', stale_cutoff)
+    when 'synced' then scope.where(sync_status: :synced)
+    when 'syncing' then scope.where(sync_status: :syncing)
+    when 'failed' then scope.where(sync_status: :failed)
+    end
+  end
+
+  def apply_source_filter(scope)
+    source = params[:source].presence
+    return scope unless SOURCE_FILTERS.include?(source)
+
+    case source
+    when 'pdf' then scope.where("external_link LIKE 'PDF:%'")
+    when 'markdown' then scope.where('external_link LIKE ?', "#{Pilot::Document::MARKDOWN_LINK_PREFIX}%")
+    when 'web' then scope.where("external_link NOT LIKE 'PDF:%' AND external_link NOT LIKE ?", "#{Pilot::Document::MARKDOWN_LINK_PREFIX}%")
+    end
+  end
+
+  def stale_cutoff
+    Current.account.pilot_document_sync_interval_hours.hours.ago
+  end
+
   def validate_source!
-    return if @document.pdf_file.attached?
+    return if file_source?
 
     link = @document.external_link.to_s
     raise ActiveRecord::RecordInvalid, @document if link.blank?
@@ -87,6 +135,10 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
     raise ActiveRecord::RecordInvalid, @document
   end
 
+  def file_source?
+    @document.pdf_file.attached? || @document.markdown_file.attached? || @document.markdown_content.present?
+  end
+
   def attach_pdf_if_present
     pdf = document_params[:pdf_file]
     return if pdf.blank?
@@ -97,6 +149,16 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
     end
 
     @document.pdf_file.attach(io: pdf.tempfile, filename: pdf.original_filename, content_type: pdf.content_type)
+  end
+
+  def attach_markdown_if_present
+    markdown = document_params[:markdown_file]
+    return if markdown.blank?
+
+    body = markdown.tempfile.read
+    markdown.tempfile.rewind
+    @document.content ||= body
+    @document.markdown_file.attach(io: markdown.tempfile, filename: markdown.original_filename, content_type: markdown.content_type)
   end
 
   def valid_pdf_upload?(pdf)
@@ -111,8 +173,8 @@ class Api::V1::Accounts::Pilot::DocumentsController < Api::V1::Accounts::BaseCon
   end
 
   def document_params
-    params.require(:document).permit(:assistant_id, :external_link, :pdf_file)
+    params.require(:document).permit(:assistant_id, :external_link, :pdf_file, :markdown_file, :markdown_content)
   rescue ActionController::ParameterMissing
-    ActionController::Parameters.new.permit(:assistant_id, :external_link, :pdf_file)
+    ActionController::Parameters.new.permit(:assistant_id, :external_link, :pdf_file, :markdown_file, :markdown_content)
   end
 end

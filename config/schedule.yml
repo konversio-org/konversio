@@ -71,9 +71,12 @@ pilot_events_retention_job:
   queue: scheduled_jobs
 
 # executed hourly
-# Pilot document sync: re-fetches eligible URL-backed Pilot::Document rows
-# whose refresh window has elapsed. Per-account cap 50, global cap 1000;
-# stuck-state recovery at 2h. Eligibility three-branch disjunction over
+# Pilot document sync: enqueues refreshes for eligible URL-backed
+# Pilot::Document rows whose account cadence window has elapsed (daily
+# default, weekly, or monthly; due window = half the cadence). Each enqueue
+# carries a cadence-scaled random delay so fleets spread over the window.
+# Per-account cap 50, global cap 1000 (installation-config overridable);
+# stuck-state recovery at 2h. Eligibility is a three-branch disjunction over
 # (sync_status, last_attempt_at). See Pilot::Documents::SyncSchedulerJob.
 pilot_documents_sync_scheduler_job:
   cron: '0 * * * *'

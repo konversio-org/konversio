@@ -229,6 +229,21 @@
   value: 50
   description: 'Maximum link depth traversed by Firecrawl during a crawl. Managed via Super Admin > Crawling.'
   locked: false
+- name: PILOT_DOCUMENT_SYNC_INTERVAL
+  display_title: 'Document Sync Interval (default)'
+  value: daily
+  description: 'Installation-wide default knowledge-refresh cadence (daily, weekly, or monthly) used when an account has no override.'
+  locked: false
+- name: PILOT_DOCUMENTS_SYNC_PER_ACCOUNT_CAP
+  display_title: 'Document Sync Per-Account Cap'
+  value: 50
+  description: 'Maximum document refreshes enqueued per account per scheduler tick.'
+  locked: false
+- name: PILOT_DOCUMENTS_SYNC_GLOBAL_CAP
+  display_title: 'Document Sync Global Cap'
+  value: 1000
+  description: 'Maximum document refreshes enqueued across all accounts per scheduler tick.'
+  locked: false
 # End of Pilot Config
 
 # ------- Context.dev Config ------- #

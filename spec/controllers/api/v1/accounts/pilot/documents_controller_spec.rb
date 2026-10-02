@@ -9,9 +9,11 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
 
   before do
     account.enable_features!(:pilot, :pilot_autopilot)
-    # Crawl runs async — stub the job so URL/PDF creates don't actually hit
-    # Firecrawl / pdf-reader during these tests.
+    # Ingestion/refresh runs async — stub the jobs so creates/refreshes don't
+    # actually hit Firecrawl / pdf-reader during these tests.
     allow(Pilot::Documents::CrawlJob).to receive(:perform_later)
+    allow(Pilot::Documents::RefreshJob).to receive(:perform_later)
+    allow(Pilot::DocumentResponseBuilderJob).to receive(:perform_later)
   end
 
   describe 'GET /api/v1/accounts/:account_id/pilot/documents' do
@@ -197,6 +199,158 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Documents', type: :request do
 
       delete "#{base_url}/#{other_doc.id}", headers: admin.create_new_auth_token, as: :json
       expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe 'POST /api/v1/accounts/:account_id/pilot/documents/:id/refresh' do
+    let(:document) do
+      create(:pilot_document, assistant: assistant, account: account,
+                              status: :available, sync_status: :synced,
+                              external_link: 'https://example.com/help')
+    end
+
+    it 'enqueues an immediate refresh for an available web document' do
+      post "#{base_url}/#{document.id}/refresh", headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:accepted)
+      expect(Pilot::Documents::RefreshJob).to have_received(:perform_later).with(document.id)
+      document.reload
+      expect(document.sync_status).to eq('syncing')
+      expect(document.last_sync_attempted_at).to be_present
+      expect(document.refresh_phase).to eq('queued')
+    end
+
+    it 'rejects file-backed documents' do
+      pdf = create(:pilot_document, assistant: assistant, account: account,
+                                    status: :available, external_link: 'PDF: handbook.pdf')
+
+      post "#{base_url}/#{pdf.id}/refresh", headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(Pilot::Documents::RefreshJob).not_to have_received(:perform_later)
+    end
+
+    it 'rejects documents that are not available yet' do
+      in_progress = create(:pilot_document, assistant: assistant, account: account,
+                                            status: :in_progress, sync_status: nil)
+
+      post "#{base_url}/#{in_progress.id}/refresh", headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(Pilot::Documents::RefreshJob).not_to have_received(:perform_later)
+    end
+
+    it 'returns 403 for agents' do
+      post "#{base_url}/#{document.id}/refresh", headers: agent.create_new_auth_token, as: :json
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
+  describe 'markdown documents' do
+    it 'creates an available document from pasted markdown' do
+      expect do
+        post base_url,
+             params: { document: { assistant_id: assistant.id, markdown_content: '# Notes' } },
+             headers: admin.create_new_auth_token,
+             as: :json
+      end.to change(Pilot::Document, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      doc = Pilot::Document.last
+      expect(doc).to be_available
+      expect(doc.markdown_file).to be_attached
+      expect(doc.content).to eq('# Notes')
+      expect(doc.external_link).to start_with(Pilot::Document::MARKDOWN_LINK_PREFIX)
+      expect(Pilot::Documents::CrawlJob).not_to have_received(:perform_later)
+    end
+
+    it 'creates an available document from an uploaded .md file' do
+      file = Tempfile.new(['notes', '.md'])
+      file.write('# Uploaded notes')
+      file.rewind
+
+      post base_url,
+           params: { document: { assistant_id: assistant.id, markdown_file: Rack::Test::UploadedFile.new(file.path, 'text/markdown', true) } },
+           headers: admin.create_new_auth_token
+
+      expect(response).to have_http_status(:created)
+      doc = Pilot::Document.last
+      expect(doc).to be_available
+      expect(doc.markdown_file).to be_attached
+      expect(doc.content).to include('Uploaded notes')
+    ensure
+      file&.close
+      file&.unlink
+    end
+
+    it 'rejects a non-markdown upload' do
+      file = Tempfile.new(['notes', '.txt'])
+      file.write('plain text')
+      file.rewind
+
+      post base_url,
+           params: { document: { assistant_id: assistant.id, markdown_file: Rack::Test::UploadedFile.new(file.path, 'text/plain', true) } },
+           headers: admin.create_new_auth_token
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    ensure
+      file&.close
+      file&.unlink
+    end
+
+    it 'rejects oversized pasted markdown' do
+      post base_url,
+           params: { document: { assistant_id: assistant.id, markdown_content: 'a' * (Pilot::Document::MARKDOWN_MAX_CHARS + 1) } },
+           headers: admin.create_new_auth_token,
+           as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+  end
+
+  describe 'sync-state and source filters and payload fields' do
+    it 'exposes sync fields and the account cadence' do
+      document = create(:pilot_document, assistant: assistant, account: account,
+                                         status: :available, sync_status: :synced,
+                                         last_synced_at: 1.hour.ago, last_sync_attempted_at: 1.hour.ago)
+
+      get "#{base_url}/#{document.id}", headers: admin.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:ok)
+      body = response.parsed_body
+      expect(body).to include(
+        'sync_status' => 'synced',
+        'source_type' => 'web',
+        'sync_interval_hours' => 24
+      )
+      expect(body.keys).to include('last_synced_at', 'last_sync_attempted_at', 'last_sync_failure_category', 'refresh_phase')
+    end
+
+    it 'filters by source type' do
+      web = create(:pilot_document, assistant: assistant, account: account, status: :available)
+      create(:pilot_document, assistant: assistant, account: account, status: :available, external_link: 'PDF: handbook.pdf')
+      markdown = create(:pilot_document, assistant: assistant, account: account, status: :available, external_link: 'MD: notes.md')
+      create(:pilot_document, assistant: assistant, account: account, status: :available, external_link: 'https://example.com/a.pdf')
+
+      get base_url, params: { source: 'markdown' }, headers: admin.create_new_auth_token, as: :json
+      ids = response.parsed_body['data'].pluck('id')
+      expect(ids).to contain_exactly(markdown.id)
+      expect(ids).not_to include(web.id)
+    end
+
+    it 'filters by cadence-aware staleness' do
+      account.pilot_document_sync_interval = 'weekly'
+      account.save!
+      stale = create(:pilot_document, assistant: assistant, account: account,
+                                      status: :available, sync_status: :synced, last_synced_at: 10.days.ago)
+      fresh = create(:pilot_document, assistant: assistant, account: account,
+                                      status: :available, sync_status: :synced, last_synced_at: 3.days.ago)
+
+      get base_url, params: { sync_state: 'stale' }, headers: admin.create_new_auth_token, as: :json
+      ids = response.parsed_body['data'].pluck('id')
+
+      expect(ids).to include(stale.id)
+      expect(ids).not_to include(fresh.id)
     end
   end
 end

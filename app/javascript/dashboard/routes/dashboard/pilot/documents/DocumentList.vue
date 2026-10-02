@@ -18,12 +18,13 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['delete', 'add']);
+const emit = defineEmits(['delete', 'add', 'refresh']);
 
 const { t } = useI18n();
 
 const onDelete = id => emit('delete', id);
 const onAdd = () => emit('add');
+const onRefresh = id => emit('refresh', id);
 </script>
 
 <template>
@@ -65,6 +66,7 @@ const onAdd = () => emit('add');
         :key="document.id"
         :document="document"
         @delete="onDelete"
+        @refresh="onRefresh"
       />
     </template>
   </div>

@@ -439,6 +439,38 @@
       "IN_PROGRESS": "In progress",
       "FAILED": "Failed"
     },
+    "SYNC": {
+      "SYNCING": "Syncing",
+      "SYNCED": "Up to date",
+      "FAILED": "Sync failed",
+      "FAILED_REASON": "Last sync failed: {reason}"
+    },
+    "SOURCE_FILTER": {
+      "ARIA": "Filter documents by source type",
+      "LABEL": "Source",
+      "ALL": "All",
+      "WEB": "Web",
+      "PDF": "PDF",
+      "MARKDOWN": "Markdown"
+    },
+    "SYNC_FILTER": {
+      "LABEL": "Sync",
+      "ALL": "All",
+      "STALE": "Stale",
+      "SYNCED": "Up to date",
+      "SYNCING": "Syncing",
+      "FAILED": "Failed"
+    },
+    "CADENCE": {
+      "LABEL": "Refresh",
+      "OPTIONS": {
+        "DAILY": "Daily",
+        "WEEKLY": "Weekly",
+        "MONTHLY": "Monthly"
+      },
+      "UPDATED": "Refresh cadence updated.",
+      "UPDATE_FAILED": "Couldn't update the refresh cadence."
+    },
     "EMPTY": {
       "TITLE": "No documents yet",
       "DESCRIPTION": "Upload PDFs or add URLs to teach Pilot about your product. We'll extract the content and generate FAQs automatically.",
@@ -453,8 +485,10 @@
     },
     "ROW": {
       "FAQS_GENERATED": "{count} FAQs generated",
+      "LAST_SYNCED": "Synced {time}",
       "MENU_ARIA": "Document actions",
       "MENU": {
+        "REFRESH": "Refresh now",
         "DELETE": "Delete document"
       }
     },
@@ -463,7 +497,8 @@
       "DESCRIPTION": "Add a URL to crawl or upload a PDF. We'll extract its content and generate FAQs.",
       "TABS": {
         "URL": "URL",
-        "PDF": "PDF Upload"
+        "PDF": "PDF Upload",
+        "MARKDOWN": "Markdown"
       },
       "URL": {
         "LABEL": "Source URL",
@@ -476,10 +511,20 @@
         "REMOVE": "Remove",
         "INVALID": "Only .pdf files are supported."
       },
+      "MARKDOWN": {
+        "LABEL": "Markdown file",
+        "DROPZONE": "Drag a .md file here, or click to browse",
+        "REMOVE": "Remove",
+        "INVALID_FILE": "Only .md files are supported.",
+        "OR_PASTE": "Or paste markdown",
+        "PLACEHOLDER": "# Paste your markdown here",
+        "COUNTER": "{count} / {max} characters"
+      },
       "BUTTONS": {
         "CANCEL": "Cancel",
         "ADD_URL": "Add URL",
-        "UPLOAD": "Upload"
+        "UPLOAD": "Upload",
+        "ADD_MARKDOWN": "Add markdown"
       },
       "ERRORS": {
         "NO_ASSISTANT": "Select an assistant before adding a document.",
@@ -498,7 +543,9 @@
     "TOAST": {
       "CREATED": "Document added. We'll start processing it shortly.",
       "DELETED": "Document deleted.",
-      "DELETE_FAILED": "Couldn't delete the document."
+      "DELETE_FAILED": "Couldn't delete the document.",
+      "REFRESH_STARTED": "Refresh started.",
+      "REFRESH_FAILED": "Couldn't refresh the document."
     },
     "CRAWL": {
       "IN_PROGRESS_HINT": "Crawling… new pages will appear here as they're discovered."

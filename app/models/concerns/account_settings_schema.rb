@@ -12,6 +12,7 @@ module AccountSettingsSchema
         'auto_resolve_label': { 'type': %w[string null] },
         'keep_pending_on_bot_failure': { 'type': %w[boolean null] },
         'pilot_auto_resolve_mode': { 'type': %w[string null], 'enum': ['legacy', 'disabled', 'evaluated', nil] },
+        'pilot_document_sync_interval': { 'type': %w[string null], 'enum': ['daily', 'weekly', 'monthly', nil] },
         'conversation_required_attributes': {
           'type': %w[array null],
           'items': { 'type': 'string' }

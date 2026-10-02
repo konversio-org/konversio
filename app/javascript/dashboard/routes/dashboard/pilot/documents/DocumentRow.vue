@@ -19,7 +19,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['delete']);
+const emit = defineEmits(['delete', 'refresh']);
 
 const { t } = useI18n();
 
@@ -49,7 +49,12 @@ const statusLabel = computed(() =>
   t(`PILOT_DOCUMENTS.STATUS.${statusKey.value.toUpperCase()}`)
 );
 
-const isExternalLink = computed(() => Boolean(props.document.external_link));
+const isFileBacked = computed(() =>
+  ['pdf', 'markdown'].includes(props.document.source_type)
+);
+const isExternalLink = computed(
+  () => Boolean(props.document.external_link) && !isFileBacked.value
+);
 const linkHref = computed(() => props.document.external_link || null);
 
 const isCrawling = computed(
@@ -76,7 +81,45 @@ const relativeTime = computed(() => {
   return dynamicTime(ts);
 });
 
+const SYNC_STYLES = {
+  syncing: { pill: 'bg-n-amber-3 text-n-amber-11', animated: true },
+  synced: { pill: 'bg-n-teal-3 text-n-teal-11', animated: false },
+  failed: { pill: 'bg-n-ruby-3 text-n-ruby-11', animated: false },
+};
+
+const syncStatusKey = computed(
+  () => props.document.sync_status || props.document.status || null
+);
+const syncStyle = computed(() => SYNC_STYLES[syncStatusKey.value] || null);
+const syncLabel = computed(() =>
+  syncStyle.value
+    ? t(`PILOT_DOCUMENTS.SYNC.${syncStatusKey.value.toUpperCase()}`)
+    : ''
+);
+
+const syncTooltip = computed(() => {
+  if (props.document.sync_status !== 'failed') return '';
+  const category = props.document.last_sync_failure_category;
+  return category
+    ? t('PILOT_DOCUMENTS.SYNC.FAILED_REASON', { reason: category })
+    : '';
+});
+
+const lastSyncedAt = computed(() => {
+  const ts = props.document.last_synced_at;
+  if (!ts) return '';
+  return dynamicTime(ts);
+});
+
+const canRefresh = computed(
+  () =>
+    props.document.status === 'available' &&
+    !isFileBacked.value &&
+    props.document.sync_status !== 'syncing'
+);
+
 const onDelete = () => emit('delete', props.document.id);
+const onRefresh = () => emit('refresh', props.document.id);
 </script>
 
 <template>
@@ -112,6 +155,15 @@ const onDelete = () => emit('delete', props.document.id);
           >
             {{ statusLabel }}
           </span>
+          <span
+            v-if="syncStyle"
+            :title="syncTooltip"
+            class="text-xs font-medium inline-flex items-center gap-1 h-5 px-2 rounded-md"
+            :class="[syncStyle.pill, syncStyle.animated && 'animate-pulse']"
+          >
+            <Icon icon="i-lucide-refresh-cw" class="size-3" />
+            {{ syncLabel }}
+          </span>
         </div>
         <p v-if="subtitle" class="text-sm text-n-slate-11 truncate">
           {{ subtitle }}
@@ -127,7 +179,10 @@ const onDelete = () => emit('delete', props.document.id);
               })
             }}
           </span>
-          <span v-if="relativeTime">{{ relativeTime }}</span>
+          <span v-if="lastSyncedAt">
+            {{ t('PILOT_DOCUMENTS.ROW.LAST_SYNCED', { time: lastSyncedAt }) }}
+          </span>
+          <span v-else-if="relativeTime">{{ relativeTime }}</span>
         </div>
       </div>
       <DropdownContainer>
@@ -143,6 +198,21 @@ const onDelete = () => emit('delete', props.document.id);
         </template>
         <DropdownBody class="min-w-40 z-50">
           <DropdownSection>
+            <DropdownItem :click="onRefresh" :disabled="!canRefresh">
+              <template #label>
+                <span
+                  class="flex items-center gap-3 w-full text-left rtl:text-right"
+                  :class="canRefresh ? 'text-n-slate-12' : 'text-n-slate-9'"
+                >
+                  <Icon
+                    icon="i-lucide-refresh-cw"
+                    class="size-4"
+                    :class="canRefresh ? 'text-n-slate-11' : 'text-n-slate-9'"
+                  />
+                  {{ t('PILOT_DOCUMENTS.ROW.MENU.REFRESH') }}
+                </span>
+              </template>
+            </DropdownItem>
             <DropdownItem :click="onDelete">
               <template #label>
                 <span
