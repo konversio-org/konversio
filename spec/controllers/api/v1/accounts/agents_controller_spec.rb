@@ -192,6 +192,45 @@ RSpec.describe 'Agents API', type: :request do
           expect(response.parsed_body['error']).to eq('The daily email limit for this account has been reached')
         end
       end
+
+      context 'when the account has reached its agent limit' do
+        before do
+          account.update!(limits: { 'agents' => account.account_users.count })
+        end
+
+        it 'returns payment required with the limit message' do
+          post "/api/v1/accounts/#{account.id}/agents",
+               params: params,
+               headers: admin.create_new_auth_token,
+               as: :json
+
+          expect(response).to have_http_status(:payment_required)
+          expect(response.parsed_body['error']).to eq(AgentBuilder::LIMIT_EXCEEDED_MESSAGE)
+        end
+      end
+
+      context 'when only one agent seat remains' do
+        before do
+          account.update!(limits: { 'agents' => account.account_users.count + 1 })
+        end
+
+        it 'never lets the account exceed the quota across consecutive invitations' do
+          headers = admin.create_new_auth_token
+
+          post "/api/v1/accounts/#{account.id}/agents",
+               params: { name: 'First', email: 'first-racer@example.com', role: :agent },
+               headers: headers, as: :json
+          expect(response).to have_http_status(:success)
+
+          post "/api/v1/accounts/#{account.id}/agents",
+               params: { name: 'Second', email: 'second-racer@example.com', role: :agent },
+               headers: headers, as: :json
+          expect(response).to have_http_status(:payment_required)
+
+          account.reload
+          expect(account.account_users.count).to eq(account.usage_limits[:agents])
+        end
+      end
     end
   end
 
@@ -287,6 +326,21 @@ RSpec.describe 'Agents API', type: :request do
           expect(User.from_email(emails.second)).to be_nil
           expect(User.from_email(emails.third)).to be_nil
           expect(account.emails_sent_today).to eq(1)
+        end
+      end
+
+      context 'when the batch exceeds the remaining agent capacity' do
+        before do
+          account.update!(limits: { 'agents' => account.account_users.count + 1 })
+        end
+
+        it 'returns payment required and creates no users' do
+          expect do
+            post "/api/v1/accounts/#{account.id}/agents/bulk_create", params: bulk_create_params, headers: admin.create_new_auth_token
+          end.not_to change(User, :count)
+
+          expect(response).to have_http_status(:payment_required)
+          expect(response.parsed_body['error']).to eq(AgentBuilder::LIMIT_EXCEEDED_MESSAGE)
         end
       end
     end
