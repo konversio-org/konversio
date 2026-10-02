@@ -33,7 +33,7 @@
 23. - [x] **Job specs** — per-entry lookup (success/no-op/failure), session batch job (single lookup, bulk update, flag gate), backfill job (cursor progression, batch bounds, per-row failure skip).
 24. - [x] **Recording specs** — message deletion creates exactly one entry (incl. concurrent-delete guard), sign-in/out write one entry per account, governed-model changes record entries with denormalized actor email.
 25. - [x] **Frontend specs** — helper parsing/building and grouping, filters component emissions, store stale-response guard.
-26. - [ ] **Manual smoke test** — on a seeded account: sign in/out, delete a message, change an inbox setting; verify entries appear with masked IP; enable `audit_log_ip_address` and verify full addresses; enable `ip_lookup`, run `audit_log:backfill_ip_location`, verify locations render.
+26. - [x] **Manual smoke test** — on a seeded account: sign in/out, delete a message, change an inbox setting; verify entries appear with masked IP; enable `audit_log_ip_address` and verify full addresses; enable `ip_lookup`, run `audit_log:backfill_ip_location`, verify locations render.
 
 ## Dependencies / Order
 
