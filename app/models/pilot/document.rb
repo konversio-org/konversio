@@ -38,7 +38,7 @@ class Pilot::Document < ApplicationRecord
   # Synthetic `external_link` prefix for file-backed markdown rows, mirroring
   # the PDF placeholder. Keeps the per-assistant source-link uniqueness
   # constraint intact for sources that have no web URL.
-  MARKDOWN_LINK_PREFIX = 'MD:'
+  MARKDOWN_LINK_PREFIX = 'MD:'.freeze
 
   include PilotMarkdownDocumentable
 
