@@ -46,6 +46,12 @@ class ContactAPI extends ApiClient {
     return axios.get(`${this.url}/${contactId}/contactable_inboxes`);
   }
 
+  getAttachments(contactId, page = 1) {
+    return axios.get(`${this.url}/${contactId}/attachments`, {
+      params: { page },
+    });
+  }
+
   getContactLabels(contactId) {
     return axios.get(`${this.url}/${contactId}/labels`);
   }

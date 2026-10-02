@@ -177,6 +177,19 @@ Rails.application.routes.draw do
             collection do
               get :search
             end
+            member do
+              post :destroy_custom_attributes
+              delete :avatar
+            end
+            scope module: :companies do
+              resources :contacts, only: [:index, :create, :destroy] do
+                collection do
+                  get :search
+                end
+              end
+              resources :notes, only: [:index]
+              resources :conversations, only: [:index]
+            end
           end
           resources :contacts, only: [:index, :show, :update, :create, :destroy] do
             collection do
@@ -196,6 +209,7 @@ Rails.application.routes.draw do
               resources :contact_inboxes, only: [:create]
               resources :labels, only: [:create, :index]
               resources :notes
+              get :attachments, to: 'attachments#index'
               post :call, on: :member, to: 'calls#create' if KonversioApp.enterprise?
             end
           end

@@ -14,6 +14,7 @@ export const CONVERSATION_ATTRIBUTES = {
   REFERER: 'referer',
   CREATED_AT: 'created_at',
   LAST_ACTIVITY_AT: 'last_activity_at',
+  CONTACT_ID: 'contact_id',
 };
 
 export const CONTACT_ATTRIBUTES = {
@@ -28,6 +29,7 @@ export const CONTACT_ATTRIBUTES = {
   REFERER: 'referer',
   BLOCKED: 'blocked',
   LABELS: 'labels',
+  COMPANY_NAME: 'company_name',
 };
 
 /**

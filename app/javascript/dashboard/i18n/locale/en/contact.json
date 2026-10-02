@@ -412,6 +412,7 @@
       "IDENTIFIER": "Identifier",
       "COUNTRY": "Country",
       "CITY": "City",
+      "COMPANY": "Company",
       "CREATED_AT": "Created at",
       "LAST_ACTIVITY": "Last activity",
       "REFERER_LINK": "Referer link",
@@ -533,6 +534,7 @@
         "ATTRIBUTES": "Attributes",
         "HISTORY": "History",
         "NOTES": "Notes",
+        "MEDIA": "Media",
         "MERGE": "Merge"
       },
       "HISTORY": {

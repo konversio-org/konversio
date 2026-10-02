@@ -9,6 +9,7 @@ import Input from 'dashboard/components-next/input/Input.vue';
 import ComboBox from 'dashboard/components-next/combobox/ComboBox.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import PhoneNumberInput from 'dashboard/components-next/phonenumberinput/PhoneNumberInput.vue';
+import CompanySelector from 'dashboard/components-next/Companies/CompanySelector.vue';
 
 const props = defineProps({
   contactData: {
@@ -57,6 +58,7 @@ const defaultState = {
   firstName: '',
   lastName: '',
   phoneNumber: '',
+  companyId: '',
   additionalAttributes: {
     description: '',
     companyName: '',
@@ -97,6 +99,7 @@ const prepareStateBasedOnProps = () => {
     email: emailAddress,
     phoneNumber,
     additionalAttributes = {},
+    companyId = '',
   } = props.contactData || {};
   const { firstName, lastName } = splitName(name || '');
   const {
@@ -119,6 +122,7 @@ const prepareStateBasedOnProps = () => {
     lastName,
     email: emailAddress,
     phoneNumber,
+    companyId: companyId || '',
     additionalAttributes: {
       description,
       companyName,
@@ -221,6 +225,21 @@ const handleCountrySelection = value => {
   emit('update', state);
 };
 
+// Konversio enables companies for every account, so the selector is shown
+// whenever the contact is not carrying a legacy free-text company name.
+const showCompanySelector = computed(
+  () => Boolean(state.companyId) || !state.additionalAttributes.companyName
+);
+
+const handleCompanySelection = async ({ id, name }) => {
+  state.companyId = id || '';
+  state.additionalAttributes.companyName = name || '';
+  const isFormValid = await v$.value.$validate();
+  if (!isFormValid) return;
+  const { firstName, lastName, ...stateWithoutNames } = state;
+  emit('update', stateWithoutNames);
+};
+
 const resetValidation = () => {
   v$.value.$reset();
 };
@@ -272,6 +291,13 @@ defineExpose({
             v-model="getFormBinding(item.key).value"
             :placeholder="item.placeholder"
             :show-border="isDetailsView"
+          />
+          <CompanySelector
+            v-else-if="item.key === 'COMPANY_NAME' && showCompanySelector"
+            :model-value="state.companyId"
+            :selected-name="state.additionalAttributes.companyName"
+            :is-details-view="isDetailsView"
+            @select="handleCompanySelection"
           />
           <Input
             v-else
