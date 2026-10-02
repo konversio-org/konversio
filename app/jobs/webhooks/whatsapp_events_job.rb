@@ -86,6 +86,9 @@ class Webhooks::WhatsappEventsJob < MutexApplicationJob
   end
 
   def handle_message_events(channel, params, locked_sender_id = nil)
+    return handle_call_events(channel, params) if call_event?(params)
+    return handle_call_permission_reply(channel, params) if call_permission_reply?(params)
+
     case channel.provider
     when 'whatsapp_cloud'
       service_params = { inbox: channel.inbox, params: params }
@@ -94,6 +97,35 @@ class Webhooks::WhatsappEventsJob < MutexApplicationJob
     else
       Whatsapp::IncomingMessageService.new(inbox: channel.inbox, params: params).perform
     end
+  end
+
+  # Meta delivers two shapes under field=calls: event-based `calls[]`
+  # (connect, terminate) and status-based `statuses[]` (RINGING, ACCEPTED).
+  def handle_call_events(channel, params)
+    value = params.dig(:entry, 0, :changes, 0, :value) || {}
+    contacts = value[:contacts]
+
+    Array(value[:calls]).each do |call_payload|
+      Whatsapp::IncomingCallService.new(inbox: channel.inbox, params: { calls: [call_payload], contacts: contacts }).perform
+    end
+
+    Array(value[:statuses]).each do |status_payload|
+      next unless status_payload[:type] == 'call'
+
+      Whatsapp::IncomingCallService.new(inbox: channel.inbox, params: { statuses: [status_payload] }).perform
+    end
+  end
+
+  def handle_call_permission_reply(channel, params)
+    Whatsapp::CallPermissionReplyService.new(inbox: channel.inbox, params: params).perform
+  end
+
+  def call_event?(params)
+    params.dig(:entry, 0, :changes, 0, :field) == 'calls'
+  end
+
+  def call_permission_reply?(params)
+    params.dig(:entry, 0, :changes, 0, :value, :messages, 0, :interactive, :type) == 'call_permission_reply'
   end
 
   private

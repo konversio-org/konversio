@@ -4,7 +4,7 @@ module Api::V1::Accounts::Concerns::WhatsappHealthManagement
   included do
     skip_before_action :check_authorization, only: [:health, :register_webhook]
     before_action :check_admin_authorization?, only: [:register_webhook]
-    before_action :validate_whatsapp_cloud_channel, only: [:health, :register_webhook]
+    before_action :validate_health_supported_channel, only: [:health, :register_webhook]
   end
 
   def sync_templates
@@ -49,7 +49,13 @@ module Api::V1::Accounts::Concerns::WhatsappHealthManagement
   end
 
   def register_webhook
-    Whatsapp::WebhookSetupService.new(@inbox.channel).register_callback
+    if whatsapp_cloud_channel?
+      Whatsapp::WebhookSetupService.new(@inbox.channel).register_callback
+    else
+      Twilio::WebhookSetupService.new(inbox: @inbox).perform
+      # No-op unless voice is enabled; keeps the number's voice webhooks in sync.
+      @inbox.channel.try(:reprovision_voice_webhooks!)
+    end
 
     render json: { message: 'Webhook registered successfully' }, status: :ok
   rescue StandardError => e
@@ -60,13 +66,23 @@ module Api::V1::Accounts::Concerns::WhatsappHealthManagement
   private
 
   def fetch_health_data
-    Whatsapp::HealthService.new(@inbox.channel).sync_health_status!(include_business_profile: true)
+    return Whatsapp::HealthService.new(@inbox.channel).sync_health_status!(include_business_profile: true) if whatsapp_cloud_channel?
+
+    Twilio::HealthService.new(channel: @inbox.channel).perform
   end
 
-  def validate_whatsapp_cloud_channel
-    return if @inbox.channel.is_a?(Channel::Whatsapp) && @inbox.channel.provider == 'whatsapp_cloud'
+  def validate_health_supported_channel
+    return if whatsapp_cloud_channel? || twilio_sms_channel?
 
-    render json: { error: 'Health data only available for WhatsApp Cloud API channels' }, status: :bad_request
+    render json: { error: 'Health data only available for WhatsApp Cloud API and Twilio SMS channels' }, status: :bad_request
+  end
+
+  def whatsapp_cloud_channel?
+    @inbox.channel.is_a?(Channel::Whatsapp) && @inbox.channel.provider == 'whatsapp_cloud'
+  end
+
+  def twilio_sms_channel?
+    @inbox.channel.is_a?(Channel::TwilioSms) && @inbox.channel.sms?
   end
 
   def whatsapp_channel?

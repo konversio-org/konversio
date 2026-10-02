@@ -71,6 +71,39 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     render status: :ok, json: { message: I18n.t('messages.inbox_deletetion_response') }
   end
 
+  def enable_whatsapp_calling
+    return unless whatsapp_calling_supported?
+
+    @inbox.channel.enable_voice_calling!
+    head :ok
+  rescue StandardError => e
+    render_could_not_create_error(e.message)
+  end
+
+  def disable_whatsapp_calling
+    return unless whatsapp_calling_supported?
+
+    @inbox.channel.disable_voice_calling!
+    head :ok
+  rescue StandardError => e
+    render_could_not_create_error(e.message)
+  end
+
+  def set_inbound_calls
+    return unless calling_supported?
+
+    update_call_settings!(inbound_calls_enabled: ActiveModel::Type::Boolean.new.cast(params[:inbound_calls_enabled]))
+  end
+
+  def set_call_recording
+    return unless calling_supported?
+
+    update_call_settings!(
+      recording_enabled: ActiveModel::Type::Boolean.new.cast(params[:recording_enabled]),
+      transcription_enabled: ActiveModel::Type::Boolean.new.cast(params[:transcription_enabled])
+    )
+  end
+
   private
 
   def fetch_inbox
@@ -176,7 +209,36 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def get_channel_attributes(channel_type)
-    channel_type.constantize.const_defined?(:EDITABLE_ATTRS) ? channel_type.constantize::EDITABLE_ATTRS.presence : []
+    attributes = channel_type.constantize.const_defined?(:EDITABLE_ATTRS) ? channel_type.constantize::EDITABLE_ATTRS.presence : []
+    return attributes unless channel_type == 'Channel::TwilioSms'
+
+    (attributes || []) + [:voice_enabled, :api_key_sid, :api_key_secret, :twiml_app_sid,
+                          { provider_config: [:inbound_calls_enabled, :recording_enabled, :transcription_enabled] }]
+  end
+
+  def whatsapp_calling_supported?
+    channel = @inbox.channel
+    return true if channel.is_a?(Channel::Whatsapp) && channel.voice_calling_supported?
+
+    render_could_not_create_error('Inbox does not support WhatsApp calling')
+    false
+  end
+
+  # Call settings can be toggled on any voice-enabled inbox (Twilio or WhatsApp).
+  def calling_supported?
+    return true if @inbox.channel.try(:voice_enabled?)
+
+    render_could_not_create_error('Inbox does not support calling')
+    false
+  end
+
+  # Saved with validate: false so provider credential re-checks cannot reject a toggle.
+  def update_call_settings!(settings)
+    channel = @inbox.channel
+    channel.provider_config = (channel.provider_config || {}).merge(settings.stringify_keys)
+    channel.save!(validate: false)
+    @inbox.update_account_cache
+    head :ok
   end
 end
 

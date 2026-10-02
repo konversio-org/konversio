@@ -69,9 +69,15 @@ json.phone_number resource.channel.try(:phone_number)
 json.medium resource.channel.try(:medium) if resource.twilio?
 if resource.twilio?
   json.content_templates resource.channel.try(:content_templates)
+  json.voice_enabled resource.channel.try(:voice_enabled)
+  json.inbound_calls_enabled resource.channel.try(:inbound_calls_enabled?)
+  json.recording_enabled resource.channel.try(:recording_enabled?)
+  json.transcription_enabled resource.channel.try(:transcription_enabled?)
   if Current.account_user&.administrator?
     json.auth_token resource.channel.try(:auth_token)
     json.account_sid resource.channel.try(:account_sid)
+    json.api_key_sid resource.channel.try(:api_key_sid)
+    json.twiml_app_sid resource.channel.try(:twiml_app_sid)
   end
 end
 
@@ -129,12 +135,10 @@ json.bot_name resource.channel.try(:bot_name) if resource.telegram?
 ### WhatsApp Channel
 if resource.whatsapp?
   json.message_templates resource.channel.try(:message_templates)
+  json.calling_enabled resource.channel.try(:provider_config)&.dig('calling_enabled')
+  json.inbound_calls_enabled resource.channel.try(:inbound_calls_enabled?)
+  json.recording_enabled resource.channel.try(:recording_enabled?)
+  json.transcription_enabled resource.channel.try(:transcription_enabled?)
   json.provider_config resource.channel.try(:provider_config) if Current.account_user&.administrator?
   json.reauthorization_required resource.channel.try(:reauthorization_required?)
-end
-
-## Voice Channel Attributes
-if resource.channel_type == 'Channel::Voice'
-  json.voice_call_webhook_url resource.channel.try(:voice_call_webhook_url)
-  json.voice_status_webhook_url resource.channel.try(:voice_status_webhook_url)
 end

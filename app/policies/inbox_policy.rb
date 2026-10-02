@@ -77,4 +77,20 @@ class InboxPolicy < ApplicationPolicy
   def rotate_hmac_token?
     @account_user.administrator?
   end
+
+  def enable_whatsapp_calling?
+    @account_user.administrator?
+  end
+
+  def disable_whatsapp_calling?
+    @account_user.administrator?
+  end
+
+  def set_inbound_calls?
+    @account_user.administrator?
+  end
+
+  def set_call_recording?
+    @account_user.administrator?
+  end
 end

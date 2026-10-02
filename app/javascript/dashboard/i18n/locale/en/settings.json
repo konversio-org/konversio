@@ -414,7 +414,8 @@
     "SECURITY": "Security",
     "PILOT_AI": "Pilot",
     "CONVERSATION_WORKFLOW": "Conversation Workflow",
-    "DATA": "Data"
+    "DATA": "Data",
+    "CALLS": "Calls"
   },
   "PILOT_ASSISTANT_PICKER": {
     "LABEL_FALLBACK": "Select an assistant",

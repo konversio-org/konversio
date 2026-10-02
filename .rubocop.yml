@@ -21,6 +21,8 @@ Metrics/ClassLength:
     - 'app/models/message.rb'
     - 'app/models/conversation.rb'
     - 'app/controllers/super_admin/llm_settings_controller.rb'
+    - 'app/controllers/api/v1/accounts/inboxes_controller.rb'
+    - 'app/services/whatsapp/providers/whatsapp_cloud_service.rb'
     - 'lib/konversio_markdown_renderer.rb'
 
 Metrics/MethodLength:
