@@ -145,6 +145,10 @@ class Account < ApplicationRecord
     }
   end
 
+  def api_and_webhooks_enabled?
+    !suspended?
+  end
+
   def inbound_email_domain
     domain.presence || GlobalConfig.get('MAILER_INBOUND_EMAIL_DOMAIN')['MAILER_INBOUND_EMAIL_DOMAIN'] || ENV.fetch('MAILER_INBOUND_EMAIL_DOMAIN',
                                                                                                                    false)
