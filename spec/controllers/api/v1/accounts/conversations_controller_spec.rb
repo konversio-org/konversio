@@ -101,6 +101,99 @@ RSpec.describe 'Conversations API', type: :request do
     end
   end
 
+  describe 'GET /api/v1/accounts/{account.id}/conversations/unread_counts' do
+    context 'when it is an unauthenticated user' do
+      it 'returns unauthorized' do
+        get "/api/v1/accounts/#{account.id}/conversations/unread_counts"
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when it is an authenticated user' do
+      let(:agent) { create(:user, account: account, role: :agent) }
+      let(:visible_inbox) { create(:inbox, account: account) }
+      let(:hidden_inbox) { create(:inbox, account: account) }
+      let(:label) { create(:label, account: account, title: 'billing', show_on_sidebar: true) }
+      let(:team) { create(:team, account: account, allow_auto_assign: false) }
+
+      before do
+        create(:inbox_member, user: agent, inbox: visible_inbox)
+        create(:team_member, user: agent, team: team)
+      end
+
+      after do
+        Conversations::UnreadCounts::Store.clear_account!(account.id)
+      end
+
+      context 'when conversation unread counts feature is enabled' do
+        before do
+          account.enable_features!(:conversation_unread_counts)
+        end
+
+        it 'returns unread conversation counts scoped to the signed-in user' do
+          create_unread_conversation(account: account, inbox: visible_inbox, labels: [label.title])
+          create_unread_conversation(account: account, inbox: hidden_inbox, labels: [label.title])
+
+          get "/api/v1/accounts/#{account.id}/conversations/unread_counts",
+              headers: agent.create_new_auth_token,
+              as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(response.parsed_body['payload']).to eq(
+            'all_count' => 1,
+            'inboxes' => { visible_inbox.id.to_s => 1 },
+            'labels' => { label.id.to_s => 1 },
+            'teams' => {}
+          )
+        end
+
+        it 'returns unread team conversation counts scoped to the signed-in user' do
+          create_unread_conversation(account: account, inbox: visible_inbox, team: team)
+          create_unread_conversation(account: account, inbox: hidden_inbox, team: team)
+
+          get "/api/v1/accounts/#{account.id}/conversations/unread_counts",
+              headers: agent.create_new_auth_token,
+              as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(response.parsed_body['payload']['teams']).to eq(team.id.to_s => 1)
+        end
+
+        it 'returns filtered unread counts when the filtered count feature is enabled' do
+          account.enable_features!(:unread_count_for_filters)
+          allow(Conversations::UnreadCounts::FilteredCountInstrumentation).to receive(:summarize_request) do |**_attributes, &block|
+            block.call
+          end
+          mentioned = create_unread_conversation(account: account, inbox: visible_inbox)
+          create(:mention, account: account, conversation: mentioned, user: agent)
+
+          get "/api/v1/accounts/#{account.id}/conversations/unread_counts",
+              headers: agent.create_new_auth_token,
+              as: :json
+
+          expect(response).to have_http_status(:success)
+          expect(response.parsed_body['payload']).to include(
+            'mentions_count' => 1,
+            'participating_count' => 0,
+            'unattended_count' => 1,
+            'folders' => {}
+          )
+          expect(Conversations::UnreadCounts::FilteredCountInstrumentation).to have_received(:summarize_request).with(account_id: account.id)
+        end
+      end
+
+      it 'returns forbidden when conversation unread counts feature is disabled' do
+        get "/api/v1/accounts/#{account.id}/conversations/unread_counts",
+            headers: agent.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(response.parsed_body['error']).to eq('Conversation unread counts feature not enabled for this account')
+      end
+    end
+  end
+
   describe 'GET /api/v1/accounts/{account.id}/conversations/search' do
     context 'when it is an unauthenticated user' do
       it 'returns unauthorized' do
