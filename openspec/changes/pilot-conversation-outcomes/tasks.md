@@ -26,3 +26,12 @@
 ## Dependencies / Order
 
 Tasks 1 → 2 → 3 are sequential (table, model, recorder). Task 4 (events) and task 5 (listener) depend on 3. Tasks 6–8 wire emission/consumption and depend on 4–5; they are independent of each other. Task 9 is independent and can land any time after 1. Tasks 11–13 follow their respective implementation tasks; task 14 validates the whole chain last.
+
+## Follow-up: quota-handoff sub-path (feat/pilot-quota-handoff, 2026-10-02)
+
+Investigation confirmed **no AI usage-quota enforcement exists** in the fork: `Account#usage_limits` covers only agents and inboxes, the only 402 (`payment_required`) paths are email-transcript/portal gating, and no Pilot path (autopilot inference, handoff tool, LLM runner) raises or detects a quota signal — provider rate limits surface only as generic `AutopilotService::Error`. The outcome side is therefore implemented so it activates the moment a quota signal lands:
+
+- `Custom::Pilot::QuotaHandoffService.call(conversation:, assistant:)` runs the standard `HandoffService` handoff with source `quota` and reason category `quota_exhausted`. It posts no assistant-authored message: the reply-fact snapshot counts assistant-sent outgoing messages, and a quota block before the AI replied must keep `first_ai_reply_at` empty so analytics classification keeps treating it as blocked demand (the timeline activity message still documents the handoff for agents).
+- Covered by `spec/services/custom/pilot/quota_handoff_service_spec.rb` (end-to-end through the async dispatcher → `PilotOutcomeListener` → episode with `quota_exhausted`, zero AI replies), plus quota examples in the recorder and listener specs.
+
+**Still missing:** an actual enforcement point. Whatever introduces AI usage quotas (account-level AI limits, provider 429/`insufficient_quota` detection in `Custom::Pilot::AutopilotService`, or a billing gate) must call `Custom::Pilot::QuotaHandoffService` — nothing does today, so the service has no production caller.

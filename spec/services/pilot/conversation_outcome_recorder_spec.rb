@@ -110,6 +110,18 @@ RSpec.describe Pilot::ConversationOutcomeRecorder do
       expect { recorder.record_handoff(at: Time.current, reason_category: 'knowledge_gap') }
         .not_to change(Pilot::ConversationOutcome, :count)
     end
+
+    it 'records a quota-driven transfer before any AI reply as blocked demand' do
+      recorder.record_eligibility(at: 1.hour.ago)
+
+      recorder.record_handoff(at: Time.current, reason_category: 'quota_exhausted')
+
+      episode = conversation.conversation_outcomes.first
+      expect(episode.handoff_reason_category).to eq('quota_exhausted')
+      expect(episode.handoff_at).to be_present
+      expect(episode.ai_reply_count).to eq(0)
+      expect(episode.first_ai_reply_at).to be_nil
+    end
   end
 
   describe '#record_resolution' do

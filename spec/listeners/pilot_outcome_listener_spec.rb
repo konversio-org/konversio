@@ -123,6 +123,20 @@ RSpec.describe PilotOutcomeListener do
       expect(recorder).to receive(:record_handoff).with(at: event.timestamp, reason_category: 'knowledge_gap')
       listener.pilot_conversation_handed_off(event)
     end
+
+    it 'routes a quota-driven handoff with the quota_exhausted category' do
+      event = Events::Base.new(
+        'pilot.conversation.handed_off',
+        Time.zone.now,
+        conversation: conversation,
+        assistant: assistant,
+        source: 'quota',
+        reason_category: 'quota_exhausted'
+      )
+
+      expect(recorder).to receive(:record_handoff).with(at: event.timestamp, reason_category: 'quota_exhausted')
+      listener.pilot_conversation_handed_off(event)
+    end
   end
 
   describe 'feature gating' do
