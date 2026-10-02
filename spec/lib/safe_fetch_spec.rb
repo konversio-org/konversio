@@ -422,8 +422,8 @@ RSpec.describe SafeFetch do
 
         expect(redirected_headers).to include(
           'content-type' => 'application/json',
-          'x-chatwoot-delivery' => 'test-uuid',
-          'x-chatwoot-signature' => 'sha256=test-signature'
+          'x-konversio-delivery' => 'test-uuid',
+          'x-konversio-signature' => 'sha256=test-signature'
         )
         expect(redirected_headers).not_to include('authorization', 'cookie')
       end
