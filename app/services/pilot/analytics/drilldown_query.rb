@@ -32,7 +32,7 @@ class Pilot::Analytics::DrilldownQuery
   DEFAULT_PER_PAGE = 25
   MAX_PER_PAGE = 100
 
-  pattr_initialize :assistant, :window, :metric, [:page, :per_page]
+  pattr_initialize [:assistant!, :window!, :metric!, { page: nil, per_page: nil }]
 
   def self.supported_metric?(metric)
     SUPPORTED_METRICS.include?(metric.to_s)

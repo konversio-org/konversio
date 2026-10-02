@@ -17,7 +17,7 @@ class Pilot::Analytics::ResolutionTrendReport
 
   DAILY_GRANULARITY_LIMIT = 15.days
 
-  pattr_initialize :assistant, :window
+  pattr_initialize [:assistant!, :window!]
 
   def report
     {

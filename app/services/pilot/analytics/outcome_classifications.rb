@@ -75,7 +75,7 @@ module Pilot::Analytics::OutcomeClassifications
   # combine this with the window predicate to form the durable-rate denominator.
   def judgeable_sql(reference_time)
     quoted = ActiveRecord::Base.connection.quote(reference_time.utc)
-    "(#{autonomous_sql} AND resolved_at <= #{quoted} - INTERVAL '#{DURABILITY_WINDOW.to_i} seconds')"
+    "(#{autonomous_sql} AND resolved_at <= CAST(#{quoted} AS timestamptz) - INTERVAL '#{DURABILITY_WINDOW.to_i} seconds')"
   end
 
   def durable_sql

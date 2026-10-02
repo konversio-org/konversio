@@ -25,7 +25,7 @@ class Pilot::Analytics::OverviewReport
   # effort, so this is an estimate and is labeled as such in the UI.
   ASSUMED_HANDLING_MINUTES_PER_REPLY = 2
 
-  pattr_initialize :assistant, :window
+  pattr_initialize [:assistant!, :window!]
 
   def report
     {
@@ -134,15 +134,15 @@ class Pilot::Analytics::OverviewReport
   end
 
   def episode_aggregates
-    @episode_aggregates ||= episodes.select(episode_selects).take.attributes
+    @episode_aggregates ||= episodes.reorder(nil).select(episode_selects).take.attributes
   end
 
   def message_aggregates
-    @message_aggregates ||= message_scope.select(message_selects).take.attributes
+    @message_aggregates ||= message_scope.reorder(nil).select(message_selects).take.attributes
   end
 
   def csat_aggregates
-    @csat_aggregates ||= human_only_csat_scope.select(csat_selects).take.attributes
+    @csat_aggregates ||= human_only_csat_scope.reorder(nil).select(csat_selects).take.attributes
   end
 
   def episodes

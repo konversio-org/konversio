@@ -19,7 +19,7 @@ class Pilot::Analytics::ResolutionFlowReport
   UNCATEGORIZED = 'uncategorized'
   TOP_REASON_LIMIT = 3
 
-  pattr_initialize :assistant, :window
+  pattr_initialize [:assistant!, :window!]
 
   def report
     return empty_report unless tracked?
