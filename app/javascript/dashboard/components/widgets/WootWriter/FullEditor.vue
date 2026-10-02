@@ -7,12 +7,16 @@ import {
   ArticleMarkdownTransformer,
   EditorState,
   Selection,
+  imageResizeView,
+  imagePastePlugin,
+  insertImageFiles,
+  fileUploadPlugin,
+  setUploadLabels,
 } from '@chatwoot/prosemirror-schema';
 import {
   suggestionsPlugin,
   triggerCharacters,
 } from '@chatwoot/prosemirror-schema/src/mentions/plugin';
-import imagePastePlugin from '@chatwoot/prosemirror-schema/src/plugins/image';
 import { toggleMark } from 'prosemirror-commands';
 import { wrapInList } from 'prosemirror-schema-list';
 import { toggleBlockType } from '@chatwoot/prosemirror-schema/src/menu/common';
@@ -24,6 +28,16 @@ import SlashCommandMenu from './SlashCommandMenu.vue';
 
 const MAXIMUM_FILE_UPLOAD_SIZE = 4; // in MB
 const SLASH_MENU_OFFSET = 4;
+// Drop and paste bypass the file input's accept filter, so bucketFor gates
+// every entry point with the same allowlist the picker advertises.
+const ALLOWED_IMAGE_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/gif',
+  'image/webp',
+];
+const ACCEPTED_FILE_TYPES = ALLOWED_IMAGE_TYPES.join(', ');
 const createState = (
   content,
   placeholder,
@@ -74,6 +88,7 @@ export default {
     return {
       plugins: [
         imagePastePlugin(this.handleImageUpload),
+        fileUploadPlugin(),
         this.createSlashPlugin(),
       ],
       isTextSelected: false, // Tracks text selection and prevents unnecessary re-renders on mouse selection
@@ -81,6 +96,7 @@ export default {
       slashSearchTerm: '',
       slashRange: null,
       slashMenuPosition: null,
+      acceptedFileTypes: ACCEPTED_FILE_TYPES,
     };
   },
   watch: {
@@ -95,6 +111,16 @@ export default {
   },
 
   created() {
+    setUploadLabels({
+      uploading: this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.UPLOADING'),
+      failed: this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.UPLOAD_FAILED'),
+      rateLimited: this.$t(
+        'HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.RATE_LIMITED'
+      ),
+      retry: this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.RETRY'),
+      remove: this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.REMOVE'),
+      cancel: this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.CANCEL'),
+    });
     state = createState(
       this.modelValue || '',
       this.placeholder,
@@ -222,6 +248,7 @@ export default {
           const tr = editorView.state.tr.replaceSelectionWith(tableNode);
           editorView.dispatch(tr.scrollIntoView());
         },
+        imageUpload: () => this.openFileBrowser(),
       };
 
       const command = commandMap[actionKey];
@@ -241,69 +268,51 @@ export default {
     openFileBrowser() {
       this.$refs.imageUploadInput.click();
     },
-    async handleImageUpload(url) {
-      try {
-        const fileUrl = await this.$store.dispatch(
-          'articles/uploadExternalImage',
-          {
-            portalSlug: this.$route.params.portalSlug,
-            url,
-          }
-        );
-
-        return fileUrl;
-      } catch (error) {
-        useAlert(
-          this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.UN_AUTHORIZED_ERROR')
-        );
-        return '';
-      }
+    handleImageUpload(url, signal) {
+      return this.$store.dispatch('articles/uploadExternalImage', {
+        portalSlug: this.$route.params.portalSlug,
+        url,
+        signal,
+      });
     },
     onFileChange() {
-      const file = this.$refs.imageUploadInput.files[0];
-
-      if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
-        this.uploadImageToStorage(file);
-      } else {
+      this.handleFiles(Array.from(this.$refs.imageUploadInput.files));
+      this.$refs.imageUploadInput.value = '';
+    },
+    // Returns the pipeline for a file that passes its size gate; alerts otherwise.
+    bucketFor(file) {
+      if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) return 'images';
         useAlert(
           this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR_FILE_SIZE', {
             size: MAXIMUM_FILE_UPLOAD_SIZE,
           })
         );
+      } else {
+        useAlert(
+          this.$t(
+            'HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR_UNSUPPORTED_TYPE'
+          )
+        );
       }
-
-      this.$refs.imageUploadInput.value = '';
+      return null;
     },
-    async uploadImageToStorage(file) {
-      try {
-        const fileUrl = await this.$store.dispatch('articles/attachImage', {
-          portalSlug: this.$route.params.portalSlug,
-          file,
-        });
-
-        if (fileUrl) {
-          this.onImageUploadStart(fileUrl);
-        }
-      } catch (error) {
-        useAlert(this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR'));
-      }
-    },
-    onImageUploadStart(fileUrl) {
-      const { selection } = editorView.state;
-      const from = selection.from;
-      const node = editorView.state.schema.nodes.image.create({
-        src: fileUrl,
+    handleFiles(files) {
+      if (!editorView || !files.length) return;
+      const images = files.filter(file => this.bucketFor(file) === 'images');
+      if (!images.length) return;
+      insertImageFiles(editorView, images, {
+        upload: this.uploadFileToStorage,
       });
-      const paragraphNode = editorView.state.schema.node('paragraph');
-      if (node) {
-        // Insert the image and the caption wrapped inside a paragraph
-        const tr = editorView.state.tr
-          .replaceSelectionWith(paragraphNode)
-          .insert(from + 1, node);
-
-        editorView.dispatch(tr.scrollIntoView());
-        this.focusEditorInputField();
-      }
+      editorView.focus();
+    },
+    uploadFileToStorage(file, onProgress, signal) {
+      return this.$store.dispatch('articles/attachImage', {
+        portalSlug: this.$route.params.portalSlug,
+        file,
+        onProgress,
+        signal,
+      });
     },
     reloadState() {
       state = createState(
@@ -319,6 +328,9 @@ export default {
     createEditorView() {
       editorView = new EditorView(this.$refs.editor, {
         state: state,
+        nodeViews: {
+          image: imageResizeView,
+        },
         dispatchTransaction: tx => {
           state = state.apply(tx);
           editorView.updateState(state);
@@ -333,14 +345,9 @@ export default {
           blur: this.onBlur,
           keydown: this.onKeydown,
           paste: (view, event) => {
-            const data = event.clipboardData.files;
-            if (data.length > 0) {
-              data.forEach(file => {
-                // Check if the file is an image
-                if (file.type.includes('image')) {
-                  this.uploadImageToStorage(file);
-                }
-              });
+            const files = Array.from(event.clipboardData?.files || []);
+            if (files.length > 0) {
+              this.handleFiles(files);
               event.preventDefault();
             }
           },
@@ -440,7 +447,8 @@ export default {
       <input
         ref="imageUploadInput"
         type="file"
-        accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
+        :accept="acceptedFileTypes"
+        multiple
         hidden
         @change="onFileChange"
       />
