@@ -2,10 +2,10 @@
 
 ### Backend
 
-1. - [ ] **Search ordering** — in `app/services/search_service.rb`, change both message search paths (pg full-text `to_tsquery` and ILIKE fallback) to `reorder('messages.created_at DESC, messages.id DESC')`.
-2. - [ ] **Message search payload** — in `app/presenters/messages/search_data_presenter.rb`, add `id: id` to `message_attributes`; make the email subject fall back to `conversation.additional_attributes['mail_subject']` when the message has none. Do not port upstream's trailing `prepend_mod_with` line (Konversio edits core directly).
-3. - [ ] **Conversation search jbuilders** — in `app/views/api/v1/accounts/search/_conversation_search_result.json.jbuilder` and `conversations.json.jbuilder`, render the first-message partial only when the conversation actually has messages.
-4. - [ ] **Portal table renderer** — in `lib/custom_markdown_renderer.rb` (`process_article_html`), capture `<!--cw-colwidths:w1,w2,...-->` comment nodes preceding each table, inject a `<colgroup>` with pixel widths (unset/0 widths default to 50px), apply `table-layout: fixed`, and size the `.tableWrapper` to the summed column widths with `max-width: 100%`; tables without a marker keep the current wrapper behavior. Adapt to Konversio's Nokogiri post-processing (upstream implements this via CommonMarker `html`/`table` node visitors — port behavior, not shape).
+1. - [x] **Search ordering** — in `app/services/search_service.rb`, change both message search paths (pg full-text `to_tsquery` and ILIKE fallback) to `reorder('messages.created_at DESC, messages.id DESC')`.
+2. - [x] **Message search payload** — in `app/presenters/messages/search_data_presenter.rb`, add `id: id` to `message_attributes`; make the email subject fall back to `conversation.additional_attributes['mail_subject']` when the message has none. Do not port upstream's trailing `prepend_mod_with` line (Konversio edits core directly).
+3. - [x] **Conversation search jbuilders** — in `app/views/api/v1/accounts/search/_conversation_search_result.json.jbuilder` and `conversations.json.jbuilder`, render the first-message partial only when the conversation actually has messages.
+4. - [x] **Portal table renderer** — in `lib/custom_markdown_renderer.rb` (`process_article_html`), capture `<!--cw-colwidths:w1,w2,...-->` comment nodes preceding each table, inject a `<colgroup>` with pixel widths (unset/0 widths default to 50px), apply `table-layout: fixed`, and size the `.tableWrapper` to the summed column widths with `max-width: 100%`; tables without a marker keep the current wrapper behavior. Adapt to Konversio's Nokogiri post-processing (upstream implements this via CommonMarker `html`/`table` node visitors — port behavior, not shape).
 
 ### Frontend
 
@@ -23,8 +23,8 @@
 ### Validation
 
 15. - [ ] **JS specs** — port upstream specs added for these files: `app/javascript/shared/helpers/specs/MessageFormatter.spec.js` (image sizing, marker stripping, `disableImageRendering`), `useExactTimestamp.spec.js`, conversationSearch store spec additions (dedupe/hasMore), and run `pnpm test` on the touched modules.
-16. - [ ] **Ruby specs** — add/adjust specs for `SearchService` deterministic ordering (two messages with equal `created_at` return in stable id order across pages) and for `Messages::SearchDataPresenter` (id included, subject fallback); run `bundle exec rspec` on the touched specs.
-17. - [ ] **Portal renderer spec** — cover `cw-colwidths` → `<colgroup>` injection, 50px default for unset columns, fixed layout, and unchanged behavior for unmarked tables.
+16. - [x] **Ruby specs** — add/adjust specs for `SearchService` deterministic ordering (two messages with equal `created_at` return in stable id order across pages) and for `Messages::SearchDataPresenter` (id included, subject fallback); run `bundle exec rspec` on the touched specs.
+17. - [x] **Portal renderer spec** — cover `cw-colwidths` → `<colgroup>` injection, 50px default for unset columns, fixed layout, and unchanged behavior for unmarked tables.
 18. - [ ] **Manual smoke test** — (a) paste an image with Cmd/Ctrl+Shift+V in an email reply and a website-channel reply; confirm upload, inline insert, drag-resize, and that the contact receives a sized image; (b) confirm private notes and a WhatsApp inbox do not offer inline paste; (c) resize article table columns, save, reload the editor (widths persist), view the article on the public portal (fixed widths), and confirm no marker text leaks anywhere including dashboard search snippets; (d) page through message search results with "Load more" while new messages arrive — no duplicates, no skips, rollback on forced failure; hover relative dates for exact tooltips.
 
 ## Dependencies / Order

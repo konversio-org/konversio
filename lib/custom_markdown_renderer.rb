@@ -5,6 +5,7 @@ require 'yaml'
 
 class CustomMarkdownRenderer
   include MarkdownRendererUrlSanitizer
+  include MarkdownTableColumnWidths
 
   CONFIG_PATH = Rails.root.join('config/markdown_embeds.yml')
 
@@ -19,6 +20,8 @@ class CustomMarkdownRenderer
   end
 
   def render(doc_or_text)
+    content = doc_or_text.is_a?(String) ? doc_or_text : doc_or_text.try(:to_commonmark)
+
     html = if doc_or_text.is_a?(String)
              Commonmarker.to_html(doc_or_text, options: { extension: { table: true } })
            elsif doc_or_text.respond_to?(:to_html)
@@ -27,20 +30,20 @@ class CustomMarkdownRenderer
              doc_or_text.to_s
            end
 
-    process_article_html(html)
+    process_article_html(html, extract_colwidths(content))
   end
 
   private
 
   # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-  def process_article_html(html)
+  def process_article_html(html, colwidths = [])
     doc = Nokogiri::HTML.fragment(html)
 
     sanitize_dangerous_urls(doc)
 
-    # 1. Wrap tables in tableWrapper
-    doc.css('table').each do |table|
-      table.replace("<div class=\"tableWrapper\">#{table.to_html}</div>")
+    # 1. Wrap tables in tableWrapper, applying saved column widths when present
+    doc.css('table').each_with_index do |table, index|
+      table.replace(table_wrapper(table, colwidths[index]))
     end
 
     # 2. Process images

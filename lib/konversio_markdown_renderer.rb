@@ -4,6 +4,8 @@ require 'uri'
 require 'yaml'
 
 class KonversioMarkdownRenderer
+  include MarkdownTableColumnWidths
+
   def initialize(content)
     @content = content
   end
@@ -27,7 +29,7 @@ class KonversioMarkdownRenderer
     html = Commonmarker.to_html(@content, options: { extension: { table: true } })
 
     # 2. Post-process embeds, tables, and superscripts (formerly CustomMarkdownRenderer)
-    processed_html = process_article_html(html)
+    processed_html = process_article_html(html, extract_colwidths(@content))
 
     render_as_html_safe(processed_html)
   end
@@ -73,12 +75,12 @@ class KonversioMarkdownRenderer
   end
 
   # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
-  def process_article_html(html)
+  def process_article_html(html, colwidths = [])
     doc = Nokogiri::HTML.fragment(html)
 
     # 1. Wrap tables in tableWrapper (equivalent to CustomMarkdownRenderer#table)
-    doc.css('table').each do |table|
-      table.replace("<div class=\"tableWrapper\">#{table.to_html}</div>")
+    doc.css('table').each_with_index do |table, index|
+      table.replace(table_wrapper(table, colwidths[index]))
     end
 
     # 2. Process embedded links (equivalent to CustomMarkdownRenderer#link)
