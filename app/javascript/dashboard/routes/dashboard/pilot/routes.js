@@ -2,6 +2,7 @@ import { frontendURL } from '../../../helper/URLHelper';
 import PilotCopilotEntry from './PilotCopilotEntry.vue';
 import PilotDocumentsPage from './documents/PilotDocumentsPage.vue';
 import PilotFaqsPage from '../../../components-next/pilot/faqs/PilotFaqsPage.vue';
+import PilotFaqSuggestionsPage from '../../../components-next/pilot/faqs/suggestions/PilotFaqSuggestionsPage.vue';
 import ScenarioBuilder from './ScenarioBuilder.vue';
 import PlaygroundPanel from './PlaygroundPanel.vue';
 import PilotInboxesPage from './PilotInboxesPage.vue';
@@ -24,6 +25,12 @@ export const routes = [
     path: frontendURL('accounts/:accountId/pilot/faqs/pending'),
     name: 'pilot_faqs_pending',
     component: PilotFaqsPage,
+    meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_RESPONSES' },
+  },
+  {
+    path: frontendURL('accounts/:accountId/pilot/faqs/suggestions'),
+    name: 'pilot_faq_suggestions',
+    component: PilotFaqSuggestionsPage,
     meta: { ...commonMeta, pilotSection: 'SIDEBAR.PILOT_RESPONSES' },
   },
   {

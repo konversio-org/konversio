@@ -26,6 +26,7 @@ const lastError = useMapGetter('pilot/faqs/getLastError');
 const assistants = useMapGetter('pilot/assistants/getRecords');
 const assistantUiFlags = useMapGetter('pilot/assistants/getUIFlags');
 const pendingCount = useMapGetter('pilot/faqs/getPendingCount');
+const openSuggestionCount = useMapGetter('pilot/faqSuggestions/getOpenCount');
 
 const dialogRef = ref(null);
 const dialogMode = ref('create');
@@ -111,6 +112,9 @@ const fetchCurrent = async () => {
       status: currentStatus,
     });
     store.dispatch('pilot/faqs/fetchPendingCount', {
+      assistantId: activeAssistantId.value,
+    });
+    store.dispatch('pilot/faqSuggestions/fetchOpenCount', {
       assistantId: activeAssistantId.value,
     });
   } catch (_e) {
@@ -340,6 +344,16 @@ const navigateToApproved = () => {
       @action="router.push({ name: 'pilot_faqs_pending' })"
     >
       {{ t('PILOT.FAQS.PENDING_BANNER') }}
+    </Banner>
+
+    <!-- Suggestions entry point -->
+    <Banner
+      v-if="openSuggestionCount > 0"
+      color="blue"
+      :action-label="t('PILOT.FAQ_SUGGESTIONS.BANNER_ACTION')"
+      @action="router.push({ name: 'pilot_faq_suggestions' })"
+    >
+      {{ t('PILOT.FAQ_SUGGESTIONS.BANNER', { count: openSuggestionCount }) }}
     </Banner>
 
     <PilotFaqsHeader
