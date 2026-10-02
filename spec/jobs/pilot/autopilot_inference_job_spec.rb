@@ -279,11 +279,146 @@ RSpec.describe Pilot::AutopilotInferenceJob do
     end
   end
 
-  def service_result(reply:, handover: nil)
+  describe 'structured reply delivery' do
+    let(:service) { instance_double(Custom::Pilot::AutopilotService) }
+
+    before do
+      allow(Custom::Pilot::AutopilotService).to receive(:new).and_return(service)
+    end
+
+    it 'persists the ordered parts on the outgoing message' do
+      structured = Pilot::StructuredReply.new([
+                                                { text: 'Part one.', citations: [2] },
+                                                { text: 'Part two.', citations: [] },
+                                                { text: 'Part three.', citations: [1, 3] }
+                                              ])
+      allow(service).to receive(:perform).and_return(
+        service_result(reply: structured.plain_text, structured_reply: structured)
+      )
+
+      described_class.perform_now(message_id: message.id)
+
+      reply = conversation.messages.outgoing.last
+      expect(reply.additional_attributes['pilot_response_parts']).to eq(
+        [{ 'text' => 'Part one.', 'citations' => [2] },
+         { 'text' => 'Part two.', 'citations' => [] },
+         { 'text' => 'Part three.', 'citations' => [1, 3] }]
+      )
+    end
+
+    it 'strips sentinels so they never appear in delivered part text' do
+      structured = Pilot::StructuredReply.new([{ text: "Glad I could help! #{Custom::Pilot::HandoverEvaluator::RESOLUTION_SENTINEL}",
+                                                 citations: [] }])
+      allow(service).to receive(:perform).and_return(
+        service_result(reply: structured.plain_text, structured_reply: structured)
+      )
+
+      described_class.perform_now(message_id: message.id)
+
+      reply = conversation.messages.outgoing.last
+      expect(reply.content).to eq('Glad I could help!')
+      expect(reply.additional_attributes['pilot_response_parts'].first['text']).not_to include('[resolved]')
+    end
+
+    it 'stores exactly one part for a reply that degraded to plain text' do
+      allow(service).to receive(:perform).and_return(service_result(reply: 'Plain answer.'))
+
+      described_class.perform_now(message_id: message.id)
+
+      parts = conversation.messages.outgoing.last.additional_attributes['pilot_response_parts']
+      expect(parts).to eq([{ 'text' => 'Plain answer.', 'citations' => [] }])
+    end
+  end
+
+  describe 'false-promise guard wiring' do
+    let(:service) { instance_double(Custom::Pilot::AutopilotService) }
+
+    before do
+      allow(Custom::Pilot::AutopilotService).to receive(:new).and_return(service)
+    end
+
+    def guard_verdict(status, reason = nil)
+      Pilot::PromiseGuard::Verdict.new(status: status, reason_category: reason, model: 'gpt-guard-test')
+    end
+
+    it 'makes no detector call when the account setting is disabled' do
+      allow(service).to receive(:perform).and_return(service_result(reply: 'I will check and get back to you.'))
+      expect(Pilot::PromiseGuard).not_to receive(:call)
+
+      described_class.perform_now(message_id: message.id)
+
+      expect(conversation.messages.outgoing.last.content).to eq('I will check and get back to you.')
+    end
+
+    context 'with the guard enabled' do
+      let(:draft) { 'I will monitor your order and follow up.' }
+      let(:repaired) { 'Your order ships Friday — tracking is on its way.' }
+      let(:repair_service) { instance_double(Custom::Pilot::AutopilotService) }
+
+      before do
+        account.update!(pilot_false_promise_guard_enabled: true)
+        allow(service).to receive(:perform).and_return(service_result(reply: draft))
+        allow(repair_service).to receive(:perform).and_return(service_result(reply: repaired))
+        allow(Custom::Pilot::AutopilotService).to receive(:new).and_return(service, repair_service)
+      end
+
+      it 'delivers the repaired reply when re-verified safe' do
+        allow(Pilot::PromiseGuard).to receive(:call)
+          .with(conversation: conversation, draft_reply: draft)
+          .and_return(guard_verdict(:promise, 'ongoing_monitoring'))
+        allow(Pilot::PromiseGuard).to receive(:call)
+          .with(conversation: conversation, draft_reply: repaired)
+          .and_return(guard_verdict(:safe, 'no_future_commitment'))
+
+        described_class.perform_now(message_id: message.id)
+
+        expect(conversation.messages.outgoing.where(private: false).last.content).to eq(repaired)
+      end
+
+      it 'suppresses the reply and hands off with a guard reason when still flagged' do
+        allow(Pilot::PromiseGuard).to receive(:call).and_return(guard_verdict(:promise, 'ongoing_monitoring'))
+
+        described_class.perform_now(message_id: message.id)
+
+        contents = conversation.messages.outgoing.where(private: false).map(&:content)
+        expect(contents).not_to include(draft, repaired)
+        expect(contents.last).to eq(I18n.t('conversations.pilot.handoff_guard'))
+        expect(conversation.reload.additional_attributes.dig('pilot_handoff', 'state')).to eq('handoff_requested')
+        note = conversation.messages.outgoing.where(private: true).last
+        expect(note.content).to include('promise_guard:ongoing_monitoring')
+      end
+
+      it 'delivers the original reply when the first pass is inconclusive' do
+        allow(Pilot::PromiseGuard).to receive(:call).and_return(guard_verdict(:inconclusive))
+
+        described_class.perform_now(message_id: message.id)
+
+        expect(conversation.messages.outgoing.where(private: false).last.content).to eq(draft)
+      end
+
+      it 'skips detection when the run already requested a handoff' do
+        handover = Custom::Pilot::HandoverEvaluator::Result.new(handover?: true, reason: 'sentinel')
+        allow(service).to receive(:perform).and_return(service_result(reply: 'Let me get a human. [handover]', handover: handover))
+        online_agent = create(:user, account: account)
+        create(:inbox_member, user: online_agent, inbox: inbox)
+        allow(OnlineStatusTracker).to receive(:get_available_users)
+          .with(account.id).and_return(online_agent.id.to_s => 'online')
+
+        expect(Pilot::PromiseGuard).not_to receive(:call)
+
+        described_class.perform_now(message_id: message.id)
+
+        expect(conversation.messages.outgoing.last.content).to eq('A teammate will help from here.')
+      end
+    end
+  end
+
+  def service_result(reply:, handover: nil, structured_reply: nil)
     Custom::Pilot::AutopilotService::Result.new(
       reply: reply,
       invoked_tool_names: [],
-      handover: handover || Custom::Pilot::HandoverEvaluator::Result.new(handover?: false, reason: nil)
+      handover: handover || Custom::Pilot::HandoverEvaluator::Result.new(handover?: false, reason: nil),
+      structured_reply: structured_reply
     )
   end
 end

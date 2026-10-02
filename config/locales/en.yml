@@ -330,6 +330,8 @@ en:
       handoff: 'Transferring to another agent for further assistance.'
       handoff_error: "I'm having trouble answering right now — let me get a human to help you."
       handoff_offline: "Our team isn't online right now — but I can keep helping. They'll follow up as soon as they're back."
+      handoff_guard: "I want to make sure you get a reliable answer — let me get a human to help you."
+      promise_guard_note: 'Pilot withheld its draft reply (%{reason}) and handed the conversation off for a human answer.'
       resolution: 'Glad I could help! Marking this conversation as resolved — feel free to start a new one anytime.'
     messages:
       instagram_story_content: '%{story_sender} mentioned you in the story: '
