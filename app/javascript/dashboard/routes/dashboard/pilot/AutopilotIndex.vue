@@ -16,6 +16,7 @@ import {
   DropdownItem,
 } from 'dashboard/components-next/dropdown-menu/base';
 import AssistantEditor from './AssistantEditor.vue';
+import PromiseGuardCard from './PromiseGuardCard.vue';
 
 const { t } = useI18n();
 const store = useStore();
@@ -195,7 +196,9 @@ const onCancel = () => {
     </header>
 
     <main class="flex-1 px-6 overflow-y-auto py-6">
-      <div class="w-full max-w-5xl mx-auto">
+      <div class="w-full max-w-5xl mx-auto flex flex-col gap-6">
+        <!-- Account-level autopilot settings -->
+        <PromiseGuardCard />
         <!-- Zero State -->
         <div
           v-if="

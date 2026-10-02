@@ -16,7 +16,7 @@
 
 ### Frontend
 
-12. - [x] **Settings toggle** — expose the promise-guard account setting in the dashboard account/Pilot settings where other Pilot account-level toggles live (if a suitable surface exists; otherwise defer UI and keep the setting API-only). English i18n only (`en.json`). **Resolution: deferred to API-only** — no Pilot account-level settings surface exists in the dashboard today (`pilot_auto_resolve_mode` and `pilot_document_sync_interval` are likewise API/seed-only), so `pilot_false_promise_guard_enabled` ships as an API-only account setting, same as its siblings.
+12. - [x] **Settings toggle** — expose the promise-guard account setting in the dashboard account/Pilot settings where other Pilot account-level toggles live (if a suitable surface exists; otherwise defer UI and keep the setting API-only). English i18n only (`en.json`). **Resolution: implemented** — the setting is now exposed via `Api::V1::Accounts::Pilot::PreferencesController` (show/update, boolean-safe) alongside `pilot_document_sync_interval`, and toggled from the Pilot settings page (`accounts/:accountId/pilot/settings`) via an account-level `PromiseGuardCard` switch; i18n in `en/pilot.json` under `PILOT.SETTINGS.PROMISE_GUARD`.
 
 ### Validation
 

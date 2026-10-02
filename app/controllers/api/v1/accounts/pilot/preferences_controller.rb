@@ -11,6 +11,9 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
     @current_account.pilot_models = params_to_update[:pilot_models] if params_to_update[:pilot_models]
     @current_account.pilot_features = params_to_update[:pilot_features] if params_to_update[:pilot_features]
     @current_account.pilot_document_sync_interval = params_to_update[:pilot_document_sync_interval] if params_to_update[:pilot_document_sync_interval]
+    unless params_to_update[:pilot_false_promise_guard_enabled].nil?
+      @current_account.pilot_false_promise_guard_enabled = params_to_update[:pilot_false_promise_guard_enabled]
+    end
     @current_account.save!
 
     render json: preferences_payload
@@ -26,7 +29,8 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
       active_provider: active_provider_payload,
       active_slots: active_slots_payload,
       document_sync_interval: @current_account.pilot_document_sync_interval_key,
-      document_sync_interval_hours: @current_account.pilot_document_sync_interval_hours
+      document_sync_interval_hours: @current_account.pilot_document_sync_interval_hours,
+      false_promise_guard_enabled: @current_account.pilot_false_promise_guard_enabled == true
     }
   end
 
@@ -64,6 +68,9 @@ class Api::V1::Accounts::Pilot::PreferencesController < Api::V1::Accounts::BaseC
     permitted[:pilot_models] = merged_pilot_models if params[:pilot_models].present?
     permitted[:pilot_features] = merged_pilot_features if params[:pilot_features].present?
     permitted[:pilot_document_sync_interval] = params[:pilot_document_sync_interval] if params[:pilot_document_sync_interval].present?
+    unless params[:pilot_false_promise_guard_enabled].nil?
+      permitted[:pilot_false_promise_guard_enabled] = ActiveModel::Type::Boolean.new.cast(params[:pilot_false_promise_guard_enabled])
+    end
     permitted
   end
 
