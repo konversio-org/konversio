@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_10_02_020000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_02_030000) do
   # These extensions should be enabled to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -1034,6 +1034,33 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_020000) do
     t.index ["account_id"], name: "index_pilot_assistants_on_account_id"
   end
 
+  create_table "pilot_campaign_recipients", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "campaign_id", null: false
+    t.bigint "contact_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "source_id"
+    t.integer "status", default: 0, null: false
+    t.string "error_code"
+    t.string "error_title"
+    t.text "error_message"
+    t.text "message_content"
+    t.datetime "sent_at"
+    t.datetime "delivered_at"
+    t.datetime "read_at"
+    t.datetime "failed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "campaign_id"], name: "index_pilot_campaign_recipients_on_account_id_and_campaign_id"
+    t.index ["account_id"], name: "index_pilot_campaign_recipients_on_account_id"
+    t.index ["campaign_id", "contact_id"], name: "index_pilot_campaign_recipients_on_campaign_id_and_contact_id", unique: true
+    t.index ["campaign_id", "status"], name: "index_pilot_campaign_recipients_on_campaign_id_and_status"
+    t.index ["campaign_id"], name: "index_pilot_campaign_recipients_on_campaign_id"
+    t.index ["contact_id"], name: "index_pilot_campaign_recipients_on_contact_id"
+    t.index ["inbox_id"], name: "index_pilot_campaign_recipients_on_inbox_id"
+    t.index ["source_id"], name: "index_pilot_campaign_recipients_on_source_id", unique: true, where: "(source_id IS NOT NULL)"
+  end
+
   create_table "pilot_custom_tools", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "slug", null: false
@@ -1400,6 +1427,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_02_020000) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "inboxes", "portals"
+  add_foreign_key "pilot_campaign_recipients", "accounts", on_delete: :cascade
+  add_foreign_key "pilot_campaign_recipients", "campaigns", on_delete: :cascade
+  add_foreign_key "pilot_campaign_recipients", "contacts", on_delete: :cascade
+  add_foreign_key "pilot_campaign_recipients", "inboxes", on_delete: :cascade
   add_foreign_key "pilot_events", "accounts"
   add_foreign_key "pilot_logbook_entries", "accounts"
   add_foreign_key "pilot_logbook_entries", "contacts"

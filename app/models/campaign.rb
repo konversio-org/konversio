@@ -52,6 +52,7 @@ class Campaign < ApplicationRecord
   enum campaign_status: { active: 0, completed: 1, processing: 2 }
 
   has_many :conversations, dependent: :nullify, autosave: true
+  has_many :pilot_campaign_recipients, class_name: 'Pilot::CampaignRecipient', dependent: :delete_all
 
   before_validation :ensure_correct_campaign_attributes
   before_update :set_completed_at, if: :marking_completed?

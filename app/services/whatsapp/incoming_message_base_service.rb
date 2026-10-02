@@ -50,12 +50,29 @@ class Whatsapp::IncomingMessageBaseService
 
   def process_statuses
     status = @processed_params[:statuses].first
+    reconcile_campaign_recipient(status)
     return unless find_message_by_source_id(status[:id])
 
     update_whatsapp_identifiers_from_status(status)
     update_message_with_status(@message, status)
   rescue ArgumentError => e
     Rails.logger.error "Error while processing whatsapp status update #{e.message}"
+  end
+
+  # WhatsApp campaign sends to contacts without a conversation produce no message,
+  # so delivery statuses must be reconciled against the dedicated recipient record.
+  def reconcile_campaign_recipient(status)
+    return unless inbox.account.feature_enabled?(:whatsapp_campaign)
+    return unless Pilot::CampaignRecipient::DELIVERY_STATES.include?(status[:status].to_s)
+
+    recipient = Pilot::CampaignRecipient.find_by(account_id: inbox.account_id, inbox_id: inbox.id, source_id: status[:id])
+    return recipient.apply_whatsapp_status!(status) if recipient
+    # A message that just wasn't persisted yet is not a recipient status.
+    return if find_message_by_source_id(status[:id])
+
+    Campaigns::ReconcileRecipientStatusJob.set(wait: 2.seconds).perform_later(inbox.id, status.to_h)
+  rescue StandardError => e
+    Rails.logger.error "Error while reconciling whatsapp campaign recipient #{e.message}"
   end
 
   def update_message_with_status(message, status)
