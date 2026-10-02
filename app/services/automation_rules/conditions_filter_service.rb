@@ -164,15 +164,13 @@ class AutomationRules::ConditionsFilterService < FilterService
     when 'equal_to'
       return " 1=0 #{query_operator} " if query_hash['values'].blank?
 
-      value_placeholder = "value_#{current_index}"
-      @filter_values[value_placeholder] = query_hash['values'].first
-      " tags.name = :#{value_placeholder} #{query_operator} "
+      @filter_values["value_#{current_index}"] = query_hash['values']
+      " #{label_exists_query(current_index)} #{query_operator} "
     when 'not_equal_to'
       return " 1=0 #{query_operator} " if query_hash['values'].blank?
 
-      value_placeholder = "value_#{current_index}"
-      @filter_values[value_placeholder] = query_hash['values'].first
-      " tags.name != :#{value_placeholder} #{query_operator} "
+      @filter_values["value_#{current_index}"] = query_hash['values']
+      " NOT #{label_exists_query(current_index)} #{query_operator} "
     when 'is_present'
       " tags.id IS NOT NULL #{query_operator} "
     when 'is_not_present'
@@ -180,6 +178,14 @@ class AutomationRules::ConditionsFilterService < FilterService
     else
       " tags.id #{filter_operation(query_hash, current_index)} #{query_operator} "
     end
+  end
+
+  # Multi-value aware: equal_to matches when ANY listed label is on the conversation,
+  # not_equal_to only when NONE of them is (mirrors FilterService#tag_filter_query).
+  def label_exists_query(current_index)
+    'EXISTS (SELECT 1 FROM taggings INNER JOIN tags ON tags.id = taggings.tag_id ' \
+      "WHERE taggings.taggable_id = conversations.id AND taggings.taggable_type = 'Conversation' " \
+      "AND tags.name IN (:value_#{current_index}))"
   end
 
   private
