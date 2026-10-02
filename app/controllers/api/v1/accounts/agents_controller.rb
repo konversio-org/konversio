@@ -116,5 +116,3 @@ class Api::V1::Accounts::AgentsController < Api::V1::Accounts::BaseController
     DeleteObjectJob.perform_later(agent) if agent.reload.account_users.blank?
   end
 end
-
-Api::V1::Accounts::AgentsController.prepend_mod_with('Api::V1::Accounts::AgentsController')
