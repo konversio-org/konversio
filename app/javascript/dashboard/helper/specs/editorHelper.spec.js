@@ -8,7 +8,6 @@ import {
   stripUnsupportedMarkdown,
   insertAtCursor,
   findNodeToInsertImage,
-  setURLWithQueryAndSize,
   getContentNode,
   getFormattingForEditor,
   getSelectionCoords,
@@ -587,71 +586,6 @@ describe('findNodeToInsertImage', () => {
     expect(result.node.type.name).toBe('image');
     expect(result.node.attrs.src).toBe('image-url');
     expect(result.pos).toBe(1);
-  });
-});
-
-describe('setURLWithQueryAndSize', () => {
-  let selectedNode;
-  let editorView;
-
-  beforeEach(() => {
-    selectedNode = {
-      setAttribute: vi.fn(),
-    };
-
-    const tr = {
-      setNodeMarkup: vi.fn().mockReturnValue({
-        docChanged: true,
-      }),
-    };
-
-    const state = {
-      selection: { from: 0 },
-      tr,
-    };
-
-    editorView = {
-      state,
-      dispatch: vi.fn(),
-    };
-  });
-
-  it('updates the URL with the given size and updates the editor view', () => {
-    const size = { height: '20px' };
-
-    setURLWithQueryAndSize(selectedNode, size, editorView);
-
-    // Check if the editor view is updated
-    expect(editorView.dispatch).toHaveBeenCalledTimes(1);
-  });
-
-  it('updates the URL with the given size and updates the editor view with original size', () => {
-    const size = { height: 'auto' };
-
-    setURLWithQueryAndSize(selectedNode, size, editorView);
-
-    // Check if the editor view is updated
-    expect(editorView.dispatch).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not update the editor view if the document has not changed', () => {
-    editorView.state.tr.setNodeMarkup = vi.fn().mockReturnValue({
-      docChanged: false,
-    });
-
-    const size = { height: '20px' };
-
-    setURLWithQueryAndSize(selectedNode, size, editorView);
-
-    // Check if the editor view dispatch was not called
-    expect(editorView.dispatch).not.toHaveBeenCalled();
-  });
-
-  it('does not perform any operations if selectedNode is not provided', () => {
-    setURLWithQueryAndSize(null, { height: '20px' }, editorView);
-
-    // Ensure the dispatch method wasn't called
-    expect(editorView.dispatch).not.toHaveBeenCalled();
   });
 });
 

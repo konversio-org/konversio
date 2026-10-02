@@ -273,4 +273,48 @@ describe CustomMarkdownRenderer do
       end
     end
   end
+
+  describe 'table column widths' do
+    let(:plain_table) { "| A | B |\n| --- | --- |\n| 1 | 2 |\n" }
+
+    it 'renders an unmarked table with the default wrapper and no colgroup' do
+      output = render_markdown(plain_table)
+
+      expect(output).to include('<div class="tableWrapper"><table>')
+      expect(output).not_to include('colgroup')
+      expect(output).not_to include('cw-colwidths')
+    end
+
+    it 'injects a sized colgroup and fixed layout for a marked table' do
+      output = render_markdown("<!--cw-colwidths:200,120-->\n#{plain_table}")
+
+      expect(output).to include('<div class="tableWrapper" style="width: 320px; max-width: 100%;">')
+      expect(output).to include('table-layout: fixed')
+      expect(output).to include('<colgroup>')
+      expect(output).to include('<col style="width: 200px;">')
+      expect(output).to include('<col style="width: 120px;">')
+    end
+
+    it 'defaults unset columns to the 50px editor minimum' do
+      output = render_markdown("<!--cw-colwidths:200,0-->\n#{plain_table}")
+
+      expect(output).to include('<div class="tableWrapper" style="width: 250px; max-width: 100%;">')
+      expect(output).to include('<col style="width: 200px;">')
+      expect(output).to include('<col style="width: 50px;">')
+    end
+
+    it 'associates each marker with the table that follows it' do
+      markdown = "#{plain_table}\n<!--cw-colwidths:150,250-->\n| P | Q |\n| --- | --- |\n| a | b |\n"
+      output = render_markdown(markdown)
+
+      expect(output).to include('<div class="tableWrapper"><table>')
+      expect(output).to include('<col style="width: 150px;">')
+      expect(output).to include('<col style="width: 250px;">')
+      expect(output.scan('<colgroup>').length).to eq(1)
+    end
+
+    it 'does not surface the marker text' do
+      expect(render_markdown("<!--cw-colwidths:200,120-->\n#{plain_table}")).not_to include('cw-colwidths')
+    end
+  end
 end
