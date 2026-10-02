@@ -22,8 +22,8 @@
 
 ### Validation
 
-15. - [ ] **Unit suite** — `bundle exec rspec spec/services/pilot/playground spec/controllers/api/v1/accounts/pilot/assistants_controller_spec.rb` (or the request-spec equivalent) green on host.
-16. - [ ] **Lint** — `bundle exec rubocop -a` and `pnpm eslint` clean on touched files.
+15. - [x] **Unit suite** — `bundle exec rspec spec/services/pilot/playground spec/controllers/api/v1/accounts/pilot/assistants_controller_spec.rb` (or the request-spec equivalent) green on host.
+16. - [x] **Lint** — `bundle exec rubocop -a` and `pnpm eslint` clean on touched files.
 17. - [ ] **Manual smoke test** — in the Playground UI: run with no config (unchanged behavior); add a temporary scenario and verify handoff attribution and the "temporary" badge; paste knowledge text and verify the reply uses it; exceed the knowledge cap and verify the 422 field error; invoke a tool with a credential argument and verify redaction in the run report.
 
 ## Dependencies / Order
