@@ -52,6 +52,18 @@ class Pilot::AssistantResponse < ApplicationRecord
   scope :by_account, ->(account_id) { where(account_id: account_id) }
   scope :by_assistant, ->(assistant_id) { where(assistant_id: assistant_id) }
 
+  # Approved knowledge authored directly by an operator (not mined from a
+  # document), used when a session reports the FAQs a reply drew on.
+  scope :user_authored, -> { where(status: :approved, documentable_id: nil) }
+
+  # The trusted customer-visible URL behind this knowledge entry, when it was
+  # derived from a customer-visible document. Nil otherwise.
+  def customer_visible_source_url
+    return nil unless documentable.is_a?(::Pilot::Document)
+
+    documentable.customer_visible_source_url
+  end
+
   # Vector similarity search against the approved knowledge base of a single
   # assistant. `query_embedding` is a 1536-dim Array (Float). Returns up to
   # `limit` rows ordered by cosine distance.

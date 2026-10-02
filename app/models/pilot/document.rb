@@ -46,7 +46,7 @@ class Pilot::Document < ApplicationRecord
   enum :status, { in_progress: 0, available: 1, failed: 2 }
   enum :sync_status, { syncing: 0, synced: 1, failed: 2 }, prefix: :sync
 
-  store_accessor :metadata, :crawl_job_id, :error_message
+  store_accessor :metadata, :crawl_job_id, :error_message, :customer_visible
 
   validates :external_link, presence: true, unless: -> { pdf_file.attached? }
   validates :external_link, uniqueness: { scope: :assistant_id }, allow_blank: true
@@ -70,6 +70,31 @@ class Pilot::Document < ApplicationRecord
     return true if pdf_file.attached? && pdf_file.blob.content_type == 'application/pdf'
 
     external_link&.ends_with?('.pdf')
+  end
+
+  # Documents are customer-visible unless an operator explicitly flags them
+  # otherwise. Uploaded PDFs never carry a customer-resolvable link.
+  def customer_visible?
+    value = metadata&.dig('customer_visible')
+    value.nil? || ActiveModel::Type::Boolean.new.cast(value)
+  end
+
+  # The trusted, customer-resolvable URL for this document, or nil when the
+  # document is not customer-visible, points at an uploaded PDF, or has a link
+  # that is not a well-formed http(s) URI.
+  def customer_visible_source_url
+    return nil unless customer_visible?
+    return nil if pdf_document?
+
+    link = external_link.to_s
+    return nil if link.blank?
+
+    uri = URI.parse(link)
+    return nil unless uri.is_a?(URI::HTTP) || uri.is_a?(URI::HTTPS)
+
+    link
+  rescue URI::InvalidURIError
+    nil
   end
 
   private
