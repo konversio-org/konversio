@@ -75,6 +75,7 @@ const onReset = () => {
         class="rounded-xl"
         @click="onReset"
       />
+      <slot name="actions" />
     </div>
   </div>
 </template>

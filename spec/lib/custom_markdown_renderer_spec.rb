@@ -101,6 +101,42 @@ describe CustomMarkdownRenderer do
       end
     end
 
+    context 'when link uses an unsafe URL' do
+      it 'blanks the href' do
+        unsafe_urls = ['javascript:alert(1)', 'vbscript:alert(1)', 'file:///etc/passwd', 'data:text/html;base64,PHNjcmlwdD4=']
+
+        unsafe_urls.each do |url|
+          rendered = render_markdown_link(url)
+
+          expect(rendered).to include('<a href="">link</a>')
+          expect(rendered).not_to include(url)
+        end
+      end
+    end
+
+    context 'when image uses an unsafe URL' do
+      it 'blanks the source' do
+        rendered = render_markdown('![Sample](data:image/svg+xml;base64,PHN2Zz4=)')
+
+        expect(rendered).to include('<img src=""')
+        expect(rendered).not_to include('data:image/svg+xml')
+      end
+    end
+
+    context 'when image has a width hint' do
+      it 'renders the img tag with an inline sizing style' do
+        rendered = render_markdown('![Sample](https://example.com/image.jpg?cw_image_width=640px)')
+
+        expect(rendered).to include('style="width: 640px; max-width: 100%; height: auto;"')
+      end
+
+      it 'discards sizing values that are not bounded px values' do
+        rendered = render_markdown('![Sample](https://example.com/image.jpg?cw_image_width=9000px)')
+
+        expect(rendered).not_to include('style=')
+      end
+    end
+
     context 'when multiple links are present' do
       it 'renders all links when present between empty lines' do
         markdown = "\n[youtube](https://www.youtube.com/watch?v=VIDEO_ID)\n\n[vimeo](https://vimeo.com/1234567)\n^ hello ^ [normal](https://example.com)"

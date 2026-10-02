@@ -52,6 +52,10 @@ class Inboxes extends CacheEnabledApiClient {
   resetSecret(inboxId) {
     return axios.post(`${this.url}/${inboxId}/reset_secret`);
   }
+
+  rotateHmacToken(inboxId) {
+    return axios.post(`${this.url}/${inboxId}/rotate_hmac_token`);
+  }
 }
 
 export default new Inboxes();

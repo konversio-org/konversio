@@ -50,6 +50,19 @@ RSpec.describe Account do
     end
   end
 
+  describe '#api_and_webhooks_enabled?' do
+    let(:account) { create(:account) }
+
+    it 'is enabled for active accounts' do
+      expect(account.api_and_webhooks_enabled?).to be true
+    end
+
+    it 'is disabled for suspended accounts' do
+      account.suspended!
+      expect(account.api_and_webhooks_enabled?).to be false
+    end
+  end
+
   describe 'inbound_email_domain' do
     let(:account) { create(:account) }
 

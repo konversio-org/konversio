@@ -69,4 +69,8 @@ class InboxPolicy < ApplicationPolicy
   def reset_secret?
     @account_user.administrator?
   end
+
+  def rotate_hmac_token?
+    @account_user.administrator?
+  end
 end
