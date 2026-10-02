@@ -181,5 +181,10 @@ export default {
     v-if="filterItemsList.length"
     :group-by="groupBy"
     :report-keys="reportKeys"
+    :from="from"
+    :to="to"
+    :report-type="type"
+    :selected-item-id="selectedFilter && selectedFilter.id"
+    :business-hours="businessHours"
   />
 </template>
