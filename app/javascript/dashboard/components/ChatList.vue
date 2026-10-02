@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
+import { useBreakpoints } from '@vueuse/core';
 import {
   useMapGetter,
   useFunctionGetter,
@@ -131,6 +132,13 @@ async function fetchAiLifecycleCounts() {
 
 const activeStatus = ref(wootConstants.STATUS_TYPE.OPEN);
 const activeSortBy = ref(wootConstants.SORT_BY_TYPE.LAST_ACTIVITY_AT_DESC);
+const breakpoints = useBreakpoints({
+  lg: wootConstants.LARGE_SCREEN_BREAKPOINT,
+});
+const isLgScreen = breakpoints.greaterOrEqual('lg');
+const showExpandedCards = computed(
+  () => props.isOnExpandedLayout && isLgScreen.value
+);
 const showAdvancedFilters = ref(false);
 // chatsOnView is to store the chats that are currently visible on the screen,
 // which mirrors the conversationList.
@@ -167,6 +175,7 @@ const currentAccountId = useMapGetter('getCurrentAccountId');
 // We can't useFunctionGetter here since it needs to be called on setup?
 const getTeamFn = useMapGetter('teams/getTeam');
 const getConversationById = useMapGetter('getConversationById');
+const appliedContactFilter = useMapGetter('getAppliedContactFilter');
 
 useChatListKeyboardEvents(conversationListRef);
 const {
@@ -180,8 +189,6 @@ const {
   onAssignAgent,
   onAssignLabels,
   onRemoveLabels,
-  onAssignTeamsForBulk,
-  onUpdateConversations,
 } = useBulkActions();
 
 const {
@@ -505,8 +512,10 @@ function fetchFilteredConversations(payload) {
     .dispatch('fetchFilteredConversations', {
       queryData: filterQueryGenerator(payload),
       page,
+      sortBy: activeSortBy.value,
     })
-    .then(emitConversationLoaded);
+    .catch(() => useAlert(t('CHAT_LIST.FETCH_ERROR')))
+    .finally(emitConversationLoaded);
 
   showAdvancedFilters.value = false;
 }
@@ -518,8 +527,10 @@ function fetchSavedFilteredConversations(payload) {
     .dispatch('fetchFilteredConversations', {
       queryData: payload,
       page,
+      sortBy: activeSortBy.value,
     })
-    .then(emitConversationLoaded);
+    .catch(() => useAlert(t('CHAT_LIST.FETCH_ERROR')))
+    .finally(emitConversationLoaded);
 }
 
 function onApplyFilter(payload) {
@@ -1055,6 +1066,7 @@ watch(conversationFilters, (newVal, oldVal) => {
       :page-title="pageTitle"
       :has-applied-filters="hasAppliedFilters"
       :has-active-folders="hasActiveFolders"
+      :contact-filter="appliedContactFilter"
       :active-status="activeStatus"
       :is-on-expanded-layout="isOnExpandedLayout"
       :conversation-stats="conversationStats"
@@ -1112,10 +1124,6 @@ watch(conversationFilters, (newVal, oldVal) => {
       :show-resolved-action="allSelectedConversationsStatus('resolved')"
       :show-snoozed-action="allSelectedConversationsStatus('snoozed')"
       @select-all-conversations="toggleSelectAll"
-      @assign-agent="onAssignAgent"
-      @update-conversations="onUpdateConversations"
-      @assign-labels="onAssignLabels"
-      @assign-team="onAssignTeamsForBulk"
     />
     <div
       ref="conversationListRef"
@@ -1134,6 +1142,7 @@ watch(conversationFilters, (newVal, oldVal) => {
           :folders-id="foldersId"
           :conversation-type="conversationType"
           :show-assignee="showAssigneeInConversationCard"
+          :show-expanded="showExpandedCards"
           :pilot-assistant-id="pilotAssistantId"
           :data-index="index"
           @select-conversation="selectConversation"

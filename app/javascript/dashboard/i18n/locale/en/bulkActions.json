@@ -1,6 +1,7 @@
 {
   "BULK_ACTION": {
     "CONVERSATIONS_SELECTED": "{conversationCount} conversations selected",
+    "CLEAR_SELECTION": "Clear selection",
     "AGENT_SELECT_LABEL": "Select agent",
     "ASSIGN_CONFIRMATION_LABEL": "Are you sure to assign {conversationCount} {conversationLabel} to",
     "UNASSIGN_CONFIRMATION_LABEL": "Are you sure to unassign {conversationCount} {conversationLabel}?",
@@ -28,10 +29,14 @@
     },
     "LABELS": {
       "ASSIGN_LABELS": "Assign labels",
+      "REMOVE_LABELS": "Remove labels",
       "NO_LABELS_FOUND": "No labels found",
       "ASSIGN_SELECTED_LABELS": "Assign selected labels",
+      "REMOVE_SELECTED_LABELS": "Remove selected labels",
       "ASSIGN_SUCCESFUL": "Labels assigned successfully.",
-      "ASSIGN_FAILED": "Failed to assign labels. Please try again."
+      "ASSIGN_FAILED": "Failed to assign labels. Please try again.",
+      "REMOVE_SUCCESFUL": "Labels removed successfully.",
+      "REMOVE_FAILED": "Failed to remove labels. Please try again."
     },
     "TEAMS": {
       "TEAM_SELECT_LABEL": "Select team",

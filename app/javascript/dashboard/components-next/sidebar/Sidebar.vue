@@ -1,5 +1,5 @@
 <script setup>
-import { h, ref, computed, onMounted } from 'vue';
+import { h, ref, computed, onMounted, watch } from 'vue';
 import { provideSidebarContext, useSidebarResize } from './provider';
 import { useAccount } from 'dashboard/composables/useAccount';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
@@ -12,6 +12,12 @@ import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import { useWindowSize, useEventListener } from '@vueuse/core';
 import { emitter } from 'shared/helpers/mitt';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
+import {
+  SIDEBAR_SORT_SECTIONS,
+  getSidebarSortOptions,
+  resolveSidebarSort,
+  sortSidebarItems,
+} from 'dashboard/helper/sidebarSort';
 
 import Button from 'dashboard/components-next/button/Button.vue';
 import SidebarGroup from './SidebarGroup.vue';
@@ -167,6 +173,49 @@ const contactCustomViews = useMapGetter('customViews/getContactCustomViews');
 const conversationCustomViews = useMapGetter(
   'customViews/getConversationCustomViews'
 );
+const allUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getAllUnreadCount'
+);
+const getInboxUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getInboxUnreadCount'
+);
+const getLabelUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getLabelUnreadCount'
+);
+const getTeamUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getTeamUnreadCount'
+);
+const mentionsUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getMentionsUnreadCount'
+);
+const participatingUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getParticipatingUnreadCount'
+);
+const unattendedUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getUnattendedUnreadCount'
+);
+const getFolderUnreadCount = useMapGetter(
+  'conversationUnreadCounts/getFolderUnreadCount'
+);
+const getSidebarSectionSort = useMapGetter(
+  'sidebarSortPreferences/getSectionSort'
+);
+const currentUserId = useMapGetter('getCurrentUserID');
+
+const hasConversationUnreadCounts = computed(() =>
+  isFeatureEnabledonAccount.value(
+    accountId.value,
+    FEATURE_FLAGS.CONVERSATION_UNREAD_COUNTS
+  )
+);
+const hasFilteredUnreadCounts = computed(
+  () =>
+    hasConversationUnreadCounts.value &&
+    isFeatureEnabledonAccount.value(
+      accountId.value,
+      FEATURE_FLAGS.UNREAD_COUNT_FOR_FILTERS
+    )
+);
 
 onMounted(() => {
   store.dispatch('labels/get');
@@ -179,8 +228,79 @@ onMounted(() => {
   store.dispatch('pilot/assistants/fetch');
 });
 
+watch([accountId, hasConversationUnreadCounts], ([, enabled]) => {
+  if (enabled) {
+    store.dispatch('conversationUnreadCounts/get');
+  } else {
+    store.dispatch('conversationUnreadCounts/clear');
+  }
+});
+
+watch([accountId, currentUserId], () => {
+  store.dispatch('sidebarSortPreferences/initialize');
+});
+
+const hasUnreadCountsForSection = section => {
+  if (section === SIDEBAR_SORT_SECTIONS.FOLDERS) {
+    return hasFilteredUnreadCounts.value;
+  }
+
+  return hasConversationUnreadCounts.value;
+};
+
+const getSortOptionsForSection = section =>
+  getSidebarSortOptions(section, {
+    hasUnreadCounts: hasUnreadCountsForSection(section),
+  });
+
+const getSortForSection = section =>
+  resolveSidebarSort(section, getSidebarSectionSort.value(section), {
+    hasUnreadCounts: hasUnreadCountsForSection(section),
+  });
+
+const updateSortPreference = (section, sortBy) => {
+  store.dispatch('sidebarSortPreferences/setSectionSort', {
+    section,
+    sortBy,
+  });
+};
+
+const buildSortConfig = section => ({
+  sortOptions: getSortOptionsForSection(section),
+  activeSort: getSortForSection(section),
+  onSortChange: sortBy => updateSortPreference(section, sortBy),
+});
+
 const sortedInboxes = computed(() =>
-  inboxes.value.slice().sort((a, b) => a.name.localeCompare(b.name))
+  sortSidebarItems(inboxes.value, {
+    sortBy: getSortForSection(SIDEBAR_SORT_SECTIONS.CHANNELS),
+    labelKey: inbox => inbox.name,
+    unreadCountKey: inbox => getInboxUnreadCount.value(inbox.id),
+  })
+);
+
+const sortedTeams = computed(() =>
+  sortSidebarItems(teams.value, {
+    sortBy: getSortForSection(SIDEBAR_SORT_SECTIONS.TEAMS),
+    labelKey: team => team.name,
+    unreadCountKey: team => getTeamUnreadCount.value(team.id),
+  })
+);
+
+const sortedLabels = computed(() =>
+  sortSidebarItems(labels.value, {
+    sortBy: getSortForSection(SIDEBAR_SORT_SECTIONS.LABELS),
+    labelKey: label => label.title,
+    unreadCountKey: label => getLabelUnreadCount.value(label.id),
+  })
+);
+
+const sortedFolders = computed(() =>
+  sortSidebarItems(conversationCustomViews.value, {
+    sortBy: getSortForSection(SIDEBAR_SORT_SECTIONS.FOLDERS),
+    labelKey: view => view.name,
+    unreadCountKey: view => getFolderUnreadCount.value(view.id),
+  })
 );
 
 // Resolve the inboxes connected to a Pilot assistant. The assistant payload may
@@ -302,34 +422,48 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.ALL_CONVERSATIONS'),
           activeOn: ['inbox_conversation'],
           to: accountScopedRoute('home'),
+          badgeCount: hasConversationUnreadCounts.value
+            ? allUnreadCount.value
+            : 0,
         },
         {
           name: 'Mentions',
           label: t('SIDEBAR.MENTIONED_CONVERSATIONS'),
           activeOn: ['conversation_through_mentions'],
           to: accountScopedRoute('conversation_mentions'),
+          badgeCount: hasFilteredUnreadCounts.value
+            ? mentionsUnreadCount.value
+            : 0,
         },
         {
           name: 'Participating',
           label: t('SIDEBAR.PARTICIPATING_CONVERSATIONS'),
           activeOn: ['conversation_through_participating'],
           to: accountScopedRoute('conversation_participating'),
+          badgeCount: hasFilteredUnreadCounts.value
+            ? participatingUnreadCount.value
+            : 0,
         },
         {
           name: 'Unattended',
           activeOn: ['conversation_through_unattended'],
           label: t('SIDEBAR.UNATTENDED_CONVERSATIONS'),
           to: accountScopedRoute('conversation_unattended'),
+          badgeCount: hasFilteredUnreadCounts.value
+            ? unattendedUnreadCount.value
+            : 0,
         },
         {
           name: 'Folders',
           label: t('SIDEBAR.CUSTOM_VIEWS_FOLDER'),
           icon: 'i-lucide-folder',
           activeOn: ['conversations_through_folders'],
-          children: conversationCustomViews.value.map(view => ({
+          ...buildSortConfig(SIDEBAR_SORT_SECTIONS.FOLDERS),
+          children: sortedFolders.value.map(view => ({
             name: `${view.name}-${view.id}`,
             label: view.name,
             to: accountScopedRoute('folder_conversations', { id: view.id }),
+            badgeCount: getFolderUnreadCount.value(view.id),
           })),
         },
         {
@@ -337,10 +471,12 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.TEAMS'),
           icon: 'i-lucide-users',
           activeOn: ['conversations_through_team'],
-          children: teams.value.map(team => ({
+          ...buildSortConfig(SIDEBAR_SORT_SECTIONS.TEAMS),
+          children: sortedTeams.value.map(team => ({
             name: `${team.name}-${team.id}`,
             label: team.name,
             to: accountScopedRoute('team_conversations', { teamId: team.id }),
+            badgeCount: getTeamUnreadCount.value(team.id),
           })),
         },
         {
@@ -348,16 +484,19 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.CHANNELS'),
           icon: 'i-lucide-mailbox',
           activeOn: ['conversation_through_inbox'],
+          ...buildSortConfig(SIDEBAR_SORT_SECTIONS.CHANNELS),
           children: sortedInboxes.value.map(inbox => ({
             name: `${inbox.name}-${inbox.id}`,
             label: inbox.name,
             icon: h(ChannelIcon, { inbox, class: 'size-[16px]' }),
             to: accountScopedRoute('inbox_dashboard', { inbox_id: inbox.id }),
+            badgeCount: getInboxUnreadCount.value(inbox.id),
             component: leafProps =>
               h(ChannelLeaf, {
                 label: leafProps.label,
                 active: leafProps.active,
                 inbox,
+                badgeCount: getInboxUnreadCount.value(inbox.id),
               }),
           })),
         },
@@ -367,7 +506,8 @@ const menuItems = computed(() => {
           label: t('SIDEBAR.LABELS'),
           icon: 'i-lucide-tag',
           activeOn: ['conversations_through_label'],
-          children: labels.value.map(label => ({
+          ...buildSortConfig(SIDEBAR_SORT_SECTIONS.LABELS),
+          children: sortedLabels.value.map(label => ({
             name: `${label.title}-${label.id}`,
             label: label.title,
             icon: h('span', {
@@ -377,6 +517,7 @@ const menuItems = computed(() => {
             to: accountScopedRoute('label_conversations', {
               label: label.title,
             }),
+            badgeCount: getLabelUnreadCount.value(label.id),
           })),
         },
       ],

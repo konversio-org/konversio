@@ -16,6 +16,7 @@ import SLACardLabel from './components/SLACardLabel.vue';
 import ContextMenu from 'dashboard/components/ui/ContextMenu.vue';
 import VoiceCallStatus from './VoiceCallStatus.vue';
 import PilotSparkleIcon from 'dashboard/components-next/pilot/PilotSparkleIcon.vue';
+import Icon from 'dashboard/components-next/icon/Icon.vue';
 
 const props = defineProps({
   activeLabel: { type: String, default: '' },
@@ -31,6 +32,9 @@ const props = defineProps({
   enableContextMenu: { type: Boolean, default: false },
   allowedContextMenuOptions: { type: Array, default: () => [] },
   pilotAssistantId: { type: [String, Number], default: 0 },
+  currentContact: { type: Object, default: () => ({}) },
+  assignee: { type: Object, default: () => ({}) },
+  inbox: { type: Object, default: () => ({}) },
 });
 
 const emit = defineEmits([
@@ -80,11 +84,19 @@ const participatingAiAgents = computed(
   () => chatMetadata.value.pilot_assistants || []
 );
 
-const assignee = computed(() => chatMetadata.value.assignee || {});
+const assignee = computed(() =>
+  props.assignee?.name ? props.assignee : chatMetadata.value.assignee || {}
+);
+
+const isAIAssignee = computed(() =>
+  ['AgentBot', 'Pilot::Assistant'].includes(chatMetadata.value.assignee_type)
+);
 
 const senderId = computed(() => chatMetadata.value.sender?.id);
 
 const currentContact = computed(() => {
+  if (props.currentContact?.name) return props.currentContact;
+
   return senderId.value
     ? store.getters['contacts/getContact'](senderId.value)
     : {};
@@ -110,6 +122,8 @@ const voiceCallData = computed(() => ({
 const inboxId = computed(() => props.chat.inbox_id);
 
 const inbox = computed(() => {
+  if (props.inbox?.id) return props.inbox;
+
   return inboxId.value ? store.getters['inboxes/getInbox'](inboxId.value) : {};
 });
 
@@ -131,7 +145,9 @@ const showMetaSection = computed(() => {
   );
 });
 
-const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
+const hasSlaPolicyId = computed(
+  () => props.chat?.applied_sla?.id && !currentContact.value?.blocked
+);
 
 const showLabelsSection = computed(() => {
   return props.chat.labels?.length > 0 || hasSlaPolicyId.value;
@@ -324,7 +340,10 @@ const deleteConversation = () => {
             v-if="showAssignee && assignee.name"
             class="text-n-slate-11 text-xs font-medium leading-3 py-0.5 px-0 inline-flex items-center truncate"
           >
-            <fluent-icon icon="person" size="12" class="text-n-slate-11" />
+            <Icon
+              :icon="isAIAssignee ? 'i-lucide-bot' : 'i-lucide-user-round'"
+              class="size-3 text-n-slate-11 flex-shrink-0"
+            />
             {{ assignee.name }}
           </span>
           <CardPriorityIcon

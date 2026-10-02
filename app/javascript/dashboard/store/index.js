@@ -25,6 +25,7 @@ import conversations from './modules/conversations';
 import conversationSearch from './modules/conversationSearch';
 import conversationStats from './modules/conversationStats';
 import conversationTypingStatus from './modules/conversationTypingStatus';
+import conversationUnreadCounts from './modules/conversationUnreadCounts';
 import conversationWatchers from './modules/conversationWatchers';
 import csat from './modules/csat';
 import customRole from './modules/customRole';
@@ -47,6 +48,7 @@ import pilotAutopilot from './pilot/autopilot';
 import pilotCustomTools from './pilot/tools';
 import portals from './modules/helpCenterPortals';
 import reports from './modules/reports';
+import sidebarSortPreferences from './modules/sidebarSortPreferences';
 import sla from './modules/sla';
 import slaReports from './modules/SLAReports';
 import summaryReports from './modules/summaryReports';
@@ -84,6 +86,7 @@ export default createStore({
     conversationSearch,
     conversationStats,
     conversationTypingStatus,
+    conversationUnreadCounts,
     conversationWatchers,
     csat,
     customRole,
@@ -106,6 +109,7 @@ export default createStore({
     'pilot/customTools': pilotCustomTools,
     portals,
     reports,
+    sidebarSortPreferences,
     sla,
     slaReports,
     summaryReports,

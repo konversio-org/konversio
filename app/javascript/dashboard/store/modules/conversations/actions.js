@@ -3,6 +3,7 @@ import ConversationApi from '../../../api/inbox/conversation';
 import MessageApi from '../../../api/inbox/message';
 import { MESSAGE_STATUS, MESSAGE_TYPE } from 'shared/constants/messages';
 import { createPendingMessage } from 'dashboard/helper/commons';
+import filterQueryGenerator from 'dashboard/helper/filterQueryGenerator';
 import {
   buildConversationList,
   isOnMentionsView,
@@ -72,13 +73,17 @@ const actions = {
     }
   },
 
-  fetchFilteredConversations: async ({ commit, dispatch }, params) => {
+  fetchFilteredConversations: async ({ commit, dispatch, state }, params) => {
     commit(types.SET_LIST_LOADING_STATUS);
+    const requestParams = {
+      ...params,
+      sortBy: state?.appliedFiltersSortBy || params.sortBy,
+    };
     try {
-      const { data } = await ConversationApi.filter(params);
+      const { data } = await ConversationApi.filter(requestParams);
       buildConversationList(
         { commit, dispatch },
-        params,
+        requestParams,
         data,
         'appliedFilters'
       );
@@ -496,6 +501,26 @@ const actions = {
 
   setConversationFilters({ commit }, data) {
     commit(types.SET_CONVERSATION_FILTERS, data);
+  },
+
+  setConversationFiltersSort({ commit }, sortBy) {
+    commit(types.SET_CONVERSATION_FILTERS_SORT, sortBy);
+  },
+
+  // Replaces the list with page 1 of the snake_case filters; sortBy overrides the activity order.
+  applyConversationFilters: (
+    { commit, dispatch },
+    { filters, sortBy = null }
+  ) => {
+    commit(types.SET_CONVERSATION_FILTERS, filters);
+    commit(types.SET_CONVERSATION_FILTERS_SORT, sortBy);
+    commit(types.EMPTY_ALL_CONVERSATION);
+    dispatch('conversationPage/reset', {}, { root: true });
+
+    return dispatch('fetchFilteredConversations', {
+      queryData: filterQueryGenerator(filters),
+      page: 1,
+    });
   },
 
   clearConversationFilters({ commit }) {

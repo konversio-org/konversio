@@ -1,5 +1,6 @@
 {
   "CHAT_LIST": {
+    "FETCH_ERROR": "Couldn't load conversations. Please try again.",
     "LOADING": "Fetching conversations",
     "LOAD_MORE_CONVERSATIONS": "Load more conversations",
     "EOF": "All conversations loaded 🎉",
