@@ -94,6 +94,23 @@ export const generateConditionOptions = (options, key = 'id') => {
   });
 };
 
+// Teams carry an emoji icon picker value in `icon`, which is not a CSS class and
+// cannot be handed to the generic Icon component the dropdowns render.
+export const generateTeamOptions = teams =>
+  (teams || []).map(team => ({
+    id: team.id,
+    name: team.name,
+    emoji: team.icon,
+    iconColor: team.icon_color,
+  }));
+
+export const generateLabelOptions = labels =>
+  (labels || []).map(label => ({
+    id: label.title,
+    name: label.title,
+    color: label.color,
+  }));
+
 export const getActionOptions = ({
   agents,
   teams,

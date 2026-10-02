@@ -23,7 +23,7 @@ import { toggleBlockType } from '@chatwoot/prosemirror-schema/src/menu/common';
 import { checkFileSizeLimit } from 'shared/helpers/FileHelper';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
-import keyboardEventListenerMixins from 'shared/mixins/keyboardEventListenerMixins';
+
 import SlashCommandMenu from './SlashCommandMenu.vue';
 
 const MAXIMUM_FILE_UPLOAD_SIZE = 4; // in MB
@@ -64,7 +64,6 @@ let state;
 
 export default {
   components: { SlashCommandMenu },
-  mixins: [keyboardEventListenerMixins],
   props: {
     modelValue: { type: String, default: '' },
     editorId: { type: String, default: '' },
@@ -354,7 +353,6 @@ export default {
         },
       });
     },
-    handleKeyEvents() {},
     focusEditorInputField() {
       const { tr } = editorView.state;
       const selection = Selection.atEnd(tr.doc);

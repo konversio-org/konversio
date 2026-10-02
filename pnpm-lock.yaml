@@ -41,6 +41,9 @@ importers:
       '@chatwoot/ninja-keys':
         specifier: 1.2.3
         version: 1.2.3
+      '@chatwoot/pico-search':
+        specifier: 0.6.2
+        version: 0.6.2
       '@chatwoot/prosemirror-schema':
         specifier: 1.4.5
         version: 1.4.5
@@ -194,6 +197,9 @@ importers:
       prosemirror-commands:
         specifier: ^1.7.1
         version: 1.7.1
+      prosemirror-inputrules:
+        specifier: 1.4.0
+        version: 1.4.0
       prosemirror-schema-list:
         specifier: ^1.5.1
         version: 1.5.1
@@ -490,6 +496,9 @@ packages:
 
   '@chatwoot/ninja-keys@1.2.3':
     resolution: {integrity: sha512-xM8d9P5ikDMZm2WbaCTk/TW5HFauylrU3cJ75fq5je6ixKwyhl/0kZbVN/vbbZN4+AUX/OaSIn6IJbtCgIF67g==}
+
+  '@chatwoot/pico-search@0.6.2':
+    resolution: {integrity: sha512-uZnt/c06sN3epXv42uzweoqKLCY94s+h9vpbw/1SYCPTww4kCo18vUUD3QZ7tPPSBQB130Fjc79tLQMSWoGt4w==}
 
   '@chatwoot/prosemirror-schema@1.4.5':
     resolution: {integrity: sha512-+s9aKNjoxbT57qs1VAElPfwx3KVO714H5A9sWTJ9E4wsX9pr3SXvs4acWChDcfprGFCm16ybe/XS0161Ax6raA==}
@@ -5225,6 +5234,8 @@ snapshots:
       '@material/mwc-icon': 0.25.3
       hotkeys-js: 3.8.7
       lit: 2.2.6
+
+  '@chatwoot/pico-search@0.6.2': {}
 
   '@chatwoot/prosemirror-schema@1.4.5':
     dependencies:

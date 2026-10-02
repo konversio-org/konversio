@@ -1,10 +1,11 @@
 <script>
-import { defineAsyncComponent, useTemplateRef } from 'vue';
+import { defineAsyncComponent, getCurrentInstance, useTemplateRef } from 'vue';
 import { mapGetters } from 'vuex';
 import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useTrack } from 'dashboard/composables';
-import keyboardEventListenerMixins from 'shared/mixins/keyboardEventListenerMixins';
+import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 import ReplyToMessage from './ReplyToMessage.vue';
 import AttachmentPreview from 'dashboard/components/widgets/AttachmentsPreview.vue';
@@ -50,9 +51,13 @@ import {
   appendSignature,
   removeSignature,
   getEffectiveChannelType,
+  getAgentVariables,
+  getContactVariables,
 } from 'dashboard/helper/editorHelper';
 import { useCopilotReply } from 'dashboard/composables/useCopilotReply';
 import { useCopilotDrawer } from 'dashboard/composables/pilot/useCopilotDrawer';
+import { useMacroExecution } from 'dashboard/composables/useMacroExecution';
+import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
 import { useKbd } from 'dashboard/composables/utils/useKbd';
 import { isFileTypeAllowedForChannel } from 'shared/helpers/FileHelper';
 
@@ -82,8 +87,9 @@ export default {
     PilotPreviewPanel,
     CopilotEditorSection,
     CopilotReplyBottomPanel,
+    ConversationResolveAttributesModal,
   },
-  mixins: [inboxMixin, fileUploadMixin, keyboardEventListenerMixins],
+  mixins: [inboxMixin, fileUploadMixin],
   emits: ['toggleEditorSize'],
   setup() {
     const {
@@ -99,6 +105,43 @@ export default {
     const copilot = useCopilotReply();
     const pilotCopilotDrawer = useCopilotDrawer();
     const shortcutKey = useKbd(['$mod', '+', 'enter']);
+    const macroExecution = useMacroExecution();
+
+    // Options API state and methods live on the instance proxy
+    const { proxy } = getCurrentInstance();
+    useKeyboardEvents({
+      Escape: {
+        action: () => proxy.hideEmojiPicker(),
+        allowOnFocusedInput: true,
+      },
+      '$mod+KeyK': {
+        action: e => {
+          e.preventDefault();
+          const ninja = document.querySelector('ninja-keys');
+          ninja.open();
+        },
+        allowOnFocusedInput: true,
+      },
+      Enter: {
+        action: e => {
+          if (proxy.isAValidEvent('enter')) {
+            proxy.onSendReply();
+            e.preventDefault();
+          }
+        },
+        allowOnFocusedInput: true,
+      },
+      '$mod+Enter': {
+        action: () => {
+          if (copilot.isActive.value && proxy.isFocused) {
+            proxy.onSubmitCopilotReply();
+          } else if (proxy.isAValidEvent('cmd_enter')) {
+            proxy.onSendReply();
+          }
+        },
+        allowOnFocusedInput: true,
+      },
+    });
 
     return {
       uiSettings,
@@ -111,6 +154,7 @@ export default {
       copilot,
       pilotCopilotDrawer,
       shortcutKey,
+      macroExecution,
     };
   },
   data() {
@@ -136,6 +180,7 @@ export default {
       showUserMentions: false,
       showCannedMenu: false,
       showVariablesMenu: false,
+      showMacrosMenu: false,
       newConversationModalActive: false,
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
@@ -155,6 +200,12 @@ export default {
       lastEmail: 'getLastEmailInSelectedChat',
       globalConfig: 'globalConfig/get',
     }),
+    isMacrosEnabled() {
+      return this.isFeatureEnabledonAccount(
+        this.accountId,
+        FEATURE_FLAGS.MACROS
+      );
+    },
     currentContact() {
       const senderId = this.currentChat?.meta?.sender?.id;
       if (!senderId) return {};
@@ -381,7 +432,13 @@ export default {
         contact: this.currentContact,
         inbox: this.inbox,
       });
-      return variables;
+      // Match the backend drops: names are Ruby-capitalized and
+      // {{agent.*}} is the message sender, not the assignee.
+      return {
+        ...variables,
+        ...getContactVariables(this.currentContact),
+        ...getAgentVariables(this.currentUser),
+      };
     },
     connectedPortalSlug() {
       const { help_center: portal = {} } = this.inbox;
@@ -489,10 +546,7 @@ export default {
 
   mounted() {
     this.getFromDraft();
-    // Don't use the keyboard listener mixin here as the events here are supposed to be
-    // working even if the editor is focussed.
     document.addEventListener('paste', this.onPaste);
-    document.addEventListener('keydown', this.handleKeyEvents);
     this.setCCAndToEmailsFromLastChat();
     this.doAutoSaveDraft = debounce(
       () => {
@@ -524,7 +578,6 @@ export default {
   },
   unmounted() {
     document.removeEventListener('paste', this.onPaste);
-    document.removeEventListener('keydown', this.handleKeyEvents);
     emitter.off(BUS_EVENTS.TOGGLE_REPLY_TO_MESSAGE, this.onReplyToMessage);
     emitter.off(BUS_EVENTS.INSERT_INTO_NORMAL_EDITOR, this.addIntoEditor);
     emitter.off(
@@ -656,52 +709,13 @@ export default {
         this.$store.dispatch('draftMessages/delete', { key });
       }
     },
-    getElementToBind() {
-      return this.replyEditor;
-    },
-    getKeyboardEvents() {
-      return {
-        Escape: {
-          action: () => {
-            this.hideEmojiPicker();
-          },
-          allowOnFocusedInput: true,
-        },
-        '$mod+KeyK': {
-          action: e => {
-            e.preventDefault();
-            const ninja = document.querySelector('ninja-keys');
-            ninja.open();
-          },
-          allowOnFocusedInput: true,
-        },
-        Enter: {
-          action: e => {
-            if (this.isAValidEvent('enter')) {
-              this.onSendReply();
-              e.preventDefault();
-            }
-          },
-          allowOnFocusedInput: true,
-        },
-        '$mod+Enter': {
-          action: () => {
-            if (this.copilot.isActive.value && this.isFocused) {
-              this.onSubmitCopilotReply();
-            } else if (this.isAValidEvent('cmd_enter')) {
-              this.onSendReply();
-            }
-          },
-          allowOnFocusedInput: true,
-        },
-      };
-    },
     isAValidEvent(selectedKey) {
       return (
         !this.showUserMentions &&
         !this.showMentions &&
         !this.showCannedMenu &&
         !this.showVariablesMenu &&
+        !this.showMacrosMenu &&
         this.isFocused &&
         this.isEditorHotKeyEnabled(selectedKey)
       );
@@ -748,6 +762,18 @@ export default {
     },
     toggleVariablesMenu(value) {
       this.showVariablesMenu = value;
+    },
+    toggleMacrosMenu(value) {
+      this.showMacrosMenu = value;
+    },
+    onExecuteMacro(macro) {
+      const pending = this.macroExecution.execute(macro, this.currentChat.id);
+      if (pending) {
+        this.$refs.resolveAttributesModal?.open(
+          pending.missing,
+          pending.customAttributes
+        );
+      }
     },
     openWhatsappTemplateModal() {
       this.showWhatsAppTemplatesModal = true;
@@ -1429,6 +1455,8 @@ export default {
           allow-signature
           :channel-type="channelType"
           :medium="inbox.medium"
+          enable-insert-events
+          :enable-macros="isMacrosEnabled"
           @typing-off="onTypingOff"
           @typing-on="onTypingOn"
           @focus="onFocus"
@@ -1436,6 +1464,8 @@ export default {
           @toggle-user-mention="toggleUserMention"
           @toggle-canned-menu="toggleCannedMenu"
           @toggle-variables-menu="toggleVariablesMenu"
+          @toggle-macros-menu="toggleMacrosMenu"
+          @execute-macro="onExecuteMacro"
           @clear-selection="clearEditorSelection"
         />
 
@@ -1542,6 +1572,12 @@ export default {
       ref="confirmDialog"
       :title="$t('CONVERSATION.REPLYBOX.UNDEFINED_VARIABLES.TITLE')"
       :description="undefinedVariableMessage"
+    />
+
+    <ConversationResolveAttributesModal
+      ref="resolveAttributesModal"
+      @submit="macroExecution.submitPendingAttributes"
+      @close="macroExecution.dismissPendingAttributes"
     />
   </div>
 </template>

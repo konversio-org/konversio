@@ -2,8 +2,9 @@ import {
   messageSchema,
   MessageMarkdownTransformer,
   MessageMarkdownSerializer,
+  Selection,
 } from '@chatwoot/prosemirror-schema';
-import { replaceVariablesInMessage } from '@chatwoot/utils';
+import { InputRule, inputRules } from 'prosemirror-inputrules';
 import * as Sentry from '@sentry/vue';
 import { FORMATTING, MARKDOWN_PATTERNS } from 'dashboard/constants/editor';
 import { INBOX_TYPES, TWILIO_CHANNEL_MEDIUM } from 'dashboard/helper/inbox';
@@ -274,6 +275,18 @@ export const scrollCursorIntoView = view => {
 };
 
 /**
+ * Collapse the current selection to a cursor near its head. Used to override
+ * the default Escape -> selectParentNode behavior which would otherwise keep
+ * the text highlight visible.
+ *
+ * @param {EditorView} view - The ProseMirror EditorView
+ */
+export const collapseSelection = view => {
+  const { tr, selection } = view.state;
+  view.dispatch(tr.setSelection(Selection.near(selection.$head)));
+};
+
+/**
  * Returns a transaction that inserts a node into editor at the given position
  * Has an optional param 'content' to check if the
  *
@@ -299,9 +312,19 @@ export function insertAtCursor(editorView, node, from, to) {
     node = node.firstChild.content;
   }
 
+  // The cursor sits in an empty paragraph when the editor is empty, and also
+  // when the editor keeps an empty first line above a signature. Inserting
+  // block content there splits that paragraph and strands a blank line, so
+  // replace the paragraph instead.
+  const $from = editorView.state.doc.resolve(from);
+  const isInEmptyParagraph =
+    $from.parent.type.name === 'paragraph' && $from.parent.content.size === 0;
+
   let tr;
   if (to) {
     tr = editorView.state.tr.replaceWith(from, to, node).insertText(` `);
+  } else if (isInEmptyParagraph && !isWrappedInParagraph) {
+    tr = editorView.state.tr.replaceWith($from.before(), $from.after(), node);
   } else {
     tr = editorView.state.tr.insert(from, node);
   }
@@ -394,6 +417,62 @@ export function stripUnsupportedFormatting(content, schema) {
   return sanitizedContent;
 }
 
+// Liquid delimiters ({{ }} / {% %}) the backend evaluates on send.
+const LIQUID_SYNTAX = /\{\{|\{%/;
+
+const VARIABLE_PLACEHOLDER = /{{(.*?)}}/g;
+
+// Value when set (and not itself Liquid), else the {{placeholder}} for the backend.
+export const resolveVariableText = (key, variables) => {
+  const value = String(variables?.[key] ?? '');
+  return value && !LIQUID_SYNTAX.test(value) ? value : `{{${key}}}`;
+};
+
+export const resolveVariablesInMessage = (message, variables) =>
+  message?.replace(VARIABLE_PLACEHOLDER, (_, key) =>
+    resolveVariableText(key.trim(), variables)
+  );
+
+// Name variables normalized like the backend drops (UserDrop/ContactDrop):
+// name split on whitespace, each word Ruby-capitalized (rest downcased).
+const getNameVariables = (prefix, name) => {
+  const names = (name || '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+  return {
+    [`${prefix}.name`]: names.join(' '),
+    [`${prefix}.first_name`]: names[0] || '',
+    [`${prefix}.last_name`]: names.length > 1 ? names[names.length - 1] : '',
+  };
+};
+
+// {{agent.*}} values for the message sender.
+export const getAgentVariables = user => ({
+  ...getNameVariables('agent', user.name),
+  'agent.email': user.email,
+});
+
+// {{contact.*}} name values.
+export const getContactVariables = contact =>
+  getNameVariables('contact', contact?.name);
+
+// Resolves a manually typed {{variable}} to its value on the closing braces.
+// Leaves the placeholder when there's no value, the value is Liquid, or it's a private note.
+export const createVariableInputRule = ({ isPrivate, getVariables }) => {
+  const rule = new InputRule(
+    /\{\{([^{}]+)\}\}$/,
+    (editorState, match, from, to) => {
+      if (isPrivate()) return null;
+      const [, key] = match;
+      const text = resolveVariableText(key, getVariables());
+      if (text === `{{${key}}}`) return null;
+      return editorState.tr.insertText(text, from, to);
+    }
+  );
+  return inputRules({ rules: [rule] });
+};
+
 /**
  * Content Node Creation Helper Functions for
  * - mention
@@ -436,7 +515,7 @@ const createNode = (editorView, nodeType, content) => {
       );
     }
     case 'variable':
-      return state.schema.text(`{{${content}}}`);
+      return state.schema.text(content);
     case 'emoji':
       return state.schema.text(content);
     case 'tool': {
@@ -460,10 +539,7 @@ const nodeCreators = {
     to,
   }),
   cannedResponse: (editorView, content, from, to, variables) => {
-    const updatedMessage = replaceVariablesInMessage({
-      message: content,
-      variables,
-    });
+    const updatedMessage = resolveVariablesInMessage(content, variables);
     const node = createNode(editorView, 'cannedResponse', updatedMessage);
     return {
       node,
@@ -471,8 +547,12 @@ const nodeCreators = {
       to,
     };
   },
-  variable: (editorView, content, from, to) => ({
-    node: createNode(editorView, 'variable', content),
+  variable: (editorView, content, from, to, variables) => ({
+    node: createNode(
+      editorView,
+      'variable',
+      resolveVariableText(content, variables)
+    ),
     from,
     to,
   }),
