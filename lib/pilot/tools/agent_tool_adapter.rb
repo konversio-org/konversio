@@ -26,6 +26,12 @@ class Pilot::Tools::AgentToolAdapter < Agents::Tool
     @tool = tool
   end
 
+  # Marks the wrapped tool as an account-defined HTTP tool so permission
+  # filters can gate it on the account's custom-tools feature flag.
+  def custom?
+    true
+  end
+
   def name
     @tool.slug.to_s
   end

@@ -14,6 +14,14 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
   end
 
   def create
+    return create_reply_suggestion if reply_suggestion_request?
+
+    create_chat_thread
+  end
+
+  private
+
+  def create_chat_thread
     raise ActionController::ParameterMissing, :message if params[:message].blank?
 
     thread = create_thread_and_first_message(params[:message], params[:assistant_id])
@@ -28,7 +36,46 @@ class Api::V2::Accounts::Pilot::CopilotThreadsController < Api::V1::Accounts::Ba
     render json: { error: 'message is required' }, status: :bad_request
   end
 
-  private
+  def create_reply_suggestion
+    return render json: { error: 'conversation_id is required' }, status: :bad_request if params[:conversation_id].blank?
+
+    conversation = accessible_conversation(params[:conversation_id])
+    return render json: { error: 'Conversation not found' }, status: :not_found if conversation.blank?
+
+    message = params[:message].presence || default_reply_suggestion_message
+    thread = create_thread_and_first_message(message, params[:assistant_id])
+
+    Pilot::CopilotReplySuggestionJob.perform_later(
+      thread_id: thread.id,
+      conversation_id: params[:conversation_id]
+    )
+
+    render json: serialize_thread(thread), status: :created
+  end
+
+  def reply_suggestion_request?
+    params[:request_type].to_s == 'reply_suggestion'
+  end
+
+  # Resolves the referenced conversation exactly as the conversation list
+  # would. Returns nil for both a missing conversation and one the agent
+  # cannot access so the caller can respond 404 without leaking existence.
+  def accessible_conversation(conversation_id)
+    conversation = Current.account.conversations.find_by(display_id: conversation_id) ||
+                   Current.account.conversations.find_by(id: conversation_id)
+    return nil if conversation.blank?
+    return nil unless Custom::Pilot::ConversationAccess.accessible?(
+      account: Current.account,
+      user: Current.user,
+      conversation: conversation
+    )
+
+    conversation
+  end
+
+  def default_reply_suggestion_message
+    'Draft a suggested reply for this conversation.'
+  end
 
   def create_thread_and_first_message(message, assistant_id)
     ActiveRecord::Base.transaction do

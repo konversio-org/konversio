@@ -65,6 +65,7 @@ class Api::V2::Accounts::Pilot::CustomToolsController < Api::V1::Accounts::BaseC
   def custom_tool_params
     params.permit(
       :title, :description, :endpoint_url, :http_method, :auth_type, :enabled,
+      :available_for_reply_drafting,
       :request_template, :response_template,
       auth_config: {},
       param_schema: [:name, :type, :description, :required]

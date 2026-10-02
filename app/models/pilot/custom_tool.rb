@@ -2,21 +2,22 @@
 #
 # Table name: pilot_custom_tools
 #
-#  id                :bigint           not null, primary key
-#  auth_config       :jsonb
-#  auth_type         :string           default("none")
-#  description       :text
-#  enabled           :boolean          default(TRUE), not null
-#  endpoint_url      :text             not null
-#  http_method       :string           default("GET"), not null
-#  param_schema      :jsonb
-#  request_template  :text
-#  response_template :text
-#  slug              :string           not null
-#  title             :string           not null
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  account_id        :bigint           not null
+#  id                           :bigint           not null, primary key
+#  auth_config                  :jsonb
+#  auth_type                    :string           default("none")
+#  available_for_reply_drafting :boolean          default(FALSE), not null
+#  description                  :text
+#  enabled                      :boolean          default(TRUE), not null
+#  endpoint_url                 :text             not null
+#  http_method                  :string           default("GET"), not null
+#  param_schema                 :jsonb
+#  request_template             :text
+#  response_template            :text
+#  slug                         :string           not null
+#  title                        :string           not null
+#  created_at                   :datetime         not null
+#  updated_at                   :datetime         not null
+#  account_id                   :bigint           not null
 #
 # Indexes
 #
@@ -46,6 +47,7 @@ class Pilot::CustomTool < ApplicationRecord
   before_validation :generate_slug
 
   scope :enabled, -> { where(enabled: true) }
+  scope :available_for_reply_drafting, -> { where(available_for_reply_drafting: true) }
 
   def to_tool_metadata
     {
