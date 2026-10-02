@@ -30,6 +30,11 @@ class Pilot::OnboardingHelpCenter::PlanTask < Pilot::BaseTaskService
 
   private
 
+  # These tasks are not conversation-scoped, so skip the base follow-up context.
+  def build_follow_up_context?
+    false
+  end
+
   def event_name
     :onboarding_help_center_plan
   end
