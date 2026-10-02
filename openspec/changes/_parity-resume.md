@@ -117,3 +117,41 @@ you are implementing from it. Parent tracker: `openspec/changes/_parity-coverage
 - Manual/browser/credentialed smoke tests across all changes (no live LLM provider / Meta WABA / browser).
 - `pilot-conversation-outcomes`: quota-handoff sub-path (no quota enforcement exists).
 - `pilot-knowledge-auto-sync`: citation eligibility hook depends on agent-sessions resolver (now merged — verify).
+
+## Handing to Kimi Code (K3)
+
+Everything here is tool-agnostic (plain `git`/shell), so Kimi Code can execute it directly.
+
+**Before you start**
+- `git fetch origin`; branch every worktree off `origin/main` (`b244a2f77` or later) — NOT the `phase-*` branches.
+- Run **one tool at a time** on this repo — do not run Kimi Code and opencode simultaneously on the same worktrees.
+- The Phase-3 wave-1 worktrees/branches (`wt-outcomes`, `wt-sessions`, `wt-knowledge`, `wt-reply`, `wt-playground`)
+  are already merged — leave them; do not reuse.
+
+**Allocation for the remaining waves**
+
+| Wave | Change | Worktree | Branch | Test DB | Redis |
+|---|---|---|---|---|---|
+| 2 | pilot-response-integrity | tmp/wt-integrity | feat/pilot-response-integrity | chatwoot_test_integrity | 11 |
+| 2 | pilot-audiences-and-lifecycle | tmp/wt-audiences | feat/pilot-audiences-and-lifecycle | chatwoot_test_audiences | 12 |
+| 2 | pilot-faq-suggestions | tmp/wt-faq | feat/pilot-faq-suggestions | chatwoot_test_faq | 13 |
+| 3 | pilot-assistant-analytics | tmp/wt-analytics | feat/pilot-assistant-analytics | chatwoot_test_analytics | 14 |
+
+**Swarm invocation**
+- Wave 2: one agent per change, all 3 in parallel. Wave 3: a single agent.
+- Each agent prompt MUST contain: its worktree path + branch; "never modify the main checkout; do not push or merge";
+  the **clean-room** rule (above); the 4 spec docs to read; the environment block (isolated DB/Redis, run every command
+  with the worktree as CWD, `RAILS_ENV=test bundle exec rspec`, `db:migrate` if adding migrations, full `pnpm test` if
+  frontend touched); verify (rubocop/eslint + §Validation specs green); commit incrementally + tick tasks.md.
+- **Context-frugal reporting:** each agent must write its full report to `openspec/changes/<change>/IMPLEMENTATION.md`
+  and return only a ≤8-line summary.
+
+**After each wave**
+- Merge each branch into `main` one at a time; resolve conflicts as unions; dedupe migration versions
+  (`ls db/migrate | grep -oE '^[0-9]+' | sort | uniq -d`); let the husky hook run.
+- Rebuild + verify on `main` (recipe step 5), update the tracker (force-add), then
+  `git branch phase-3b && git push origin main phase-3b` (then `phase-3c` after wave 3).
+
+**Quota fallback**
+- If you hit `403 … 5-hour usage limit`, stop at the last good checkpoint — nothing is lost. `main` and the
+  `phase-*` branches are on `origin`; any tool (including opencode) can resume from this brief.
