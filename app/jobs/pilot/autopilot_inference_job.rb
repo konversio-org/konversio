@@ -8,6 +8,20 @@
 class Pilot::AutopilotInferenceJob < ApplicationJob
   include Events::Types
 
+  # Maps the evaluator's handover reason onto the outcome taxonomy and the
+  # lifecycle event's source. Escalations and knowledge gaps are distinct:
+  # an explicit tool/customer request is an escalation, an unanswered need is
+  # a knowledge gap. Unknown reasons fall back to `other`.
+  HANDOFF_CATEGORY_BY_REASON = {
+    'handoff_tool' => 'customer_escalation',
+    'customer_request' => 'customer_escalation',
+    'sentinel' => 'knowledge_gap'
+  }.freeze
+
+  HANDOFF_SOURCE_BY_REASON = {
+    'handoff_tool' => 'ai_tool'
+  }.freeze
+
   queue_as :default
 
   def perform(message_id:)
@@ -18,6 +32,8 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     conversation = message.conversation
     assistant = assistant_for(conversation.inbox)
     return if assistant.blank?
+
+    record_eligibility(message, conversation, assistant)
 
     result = run_inference_with_typing(conversation, assistant, message)
     dispatch_inference_outcome(result, conversation, assistant)
@@ -79,6 +95,13 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
 
     join = ::Pilot::Inbox.find_by(inbox_id: inbox.id)
     join&.assistant
+  end
+
+  # Opens the conversation's first outcome episode the first time Pilot is
+  # eligible to respond. Idempotent and failure-isolated inside the recorder.
+  def record_eligibility(message, conversation, assistant)
+    ::Pilot::ConversationOutcomeRecorder.new(conversation: conversation, assistant: assistant)
+                                        .record_eligibility(at: message.created_at)
   end
 
   # Routes the LLM result to the correct side-effect: hand off to a
@@ -183,10 +206,13 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
   # Normal LLM-signalled handover: post the assistant's configured
   # handoff message and route to a human.
   def process_handover(conversation, assistant, result)
+    reason = handover_reason(result)
     ::Custom::Pilot::HandoffService.call(
       conversation: conversation,
       assistant: assistant,
-      reason: handover_reason(result),
+      reason: reason,
+      source: HANDOFF_SOURCE_BY_REASON.fetch(reason, 'inference'),
+      reason_category: HANDOFF_CATEGORY_BY_REASON.fetch(reason, 'other'),
       message: assistant.config['handoff_message'].presence || I18n.t('conversations.pilot.handoff')
     )
   end
@@ -199,6 +225,8 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
       conversation: conversation,
       assistant: assistant,
       reason: 'inference_error',
+      source: 'system',
+      reason_category: 'system_failure',
       message: I18n.t('conversations.pilot.handoff_error')
     )
   rescue StandardError => e

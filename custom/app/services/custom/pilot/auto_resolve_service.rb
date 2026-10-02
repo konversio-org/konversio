@@ -84,6 +84,8 @@ module Custom
           conversation: conversation,
           assistant: assistant,
           reason: reason,
+          source: 'inactivity',
+          reason_category: 'knowledge_gap',
           message: assistant.handoff_message.presence
         )
       end
