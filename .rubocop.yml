@@ -21,6 +21,7 @@ Metrics/ClassLength:
     - 'app/models/message.rb'
     - 'app/models/conversation.rb'
     - 'app/controllers/super_admin/llm_settings_controller.rb'
+    - 'lib/konversio_markdown_renderer.rb'
 
 Metrics/MethodLength:
   Max: 19

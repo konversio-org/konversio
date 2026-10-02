@@ -357,6 +357,14 @@ Rails.application.routes.draw do
             resources :categories do
               post :reorder, on: :collection
             end
+            namespace :articles do
+              resource :bulk_actions, only: [] do
+                post :translate
+                patch :update_status
+                patch :update_category
+                delete :delete_articles
+              end
+            end
             resources :articles do
               post :reorder, on: :collection
             end
@@ -565,13 +573,16 @@ Rails.application.routes.draw do
 
   get 'hc/:slug', to: 'public/api/v1/portals#show'
   get 'hc/:slug/sitemap.xml', to: 'public/api/v1/portals#sitemap'
-  get 'hc/:slug/:locale', to: 'public/api/v1/portals#show'
+  get 'hc/:slug/:locale', to: 'public/api/v1/portals#show', as: :public_portal_locale
+  get 'hc/:slug/:locale/search', to: 'public/api/v1/portals/search#index', as: :portal_search
   get 'hc/:slug/:locale/articles', to: 'public/api/v1/portals/articles#index'
   get 'hc/:slug/:locale/categories', to: 'public/api/v1/portals/categories#index'
-  get 'hc/:slug/:locale/categories/:category_slug', to: 'public/api/v1/portals/categories#show'
+  get 'hc/:slug/:locale/categories/:category_slug', to: 'public/api/v1/portals/categories#show', as: :public_portal_category
   get 'hc/:slug/:locale/categories/:category_slug/articles', to: 'public/api/v1/portals/articles#index'
   get 'hc/:slug/articles/:article_slug.png', to: 'public/api/v1/portals/articles#tracking_pixel'
-  get 'hc/:slug/articles/:article_slug', to: 'public/api/v1/portals/articles#show'
+  get 'hc/:slug/articles/:article_slug.md', to: 'public/api/v1/portals/articles#show_markdown', as: :public_portal_article_markdown,
+                                            defaults: { format: :md }
+  get 'hc/:slug/articles/:article_slug', to: 'public/api/v1/portals/articles#show', as: :public_portal_article
 
   # Public, content-hashed, CDN-cacheable assistant avatar (served by the widget).
   get 'pilot/assistants/:id/avatar/:hash.png', to: 'pilot/assistant_avatars#show', as: :pilot_assistant_avatar
