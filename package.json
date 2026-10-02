@@ -38,7 +38,7 @@
     "@chatwoot/ninja-keys": "1.2.3",
     "@chatwoot/pico-search": "0.6.2",
     "@chatwoot/prosemirror-schema": "1.4.5",
-    "@chatwoot/utils": "^0.0.52",
+    "@chatwoot/utils": "^0.0.57",
     "@formkit/core": "^1.7.2",
     "@formkit/vue": "^1.7.2",
     "@hcaptcha/vue3-hcaptcha": "^1.3.0",
