@@ -12,6 +12,7 @@ import {
 } from 'dashboard/helper/portalHelper';
 import { hasPendingChanges } from 'dashboard/helper/articleDiffHelper';
 import { useAlert } from 'dashboard/composables';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import articlesAPI from 'dashboard/api/helpCenter/articles';
 
 import HelpCenterLayout from 'dashboard/components-next/HelpCenter/HelpCenterLayout.vue';
@@ -25,6 +26,7 @@ import Button from 'dashboard/components-next/button/Button.vue';
 import Input from 'dashboard/components-next/input/Input.vue';
 import Dialog from 'dashboard/components-next/dialog/Dialog.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
+import BulkTranslateDialog from './BulkTranslateDialog.vue';
 
 const props = defineProps({
   articles: {
@@ -67,10 +69,22 @@ const { t } = useI18n();
 
 const isSwitchingPortal = useMapGetter('portals/isSwitchingPortal');
 const isFetching = useMapGetter('articles/isFetching');
+const currentAccountId = useMapGetter('getCurrentAccountId');
+const isFeatureEnabledonAccount = useMapGetter(
+  'accounts/isFeatureEnabledonAccount'
+);
+
+const isTranslationAvailable = computed(() =>
+  isFeatureEnabledonAccount.value(
+    currentAccountId.value,
+    FEATURE_FLAGS.PILOT_TASKS
+  )
+);
 
 const selectedArticleIds = ref(new Set());
 const isArticleDragging = ref(false);
 const deleteConfirmDialogRef = ref(null);
+const bulkTranslateDialogRef = ref(null);
 const isCategoryMenuOpen = ref(false);
 const searchQuery = ref(route.query.search || '');
 
@@ -181,6 +195,15 @@ const navigateToNewArticlePage = () => {
       : 'portals_articles_new',
     params: { categorySlug, locale },
   });
+};
+
+const handleTranslateArticle = articleId => {
+  selectedArticleIds.value = new Set([articleId]);
+  bulkTranslateDialogRef.value?.dialogRef?.open();
+};
+
+const openTranslateDialog = () => {
+  bulkTranslateDialogRef.value?.dialogRef?.open();
 };
 
 const handleToggleSelect = articleId => {
@@ -413,6 +436,16 @@ watch(
                   class="[&>span:nth-child(2)]:hidden sm:[&>span:nth-child(2)]:inline w-fit"
                   @click="bulkUpdateStatus('archived')"
                 />
+                <Button
+                  v-if="isTranslationAvailable"
+                  sm
+                  faded
+                  slate
+                  icon="i-lucide-languages"
+                  :label="t('HELP_CENTER.ARTICLES_PAGE.BULK_ACTIONS.TRANSLATE')"
+                  class="[&>span:nth-child(2)]:hidden sm:[&>span:nth-child(2)]:inline w-fit"
+                  @click="openTranslateDialog"
+                />
                 <div v-if="categoryMenuItems.length" class="relative group">
                   <OnClickOutside @trigger="isCategoryMenuOpen = false">
                     <Button
@@ -460,6 +493,7 @@ watch(
           class="relative z-0"
           @toggle-select="handleToggleSelect"
           @navigate-page="handlePageChange"
+          @translate-article="handleTranslateArticle"
           @dragging="isArticleDragging = $event"
         />
       </template>
@@ -494,6 +528,12 @@ watch(
         t('HELP_CENTER.ARTICLES_PAGE.BULK_ACTIONS.DELETE_CONFIRM')
       "
       @confirm="bulkDelete"
+    />
+    <BulkTranslateDialog
+      ref="bulkTranslateDialogRef"
+      :selected-article-ids="[...selectedArticleIds]"
+      :allowed-locales="allowedLocales"
+      @translate-started="clearSelection"
     />
   </HelpCenterLayout>
 </template>

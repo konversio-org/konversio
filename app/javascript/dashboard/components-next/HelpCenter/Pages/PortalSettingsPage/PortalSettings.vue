@@ -9,6 +9,7 @@ import VerticalTabs from 'dashboard/components-next/vertical-tabs/VerticalTabs.v
 import PortalGeneralSettings from './PortalGeneralSettings.vue';
 import PortalConfigurationSettings from './PortalConfigurationSettings.vue';
 import PortalLayoutContentSettings from './PortalLayoutContentSettings.vue';
+import PortalIntegrationsSettings from './PortalIntegrationsSettings.vue';
 import Spinner from 'dashboard/components-next/spinner/Spinner.vue';
 
 const props = defineProps({
@@ -50,6 +51,11 @@ const settingsTabs = computed(() => [
     id: 'appearance',
     label: t('HELP_CENTER.PORTAL_SETTINGS.NAV.APPEARANCE'),
     icon: 'i-lucide-palette',
+  },
+  {
+    id: 'integrations',
+    label: t('HELP_CENTER.PORTAL_SETTINGS.NAV.INTEGRATIONS'),
+    icon: 'i-lucide-blocks',
   },
 ]);
 
@@ -125,6 +131,14 @@ const handleDeletePortal = portal => {
 
         <template #appearance>
           <PortalLayoutContentSettings
+            :active-portal="activePortal"
+            :is-fetching="isFetching"
+            @update-portal-configuration="handleUpdatePortalConfiguration"
+          />
+        </template>
+
+        <template #integrations>
+          <PortalIntegrationsSettings
             :active-portal="activePortal"
             :is-fetching="isFetching"
             @update-portal-configuration="handleUpdatePortalConfiguration"

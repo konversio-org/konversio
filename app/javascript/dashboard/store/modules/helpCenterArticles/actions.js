@@ -238,4 +238,18 @@ export const actions = {
     await articlesAPI.bulkDelete({ portalSlug, articleIds });
     commit(types.REMOVE_MANY_ARTICLES, articleIds);
   },
+
+  bulkTranslate: async (
+    _,
+    { portalSlug, articleIds, locale, categoryId, force = false }
+  ) => {
+    const { data } = await articlesAPI.bulkTranslate({
+      portalSlug,
+      articleIds,
+      locale,
+      categoryId,
+      force,
+    });
+    return data;
+  },
 };

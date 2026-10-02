@@ -4,6 +4,8 @@ import { useToggle } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { dynamicTime } from 'shared/helpers/timeHelper';
 import { useExactTimestamp } from 'shared/composables/useExactTimestamp';
+import { useMapGetter } from 'dashboard/composables/store.js';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 import {
   ARTICLE_MENU_ITEMS,
   ARTICLE_MENU_OPTIONS,
@@ -84,6 +86,19 @@ const [showActionsDropdown, toggleDropdown] = useToggle();
 
 const pendingChangesPopoverRef = useTemplateRef('pendingChangesPopoverRef');
 
+const currentAccountId = useMapGetter('getCurrentAccountId');
+const isFeatureEnabledonAccount = useMapGetter(
+  'accounts/isFeatureEnabledonAccount'
+);
+
+// Article translation is a Pilot task; hide its menu entry when disabled.
+const isTranslationAvailable = computed(() =>
+  isFeatureEnabledonAccount.value(
+    currentAccountId.value,
+    FEATURE_FLAGS.PILOT_TASKS
+  )
+);
+
 const articleMenuItems = computed(() => {
   const commonItems = Object.entries(ARTICLE_MENU_ITEMS).reduce(
     (acc, [key, item]) => {
@@ -96,7 +111,9 @@ const articleMenuItems = computed(() => {
   const statusItems = (
     ARTICLE_MENU_OPTIONS[props.status] ||
     ARTICLE_MENU_OPTIONS[ARTICLE_STATUSES.PUBLISHED]
-  ).map(key => commonItems[key]);
+  )
+    .filter(key => key !== 'translate' || isTranslationAvailable.value)
+    .map(key => commonItems[key]);
 
   const draftItems = props.hasPendingChanges
     ? [
