@@ -4,6 +4,9 @@ _Last updated: 2026-06-09. Scope: a multi-session effort that started from a Dep
 alert and an all-red CI of unknown cause, delivered a Rails 7.2 upgrade live, and ended
 with CI fully green (real run `27239052982`) after correcting the shard-pollution misdiagnosis._
 
+> Historical handoff retained for reference. Its deployment, demo, branch, and CI status
+> are no longer current; use the repository's current documentation and workflows instead.
+
 ---
 
 ## TL;DR (read this first)
