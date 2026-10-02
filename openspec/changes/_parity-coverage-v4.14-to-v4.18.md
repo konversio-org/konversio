@@ -36,7 +36,7 @@ Status: pending / written / validated / implemented
 | `pilot-agent-sessions-and-citations` | EE → requirements (CLEAN-ROOM) | v4.17.1 Captain reasoning/context; agent session records, citations in responses, trusted citation URLs | merged to main |
 | `pilot-faq-suggestions` | EE → requirements (CLEAN-ROOM) | v4.14.0 FAQ improvements; v4.16.2 FAQ suggestion review API and interface | merged to main |
 | `pilot-audiences-and-lifecycle` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain audiences, schedules, inactivity handling, knowledge usage; v4.18.0 assignment, scenario and tool controls | merged to main |
-| `pilot-assistant-analytics` | EE → requirements (CLEAN-ROOM) | v4.16.0 Captain assistant overview and drill-down analytics; v4.17.1 analytics improvements | written+validated |
+| `pilot-assistant-analytics` | EE → requirements (CLEAN-ROOM) | v4.16.0 Captain assistant overview and drill-down analytics; v4.17.1 analytics improvements | merged to main |
 | `pilot-playground` | EE → requirements (CLEAN-ROOM) | v4.18.0 improved playground testing | merged to main |
 | `pilot-knowledge-auto-sync` | EE → requirements (CLEAN-ROOM) | v4.14.0 Captain document sync; document auto-sync service | merged to main |
 | `pilot-reply-suggestion` | EE → requirements (CLEAN-ROOM) | Copilot reply-suggestion mode (v4.16–4.17 era) | merged to main |
@@ -124,6 +124,12 @@ Coordinator verification on merged `main`: rubocop 65 changed files 0 offenses (
 - `pilot-audiences-and-lifecycle` (`feat/pilot-audiences-and-lifecycle`, commits `384cbca61`…`1b7210f00`) — assistant lifecycle concern, audience tree validator/matcher/resolver, inactivity threshold sweep + resolution-message service, polymorphic AI assignee, assignment/assignable-agents/scenario/tool APIs, AssistantEditor audience+schedule+inactivity UI. 28/28 tasks; rspec change suites green; vitest 30/30; rails-runner smoke of task-28 paths pass. Deviation: sweep row-lock lives in `AutoResolveService` (transition owner) rather than the job. Deferral: browser click-through smoke.
 - `pilot-faq-suggestions` (`feat/pilot-faq-suggestions`, commits `6d828acf7`…`048ba3031`) — `Pilot::FaqSuggestion`/`FaqObservation` tables + models, matcher/approval/finder/policy, v1 review API, mining-job rework (deduper removed), suggestions page + review dialog + FAQs banner. Backend rspec 95 targeted + 103 request-spec green; full vitest 3867/0 in-worktree. Deferral: task 23 manual smoke (needs live LLM/embedding creds).
 
-### Not yet started
+### Phase 3 — clean-room `pilot-*` (wave 3 merged to `main`)
 
-- Phase 3 wave 3: `pilot-assistant-analytics` (depends on merged `pilot-conversation-outcomes`; must also honour `reporting-drilldowns` task 16 reopen-rate requirements).
+Wave 3 merged (merge commit `46e026fee`) — clean merge, no conflicts, no new migrations, no duplicate migration versions.
+
+Coordinator verification on merged `main`: rubocop 81 changed files 0 offenses; eslint 0 errors; rspec on changed specs 444 examples / 2 failures — the same 2 pre-existing `custom_tools POST /test` network/SSRF failures confirmed on base; full vitest 402 files / 3885 tests, 0 failures.
+
+- `pilot-assistant-analytics` (`feat/pilot-assistant-analytics`, commits `a478ba884`…`024bb8485`) — `Pilot::Analytics::` overview report, resolution flow/trend reports, drilldown query, outcome classifications, reporting window, overview summary generator (original prompt at `lib/pilot/prompts/assistant_overview_summary.liquid`), v1 assistant-analytics endpoints + overview UI. Single-scan conditional aggregation honours `reporting-drilldowns` task 16: reopen-rate reuses the resolved-conversation total as denominator and skips the reopen query at zero resolutions; reuses `Pilot::OutcomeTrackingHistory`. rspec 363/0 in-worktree; vitest 23/0. Deferral: task 27 browser UI smoke (backend seeded smoke passed via runner).
+
+All nine `pilot-*` change dirs are now merged to `main`. Carried-forward deferrals (non-blocking): manual/browser/credentialed smoke tests across all changes (no live LLM provider / Meta WABA / browser); `pilot-conversation-outcomes` quota-handoff sub-path (no quota enforcement exists); pre-existing `custom_tools POST /test` (2) + `Pilot::Tools::Executor` (9) spec failures — network/SSRF-bound, confirmed failing at base `54ad9721e`.
