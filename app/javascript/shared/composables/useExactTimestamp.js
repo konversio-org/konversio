@@ -26,7 +26,7 @@ const zoneFormatterFor = locale => {
   const key = `${locale}/zone`;
   if (!formatters.has(key)) {
     formatters.set(
-      locale,
+      key,
       new Intl.DateTimeFormat(locale, { timeZoneName: 'short' })
     );
   }
