@@ -89,7 +89,8 @@
       "CARD": {
         "STATUS": {
           "COMPLETED": "Completed",
-          "SCHEDULED": "Scheduled"
+          "SCHEDULED": "Scheduled",
+          "PROCESSING": "Processing"
         },
         "CAMPAIGN_DETAILS": {
           "SENT_FROM": "Sent from",
@@ -152,7 +153,8 @@
         "CAMPAIGN_DETAILS": {
           "SENT_FROM": "Sent from",
           "ON": "on"
-        }
+        },
+        "ANALYTICS": "View analytics"
       },
       "CREATE": {
         "TITLE": "Create WhatsApp campaign",

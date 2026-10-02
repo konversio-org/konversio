@@ -42,13 +42,18 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  showAnalytics: {
+    type: Boolean,
+    default: false,
+  },
 });
 
-const emit = defineEmits(['edit', 'delete']);
+const emit = defineEmits(['edit', 'delete', 'analytics']);
 
 const { t } = useI18n();
 
 const STATUS_COMPLETED = 'completed';
+const STATUS_PROCESSING = 'processing';
 
 const { formatMessage } = useMessageFormatter();
 
@@ -68,9 +73,15 @@ const campaignStatus = computed(() => {
       : t('CAMPAIGN.LIVE_CHAT.CARD.STATUS.DISABLED');
   }
 
-  return props.status === STATUS_COMPLETED
-    ? t('CAMPAIGN.SMS.CARD.STATUS.COMPLETED')
-    : t('CAMPAIGN.SMS.CARD.STATUS.SCHEDULED');
+  if (props.status === STATUS_COMPLETED) {
+    return t('CAMPAIGN.SMS.CARD.STATUS.COMPLETED');
+  }
+
+  if (props.status === STATUS_PROCESSING) {
+    return t('CAMPAIGN.SMS.CARD.STATUS.PROCESSING');
+  }
+
+  return t('CAMPAIGN.SMS.CARD.STATUS.SCHEDULED');
 });
 
 const inboxName = computed(() => props.inbox?.name || '');
@@ -124,6 +135,16 @@ const inboxIcon = computed(() => {
         color="slate"
         icon="i-lucide-sliders-vertical"
         @click="emit('edit')"
+      />
+      <Button
+        v-if="showAnalytics"
+        v-tooltip.top="t('CAMPAIGN.WHATSAPP.CARD.ANALYTICS')"
+        variant="faded"
+        size="sm"
+        color="slate"
+        icon="i-lucide-chart-no-axes-column"
+        :title="t('CAMPAIGN.WHATSAPP.CARD.ANALYTICS')"
+        @click="emit('analytics')"
       />
       <Button
         variant="faded"
