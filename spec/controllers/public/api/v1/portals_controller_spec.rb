@@ -25,6 +25,31 @@ RSpec.describe Public::Api::V1::PortalsController, type: :request do
       expect(response).to have_http_status(:success)
     end
 
+    context 'when analytics providers are configured' do
+      before do
+        portal.update!(config: { analytics: { ga4_measurement_id: 'G-TEST123', meta_pixel_id: '987654321' } })
+      end
+
+      it 'injects the provider snippets into the public page' do
+        get "/hc/#{portal.slug}/en"
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).to include('https://www.googletagmanager.com/gtag/js?id=G-TEST123')
+        expect(response.body).to include("fbq('init', '987654321')")
+        expect(response.body).to include('https://connect.facebook.net/en_US/fbevents.js')
+      end
+    end
+
+    context 'when no analytics providers are configured' do
+      it 'emits no analytics markup' do
+        get "/hc/#{portal.slug}/en"
+
+        expect(response).to have_http_status(:success)
+        expect(response.body).not_to include('googletagmanager.com')
+        expect(response.body).not_to include('connect.facebook.net')
+      end
+    end
+
     it 'Throws unauthorised error for unknown domain' do
       portal.update(custom_domain: 'www.something.com')
 
