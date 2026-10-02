@@ -598,7 +598,7 @@ const menuItems = computed(() => {
             {},
             { page: 1, search: undefined }
           ),
-          activeOn: ['companies_dashboard_index'],
+          activeOn: ['companies_dashboard_index', 'companies_dashboard_show'],
         },
       ],
     },
