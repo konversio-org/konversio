@@ -158,3 +158,11 @@ export const SESSION_EVENTS = Object.freeze({
   LIMIT_HIT: 'Session limit reached at login',
   REVOKED_FROM_PROFILE: 'Revoked an active session',
 });
+
+export const ONBOARDING_EVENTS = Object.freeze({
+  ACCOUNT_DETAILS_VISITED: 'Onboarding: Account details visited',
+  ACCOUNT_DETAILS_COMPLETED: 'Onboarding: Account details completed',
+  INBOX_SETUP_VISITED: 'Onboarding: Inbox setup visited',
+  INBOX_SETUP_COMPLETED: 'Onboarding: Inbox setup completed',
+  INBOX_SETUP_SKIPPED: 'Onboarding: Inbox setup skipped',
+});

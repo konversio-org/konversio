@@ -12,6 +12,8 @@ import { routes as pilotRoutes } from './pilot/routes';
 import AppContainer from './Dashboard.vue';
 import Suspended from './suspended/Index.vue';
 import NoAccounts from './noAccounts/Index.vue';
+import OnboardingAccountDetails from './onboarding/Index.vue';
+import OnboardingInboxSetup from './onboarding/InboxSetup.vue';
 
 export default {
   routes: [
@@ -30,6 +32,22 @@ export default {
         ...campaignsRoutes.routes,
         ...pilotRoutes,
       ],
+    },
+    {
+      path: frontendURL('accounts/:accountId/onboarding'),
+      name: 'onboarding_account_details',
+      meta: {
+        permissions: ['administrator', 'agent', 'custom_role'],
+      },
+      component: OnboardingAccountDetails,
+    },
+    {
+      path: frontendURL('accounts/:accountId/onboarding/inbox-setup'),
+      name: 'onboarding_inbox_setup',
+      meta: {
+        permissions: ['administrator', 'agent', 'custom_role'],
+      },
+      component: OnboardingInboxSetup,
     },
     {
       path: frontendURL('accounts/:accountId/suspended'),

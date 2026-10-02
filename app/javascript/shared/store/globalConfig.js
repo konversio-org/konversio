@@ -57,6 +57,10 @@ export const getters = {
   // Alias added during the Chatwoot -> Konversio rename pass so consumers
   // that adopted the new name (composables/useAccount.js etc.) resolve.
   isOnKonversioCloud: $state => $state.deploymentEnv === 'cloud',
+  isMetaInboxCreationDisabled: $state =>
+    $state.deploymentEnv === 'cloud' && $state.disableMetaInboxCreation,
+  isMetaMessageSendingDisabled: $state =>
+    $state.deploymentEnv === 'cloud' && $state.disableMetaMessageSending,
   isACustomBrandedInstance: $state => $state.installationName !== 'Chatwoot',
   isAChatwootInstance: $state => $state.installationName === 'Chatwoot',
 };

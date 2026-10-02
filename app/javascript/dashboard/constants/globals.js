@@ -78,3 +78,4 @@ export default {
   },
 };
 export const DEFAULT_REDIRECT_URL = '/app/';
+export const META_RESTRICTION_STATUS_URL = 'https://www.konversio.org';
