@@ -42,6 +42,11 @@ RSpec.describe Channel::Whatsapp do
                    body: { data: [{
                      id: '123456789', name: 'test_template'
                    }] }.to_json)
+      stub_request(:get, 'https://graph.facebook.com/v14.0//message_templates')
+        .with(headers: { 'Authorization' => 'Bearer test_key' })
+        .to_return(status: 200,
+                   body: { data: [{ id: '123456789', name: 'test_template' }] }.to_json,
+                   headers: { 'Content-Type' => 'application/json' })
       expect(channel.save).to be(true)
     end
   end
