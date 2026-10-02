@@ -1149,6 +1149,37 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_000001) do
     t.index ["source_id"], name: "index_pilot_campaign_recipients_on_source_id", unique: true, where: "(source_id IS NOT NULL)"
   end
 
+  create_table "pilot_conversation_outcomes", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "assistant_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "inbox_id", null: false
+    t.string "episode_trigger", default: "initial", null: false
+    t.datetime "started_at", null: false
+    t.datetime "ended_at"
+    t.datetime "first_ai_reply_at"
+    t.datetime "last_ai_reply_at"
+    t.integer "ai_reply_count", default: 0, null: false
+    t.datetime "first_human_reply_at"
+    t.datetime "handoff_at"
+    t.string "handoff_reason_category"
+    t.datetime "resolved_at"
+    t.integer "csat_rating"
+    t.datetime "csat_received_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "assistant_id", "handoff_at"], name: "index_pilot_outcomes_on_account_assistant_handoff"
+    t.index ["account_id", "assistant_id", "resolved_at"], name: "index_pilot_outcomes_on_account_assistant_resolved"
+    t.index ["account_id", "assistant_id", "started_at"], name: "index_pilot_outcomes_on_account_assistant_started"
+    t.index ["account_id", "conversation_id", "started_at"], name: "index_pilot_outcomes_on_conversation_and_started_at", unique: true
+    t.index ["account_id", "conversation_id"], name: "index_pilot_outcomes_on_initial_episode", unique: true, where: "((episode_trigger)::text = 'initial'::text)"
+    t.index ["account_id", "conversation_id"], name: "index_pilot_outcomes_on_open_episode", unique: true, where: "(ended_at IS NULL)"
+    t.index ["account_id"], name: "index_pilot_conversation_outcomes_on_account_id"
+    t.index ["assistant_id"], name: "index_pilot_conversation_outcomes_on_assistant_id"
+    t.index ["conversation_id"], name: "index_pilot_conversation_outcomes_on_conversation_id"
+    t.index ["inbox_id"], name: "index_pilot_conversation_outcomes_on_inbox_id"
+  end
+
   create_table "pilot_custom_tools", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.string "slug", null: false
@@ -1519,6 +1550,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_03_000001) do
   add_foreign_key "pilot_campaign_recipients", "campaigns", on_delete: :cascade
   add_foreign_key "pilot_campaign_recipients", "contacts", on_delete: :cascade
   add_foreign_key "pilot_campaign_recipients", "inboxes", on_delete: :cascade
+  add_foreign_key "pilot_conversation_outcomes", "accounts", on_delete: :cascade
+  add_foreign_key "pilot_conversation_outcomes", "pilot_assistants", column: "assistant_id", on_delete: :cascade
   add_foreign_key "pilot_events", "accounts"
   add_foreign_key "pilot_logbook_entries", "accounts"
   add_foreign_key "pilot_logbook_entries", "contacts"

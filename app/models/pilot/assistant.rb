@@ -51,6 +51,7 @@ class Pilot::Assistant < ApplicationRecord
            inverse_of: :assistant,
            dependent: :destroy_async
   has_many :inboxes, through: :pilot_inboxes
+  has_many :conversation_outcomes, class_name: 'Pilot::ConversationOutcome', dependent: :destroy_async
   has_many :messages, as: :sender, dependent: :nullify
 
   before_validation :normalize_enabled_tool_slugs
