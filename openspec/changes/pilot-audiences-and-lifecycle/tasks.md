@@ -21,13 +21,13 @@
 
 ### Frontend
 
-17. - [ ] **Audience settings page** — in the Pilot assistant settings area (`app/javascript/dashboard/routes/dashboard/pilot/AssistantEditor.vue` or a dedicated settings route): everyone/specific-audience mode selector; condition-tree builder (AND/OR root group, one nested sub-group level, leaf rows with attribute + operator + value inputs) reusing the advanced-filter attribute/operator primitives; empty-audience validation; save via assistant update API.
-18. - [ ] **Schedule settings section** — radio-card selector for the three response-window options with explanatory hint text; save via assistant update API.
-19. - [ ] **Inactivity settings section** — auto-resolve mode radio cards (time-based / evaluated / disabled, showing the inherited account default), duration picker (5-minute steps, 5 min–24 h) hidden when disabled, resolution-message textarea and "send resolution message" toggle wired to the new config keys.
-20. - [ ] **Scenario list toggle** — in the assistant's scenario list: per-row enable/disable switch with pending state and success/error alerts.
-21. - [ ] **Tools page toggle** — in `app/javascript/dashboard/routes/dashboard/pilot/tools/`: per-tool enable/disable switch; disabling a tool referenced by enabled scenarios opens a confirmation dialog stating the referencing-scenario count.
-22. - [ ] **Assignee UI** — request `include_ai_assignees` where the dashboard shows the assignee selector; render AI assignee entries with a bot icon and type discriminator; handle AI assignee display on conversation cards/details.
-23. - [ ] **I18n** — add all new frontend strings to `en.json` only; no bare strings in templates.
+17. - [x] **Audience settings page** — in the Pilot assistant settings area (`app/javascript/dashboard/routes/dashboard/pilot/AssistantEditor.vue` or a dedicated settings route): everyone/specific-audience mode selector; condition-tree builder (AND/OR root group, one nested sub-group level, leaf rows with attribute + operator + value inputs) reusing the advanced-filter attribute/operator primitives; empty-audience validation; save via assistant update API.
+18. - [x] **Schedule settings section** — radio-card selector for the three response-window options with explanatory hint text; save via assistant update API.
+19. - [x] **Inactivity settings section** — auto-resolve mode radio cards (time-based / evaluated / disabled, showing the inherited account default), duration picker (5-minute steps, 5 min–24 h) hidden when disabled, resolution-message textarea and "send resolution message" toggle wired to the new config keys.
+20. - [x] **Scenario list toggle** — in the assistant's scenario list: per-row enable/disable switch with pending state and success/error alerts.
+21. - [x] **Tools page toggle** — in `app/javascript/dashboard/routes/dashboard/pilot/tools/`: per-tool enable/disable switch; disabling a tool referenced by enabled scenarios opens a confirmation dialog stating the referencing-scenario count.
+22. - [x] **Assignee UI** — request `include_ai_assignees` where the dashboard shows the assignee selector; render AI assignee entries with a bot icon and type discriminator; handle AI assignee display on conversation cards/details.
+23. - [x] **I18n** — add all new frontend strings to `en.json` only; no bare strings in templates.
 
 ### Validation
 
