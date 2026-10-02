@@ -141,14 +141,14 @@ jobs:
           NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Upload test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: rspec-results-${{ matrix.ci_node_index }}
           path: tmp/rspec_results.json
 
       - name: Upload rails log folder
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: rails-log-folder-${{ matrix.ci_node_index }}
