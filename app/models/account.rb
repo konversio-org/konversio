@@ -113,6 +113,8 @@ class Account < ApplicationRecord
 
   has_many :pilot_assistants, class_name: 'Pilot::Assistant', dependent: :destroy_async
   has_many :pilot_assistant_responses, class_name: 'Pilot::AssistantResponse', dependent: :destroy_async
+  has_many :pilot_faq_suggestions, class_name: 'Pilot::FaqSuggestion', dependent: :destroy_async
+  has_many :pilot_faq_observations, class_name: 'Pilot::FaqObservation', dependent: :destroy_async
   has_many :pilot_documents, class_name: 'Pilot::Document', dependent: :destroy_async
   has_many :pilot_scenarios, class_name: 'Pilot::Scenario', dependent: :destroy_async
   has_many :pilot_custom_tools, class_name: 'Pilot::CustomTool', dependent: :destroy_async
