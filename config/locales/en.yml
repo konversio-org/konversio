@@ -583,6 +583,8 @@ en:
       category_not_found: 'Category not found in this portal'
       no_articles_found: 'No articles found to process'
       invalid_status: 'Invalid status value'
+      locale_not_available: 'That language is not enabled for this portal'
+      translation_unavailable: 'Article translation is not available on this account'
     send_instructions:
       email_required: 'Email is required'
       invalid_email_format: 'Invalid email format'

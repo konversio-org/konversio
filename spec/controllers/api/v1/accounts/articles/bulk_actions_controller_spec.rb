@@ -140,13 +140,132 @@ RSpec.describe 'Article Bulk Actions API', type: :request do
   end
 
   describe 'POST articles/bulk_actions/translate' do
-    it 'is not implemented' do
-      post "#{base_url}/translate",
-           headers: admin.create_new_auth_token,
-           params: { ids: [article_one.id] },
-           as: :json
+    let(:translate_url) { "#{base_url}/translate" }
 
-      expect(response).to have_http_status(:not_implemented)
+    context 'when unauthenticated' do
+      it 'returns unauthorized' do
+        post translate_url, params: { ids: [article_one.id], locale: 'es' }, as: :json
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when authenticated as agent' do
+      it 'returns unauthorized and enqueues nothing' do
+        expect do
+          post translate_url,
+               headers: agent.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es' },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when authenticated as admin' do
+      it 'enqueues one job per article with the target locale and user' do
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id, article_two.id], locale: 'es' },
+               as: :json
+        end.to have_enqueued_job(Pilot::Articles::TranslateJob).exactly(2).times
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'passes the target category to the job when one is given' do
+        target_category = create(:category, portal: portal, account: account, locale: 'es', slug: 'empezar')
+
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es', category_id: target_category.id },
+               as: :json
+        end.to have_enqueued_job(Pilot::Articles::TranslateJob)
+          .with(account, article_one.id, 'es', target_category.id, admin)
+      end
+
+      it 'returns conflict with duplicate articles when a translation exists' do
+        translation = create(:article, portal: portal, account: account, author: admin, status: :draft,
+                                       locale: 'es', associated_article_id: article_one.id, title: 'Empezar')
+
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es' },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:conflict)
+        expect(response.parsed_body['duplicate_articles']).to eq([{ 'id' => translation.id, 'title' => 'Empezar' }])
+      end
+
+      it 'proceeds when force is set even if a translation exists' do
+        create(:article, portal: portal, account: account, author: admin, status: :draft,
+                         locale: 'es', associated_article_id: article_one.id)
+
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es', force: true },
+               as: :json
+        end.to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'rejects a locale the portal does not allow' do
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'fr' },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq(I18n.t('portals.articles.locale_not_available'))
+      end
+
+      it 'rejects a category that does not belong to the target locale' do
+        english_category = create(:category, portal: portal, account: account, locale: 'en', slug: 'english-only')
+
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es', category_id: english_category.id },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq(I18n.t('portals.articles.category_not_found'))
+      end
+
+      it 'rejects an empty selection' do
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [0], locale: 'es' },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq(I18n.t('portals.articles.no_articles_found'))
+      end
+
+      it 'rejects the request when Pilot tasks are disabled' do
+        account.disable_features!(:pilot_tasks)
+
+        expect do
+          post translate_url,
+               headers: admin.create_new_auth_token,
+               params: { ids: [article_one.id], locale: 'es' },
+               as: :json
+        end.not_to have_enqueued_job(Pilot::Articles::TranslateJob)
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.parsed_body['error']).to eq(I18n.t('portals.articles.translation_unavailable'))
+      end
     end
   end
 
