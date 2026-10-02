@@ -173,6 +173,7 @@ export default {
       toEmails: '',
       doAutoSaveDraft: () => {},
       showWhatsAppTemplatesModal: false,
+      requestContactInfoTemplatesOnly: false,
       showContentTemplatesModal: false,
       updateEditorSelectionWith: '',
       undefinedVariableMessage: '',
@@ -776,10 +777,16 @@ export default {
       }
     },
     openWhatsappTemplateModal() {
+      this.requestContactInfoTemplatesOnly = false;
+      this.showWhatsAppTemplatesModal = true;
+    },
+    openContactInfoTemplateModal() {
+      this.requestContactInfoTemplatesOnly = true;
       this.showWhatsAppTemplatesModal = true;
     },
     hideWhatsappTemplatesModal() {
       this.showWhatsAppTemplatesModal = false;
+      this.requestContactInfoTemplatesOnly = false;
     },
     openContentTemplateModal() {
       this.showContentTemplatesModal = true;
@@ -1539,6 +1546,7 @@ export default {
         :show-file-upload="showFileUpload"
         :show-quoted-reply-toggle="shouldShowQuotedReplyToggle"
         :quoted-reply-enabled="quotedReplyPreference"
+        @request-contact-info-template="openContactInfoTemplateModal"
         :toggle-audio-recorder-play-pause="toggleAudioRecorderPlayPause"
         :toggle-audio-recorder="toggleAudioRecorder"
         :toggle-emoji-picker="toggleEmojiPicker"
@@ -1555,6 +1563,7 @@ export default {
     <WhatsappTemplates
       :inbox-id="inbox.id"
       :show="showWhatsAppTemplatesModal"
+      :request-contact-info-only="requestContactInfoTemplatesOnly"
       @close="hideWhatsappTemplatesModal"
       @on-send="onSendWhatsAppReply"
       @cancel="hideWhatsappTemplatesModal"

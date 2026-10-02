@@ -7,8 +7,9 @@ import TranslationToggle from 'dashboard/components-next/message/TranslationTogg
 import { MESSAGE_TYPES } from '../../constants';
 import { useMessageContext } from '../../provider.js';
 import { useTranslations } from 'dashboard/composables/useTranslations';
+import { MESSAGE_STATUS } from 'shared/constants/messages';
 
-const { content, attachments, contentAttributes, messageType } =
+const { content, attachments, contentAttributes, messageType, status } =
   useMessageContext();
 
 const { hasTranslations, translationContent } =
@@ -32,6 +33,12 @@ const isTemplate = computed(() => {
   return messageType.value === MESSAGE_TYPES.TEMPLATE;
 });
 
+const contactInfoRequestState = computed(() => {
+  if (status.value === MESSAGE_STATUS.FAILED) return null;
+
+  return contentAttributes.value?.whatsappContactInfo?.state;
+});
+
 const isEmpty = computed(() => {
   return !content.value && !attachments.value?.length;
 });
@@ -48,6 +55,24 @@ const handleSeeOriginal = () => {
         {{ $t('CONVERSATION.NO_CONTENT') }}
       </span>
       <FormattedContent v-if="renderContent" :content="renderContent" />
+      <span
+        v-if="contactInfoRequestState === 'pending'"
+        class="text-xs font-medium text-n-slate-11"
+      >
+        {{ $t('CONVERSATION.REQUEST_CONTACT_INFO.STATES.PENDING') }}
+      </span>
+      <span
+        v-else-if="contactInfoRequestState === 'shared'"
+        class="text-xs font-medium text-n-slate-11"
+      >
+        {{ $t('CONVERSATION.REQUEST_CONTACT_INFO.STATES.SHARED') }}
+      </span>
+      <span
+        v-else-if="contactInfoRequestState === 'identity_conflict'"
+        class="text-xs font-medium text-n-slate-11"
+      >
+        {{ $t('CONVERSATION.REQUEST_CONTACT_INFO.STATES.IDENTITY_CONFLICT') }}
+      </span>
       <TranslationToggle
         v-if="hasTranslations"
         class="-mt-3"
