@@ -38,6 +38,21 @@ en:
       accounts:
         selected_feature_flags: Feature Access
   super_admin:
+    account_suspension:
+      categories:
+        spam: 'Spam'
+        non_payment: 'Non-payment'
+        other: 'Other'
+      form:
+        category: 'Suspension category'
+        category_prompt: 'Select a category'
+        reason: 'Suspension reason'
+        reason_hint: 'Enter a reason of up to 256 characters.'
+      history:
+        suspended_at: 'Suspended at'
+        category: 'Category'
+        reason: 'Reason'
+        empty: 'No suspension history recorded.'
     account_features:
       disabled: Disabled
       enabled: Enabled
