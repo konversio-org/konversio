@@ -31,6 +31,8 @@ class Team < ApplicationRecord
     self.name = name.downcase if attribute_present?('name')
   end
 
+  audited associated_with: :account
+
   # Adds multiple members to the team
   # @param user_ids [Array<Integer>] Array of user IDs to add as members
   # @return [Array<User>] Array of newly added members
@@ -66,5 +68,3 @@ class Team < ApplicationRecord
     }
   end
 end
-
-Team.include_mod_with('Audit::Team')

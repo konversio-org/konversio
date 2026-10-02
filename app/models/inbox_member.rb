@@ -25,7 +25,23 @@ class InboxMember < ApplicationRecord
   after_create :add_agent_to_round_robin
   after_destroy :remove_agent_from_round_robin
 
+  after_create_commit -> { record_membership_audit('create') }
+  after_destroy_commit -> { record_membership_audit('destroy') }
+
   private
+
+  def record_membership_audit(action)
+    return if inbox.blank?
+
+    AuditLog.create!(
+      auditable_type: 'InboxMember',
+      auditable_id: id,
+      action: action,
+      associated_type: 'Account',
+      associated_id: inbox.account_id,
+      audited_changes: attributes.except('created_at', 'updated_at')
+    )
+  end
 
   def add_agent_to_round_robin
     ::AutoAssignment::InboxRoundRobinService.new(inbox: inbox).add_agent_to_queue(user_id)
@@ -35,5 +51,3 @@ class InboxMember < ApplicationRecord
     ::AutoAssignment::InboxRoundRobinService.new(inbox: inbox).remove_agent_from_queue(user_id) if inbox.present?
   end
 end
-
-InboxMember.include_mod_with('Audit::InboxMember')

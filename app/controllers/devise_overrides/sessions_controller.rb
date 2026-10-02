@@ -24,11 +24,6 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
     super
   end
 
-  def render_create_success
-    track_user_session unless @impersonation
-    render partial: 'devise/auth', formats: [:json], locals: { resource: @resource }
-  end
-
   private
 
   def render_create_error_not_confirmed
@@ -241,4 +236,5 @@ class DeviseOverrides::SessionsController < DeviseTokenAuth::SessionsController
   end
 end
 
+DeviseOverrides::SessionsController.include(AuditLogRecording)
 DeviseOverrides::SessionsController.prepend_mod_with('DeviseOverrides::SessionsController')

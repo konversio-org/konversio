@@ -34,6 +34,8 @@ class AutomationRule < ApplicationRecord
 
   scope :active, -> { where(active: true) }
 
+  audited associated_with: :account
+
   def conditions_attributes
     %w[content email country_code status message_type browser_language assignee_id team_id referer city company inbox_id
        mail_subject phone_number priority conversation_language labels private_note]
@@ -106,5 +108,4 @@ class AutomationRule < ApplicationRecord
   end
 end
 
-AutomationRule.include_mod_with('Audit::AutomationRule')
 AutomationRule.prepend_mod_with('AutomationRule')

@@ -103,6 +103,10 @@
   display_name: Audit Logs
   enabled: false
   premium: true
+- name: audit_log_ip_address
+  display_name: Audit Log IP Address
+  enabled: false
+  premium: true
 - name: custom_tools
   display_name: Custom Tools
   enabled: false

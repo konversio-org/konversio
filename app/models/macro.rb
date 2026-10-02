@@ -28,6 +28,8 @@ class Macro < ApplicationRecord
 
   enum visibility: { personal: 0, global: 1 }
 
+  audited associated_with: :account
+
   validate :json_actions_format
 
   ACTIONS_ATTRS = %w[send_message add_label assign_team assign_agent mute_conversation change_status remove_label remove_assigned_agent
@@ -74,5 +76,3 @@ class Macro < ApplicationRecord
     errors.add(:actions, "Macro execution actions #{actions.join(',')} not supported.") if actions.any?
   end
 end
-
-Macro.include_mod_with('Audit::Macro')
