@@ -2,10 +2,10 @@
 
 This document captures the design rationale and empirical evidence behind
 Konversio's choice of LLM provider and chat model. It is the *why* companion
-to [`PILOT_PRESETS.md`](./PILOT_PRESETS.md), which is the *how* (copy-paste
+to [`model-provider-presets.md`](./model-provider-presets.md), which is the *how* (copy-paste
 env blocks for each supported provider).
 
-If you are operating an install, start with `PILOT_PRESETS.md`. If you are
+If you are operating an install, start with `model-provider-presets.md`. If you are
 deciding which model to put in the chat slot — or evaluating a candidate
 replacement — read this.
 
@@ -43,7 +43,7 @@ underlying chat library) can talk to it with `provider: :openai` and
 The provider is **swappable**. The slot system in `Llm::ProviderRegistry` /
 `Llm::Config` was deliberately built so that chat / embedding / audio can
 each point at a different OpenAI-compatible provider. Nebius and direct
-OpenAI are also wired and documented in `PILOT_PRESETS.md`. None of the
+OpenAI are also wired and documented in `model-provider-presets.md`. None of the
 business logic depends on Scaleway specifically — only on "an
 OpenAI-compatible endpoint hosting a model that meets the requirements
 below."
@@ -368,7 +368,7 @@ specifically, the per-model column-rebuild flow tracked in
 [konversio-org/konversio#12](https://github.com/konversio-org/konversio/issues/12)
 must ship first.
 
-Operational env blocks are in [`PILOT_PRESETS.md`](./PILOT_PRESETS.md).
+Operational env blocks are in [`model-provider-presets.md`](./model-provider-presets.md).
 
 ---
 
@@ -403,7 +403,7 @@ When considering a replacement for the chat slot:
    regression here affects all three.
 6. **Only after the above passes**: update the chat-slot config in
    `/super_admin/llm_settings` (or via the env block in
-   `PILOT_PRESETS.md`) and re-run the existing automated specs:
+   `model-provider-presets.md`) and re-run the existing automated specs:
    ```
    docker compose exec -T rails bundle exec rspec spec/services/pilot \
      spec/services/custom/pilot
@@ -416,7 +416,7 @@ Document any deviation from the recommendation above in
 
 ## Related decisions and constraints
 
-- The fork-strategy doctrine: [`FORK_STRATEGY.md`](./FORK_STRATEGY.md).
+- The fork guidance in [`AGENTS.md`](../../AGENTS.md).
   Do not resurrect protected expression from git history when evaluating
   models or making changes here.
 - `gpt-4.1-mini` is OpenAI's mini tier — roughly the same product class as

@@ -1,7 +1,7 @@
 <table width="100%" role="presentation">
   <tr>
     <td align="center" bgcolor="#101116">
-      <img src=".github/screenshots/header-dark.png" alt="Konversio — agentic customer service, 100% open source" width="100%">
+      <img src=".github/screenshots/konversio-readme-banner-v0.0.3.webp" alt="Konversio — agentic customer service, 100% open source" width="100%">
     </td>
   </tr>
 </table>
@@ -21,7 +21,7 @@
 
 ## Konversio 0.0.3
 
-Konversio is an open-source customer service platform for teams that want control over their support tools and customer data. This release brings the platform to Chatwoot v4.18 feature parity, with the AI experience and every other included feature available under the MIT license.
+Konversio is an open-source customer service platform for teams that want control over their support tools and customer data. Version 0.0.3 brings in the user-facing changes from Chatwoot v4.14 through [v4.18.0, released September 18, 2026](https://github.com/chatwoot/chatwoot/releases/tag/v4.18.0), while keeping the included experience available under the MIT license.
 
 - **Pilot AI:** source citations, reply suggestions, conversation outcome tracking, audience and schedule controls, FAQ suggestions, response safeguards, and assistant analytics.
 - **Customer channels:** expanded WhatsApp campaigns, templates and calling, voice and video calls, plus imports from Intercom and Freshdesk.
