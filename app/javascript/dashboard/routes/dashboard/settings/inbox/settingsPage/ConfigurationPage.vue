@@ -11,6 +11,7 @@ import { required } from '@vuelidate/validators';
 import NextButton from 'dashboard/components-next/button/Button.vue';
 import TextArea from 'next/textarea/TextArea.vue';
 import WhatsappReauthorize from '../channels/whatsapp/Reauthorize.vue';
+import HmacSecretKey from './components/HmacSecretKey.vue';
 import { sanitizeAllowedDomains } from 'dashboard/helper/URLHelper';
 
 export default {
@@ -23,6 +24,7 @@ export default {
     NextButton,
     TextArea,
     WhatsappReauthorize,
+    HmacSecretKey,
   },
   mixins: [inboxMixin],
   props: {
@@ -308,7 +310,7 @@ export default {
           <p class="mb-1 text-sm font-medium text-n-slate-12">
             {{ $t('INBOX_MGMT.SETTINGS_POPUP.IDENTITY_VALIDATION.SECRET_KEY') }}
           </p>
-          <woot-code :script="inbox.hmac_token" />
+          <HmacSecretKey :inbox="inbox" />
           <p class="mt-1.5 text-label-small text-n-slate-11">
             {{ $t('INBOX_MGMT.SETTINGS_POPUP.HMAC_DESCRIPTION') }}
             <a
@@ -350,7 +352,7 @@ export default {
       :label="$t('INBOX_MGMT.SETTINGS_POPUP.HMAC_VERIFICATION')"
       :help-text="$t('INBOX_MGMT.SETTINGS_POPUP.HMAC_DESCRIPTION')"
     >
-      <woot-code :script="inbox.hmac_token" />
+      <HmacSecretKey :inbox="inbox" />
     </SettingsFieldSection>
     <SettingsFieldSection
       :label="$t('INBOX_MGMT.SETTINGS_POPUP.HMAC_MANDATORY_VERIFICATION')"
@@ -415,7 +417,7 @@ export default {
       </SettingsFieldSection>
     </div>
     <ImapSettings :inbox="inbox" />
-    <SmtpSettings v-if="inbox.imap_enabled" :inbox="inbox" />
+    <SmtpSettings :inbox="inbox" />
   </div>
   <div v-else-if="isAWhatsAppChannel && !isATwilioChannel">
     <div v-if="inbox.provider_config">
