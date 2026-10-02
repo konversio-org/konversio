@@ -1265,6 +1265,37 @@ ActiveRecord::Schema[7.2].define(version: 2026_10_04_000000) do
     t.index ["related_entity_type", "related_entity_id"], name: "index_pilot_events_on_related_entity"
   end
 
+  create_table "pilot_faq_observations", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "conversation_id", null: false
+    t.bigint "faq_suggestion_id"
+    t.string "generated_question", null: false
+    t.text "generated_answer", null: false
+    t.string "language", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_pilot_faq_observations_on_account_id"
+    t.index ["conversation_id", "faq_suggestion_id"], name: "idx_pilot_faq_observations_unique_sighting", unique: true, where: "(faq_suggestion_id IS NOT NULL)"
+    t.index ["faq_suggestion_id"], name: "index_pilot_faq_observations_on_faq_suggestion_id"
+  end
+
+  create_table "pilot_faq_suggestions", force: :cascade do |t|
+    t.string "question", null: false
+    t.text "answer", null: false
+    t.vector "embedding", limit: 1536
+    t.bigint "assistant_id", null: false
+    t.bigint "account_id", null: false
+    t.string "language", null: false
+    t.integer "source_count", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id", "assistant_id", "status", "language"], name: "idx_pilot_faq_suggestions_review_queue"
+    t.index ["assistant_id"], name: "index_pilot_faq_suggestions_on_assistant_id"
+    t.index ["embedding"], name: "vector_idx_pilot_faq_suggestions_embedding", opclass: :vector_cosine_ops, using: :ivfflat
+  end
+
   create_table "pilot_inboxes", force: :cascade do |t|
     t.bigint "pilot_assistant_id", null: false
     t.bigint "inbox_id", null: false

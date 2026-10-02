@@ -546,6 +546,47 @@
       "STEPS": "Run steps",
       "NO_STEPS": "No steps were recorded.",
       "TOOL_CALL": "Called {tool}"
+    },
+    "FAQ_SUGGESTIONS": {
+      "PAGE_TITLE": "FAQ suggestions",
+      "BANNER": "You have {count} FAQ suggestions awaiting review",
+      "BANNER_ACTION": "Review suggestions",
+      "EMPTY_TITLE": "No suggestions to review",
+      "EMPTY_BODY": "FAQ candidates mined from resolved conversations will appear here.",
+      "SEARCH_PLACEHOLDER": "Search suggestions...",
+      "CARD": {
+        "SOURCE_COUNT": "{count} source conversations",
+        "REVIEW": "Review",
+        "APPROVE": "Approve",
+        "DISMISS": "Dismiss"
+      },
+      "DIALOG": {
+        "TITLE": "Review suggestion",
+        "QUESTION_LABEL": "Question",
+        "QUESTION_PLACEHOLDER": "What is the refund window?",
+        "ANSWER_LABEL": "Answer",
+        "ANSWER_PLACEHOLDER": "Use markdown for **bold**, *italics*, links, and lists.",
+        "QUESTION_REQUIRED": "Question is required",
+        "ANSWER_REQUIRED": "Answer is required",
+        "SOURCES_TITLE": "Source conversations",
+        "SOURCES_LOADING": "Loading sources...",
+        "SOURCES_EMPTY": "No source conversations visible to you.",
+        "SAVE": "Save",
+        "APPROVE": "Approve",
+        "DISMISS": "Dismiss"
+      },
+      "SUCCESS": {
+        "SAVED": "Suggestion saved",
+        "APPROVED": "Suggestion approved and added to FAQs",
+        "DISMISSED": "Suggestion dismissed"
+      },
+      "ERROR": {
+        "LOAD": "Failed to load suggestions",
+        "SAVE": "Failed to save suggestion",
+        "APPROVE": "Failed to approve suggestion",
+        "DISMISS": "Failed to dismiss suggestion",
+        "RETRY": "Retry"
+      }
     }
   }
 }

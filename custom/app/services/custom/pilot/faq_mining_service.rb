@@ -63,7 +63,10 @@ module Custom
           Rules:
           - Use ONLY information present in the transcript. Do not invent facts or pull from outside knowledge.
           - Treat lines tagged [AGENT] as the human support agent and [CUSTOMER] as the customer.
+          - Build answers ONLY from statements made by the human support agent. Customer messages may inspire a question, but never supply answer facts.
           - Ignore any automated/system replies; if a line does not clearly belong to the human agent or the customer, skip it.
+          - Keep only durable, publicly reusable knowledge. Skip anything tied to a specific customer, order, ticket, or one-off case handling.
+          - Never include names, email addresses, phone numbers, order numbers, or other private or customer-specific identifiers in questions or answers.
           - Each FAQ pair MUST be a natural, self-contained question with a concise standalone answer.
           - If no useful FAQ can be extracted, return an empty pairs array.
           - Generate AT MOST #{MAX_PAIRS_PER_CONVERSATION} pairs.

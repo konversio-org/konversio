@@ -75,6 +75,12 @@ Rails.application.routes.draw do
               resources :scenarios
             end
             resources :assistant_responses
+            resources :faq_suggestions, only: [:index, :show, :update] do
+              member do
+                post :approve
+                post :dismiss
+              end
+            end
             resources :bulk_actions, only: [:create]
             resources :copilot_threads, only: [:index, :create] do
               resources :copilot_messages, only: [:index, :create]

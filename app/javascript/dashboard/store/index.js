@@ -44,6 +44,7 @@ import pilotAssistants from './pilot/assistants';
 import pilotCopilot from './pilot/copilot';
 import pilotDocuments from './pilot/documents';
 import pilotFaqs from './pilot/faqs';
+import pilotFaqSuggestions from './pilot/faqSuggestions';
 import pilotAutopilot from './pilot/autopilot';
 import pilotCustomTools from './pilot/tools';
 import pilotAgentSessions from './pilot/agentSessions';
@@ -106,6 +107,7 @@ export default createStore({
     'pilot/copilot': pilotCopilot,
     'pilot/documents': pilotDocuments,
     'pilot/faqs': pilotFaqs,
+    'pilot/faqSuggestions': pilotFaqSuggestions,
     'pilot/autopilot': pilotAutopilot,
     'pilot/customTools': pilotCustomTools,
     'pilot/agentSessions': pilotAgentSessions,

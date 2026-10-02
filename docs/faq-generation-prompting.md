@@ -27,8 +27,10 @@ referent. That single observation drove the work recorded here.
 - **Downstream:** an `after_commit` hook enqueues `Pilot::UpdateEmbeddingJob`,
   which embeds each approved/pending pair for similarity search. Retrieval then
   feeds Autopilot answers and Copilot suggestions.
-- **Dedup:** `Custom::Pilot::FaqMiningDeduper` filters near-duplicates against the
-  assistant's existing corpus (cosine distance threshold).
+- **Dedup:** conversation-mined candidates are deduplicated by
+  `Custom::Pilot::FaqSuggestionMatcher` (embedding shortlist + LLM equivalence
+  judgment) and staged as `Pilot::FaqSuggestion` review records instead of
+  being written straight into the knowledge base.
 
 The model and provider are resolved per-feature via `Llm::Config` (multi-provider;
 currently Scaleway, an EU-sovereign OpenAI-compatible endpoint).

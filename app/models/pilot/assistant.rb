@@ -42,6 +42,10 @@ class Pilot::Assistant < ApplicationRecord
            class_name: 'Pilot::AssistantResponse',
            inverse_of: :assistant,
            dependent: :destroy_async
+  has_many :faq_suggestions,
+           class_name: 'Pilot::FaqSuggestion',
+           inverse_of: :assistant,
+           dependent: :destroy_async
   has_many :scenarios,
            class_name: 'Pilot::Scenario',
            inverse_of: :assistant,

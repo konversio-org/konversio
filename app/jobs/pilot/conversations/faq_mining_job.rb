@@ -2,17 +2,18 @@
 
 module Pilot
   module Conversations
-    # Resolve-time Q&A mining for a single conversation. Pulled directly
-    # from the deepdive's section 2 behavioural spec:
+    # Resolve-time Q&A mining for a single conversation.
     #
     #   * filter out bot/assistant turns — only customer + human-agent
     #     messages feed the prompt
     #   * short-circuit before the LLM call when no human reply exists
-    #   * dedup against the assistant's ENTIRE response corpus
-    #     (approved + pending) via cosine similarity, threshold
-    #     `1 - 0.7 = 0.3` cosine distance
-    #   * survivors persisted as `Pilot::AssistantResponse` with
-    #     `status = pending` and `documentable = nil` (conversation-mined)
+    #   * each mined candidate is routed by `Custom::Pilot::FaqSuggestionMatcher`:
+    #       - matches approved knowledge        → discarded observation
+    #       - matches a dismissed suggestion    → discarded observation
+    #       - matches an open suggestion        → attached observation,
+    #         source_count incremented under a row lock
+    #       - no match                          → new open suggestion with an
+    #         attached observation
     #   * idempotency by SHA-256 over the transcript text
     #   * malformed output / LLM exceptions → zero rows, no raise
     class FaqMiningJob < ApplicationJob
@@ -20,6 +21,7 @@ module Pilot
 
       FAQ_DEDUP_DISTANCE_THRESHOLD = 0.3
       TRANSCRIPT_DIGEST_KEY = 'pilot_faq_transcript_digest'
+      MAX_ROUTE_ATTEMPTS = 3
 
       def perform(conversation_id)
         conversation = ::Conversation.find_by(id: conversation_id)
@@ -28,9 +30,8 @@ module Pilot
         assistant = resolve_assistant(conversation)
         return if assistant.blank?
 
-        # Per the deepdive's 2.6 "no human reply" rule: bot-only
-        # conversations would just recycle bot output back into the FAQ
-        # store, so skip them before the LLM call.
+        # Bot-only conversations would just recycle bot output back into
+        # the FAQ store, so skip them before the LLM call.
         return if conversation.first_reply_created_at.blank?
 
         transcript = build_transcript(conversation)
@@ -40,11 +41,12 @@ module Pilot
         return if already_mined?(conversation, digest)
 
         pairs = extract_pairs(assistant, conversation, transcript)
-        persist_survivors(assistant, conversation, pairs)
+        route_candidates(assistant, conversation, pairs)
         record_digest(conversation, digest)
       rescue StandardError => e
-        # The deepdive's cross-cutting "listener decoupling" rule: mining
-        # failures MUST NOT bubble into the resolution path. Log + swallow.
+        # Mining failures MUST NOT bubble into the resolution path.
+        # Log + swallow; the digest is only recorded on success, so a
+        # later resolution re-mines the conversation.
         Rails.logger.error("[pilot.faq_mining] #{e.class}: #{e.message}")
         nil
       end
@@ -59,10 +61,9 @@ module Pilot
         pilot_inbox&.assistant
       end
 
-      # Human-agent and customer turns only. The reference product
-      # filters bot output by sender_type / source_id — we follow the
-      # same shape by excluding messages whose `sender_type` is the
-      # Pilot assistant or whose `message_type` is `activity`/`template`.
+      # Human-agent and customer turns only. Messages whose `sender_type`
+      # is the Pilot assistant or whose `message_type` is
+      # `activity`/`template` never feed candidate generation.
       def build_transcript(conversation)
         conversation.messages
                     .where(message_type: %i[incoming outgoing])
@@ -112,25 +113,98 @@ module Pilot
         }
       end
 
-      def persist_survivors(assistant, conversation, pairs)
+      def route_candidates(assistant, conversation, pairs)
         return if pairs.blank?
 
-        deduper = ::Custom::Pilot::FaqMiningDeduper.new(assistant: assistant, account: assistant.account)
-        survivors = deduper.filter(pairs)
-        return if survivors.empty?
-
-        survivors.each do |pair|
-          create_response(assistant, conversation, pair)
+        language = ::Pilot::FaqSuggestion.language_for(conversation)
+        matcher = ::Custom::Pilot::FaqSuggestionMatcher.new(assistant: assistant, account: assistant.account)
+        pairs.each do |pair|
+          candidate = { question: pair_value(pair, :question), answer: pair_value(pair, :answer) }
+          route_candidate(matcher, assistant, conversation, candidate, language)
         end
       end
 
-      def create_response(assistant, _conversation, pair)
-        ::Pilot::AssistantResponse.create!(
-          assistant: assistant,
-          account: assistant.account,
-          question: pair[:question].to_s,
-          answer: pair[:answer].to_s,
-          status: :pending
+      def pair_value(pair, key)
+        return pair.public_send(key) if pair.respond_to?(key)
+
+        pair[key] || pair[key.to_s]
+      end
+
+      def route_candidate(matcher, assistant, conversation, candidate, language)
+        MAX_ROUTE_ATTEMPTS.times do
+          result = matcher.match(question: candidate[:question], answer: candidate[:answer], language: language)
+          case result.route
+          when :duplicate
+            return
+          when :knowledge, :dismissed
+            record_discarded_observation(conversation, candidate, language)
+            return
+          when :attach
+            # false means the suggestion changed or was decided between the
+            # match and the attach — re-route the candidate.
+            return if attach_observation(result.record, conversation, candidate, language)
+          when :create
+            create_suggestion(assistant, conversation, candidate, language)
+            return
+          end
+        end
+        Rails.logger.warn("[pilot.faq_mining] route conflict loop for conversation=#{conversation.id}, candidate dropped")
+      end
+
+      # Attaches an observation under a row lock, re-verifying that the
+      # suggestion is still open and its text has not changed since the
+      # match was computed. Returns false when re-verification fails so the
+      # caller re-routes the candidate. Idempotent per conversation: a
+      # conversation contributes at most one attached observation per
+      # suggestion (also enforced by a partial unique index).
+      def attach_observation(suggestion, conversation, candidate, language)
+        matched_question = suggestion.question
+        matched_answer = suggestion.answer
+
+        suggestion.with_lock do
+          return false unless suggestion.open?
+          return false unless suggestion.question == matched_question && suggestion.answer == matched_answer
+          return true if suggestion.observations.attached.exists?(conversation_id: conversation.id)
+
+          suggestion.observations.create!(
+            conversation: conversation,
+            generated_question: candidate[:question],
+            generated_answer: candidate[:answer],
+            language: language,
+            status: :attached
+          )
+          suggestion.update!(source_count: suggestion.source_count + 1)
+        end
+        true
+      rescue ActiveRecord::RecordNotUnique
+        true
+      end
+
+      def create_suggestion(assistant, conversation, candidate, language)
+        suggestion = ::Pilot::FaqSuggestion.new(
+          assistant: assistant, question: candidate[:question], answer: candidate[:answer], language: language, source_count: 1
+        )
+        ActiveRecord::Base.transaction do
+          suggestion.save!
+          suggestion.observations.create!(
+            conversation: conversation,
+            generated_question: candidate[:question],
+            generated_answer: candidate[:answer],
+            language: language,
+            status: :attached
+          )
+        end
+      rescue ActiveRecord::RecordInvalid => e
+        Rails.logger.warn("[pilot.faq_mining] invalid candidate: #{e.message}")
+      end
+
+      def record_discarded_observation(conversation, candidate, language)
+        ::Pilot::FaqObservation.create!(
+          conversation: conversation,
+          generated_question: candidate[:question],
+          generated_answer: candidate[:answer],
+          language: language,
+          status: :discarded
         )
       rescue ActiveRecord::RecordInvalid => e
         Rails.logger.warn("[pilot.faq_mining] invalid candidate: #{e.message}")
