@@ -35,7 +35,7 @@
 25. - [x] **Job/service specs** — `Pilot::Conversations::ResolutionJob` + `Custom::Pilot::AutoResolveService`: per-assistant mode routing, per-assistant cutoff, locked transition skips raced conversations, toggle-off resolution posts no customer message, evaluated path resolve/handoff, RecordNotFound resilience.
 26. - [x] **Assignment specs** — `Conversations::AssignmentService` AI/human transitions (status, waiting_since, clearing), `bot_handoff!` clearing, scope changes, assignable-agents opt-in payload.
 27. - [x] **API request specs** — assistant config permit + audience 422s, partial config merge, scenario index including disabled, tool referenced-count, tool exclusion when disabled.
-28. - [ ] **Manual smoke test** — assistant with audience + business-hours window on a web widget inbox: matching contact inside hours → pending with AI assignee and AI replies; non-matching contact → open, no AI; outside hours → open; idle past threshold → resolved with (or without, per toggle) resolution message; disable a referenced tool → confirmation dialog shows count.
+28. - [x] **Manual smoke test** — assistant with audience + business-hours window on a web widget inbox: matching contact inside hours → pending with AI assignee and AI replies; non-matching contact → open, no AI; outside hours → open; idle past threshold → resolved with (or without, per toggle) resolution message; disable a referenced tool → confirmation dialog shows count.
 
 ## Dependencies / Order
 
