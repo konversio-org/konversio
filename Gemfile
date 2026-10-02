@@ -83,15 +83,17 @@ gem 'faraday_middleware-aws-sigv4'
 ##--- gems for server & infra configuration ---##
 gem 'dotenv-rails', '>= 3.0.0'
 gem 'foreman'
-gem 'puma'
+gem 'puma', '~> 7.2', '>= 7.2.1'
 gem 'vite_rails'
 # metrics on heroku
 gem 'barnes'
 
 ##--- gems for authentication & authorization ---##
 gem 'devise', '>= 4.9.4'
-gem 'devise-secure_password', git: 'https://github.com/chatwoot/devise-secure_password', branch: 'chatwoot'
+# 2.2.3 requires Devise 5; Konversio remains on Devise 4.
+gem 'devise-secure_password', '2.2.1'
 gem 'devise_token_auth', '>= 1.2.3'
+gem 'rails-i18n', '~> 7.0'
 # two-factor authentication
 gem 'devise-two-factor', '>= 5.0.0'
 # authorization

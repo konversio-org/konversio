@@ -1,61 +1,14 @@
 /// <reference types="vitest" />
 process.env.TZ = 'UTC';
 
-/**
-What's going on with library mode?
-
-Glad you asked, here's a quick rundown:
-
-1. vite-plugin-ruby will automatically bring all the entrypoints like dashbord and widget as input to vite.
-2. vite needs to be in library mode to build the SDK as a single file. (UMD) format and set `inlineDynamicImports` to true.
-3. But when setting `inlineDynamicImports` to true, vite will not be able to handle mutliple entrypoints.
-
-This puts us in a deadlock, now there are two ways around this, either add another separate build pipeline to
-the app using vanilla rollup or rspack or something. The second option is to remove sdk building from the main pipeline
-and build it separately using Vite itself, toggled by an ENV variable.
-
-`BUILD_MODE=library bin/vite build` should build only the SDK and save it to `public/packs/js/sdk.js`
-`bin/vite build` will build the rest of the app as usual. But exclude the SDK.
-
-We need to edit the `asset:precompile` rake task to include the SDK in the precompile list.
-*/
 import { defineConfig } from 'vite';
 import ruby from 'vite-plugin-ruby';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import vue from '@vitejs/plugin-vue';
+import { aliases, vueOptions } from './vite.shared';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const isLibraryMode = process.env.BUILD_MODE === 'library';
 const isTestMode = process.env.TEST === 'true';
 
-// Both @chatwoot/ninja-keys and @material/mwc-icon depend on lit@2.2.6.
-// pnpm stores a single copy but Vite's dev server serves each symlink path
-// as a separate module, triggering Lit's "Multiple versions" console warning.
-// Aliasing forces all 'lit' imports to a single canonical path.
-// The version is pinned in pnpm-lock.yaml; update if a renovate/dependabot
-// PR bumps lit or ninja-keys.
-const litPath = path.resolve(
-  __dirname,
-  'node_modules/.pnpm/lit@2.2.6/node_modules/lit'
-);
-
-const vueOptions = {
-  template: {
-    compilerOptions: {
-      isCustomElement: tag => ['ninja-keys'].includes(tag),
-    },
-  },
-};
-
-let plugins = [ruby(), vue(vueOptions)];
-
-if (isLibraryMode) {
-  plugins = [];
-} else if (isTestMode) {
-  plugins = [vue(vueOptions)];
-}
+const plugins = isTestMode ? [vue(vueOptions)] : [ruby(), vue(vueOptions)];
 
 export default defineConfig({
   plugins: plugins,
@@ -79,48 +32,7 @@ export default defineConfig({
       interval: 1000,
     },
   },
-  build: {
-    rollupOptions: {
-      output: {
-        // [NOTE] when not in library mode, no new keys will be addedd or overwritten
-        // setting dir: isLibraryMode ? 'public/packs' : undefined will not work
-        ...(isLibraryMode
-          ? {
-              dir: 'public/packs',
-              entryFileNames: chunkInfo => {
-                if (chunkInfo.name === 'sdk') {
-                  return 'js/sdk.js';
-                }
-                return '[name].js';
-              },
-            }
-          : {}),
-        inlineDynamicImports: isLibraryMode, // Disable code-splitting for SDK
-      },
-    },
-    lib: isLibraryMode
-      ? {
-          entry: path.resolve(__dirname, './app/javascript/entrypoints/sdk.js'),
-          formats: ['iife'], // IIFE format for single file
-          name: 'sdk',
-        }
-      : undefined,
-  },
-  resolve: {
-    alias: {
-      lit: litPath,
-      vue: 'vue/dist/vue.esm-bundler.js',
-      components: path.resolve('./app/javascript/dashboard/components'),
-      next: path.resolve('./app/javascript/dashboard/components-next'),
-      v3: path.resolve('./app/javascript/v3'),
-      dashboard: path.resolve('./app/javascript/dashboard'),
-      helpers: path.resolve('./app/javascript/shared/helpers'),
-      shared: path.resolve('./app/javascript/shared'),
-      survey: path.resolve('./app/javascript/survey'),
-      widget: path.resolve('./app/javascript/widget'),
-      assets: path.resolve('./app/javascript/dashboard/assets'),
-    },
-  },
+  resolve: { alias: aliases },
   test: {
     environment: 'jsdom',
     include: ['app/**/*.{test,spec}.?(c|m)[jt]s?(x)'],

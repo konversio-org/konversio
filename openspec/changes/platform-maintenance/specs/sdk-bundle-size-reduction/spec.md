@@ -97,3 +97,5 @@ The change SHALL produce a measurably smaller SDK bundle than the previous `BUIL
 - Given upstream bundled a `getUserString` attribute expansion with the hash swap under a separate changelog line ("improved widget contact refreshes")
 - When implementing the hash swap
 - Then needs investigation: whether the attribute expansion is functionally required here or belongs to a follow-up change; the outcome SHALL be recorded in the PR
+
+> Resolution (2026-10-01, feat/platform-maintenance): NOT required. `fnv1a128` hashes the existing `getUserString` output unchanged; the `CONTACT_INFORMATION_ATTRIBUTES` expansion only changes *which* attribute updates trigger a contact refresh and rides along with upstream's separate "improved widget contact refreshes" behavior change. This change ports only the dependency removal (md5 → FNV-1a); the attribute expansion is deferred to a follow-up parity change. needs investigation: whether that follow-up should also adopt upstream's JSON serialization of `getUserString` (hash-input format change) at the same time, to avoid a second one-time cookie refresh for returning visitors.
