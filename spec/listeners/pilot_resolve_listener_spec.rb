@@ -87,24 +87,26 @@ describe PilotResolveListener do
           answer: 'Go to Settings > Billing > Cancel.'
         )
         service = instance_double(Custom::Pilot::FaqMiningService, call: [pair])
-        deduper = instance_double(Custom::Pilot::FaqMiningDeduper, filter: [{ question: pair.question, answer: pair.answer }])
+        matcher = instance_double(Custom::Pilot::FaqSuggestionMatcher)
+        allow(matcher).to receive(:match).and_return(Custom::Pilot::FaqSuggestionMatcher::Match.new(route: :create))
         allow(Custom::Pilot::FaqMiningService).to receive(:new).and_return(service)
-        allow(Custom::Pilot::FaqMiningDeduper).to receive(:new).and_return(deduper)
-        allow(Pilot::UpdateEmbeddingJob).to receive(:perform_later)
+        allow(Custom::Pilot::FaqSuggestionMatcher).to receive(:new).and_return(matcher)
+        allow(Pilot::UpdateFaqSuggestionEmbeddingJob).to receive(:perform_later)
       end
 
-      it 'creates pending mined FAQ rows and stays idempotent on the same transcript' do
+      it 'creates an open FAQ suggestion with an observation and stays idempotent on the same transcript' do
         expect do
           perform_enqueued_jobs { listener.conversation_resolved(event) }
-        end.to change { Pilot::AssistantResponse.where(assistant: assistant, status: :pending).count }.by(1)
+        end.to change { Pilot::FaqSuggestion.where(assistant: assistant, status: :open).count }.by(1)
 
-        response = Pilot::AssistantResponse.where(assistant: assistant).last
-        expect(response.question).to eq('How do I cancel?')
-        expect(response.documentable).to be_nil
+        suggestion = Pilot::FaqSuggestion.where(assistant: assistant).last
+        expect(suggestion.question).to eq('How do I cancel?')
+        expect(suggestion.source_count).to eq(1)
+        expect(suggestion.observations.attached.where(conversation: conversation).count).to eq(1)
 
         expect do
           perform_enqueued_jobs { listener.conversation_resolved(event) }
-        end.not_to(change { Pilot::AssistantResponse.where(assistant: assistant).count })
+        end.not_to(change { Pilot::FaqSuggestion.where(assistant: assistant).count })
       end
     end
   end
