@@ -129,7 +129,7 @@ class Pilot::Audience::TreeValidator
     end
 
     entries = values.is_a?(Array) ? values : [values].compact
-    fail_with("operator '#{operator}' requires at least one comparison value") if entries.blank? || entries.all?(&:blank?)
+    fail_with("operator '#{operator}' requires at least one comparison value") if entries.none? { |entry| entry == false || entry.present? }
   end
 
   def allowed_operators_for(key)

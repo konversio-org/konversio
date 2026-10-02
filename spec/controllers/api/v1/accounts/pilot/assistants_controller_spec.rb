@@ -135,6 +135,95 @@ RSpec.describe 'Api::V1::Accounts::Pilot::Assistants', type: :request do
             as: :json
       expect(response).to have_http_status(:unauthorized)
     end
+
+    it 'persists a valid audience tree and returns it on reads' do
+      audience = {
+        combinator: 'and',
+        conditions: [
+          { attribute_key: 'labels', filter_operator: 'equal_to', values: %w[vip] },
+          { combinator: 'or', conditions: [{ attribute_key: 'blocked', filter_operator: 'equal_to', values: [false] }] }
+        ]
+      }
+
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { audience: audience } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body['config']['audience']).to eq(JSON.parse(audience.to_json))
+
+      get "#{base_url}/#{assistant.id}", headers: admin.create_new_auth_token, as: :json
+      expect(response.parsed_body['config']['audience']).to eq(JSON.parse(audience.to_json))
+    end
+
+    it 'merges partial config updates with the existing config' do
+      assistant.update!(config: { 'handoff_message' => 'Hold on', 'temperature' => 0.4 })
+
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { audience: { combinator: 'and',
+                                            conditions: [{ attribute_key: 'blocked', filter_operator: 'equal_to', values: [false] }] } } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      config = assistant.reload.config
+      expect(config['handoff_message']).to eq('Hold on')
+      expect(config['temperature']).to eq(0.4)
+      expect(config['audience']).to be_present
+    end
+
+    it 'returns 422 for an invalid audience tree' do
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { audience: { combinator: 'and', conditions: [] } } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(assistant.reload.config['audience']).to be_blank
+    end
+
+    it 'returns 422 for an unknown audience attribute' do
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { audience: { combinator: 'and',
+                                            conditions: [{ attribute_key: 'nope', filter_operator: 'equal_to', values: %w[x] }] } } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns 422 for an incompatible audience operator' do
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { audience: { combinator: 'and',
+                                            conditions: [{ attribute_key: 'created_at', filter_operator: 'contains', values: %w[2026] }] } } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'returns 422 for an invalid response window' do
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { response_window: 'weekends' } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    it 'persists the inactivity lifecycle settings' do
+      patch "#{base_url}/#{assistant.id}",
+            params: { config: { auto_resolve_mode: 'evaluated', auto_resolve_after: 47, send_inactivity_resolution_message: false } },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      config = assistant.reload.config
+      expect(config['auto_resolve_mode']).to eq('evaluated')
+      expect(config['auto_resolve_after']).to eq(45)
+      expect(assistant.send_inactivity_resolution_message).to be(false)
+    end
   end
 
   describe 'DELETE /api/v1/accounts/:account_id/pilot/assistants/:id' do

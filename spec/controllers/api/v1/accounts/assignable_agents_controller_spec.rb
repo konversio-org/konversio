@@ -63,5 +63,34 @@ RSpec.describe 'Assignable Agents API', type: :request do
         expect(response_data.pluck(:role)).to include('agent', 'administrator')
       end
     end
+
+    context 'with AI assignees' do
+      before { create(:pilot_assistant, account: account, name: 'Mira') }
+
+      it 'contains only humans without the opt-in parameter' do
+        get "/api/v1/accounts/#{account.id}/assignable_agents",
+            params: { inbox_ids: [inbox1.id, inbox2.id] },
+            headers: agent1.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        response_data = JSON.parse(response.body, symbolize_names: true)
+        expect(response_data[:ai_assignees]).to be_nil
+        expect(response_data[:payload].pluck(:role)).to include('agent', 'administrator')
+      end
+
+      it 'includes assistants with a type discriminator when opted in' do
+        get "/api/v1/accounts/#{account.id}/assignable_agents",
+            params: { inbox_ids: [inbox1.id, inbox2.id], include_ai_assignees: true },
+            headers: agent1.create_new_auth_token,
+            as: :json
+
+        expect(response).to have_http_status(:success)
+        ai_assignees = JSON.parse(response.body, symbolize_names: true)[:ai_assignees]
+        mira = ai_assignees.find { |entry| entry[:name] == 'Mira' }
+        expect(mira).to be_present
+        expect(mira[:assignee_type]).to eq('Pilot::Assistant')
+      end
+    end
   end
 end

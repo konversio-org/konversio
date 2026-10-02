@@ -34,9 +34,7 @@ module PilotAssistantLifecycle
     store_accessor :config,
                    :audience,
                    :response_window,
-                   :auto_resolve_mode,
-                   :auto_resolve_after,
-                   :send_inactivity_resolution_message
+                   :auto_resolve_after
 
     before_validation :normalize_auto_resolve_after
     before_validation :stamp_auto_resolve_mode, on: :create
@@ -67,6 +65,10 @@ module PilotAssistantLifecycle
     config&.dig('auto_resolve_mode').presence || account&.pilot_auto_resolve_mode
   end
 
+  def auto_resolve_mode=(value)
+    self.config = (config || {}).merge('auto_resolve_mode' => value)
+  end
+
   # Idle minutes before the inactivity sweep acts on this assistant's pending
   # conversations. Falls back to the installation-level override, then the
   # built-in default.
@@ -80,6 +82,10 @@ module PilotAssistantLifecycle
   def send_inactivity_resolution_message
     value = config&.dig('send_inactivity_resolution_message')
     value.nil? || ActiveModel::Type::Boolean.new.cast(value)
+  end
+
+  def send_inactivity_resolution_message=(value)
+    self.config = (config || {}).merge('send_inactivity_resolution_message' => value)
   end
 
   # Whether the assistant takes charge of the given conversation: the

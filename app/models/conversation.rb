@@ -248,6 +248,7 @@ class Conversation < ApplicationRecord
       self.assignee_agent_bot_id = nil
       self.ai_assignee_type = nil
     else
+      self.assignee_id = nil
       self.assignee_agent_bot_id = entity.id
       self.ai_assignee_type = entity.is_a?(AgentBot) ? nil : entity.class.name
     end
