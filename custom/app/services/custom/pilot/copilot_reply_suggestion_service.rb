@@ -68,11 +68,7 @@ module Custom
       def persist_failure_response
         return if thread.blank?
 
-        thread.with_lock do
-          return if thread.copilot_messages.assistant.exists?
-
-          persist_message(localized(FAILURE_KEY), reply_suggestion: false)
-        end
+        persist_terminal(FAILURE_KEY)
       end
 
       private
@@ -95,7 +91,7 @@ module Custom
       end
 
       def finalize(result, target, span)
-        return persist_message(localized(FAILURE_KEY), reply_suggestion: false) if result.error.is_a?(::Agents::Runner::MaxTurnsExceeded)
+        return persist_terminal(FAILURE_KEY) if result.error.is_a?(::Agents::Runner::MaxTurnsExceeded)
 
         persist_under_lock(target, extract_final_content(result), span)
       end
@@ -113,10 +109,15 @@ module Custom
       end
 
       def persist_discarded_response
-        thread.with_lock do
-          return @persisted_assistant_message if existing_assistant_message.present?
+        persist_terminal(DISCARDED_KEY, discarded: true)
+      end
 
-          persist_message(localized(DISCARDED_KEY), reply_suggestion: false, discarded: true)
+      def persist_terminal(key, discarded: false)
+        thread.with_lock do
+          existing = existing_assistant_message
+          return @persisted_assistant_message = existing if existing.present?
+
+          persist_message(localized(key), reply_suggestion: false, discarded: discarded)
         end
       end
 
