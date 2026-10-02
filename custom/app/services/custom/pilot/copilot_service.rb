@@ -5,10 +5,8 @@ module Custom
     # Generates the assistant reply for a Copilot thread using the ai-agents
     # SDK runner pattern.
     #
-    # This service handles generating the assistant reply using the ai-agents
-    # SDK runner pattern. See openspec
-    # changes/pilot-full design D20 + D21 + the pilot-copilot requirement
-    # "Copilot uses the ai-agents SDK runner with full tool execution".
+    # It persists tool-call progress as assistant_thinking messages, caps each
+    # run at a fixed number of steps, and stores a fallback reply on exhaustion.
     #
     # Behaviour:
     #   1. Build an `Agents::Agent` with the configured Pilot model + the

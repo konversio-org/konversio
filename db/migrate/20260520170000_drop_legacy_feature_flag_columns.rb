@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-# Phase 2 of the unify-feature-flags openspec change. Drops the legacy
-# bitfield and the 12 dedicated Pilot boolean columns, leaving the single
-# `accounts.feature_flags` JSONB column as the source of truth.
+# Drops the legacy bitfield and the 12 dedicated Pilot boolean columns,
+# leaving the single `accounts.feature_flags` JSONB column as the source of
+# truth after the feature-flag data migration.
 #
 # Safe to run because:
 #   * `Featurable`'s dynamic methods (`account.pilot_briefing_enabled`,

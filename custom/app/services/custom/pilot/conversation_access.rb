@@ -7,8 +7,7 @@ module Custom
     # limited to the conversations the platform's permission model already
     # grants them. Resolution delegates to the existing
     # `Conversations::PermissionFilterService` rather than introducing a
-    # parallel ACL — see openspec change pilot-reply-suggestion
-    # (pilot-copilot-conversation-access).
+    # parallel ACL.
     class ConversationAccess
       def self.accessible?(account:, user:, conversation:)
         new(account: account, user: user).accessible?(conversation)

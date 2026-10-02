@@ -6,8 +6,7 @@ module Custom
       # Base class for all Pilot Copilot tools.
       #
       # Inherits from `Agents::Tool` (the ai-agents SDK base) so the runner can
-      # execute the tool in-process during a multi-step agentic conversation
-      # (see openspec/changes/pilot-full design D21).
+      # execute the tool in-process during a multi-step agentic conversation.
       #
       # Tools are STATELESS configuration objects: per-request data (account,
       # user, conversation) is passed in via `tool_context.context`, populated

@@ -6,7 +6,7 @@ module Custom
     # SDK runner pipeline as Copilot chat, then persists it as the single
     # assistant message of a reply-suggestion copilot thread.
     #
-    # Behaviour (openspec change pilot-reply-suggestion):
+    # Behavior:
     #   1. Short-circuit when the thread already has an assistant response, so
     #      a duplicate dispatch never creates a second one.
     #   2. Capture the conversation's latest public message when the run starts
