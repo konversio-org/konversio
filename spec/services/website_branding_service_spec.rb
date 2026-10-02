@@ -149,7 +149,7 @@ RSpec.describe WebsiteBrandingService do
       end
     end
 
-    context 'mailbox provider inference from MX records' do
+    context 'with MX records' do
       let(:resolver) { instance_double(Resolv::DNS) }
 
       before do

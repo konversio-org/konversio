@@ -88,3 +88,11 @@ pilot_conversations_resolution_scheduler_job:
   cron: '*/5 * * * *'
   class: 'Pilot::Conversations::ResolutionSchedulerJob'
   queue: scheduled_jobs
+
+# executed hourly
+# Refreshes stale (> 6h) WhatsApp Cloud API phone-number health snapshots,
+# oldest first, bounded by the bulk external HTTP call limit.
+whatsapp_health_sync_scheduler_job:
+  cron: '0 * * * *'
+  class: 'Channels::Whatsapp::HealthSyncSchedulerJob'
+  queue: scheduled_jobs
