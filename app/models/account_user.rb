@@ -42,6 +42,8 @@ class AccountUser < ApplicationRecord
 
   validates :user_id, uniqueness: { scope: :account_id }
 
+  audited only: %i[availability role account_id inviter_id user_id], on: %i[create update], associated_with: :account
+
   def create_notification_setting
     setting = user.notification_settings.new(account_id: account.id)
     setting.selected_email_flags = [:email_conversation_assignment]
@@ -82,5 +84,4 @@ class AccountUser < ApplicationRecord
 end
 
 AccountUser.prepend_mod_with('AccountUser')
-AccountUser.include_mod_with('Audit::AccountUser')
 AccountUser.include_mod_with('Concerns::AccountUser')

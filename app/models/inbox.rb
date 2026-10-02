@@ -86,6 +86,8 @@ class Inbox < ApplicationRecord
 
   scope :order_by_name, -> { order('lower(name) ASC') }
 
+  audited associated_with: :account, on: %i[create update]
+
   # Adds multiple members to the inbox
   # @param user_ids [Array<Integer>] Array of user IDs to add as members
   # @return [void]
@@ -266,5 +268,4 @@ class Inbox < ApplicationRecord
 end
 
 Inbox.prepend_mod_with('Inbox')
-Inbox.include_mod_with('Audit::Inbox')
 Inbox.include_mod_with('Concerns::Inbox')

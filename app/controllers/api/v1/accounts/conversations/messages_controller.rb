@@ -19,9 +19,15 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
   end
 
   def destroy
-    ActiveRecord::Base.transaction do
-      message.update!(content: I18n.t('conversations.messages.deleted'), content_type: :text, content_attributes: { deleted: true })
-      message.attachments.destroy_all
+    message.with_lock do
+      next if message.deleted
+
+      audit_context = message_deletion_audit_context
+      ActiveRecord::Base.transaction do
+        message.update!(content: I18n.t('conversations.messages.deleted'), content_type: :text, content_attributes: { deleted: true })
+        message.attachments.destroy_all
+      end
+      create_message_deletion_audit(audit_context)
     end
   end
 
@@ -58,6 +64,28 @@ class Api::V1::Accounts::Conversations::MessagesController < Api::V1::Accounts::
 
   def message
     @message ||= @conversation.messages.find(permitted_params[:id])
+  end
+
+  def message_deletion_audit_context
+    {
+      'content' => message.content,
+      'conversation_id' => message.conversation_id,
+      'display_id' => message.conversation.display_id,
+      'inbox_id' => message.inbox_id,
+      'sender_type' => message.sender_type,
+      'sender_id' => message.sender_id
+    }
+  end
+
+  def create_message_deletion_audit(audit_context)
+    AuditLog.create!(
+      auditable: message,
+      action: 'destroy',
+      user: Current.user,
+      associated: message.account,
+      remote_address: request.remote_ip,
+      audited_changes: audit_context
+    )
   end
 
   def message_finder

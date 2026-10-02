@@ -61,6 +61,9 @@ class Account < ApplicationRecord
   store_accessor :settings, :pilot_auto_resolve_mode
   include AccountPilotAutoResolve
 
+  audited except: :updated_at, on: [:update]
+  has_associated_audits
+
   has_many :account_users, dependent: :destroy_async
   has_many :agent_bot_inboxes, dependent: :destroy_async
   has_many :agent_bots, dependent: :destroy_async
@@ -223,4 +226,3 @@ end
 Account.prepend_mod_with('Account')
 Account.prepend_mod_with('Account::PlanUsageAndLimits')
 Account.include_mod_with('Concerns::Account')
-Account.include_mod_with('Audit::Account')

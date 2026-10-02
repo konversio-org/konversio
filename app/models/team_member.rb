@@ -18,6 +18,22 @@ class TeamMember < ApplicationRecord
   belongs_to :user
   belongs_to :team
   validates :user_id, uniqueness: { scope: :team_id }
-end
 
-TeamMember.include_mod_with('Audit::TeamMember')
+  after_create_commit -> { record_membership_audit('create') }
+  after_destroy_commit -> { record_membership_audit('destroy') }
+
+  private
+
+  def record_membership_audit(action)
+    return if team.blank?
+
+    AuditLog.create!(
+      auditable_type: 'TeamMember',
+      auditable_id: id,
+      action: action,
+      associated_type: 'Account',
+      associated_id: team.account_id,
+      audited_changes: attributes.except('created_at', 'updated_at')
+    )
+  end
+end

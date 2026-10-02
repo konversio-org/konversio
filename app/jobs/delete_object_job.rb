@@ -11,9 +11,24 @@ class DeleteObjectJob < ApplicationJob
     process_post_deletion_tasks(object, user, ip)
   end
 
-  def process_post_deletion_tasks(object, user, ip); end
+  def process_post_deletion_tasks(object, user, ip)
+    record_conversation_deletion(object, user, ip)
+  end
 
   private
+
+  def record_conversation_deletion(object, user, ip)
+    return unless object.is_a?(Conversation) && user.present?
+
+    AuditLog.create!(
+      auditable: object,
+      action: 'destroy',
+      user: user,
+      associated: object.account,
+      remote_address: ip,
+      audited_changes: { 'display_id' => object.display_id }
+    )
+  end
 
   def heavy_associations
     {

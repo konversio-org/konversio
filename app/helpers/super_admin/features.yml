@@ -28,6 +28,12 @@ audit_logs:
   enabled: <%= (KonversioHub.pricing_plan != 'community') %>
   icon: 'icon-menu-search-line'
   enterprise: true
+audit_log_ip_address:
+  name: 'Audit Log IP Address'
+  description: 'Show the full IP address captured on audit log entries instead of the masked network portion.'
+  enabled: <%= (KonversioHub.pricing_plan != 'community') %>
+  icon: 'icon-map-pin-line'
+  enterprise: true
 disable_branding:
   name: 'Disable Branding'
   description: 'Disable branding on live-chat widget and external emails.'
