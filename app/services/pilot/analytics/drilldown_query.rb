@@ -82,17 +82,17 @@ class Pilot::Analytics::DrilldownQuery
   def involved_conversation_ids
     Message.where(account_id: assistant.account_id, sender_type: 'Pilot::Assistant', sender_id: assistant.id,
                   message_type: :outgoing, private: false, created_at: window.current)
-           .select(:conversation_id).distinct
+           .reorder(nil).select(:conversation_id).distinct
   end
 
   def resolved_conversation_ids
-    ai_resolution_events.where.not(conversation_id: nil).select(:conversation_id).distinct
+    ai_resolution_events.where.not(conversation_id: nil).reorder(nil).select(:conversation_id).distinct
   end
 
   def handed_off_conversation_ids
     ReportingEvent.where(account_id: assistant.account_id, name: HANDOFF_EVENT_NAMES, created_at: window.current)
                   .where.not(conversation_id: nil)
-                  .select(:conversation_id).distinct
+                  .reorder(nil).select(:conversation_id).distinct
   end
 
   # Reopen events (a conversation leaving `resolved`) inside the window, at or
@@ -138,7 +138,7 @@ class Pilot::Analytics::DrilldownQuery
   # resolutions — except time-based closures on conversations that were also
   # handed off (those are human-owned endings, not autonomous resolutions).
   def ai_resolution_events
-    scope = ReportingEvent.where(account_id: assistant.account_id, name: RESOLUTION_EVENT_NAMES, created_at: window.current)
+    scope = ReportingEvent.where(account_id: assistant.account_id, name: RESOLUTION_EVENT_NAMES, created_at: window.current).reorder(nil)
     excluded_bot_closures = scope.where(name: BOT_RESOLUTION_EVENT, conversation_id: handed_off_conversation_ids)
     scope.where.not(id: excluded_bot_closures.select(:id))
   end
