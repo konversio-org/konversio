@@ -205,6 +205,7 @@ Rails.application.routes.draw do
               resources :contact_inboxes, only: [:create]
               resources :labels, only: [:create, :index]
               resources :notes
+              get :attachments, to: 'attachments#index'
               post :call, on: :member, to: 'calls#create' if KonversioApp.enterprise?
             end
           end

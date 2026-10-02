@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n';
 import { useOperators } from './operators';
 import { useMapGetter } from 'dashboard/composables/store.js';
 import { useChannelIcon } from 'next/icon/provider';
+import { createContactSearcher } from 'dashboard/components-next/NewConversation/helpers/composeConversationHelper';
 import {
   buildAttributesFilterTypes,
   CONVERSATION_ATTRIBUTES,
@@ -67,6 +68,30 @@ export function useConversationFilterContext() {
     dateOperators,
     getOperatorTypes,
   } = useOperators();
+
+  const searchContacts = createContactSearcher();
+
+  const contactOptionName = contact =>
+    contact.name ||
+    contact.email ||
+    contact.phoneNumber ||
+    contact.identifier ||
+    t('FILTER.CONTACT_FALLBACK', { id: contact.id });
+
+  const searchContactOptions = async query => {
+    const contacts = await searchContacts(query, {
+      skipMinLength: true,
+      reachableOnly: false,
+    });
+
+    // null means the request was aborted (a newer search is in-flight)
+    if (contacts === null) return null;
+
+    return contacts.map(contact => ({
+      id: contact.id,
+      name: contactOptionName(contact),
+    }));
+  };
 
   /**
    * @type {import('vue').ComputedRef<FilterType[]>}
@@ -180,6 +205,18 @@ export function useConversationFilterContext() {
       })),
       dataType: 'number',
       filterOperators: presenceOperators.value,
+      attributeModel: 'standard',
+    },
+    {
+      attributeKey: CONVERSATION_ATTRIBUTES.CONTACT_ID,
+      value: CONVERSATION_ATTRIBUTES.CONTACT_ID,
+      attributeName: t('FILTER.ATTRIBUTES.CONTACT'),
+      label: t('FILTER.ATTRIBUTES.CONTACT'),
+      inputType: 'asyncSearchSelect',
+      searchOptions: searchContactOptions,
+      searchPlaceholder: t('FILTER.CONTACT_SEARCH_PLACEHOLDER'),
+      dataType: 'number',
+      filterOperators: equalityOperators.value,
       attributeModel: 'standard',
     },
     {

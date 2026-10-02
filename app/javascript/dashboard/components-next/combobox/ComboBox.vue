@@ -18,12 +18,15 @@ const props = defineProps({
   disabled: { type: Boolean, default: false },
   searchPlaceholder: { type: String, default: '' },
   emptyState: { type: String, default: '' },
+  // Fallback label shown when the selected value is not in `options` yet
+  // (e.g. API-backed lists that load lazily on open).
+  displayLabel: { type: String, default: '' },
   message: { type: String, default: '' },
   hasError: { type: Boolean, default: false },
   useApiResults: { type: Boolean, default: false }, // useApiResults prop to determine if search is handled by API
 });
 
-const emit = defineEmits(['update:modelValue', 'search']);
+const emit = defineEmits(['update:modelValue', 'search', 'open']);
 
 const { t } = useI18n();
 
@@ -52,7 +55,7 @@ const selectedLabel = computed(() => {
   const selected = props.options.find(
     option => option.value === selectedValue.value
   );
-  return selected?.label ?? selectPlaceholder.value;
+  return selected?.label ?? (props.displayLabel || selectPlaceholder.value);
 });
 
 const selectOption = option => {
@@ -71,6 +74,7 @@ const toggleDropdown = () => {
   if (props.disabled) return;
   open.value = !open.value;
   if (open.value) {
+    emit('open');
     search.value = '';
     nextTick(() => dropdownRef.value?.focus());
   }

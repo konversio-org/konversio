@@ -18,12 +18,22 @@ const {
   placeholderTrailingIcon,
   searchPlaceholder,
   dropdownMaxHeight,
+  asyncSearch,
+  isSearching,
 } = defineProps({
   options: {
     type: Array,
     required: true,
   },
   disableSearch: {
+    type: Boolean,
+    default: false,
+  },
+  asyncSearch: {
+    type: Boolean,
+    default: false,
+  },
+  isSearching: {
     type: Boolean,
     default: false,
   },
@@ -53,6 +63,7 @@ const {
   },
 });
 
+const emit = defineEmits(['search']);
 const { t } = useI18n();
 const selected = defineModel({
   type: Object,
@@ -62,6 +73,7 @@ const selected = defineModel({
 const searchTerm = ref('');
 const searchResults = computed(() => {
   if (!options) return [];
+  if (asyncSearch) return options;
   return picoSearch(options, searchTerm.value, ['name']);
 });
 
@@ -77,7 +89,11 @@ const selectedItem = computed(() => {
   if (!optionToSearch) return null;
   // extract the selected item from the options array
   // this ensures that options like icon is also included
-  return options.find(option => option.id === optionToSearch.id);
+  return (
+    options.find(option => option.id === optionToSearch.id) ||
+    // async options may not include the selected option, fall back to it
+    (asyncSearch && optionToSearch.id !== undefined ? optionToSearch : null)
+  );
 });
 
 const toggleSelected = option => {
@@ -134,10 +150,16 @@ const toggleSelected = option => {
           autofocus
           class="p-1.5 pl-8 text-n-slate-11 bg-n-alpha-1 rounded-lg w-full"
           :placeholder="searchPlaceholder || t('COMBOBOX.SEARCH_PLACEHOLDER')"
+          @input="emit('search', $event.target.value)"
         />
       </div>
       <DropdownSection :height="dropdownMaxHeight">
-        <template v-if="searchResults.length">
+        <template v-if="isSearching">
+          <DropdownItem disabled>
+            {{ t('DROPDOWN_MENU.SEARCHING') }}
+          </DropdownItem>
+        </template>
+        <template v-else-if="searchResults.length">
           <DropdownItem
             v-for="option in searchResults"
             :key="option.id"
