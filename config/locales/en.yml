@@ -88,6 +88,9 @@ en:
         invalid: is not a valid timezone
       support_email:
         invalid: is not a valid email address
+    conversations:
+      unread_counts:
+        feature_not_enabled: Conversation unread counts feature not enabled for this account
     validations:
       presence: must not be blank
     webhook:

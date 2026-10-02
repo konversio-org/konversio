@@ -128,6 +128,7 @@ Rails.application.routes.draw do
             collection do
               get :meta
               get :search
+              get :unread_counts, to: 'conversations/unread_counts#index'
               post :filter
             end
             scope module: :conversations do

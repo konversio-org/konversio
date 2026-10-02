@@ -1,6 +1,7 @@
 import * as MutationHelpers from 'shared/helpers/vuex/mutationHelpers';
 import types from '../mutation-types';
 import CustomViewsAPI from '../../api/customViews';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 const VIEW_TYPES = {
   CONVERSATION: 'conversation',
@@ -13,6 +14,44 @@ const FILTER_KEYS = {
   1: VIEW_TYPES.CONTACT,
   [VIEW_TYPES.CONVERSATION]: VIEW_TYPES.CONVERSATION,
   [VIEW_TYPES.CONTACT]: VIEW_TYPES.CONTACT,
+};
+
+const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_MS = 30000;
+const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_JITTER_MS = 15000;
+const getFilteredUnreadCountsRefreshRetryDelay = () =>
+  FILTERED_UNREAD_COUNTS_REFRESH_RETRY_MS +
+  Math.random() * FILTERED_UNREAD_COUNTS_REFRESH_RETRY_JITTER_MS;
+
+const hasFeatureEnabled = (rootGetters, featureFlag) => {
+  const accountId = rootGetters?.getCurrentAccountId;
+  const isFeatureEnabled = rootGetters?.['accounts/isFeatureEnabledonAccount'];
+
+  return Boolean(accountId && isFeatureEnabled?.(accountId, featureFlag));
+};
+
+const shouldRefreshConversationUnreadCounts = (filterType, rootGetters) => {
+  return (
+    FILTER_KEYS[filterType] === VIEW_TYPES.CONVERSATION &&
+    hasFeatureEnabled(rootGetters, FEATURE_FLAGS.CONVERSATION_UNREAD_COUNTS) &&
+    hasFeatureEnabled(rootGetters, FEATURE_FLAGS.UNREAD_COUNT_FOR_FILTERS)
+  );
+};
+
+const dispatchConversationUnreadCounts = dispatch => {
+  dispatch('conversationUnreadCounts/get', {}, { root: true });
+};
+
+const refreshConversationUnreadCounts = (
+  { dispatch, rootGetters },
+  filterType
+) => {
+  if (!shouldRefreshConversationUnreadCounts(filterType, rootGetters)) return;
+
+  dispatchConversationUnreadCounts(dispatch);
+  setTimeout(
+    () => dispatchConversationUnreadCounts(dispatch),
+    getFilteredUnreadCountsRefreshRetryDelay()
+  );
 };
 
 export const state = {
@@ -62,14 +101,19 @@ export const actions = {
       commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isFetching: false });
     }
   },
-  create: async function createCustomViews({ commit }, obj) {
+  create: async function createCustomViews(
+    { commit, dispatch, rootGetters },
+    obj
+  ) {
     commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isCreating: true });
     try {
       const response = await CustomViewsAPI.create(obj);
+      const filterType = FILTER_KEYS[obj.filter_type];
       commit(types.ADD_CUSTOM_VIEW, {
         data: response.data,
-        filterType: FILTER_KEYS[obj.filter_type],
+        filterType,
       });
+      refreshConversationUnreadCounts({ dispatch, rootGetters }, filterType);
       return response;
     } catch (error) {
       const errorMessage = error?.response?.data?.message;
@@ -78,14 +122,19 @@ export const actions = {
       commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isCreating: false });
     }
   },
-  update: async function updateCustomViews({ commit }, obj) {
+  update: async function updateCustomViews(
+    { commit, dispatch, rootGetters },
+    obj
+  ) {
     commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isCreating: true });
     try {
       const response = await CustomViewsAPI.update(obj.id, obj);
+      const filterType = FILTER_KEYS[obj.filter_type];
       commit(types.UPDATE_CUSTOM_VIEW, {
         data: response.data,
-        filterType: FILTER_KEYS[obj.filter_type],
+        filterType,
       });
+      refreshConversationUnreadCounts({ dispatch, rootGetters }, filterType);
     } catch (error) {
       const errorMessage = error?.response?.data?.message;
       throw new Error(errorMessage);
@@ -93,11 +142,12 @@ export const actions = {
       commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isCreating: false });
     }
   },
-  delete: async ({ commit }, { id, filterType }) => {
+  delete: async ({ commit, dispatch, rootGetters }, { id, filterType }) => {
     commit(types.SET_CUSTOM_VIEW_UI_FLAG, { isDeleting: true });
     try {
       await CustomViewsAPI.deleteCustomViews(id, filterType);
       commit(types.DELETE_CUSTOM_VIEW, { data: id, filterType });
+      refreshConversationUnreadCounts({ dispatch, rootGetters }, filterType);
     } catch (error) {
       throw new Error(error);
     } finally {

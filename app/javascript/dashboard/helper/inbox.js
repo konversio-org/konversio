@@ -68,6 +68,30 @@ export const getInboxSource = (type, phoneNumber, inbox) => {
       return '';
   }
 };
+// Facebook, Instagram, TikTok, and X initialize the editable inbox name from
+// the provider account name; their opaque routing IDs should not be displayed.
+const INBOX_IDENTIFIER_RESOLVERS = {
+  [INBOX_TYPES.WEB]: inbox => inbox.website_url,
+  [INBOX_TYPES.EMAIL]: inbox => inbox.email,
+  [INBOX_TYPES.WHATSAPP]: inbox => inbox.phone_number,
+  [INBOX_TYPES.SMS]: inbox => inbox.phone_number,
+  [INBOX_TYPES.LINE]: inbox => inbox.line_channel_id,
+  [INBOX_TYPES.API]: inbox => inbox.inbox_identifier,
+  [INBOX_TYPES.TWILIO]: inbox =>
+    inbox.phone_number?.replace(/^whatsapp:/, '') ||
+    inbox.messaging_service_sid ||
+    '',
+  [INBOX_TYPES.TELEGRAM]: inbox => {
+    if (!inbox.bot_name) return '';
+    return inbox.bot_name.startsWith('@')
+      ? inbox.bot_name
+      : `@${inbox.bot_name}`;
+  },
+};
+
+export const getInboxIdentifier = inbox =>
+  INBOX_IDENTIFIER_RESOLVERS[inbox?.channel_type]?.(inbox) || '';
+
 export const getReadableInboxByType = (type, phoneNumber) => {
   switch (type) {
     case INBOX_TYPES.WEB:

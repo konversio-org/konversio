@@ -4,14 +4,28 @@ import DashboardAudioNotificationHelper from './AudioAlerts/DashboardAudioNotifi
 import { BUS_EVENTS } from 'shared/constants/busEvents';
 import { emitter } from 'shared/helpers/mitt';
 import { useImpersonation } from 'dashboard/composables/useImpersonation';
+import { FEATURE_FLAGS } from 'dashboard/featureFlags';
 
 const { isImpersonating } = useImpersonation();
+const UNREAD_COUNTS_REFETCH_THROTTLE_MS = 5000;
+const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_MS = 30000;
+const FILTERED_UNREAD_COUNTS_REFRESH_RETRY_JITTER_MS = 15000;
+const MENTION_UNREAD_COUNTS_REFETCH_DELAY_MS =
+  UNREAD_COUNTS_REFETCH_THROTTLE_MS;
+const getFilteredUnreadCountsRefreshRetryDelay = () =>
+  FILTERED_UNREAD_COUNTS_REFRESH_RETRY_MS +
+  Math.random() * FILTERED_UNREAD_COUNTS_REFRESH_RETRY_JITTER_MS;
 
 class ActionCableConnector extends BaseActionCableConnector {
   constructor(app, pubsubToken) {
     const { websocketURL = '' } = window.konversioConfig || {};
     super(app, pubsubToken, websocketURL);
     this.CancelTyping = [];
+    this.lastUnreadCountsFetchAt = null;
+    this.unreadCountsFetchTimer = null;
+    this.mentionUnreadCountsFetchTimer = null;
+    this.mentionUnreadCountsRetryTimer = null;
+    this.filteredUnreadCountsRetryTimer = null;
     this.events = {
       'message.created': this.onMessageCreated,
       'message.updated': this.onMessageUpdated,
@@ -32,6 +46,8 @@ class ActionCableConnector extends BaseActionCableConnector {
       'notification.updated': this.onNotificationUpdated,
       'conversation.read': this.onConversationRead,
       'conversation.updated': this.onConversationUpdated,
+      'conversation.unread_count_changed':
+        this.onConversationUnreadCountChanged,
       'account.cache_invalidated': this.onCacheInvalidate,
       'copilot.message.created': this.onCopilotMessageCreated,
     };
@@ -120,6 +136,117 @@ class ActionCableConnector extends BaseActionCableConnector {
     this.fetchConversationStats();
   };
 
+  onConversationUnreadCountChanged = () => {
+    this.refreshConversationUnreadCountsWithFilteredRetry();
+  };
+
+  refreshConversationUnreadCountsWithFilteredRetry = () => {
+    this.throttledFetchConversationUnreadCounts();
+    this.scheduleFilteredUnreadCountsRetry();
+  };
+
+  throttledFetchConversationUnreadCounts = () => {
+    const now = Date.now();
+    const elapsedTime = now - this.lastUnreadCountsFetchAt;
+
+    if (
+      this.lastUnreadCountsFetchAt === null ||
+      elapsedTime >= UNREAD_COUNTS_REFETCH_THROTTLE_MS
+    ) {
+      this.clearUnreadCountsFetchTimer();
+      this.fetchConversationUnreadCounts();
+      return;
+    }
+
+    if (this.unreadCountsFetchTimer) return;
+
+    this.unreadCountsFetchTimer = setTimeout(() => {
+      this.unreadCountsFetchTimer = null;
+      this.fetchConversationUnreadCounts();
+    }, UNREAD_COUNTS_REFETCH_THROTTLE_MS - elapsedTime);
+  };
+
+  clearUnreadCountsFetchTimer = () => {
+    if (!this.unreadCountsFetchTimer) return;
+
+    clearTimeout(this.unreadCountsFetchTimer);
+    this.unreadCountsFetchTimer = null;
+  };
+
+  scheduleMentionUnreadCountsFetch = () => {
+    if (!this.isFilteredUnreadCountsEnabled()) return;
+
+    // Mention invalidation runs through the async dispatcher, and stale snapshots
+    // can be served until the filtered-count backend refresh window opens.
+    this.scheduleUnreadCountsFetchAfter(
+      'mentionUnreadCountsFetchTimer',
+      MENTION_UNREAD_COUNTS_REFETCH_DELAY_MS
+    );
+    this.scheduleUnreadCountsFetchAfter(
+      'mentionUnreadCountsRetryTimer',
+      getFilteredUnreadCountsRefreshRetryDelay(),
+      { reset: true }
+    );
+  };
+
+  scheduleFilteredUnreadCountsRetry = () => {
+    if (!this.isFilteredUnreadCountsEnabled()) return;
+
+    // Filtered snapshots can intentionally stay stale until the backend
+    // refresh window opens.
+    this.scheduleUnreadCountsFetchAfter(
+      'filteredUnreadCountsRetryTimer',
+      getFilteredUnreadCountsRefreshRetryDelay(),
+      { reset: true }
+    );
+  };
+
+  scheduleUnreadCountsFetchAfter = (
+    timerName,
+    delay,
+    { reset = false } = {}
+  ) => {
+    if (this[timerName]) {
+      if (!reset) return;
+
+      clearTimeout(this[timerName]);
+    }
+
+    this[timerName] = setTimeout(() => {
+      this[timerName] = null;
+      this.throttledFetchConversationUnreadCounts();
+    }, delay);
+  };
+
+  fetchConversationUnreadCounts = () => {
+    if (!this.isConversationUnreadCountsEnabled()) return;
+
+    this.lastUnreadCountsFetchAt = Date.now();
+    this.app.$store.dispatch('conversationUnreadCounts/get');
+  };
+
+  isConversationUnreadCountsEnabled = () => {
+    const accountId = this.app.$store.getters.getCurrentAccountId;
+    const isFeatureEnabled =
+      this.app.$store.getters['accounts/isFeatureEnabledonAccount'];
+
+    return isFeatureEnabled?.(
+      accountId,
+      FEATURE_FLAGS.CONVERSATION_UNREAD_COUNTS
+    );
+  };
+
+  isFilteredUnreadCountsEnabled = () => {
+    const accountId = this.app.$store.getters.getCurrentAccountId;
+    const isFeatureEnabled =
+      this.app.$store.getters['accounts/isFeatureEnabledonAccount'];
+
+    return (
+      isFeatureEnabled?.(accountId, FEATURE_FLAGS.CONVERSATION_UNREAD_COUNTS) &&
+      isFeatureEnabled?.(accountId, FEATURE_FLAGS.UNREAD_COUNT_FOR_FILTERS)
+    );
+  };
+
   onTypingOn = ({ conversation, user }) => {
     const conversationId = conversation.id;
 
@@ -143,6 +270,7 @@ class ActionCableConnector extends BaseActionCableConnector {
 
   onConversationMentioned = data => {
     this.app.$store.dispatch('addMentions', data);
+    this.scheduleMentionUnreadCountsFetch();
   };
 
   clearTimer = conversationId => {
@@ -200,6 +328,12 @@ class ActionCableConnector extends BaseActionCableConnector {
     this.app.$store.dispatch('labels/revalidate', { newKey: keys.label });
     this.app.$store.dispatch('inboxes/revalidate', { newKey: keys.inbox });
     this.app.$store.dispatch('teams/revalidate', { newKey: keys.team });
+
+    if (this.isFilteredUnreadCountsEnabled()) {
+      // Inbox/team/label visibility changes can change the accessible set used
+      // by filtered unread counts even when no conversation row changes.
+      this.refreshConversationUnreadCountsWithFilteredRetry();
+    }
   };
 }
 

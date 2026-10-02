@@ -38,6 +38,7 @@ class ConversationApi extends ApiClient {
     return axios.post(`${this.url}/filter`, payload.queryData, {
       params: {
         page: payload.page,
+        sort_by: payload.sortBy,
       },
     });
   }

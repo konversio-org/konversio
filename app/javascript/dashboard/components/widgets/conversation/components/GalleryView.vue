@@ -22,6 +22,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  autoPlay: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const emit = defineEmits(['close']);
@@ -307,6 +311,7 @@ onMounted(() => {
               v-if="isVideo"
               :key="activeAttachment.message_id"
               :src="activeAttachment.data_url"
+              :autoplay="autoPlay"
               controls
               playsInline
               class="max-h-full max-w-full object-contain"
@@ -316,6 +321,7 @@ onMounted(() => {
             <audio
               v-if="isAudio"
               :key="activeAttachment.message_id"
+              :autoplay="autoPlay"
               controls
               class="w-full max-w-md"
               @click.stop
