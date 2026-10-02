@@ -182,6 +182,7 @@ export const ARTICLE_EDITOR_MENU_OPTIONS = [
   'h2',
   'h3',
   'imageUpload',
+  'video',
   'code',
   'insertTable',
 ];

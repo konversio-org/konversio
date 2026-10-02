@@ -9,7 +9,10 @@ import {
   Selection,
   imageResizeView,
   imagePastePlugin,
+  embedPreviewPlugin,
   insertImageFiles,
+  insertFileUploads,
+  hasActiveUploads,
   fileUploadPlugin,
   setUploadLabels,
 } from '@chatwoot/prosemirror-schema';
@@ -17,14 +20,21 @@ import {
   suggestionsPlugin,
   triggerCharacters,
 } from '@chatwoot/prosemirror-schema/src/mentions/plugin';
+import trailingParagraphPlugin from '@chatwoot/prosemirror-schema/src/plugins/trailingParagraph';
+import { embeds as markdownEmbeds } from 'dashboard/helper/markdownEmbeds';
 import { toggleMark } from 'prosemirror-commands';
 import { wrapInList } from 'prosemirror-schema-list';
 import { toggleBlockType } from '@chatwoot/prosemirror-schema/src/menu/common';
-import { checkFileSizeLimit } from 'shared/helpers/FileHelper';
+import {
+  checkFileSizeLimit,
+  resolveMaximumFileUploadSize,
+} from 'shared/helpers/FileHelper';
 import { useAlert } from 'dashboard/composables';
+import { useMapGetter } from 'dashboard/composables/store';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 
 import SlashCommandMenu from './SlashCommandMenu.vue';
+import VideoEmbedInput from './VideoEmbedInput.vue';
 
 const MAXIMUM_FILE_UPLOAD_SIZE = 4; // in MB
 const SLASH_MENU_OFFSET = 4;
@@ -37,7 +47,7 @@ const ALLOWED_IMAGE_TYPES = [
   'image/gif',
   'image/webp',
 ];
-const ACCEPTED_FILE_TYPES = ALLOWED_IMAGE_TYPES.join(', ');
+const ACCEPTED_FILE_TYPES = [...ALLOWED_IMAGE_TYPES, 'video/mp4'].join(', ');
 const createState = (
   content,
   placeholder,
@@ -63,12 +73,13 @@ let editorView = null;
 let state;
 
 export default {
-  components: { SlashCommandMenu },
+  components: { SlashCommandMenu, VideoEmbedInput },
   props: {
     modelValue: { type: String, default: '' },
     editorId: { type: String, default: '' },
     placeholder: { type: String, default: '' },
     enabledMenuOptions: { type: Array, default: () => [] },
+    uploadsBlockedMessage: { type: String, default: '' },
     autofocus: {
       type: Boolean,
       default: true,
@@ -77,10 +88,12 @@ export default {
   emits: ['blur', 'input', 'update:modelValue', 'keyup', 'focus', 'keydown'],
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
+    const globalConfig = useMapGetter('globalConfig/get');
 
     return {
       uiSettings,
       updateUISettings,
+      globalConfig,
     };
   },
   data() {
@@ -89,14 +102,25 @@ export default {
         imagePastePlugin(this.handleImageUpload),
         fileUploadPlugin(),
         this.createSlashPlugin(),
+        embedPreviewPlugin(markdownEmbeds),
+        trailingParagraphPlugin(),
       ],
       isTextSelected: false, // Tracks text selection and prevents unnecessary re-renders on mouse selection
       showSlashMenu: false,
       slashSearchTerm: '',
       slashRange: null,
       slashMenuPosition: null,
+      showVideoInput: false,
+      videoInputPosition: null,
       acceptedFileTypes: ACCEPTED_FILE_TYPES,
     };
+  },
+  computed: {
+    maximumVideoUploadSize() {
+      return resolveMaximumFileUploadSize(
+        this.globalConfig?.maximumFileUploadSize
+      );
+    },
   },
   watch: {
     modelValue(newValue = '') {
@@ -134,6 +158,12 @@ export default {
     editorView.updateState(state);
     if (this.autofocus) {
       this.focusEditorInputField();
+    }
+  },
+  beforeUnmount() {
+    if (editorView) {
+      editorView.destroy();
+      editorView = null;
     }
   },
   methods: {
@@ -188,6 +218,11 @@ export default {
     },
     executeSlashCommand(actionKey) {
       if (!editorView) return;
+
+      if (actionKey === 'video') {
+        this.openVideoInput();
+        return;
+      }
 
       this.removeSlashTriggerText();
 
@@ -258,6 +293,40 @@ export default {
         editorView.focus();
       }
     },
+    openVideoInput() {
+      // Capture the caret position before removing the trigger clears it.
+      this.videoInputPosition = this.slashMenuPosition;
+      this.removeSlashTriggerText();
+      this.showVideoInput = true;
+    },
+    closeVideoInput() {
+      this.showVideoInput = false;
+      this.videoInputPosition = null;
+    },
+    insertVideoEmbed(url) {
+      this.closeVideoInput();
+      if (!editorView) return;
+
+      const { schema } = editorView.state;
+      const linkMark = schema.marks.link.create({ href: url });
+      const paragraph = schema.nodes.paragraph.create(
+        null,
+        schema.text(url, [linkMark])
+      );
+      const tr = editorView.state.tr.replaceSelectionWith(paragraph);
+      editorView.dispatch(tr.scrollIntoView());
+      state = editorView.state;
+      this.emitOnChange();
+      editorView.focus();
+    },
+    cancelVideoInput() {
+      this.closeVideoInput();
+      editorView?.focus();
+    },
+    insertVideoFile(file) {
+      this.closeVideoInput();
+      this.handleFiles([file]);
+    },
     contentFromEditor() {
       if (editorView) {
         return ArticleMarkdownSerializer.serialize(editorView.state.doc);
@@ -287,6 +356,16 @@ export default {
             size: MAXIMUM_FILE_UPLOAD_SIZE,
           })
         );
+      } else if (file.type === 'video/mp4') {
+        if (checkFileSizeLimit(file, this.maximumVideoUploadSize)) {
+          return 'videos';
+        }
+        useAlert(
+          this.$t(
+            'HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR_ATTACHMENT_FILE_SIZE',
+            { size: this.maximumVideoUploadSize }
+          )
+        );
       } else {
         useAlert(
           this.$t(
@@ -298,12 +377,31 @@ export default {
     },
     handleFiles(files) {
       if (!editorView || !files.length) return;
-      const images = files.filter(file => this.bucketFor(file) === 'images');
-      if (!images.length) return;
-      insertImageFiles(editorView, images, {
-        upload: this.uploadFileToStorage,
+      if (this.uploadsBlockedMessage) {
+        useAlert(this.uploadsBlockedMessage);
+        return;
+      }
+      const buckets = { images: [], videos: [] };
+      files.forEach(file => {
+        const bucket = this.bucketFor(file);
+        if (bucket) buckets[bucket].push(file);
       });
-      editorView.focus();
+      const upload = this.uploadFileToStorage;
+      const { images, videos } = buckets;
+      if (images.length) insertImageFiles(editorView, images, { upload });
+      if (videos.length) insertFileUploads(editorView, videos, { upload });
+      if (images.length || videos.length) editorView.focus();
+    },
+    // In-flight uploads and failed cards: resolving a draft or navigating
+    // away would drop them.
+    hasPendingUploads() {
+      if (!editorView) return false;
+      return (
+        hasActiveUploads(editorView) ||
+        !!editorView.dom.querySelector(
+          '.pm-upload-card[data-state="error"], .pm-upload-overlay[data-state="error"]'
+        )
+      );
     },
     uploadFileToStorage(file, onProgress, signal) {
       return this.$store.dispatch('articles/attachImage', {
@@ -337,6 +435,25 @@ export default {
             this.emitOnChange();
           }
           this.checkSelection(state);
+        },
+        handleDrop: (view, event, slice, moved) => {
+          if (moved) return false;
+          const files = Array.from(event.dataTransfer?.files || []);
+          if (!files.length) return false;
+          const coords = view.posAtCoords({
+            left: event.clientX,
+            top: event.clientY,
+          });
+          if (coords) {
+            view.dispatch(
+              view.state.tr.setSelection(
+                Selection.near(view.state.doc.resolve(coords.pos))
+              )
+            );
+          }
+          this.handleFiles(files);
+          event.preventDefault();
+          return true;
         },
         handleDOMEvents: {
           keyup: this.onKeyup,
@@ -442,6 +559,14 @@ export default {
         :position="slashMenuPosition"
         @select-action="executeSlashCommand"
       />
+      <VideoEmbedInput
+        v-if="showVideoInput"
+        :position="videoInputPosition"
+        :max-upload-size="maximumVideoUploadSize"
+        @submit="insertVideoEmbed"
+        @upload="insertVideoFile"
+        @cancel="cancelVideoInput"
+      />
       <input
         ref="imageUploadInput"
         type="file"
@@ -477,5 +602,10 @@ export default {
   min-height: 5rem;
   max-height: 7.5rem;
   overflow: auto;
+}
+
+.ProseMirror .cw-embed-preview {
+  max-width: 36rem;
+  margin: 0.5rem 0 1rem;
 }
 </style>
