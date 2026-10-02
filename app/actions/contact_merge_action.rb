@@ -13,6 +13,7 @@ class ContactMergeAction
       merge_messages
       merge_contact_inboxes
       merge_contact_notes
+      merge_calls
       merge_and_remove_mergee_contact
     end
     @base_contact
@@ -44,6 +45,11 @@ class ContactMergeAction
 
   def merge_contact_inboxes
     ContactInbox.where(contact_id: @mergee_contact.id).update(contact_id: @base_contact.id)
+  end
+
+  # Re-point call history so the calls dashboard stays complete after a merge.
+  def merge_calls
+    Call.where(account_id: @account.id, contact_id: @mergee_contact.id).update(contact_id: @base_contact.id)
   end
 
   def merge_and_remove_mergee_contact

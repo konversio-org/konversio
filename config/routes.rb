@@ -192,7 +192,7 @@ Rails.application.routes.draw do
               resources :contact_inboxes, only: [:create]
               resources :labels, only: [:create, :index]
               resources :notes
-              post :call, on: :member, to: 'calls#create' if KonversioApp.enterprise?
+              post :call, on: :member, to: 'calls#create'
             end
           end
           resources :csat_survey_responses, only: [:index] do
@@ -211,6 +211,18 @@ Rails.application.routes.draw do
             end
           end
           resources :reporting_events, only: [:index] if KonversioApp.enterprise?
+          resources :calls, only: [:index]
+          resources :whatsapp_calls, only: [:show] do
+            member do
+              post :accept
+              post :reject
+              post :terminate
+              post :upload_recording
+            end
+            collection do
+              post :initiate
+            end
+          end
           resources :custom_attribute_definitions, only: [:index, :show, :create, :update, :destroy]
           resources :custom_filters, only: [:index, :show, :create, :update, :destroy]
           resources :inboxes, only: [:index, :show, :create, :update, :destroy] do
@@ -224,11 +236,13 @@ Rails.application.routes.draw do
             post :register_webhook, on: :member
             post :reset_secret, on: :member
             post :rotate_hmac_token, on: :member
-            if KonversioApp.enterprise?
-              resource :conference, only: %i[create destroy], controller: 'conference' do
-                get :token, on: :member
-              end
+            resource :conference, only: %i[create destroy], controller: 'conference' do
+              get :token, on: :member
             end
+            post :enable_whatsapp_calling, on: :member
+            post :disable_whatsapp_calling, on: :member
+            post :set_inbound_calls, on: :member
+            post :set_call_recording, on: :member
 
             resource :csat_template, only: [:show, :create], controller: 'inbox_csat_templates' do
               post :analyze, on: :collection
@@ -630,11 +644,10 @@ Rails.application.routes.draw do
     resources :callback, only: [:create]
     resources :delivery_status, only: [:create]
 
-    if KonversioApp.enterprise?
-      post 'voice/call/:phone', to: 'voice#call_twiml', as: :voice_call
-      post 'voice/status/:phone', to: 'voice#status', as: :voice_status
-      post 'voice/conference_status/:phone', to: 'voice#conference_status', as: :voice_conference_status
-    end
+    post 'voice/call/:phone', to: 'voice#call_twiml', as: :voice_call
+    post 'voice/status/:phone', to: 'voice#status', as: :voice_status
+    post 'voice/conference_status/:phone', to: 'voice#conference_status', as: :voice_conference_status
+    post 'voice/recording_status/:phone', to: 'voice#recording_status', as: :voice_recording_status
   end
 
   get 'microsoft/callback', to: 'microsoft/callbacks#show'

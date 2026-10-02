@@ -1255,7 +1255,7 @@ RSpec.describe 'Inboxes API', type: :request do
 
           expect(response).to have_http_status(:bad_request)
           json_response = response.parsed_body
-          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API channels')
+          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API and Twilio SMS channels')
         end
 
         it 'returns bad request error for agent' do
@@ -1267,7 +1267,7 @@ RSpec.describe 'Inboxes API', type: :request do
 
           expect(response).to have_http_status(:bad_request)
           json_response = response.parsed_body
-          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API channels')
+          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API and Twilio SMS channels')
         end
       end
 
@@ -1284,7 +1284,7 @@ RSpec.describe 'Inboxes API', type: :request do
 
           expect(response).to have_http_status(:bad_request)
           json_response = response.parsed_body
-          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API channels')
+          expect(json_response['error']).to eq('Health data only available for WhatsApp Cloud API and Twilio SMS channels')
         end
       end
 

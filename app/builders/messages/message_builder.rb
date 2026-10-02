@@ -96,11 +96,19 @@ class Messages::MessageBuilder
   end
 
   def message_type
+    return @message_type if voice_call_incoming?
+
     if @conversation.inbox.channel_type != 'Channel::Api' && @message_type == 'incoming'
       raise StandardError, 'Incoming messages are only allowed in Api inboxes'
     end
 
     @message_type
+  end
+
+  # Voice-call bubbles are authored by the contact on incoming calls and must be
+  # allowed outside API inboxes.
+  def voice_call_incoming?
+    @message_type == 'incoming' && @params[:content_type] == 'voice_call' && @conversation.inbox.channel.try(:voice_enabled?)
   end
 
   def sender

@@ -89,5 +89,30 @@ describe ContactMergeAction do
         end.to raise_error('contact does not belong to the account')
       end
     end
+
+    context 'when the mergee contact has call records' do
+      it 're-points them to the surviving contact' do
+        base_conversation = create(:conversation, account: account, contact: base_contact)
+        mergee_conversation = create(:conversation, account: account, contact: mergee_contact)
+        base_call = create(:call, account: account, contact: base_contact, conversation: base_conversation)
+        mergee_call = create(:call, account: account, contact: mergee_contact, conversation: mergee_conversation)
+
+        contact_merge
+
+        expect(base_call.reload.contact_id).to eq(base_contact.id)
+        expect(mergee_call.reload.contact_id).to eq(base_contact.id)
+        expect(mergee_call.conversation_id).to eq(mergee_conversation.id)
+      end
+
+      it 'leaves calls in place when the merge rolls back' do
+        mergee_conversation = create(:conversation, account: account, contact: mergee_contact)
+        mergee_call = create(:call, account: account, contact: mergee_contact, conversation: mergee_conversation)
+
+        allow_any_instance_of(described_class).to receive(:merge_and_remove_mergee_contact).and_raise('boom') # rubocop:disable RSpec/AnyInstance
+
+        expect { contact_merge }.to raise_error('boom')
+        expect(mergee_call.reload.contact_id).to eq(mergee_contact.id)
+      end
+    end
   end
 end

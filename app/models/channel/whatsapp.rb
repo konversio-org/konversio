@@ -19,6 +19,7 @@
 
 class Channel::Whatsapp < ApplicationRecord
   include Channelable
+  include CallSettings
   include Reauthorizable
 
   self.table_name = 'channel_whatsapp'
@@ -38,6 +39,43 @@ class Channel::Whatsapp < ApplicationRecord
 
   def name
     'Whatsapp'
+  end
+
+  # Meta's Calling API is reachable by any whatsapp_cloud inbox (embedded signup
+  # or manually configured keys); only 360dialog inboxes cannot use it.
+  def voice_calling_supported?
+    provider == 'whatsapp_cloud'
+  end
+
+  def voice_enabled?
+    voice_calling_supported? &&
+      provider_config['calling_enabled'].present? &&
+      account.feature_enabled?('channel_voice')
+  end
+
+  # Turns calling on at Meta, then persists the local flag only after the
+  # webhook re-registration succeeds so the inbox never claims calling is on
+  # while the WABA is not subscribed to call events.
+  def enable_voice_calling!
+    raise 'WhatsApp calling requires a whatsapp_cloud inbox' unless voice_calling_supported?
+    raise 'WhatsApp calling requires the channel_voice feature' unless account.feature_enabled?('channel_voice')
+
+    provider_service.update_calling_status('ENABLED')
+    self.provider_config = provider_config.merge('calling_enabled' => true)
+    webhook_setup_service.register_callback
+    save!(validate: false)
+  end
+
+  # Clears the local flag and re-registers webhooks without call events
+  # (best-effort so a Meta outage cannot trap an admin).
+  def disable_voice_calling!
+    raise 'WhatsApp calling requires a whatsapp_cloud inbox' unless voice_calling_supported?
+
+    self.provider_config = provider_config.merge('calling_enabled' => false)
+    save!(validate: false)
+    webhook_setup_service.register_callback
+  rescue StandardError => e
+    Rails.logger.warn("[WHATSAPP CALL] disable webhook re-subscribe failed: #{e.message}")
   end
 
   def provider_service
@@ -78,10 +116,11 @@ class Channel::Whatsapp < ApplicationRecord
   end
 
   def perform_webhook_setup
-    business_account_id = provider_config['business_account_id']
-    api_key = provider_config['api_key']
+    webhook_setup_service.perform
+  end
 
-    Whatsapp::WebhookSetupService.new(self, business_account_id, api_key).perform
+  def webhook_setup_service
+    Whatsapp::WebhookSetupService.new(self, provider_config['business_account_id'], provider_config['api_key'])
   end
 
   def teardown_webhooks
