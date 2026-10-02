@@ -18,6 +18,9 @@ export function useAgentsList(includeNoneAgent = true) {
   const currentChat = useMapGetter('getSelectedChat');
   const currentAccountId = useMapGetter('getCurrentAccountId');
   const assignable = useMapGetter('inboxAssignableAgents/getAssignableAgents');
+  const assignableAi = useMapGetter(
+    'inboxAssignableAgents/getAssignableAiAssignees'
+  );
 
   const inboxId = computed(() => currentChat.value?.inbox_id);
   const isAgentSelected = computed(() => currentChat.value?.meta?.assignee);
@@ -40,6 +43,23 @@ export function useAgentsList(includeNoneAgent = true) {
    */
   const assignableAgents = computed(() => {
     return inboxId.value ? assignable.value(inboxId.value) : [];
+  });
+
+  /**
+   * AI assignees (Pilot assistants and agent bots) normalized to dropdown
+   * options with a bot icon and type discriminator.
+   * @type {import('vue').ComputedRef<Array>}
+   */
+  const aiAssigneesList = computed(() => {
+    const entries = inboxId.value ? assignableAi.value(inboxId.value) : [];
+    return entries.map(entry => ({
+      id: entry.id,
+      name: entry.name,
+      thumbnail: entry.avatar_url,
+      icon: 'i-lucide-bot',
+      confirmed: true,
+      assignee_type: entry.assignee_type,
+    }));
   });
 
   /**
@@ -66,5 +86,6 @@ export function useAgentsList(includeNoneAgent = true) {
   return {
     agentsList,
     assignableAgents,
+    aiAssigneesList,
   };
 }

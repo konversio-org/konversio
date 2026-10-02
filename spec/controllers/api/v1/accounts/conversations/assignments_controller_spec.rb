@@ -90,6 +90,42 @@ RSpec.describe 'Conversation Assignment API', type: :request do
         # assignee will be from team
         expect(conversation.reload.assignee).to eq(team_member)
       end
+
+      it 'assigns a Pilot assistant to the conversation' do
+        assistant = create(:pilot_assistant, account: account)
+        conversation.update!(assignee: agent, status: :open)
+        params = { assignee_id: assistant.id, assignee_type: 'Pilot::Assistant' }
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['assignee_type']).to eq('Pilot::Assistant')
+        conversation.reload
+        expect(conversation.ai_assignee).to eq(assistant)
+        expect(conversation.assignee).to be_nil
+        expect(conversation.status).to eq('pending')
+      end
+
+      it 'reopens an AI-held conversation when a human is assigned' do
+        assistant = create(:pilot_assistant, account: account)
+        conversation.update!(status: :pending, assignee: nil, assignee_agent_bot_id: assistant.id, ai_assignee_type: 'Pilot::Assistant')
+        params = { assignee_id: agent.id }
+
+        post api_v1_account_conversation_assignments_url(account_id: account.id, conversation_id: conversation.display_id),
+             params: params,
+             headers: agent.create_new_auth_token,
+             as: :json
+
+        expect(response).to have_http_status(:success)
+        conversation.reload
+        expect(conversation.assignee).to eq(agent)
+        expect(conversation.ai_assignee).to be_nil
+        expect(conversation.status).to eq('open')
+        expect(conversation.waiting_since).to be_present
+      end
     end
 
     context 'when it is an authenticated bot with access to the inbox' do

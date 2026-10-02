@@ -54,6 +54,16 @@ const onDelete = () => {
 // and the tool "snapped back" on reload. The row is the source of truth.
 const onToggleEnabled = async () => {
   const enabled = !props.row.enabled;
+  const referencingCount = props.row.referencing_scenarios_count || 0;
+  if (!enabled && referencingCount > 0) {
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(
+      t('PILOT.TOOLS.CARD.DISABLE_REFERENCED_CONFIRM', {
+        count: referencingCount,
+      })
+    );
+    if (!confirmed) return;
+  }
   try {
     await store.dispatch('pilot/customTools/setEnabled', {
       id: props.row.id,

@@ -1,23 +1,25 @@
 module Custom
   module Pilot
     # Decides what System B does to a single idle `pending` Pilot conversation,
-    # per the account's auto-resolve mode:
+    # per the assistant's auto-resolve mode (falling back to the account
+    # setting when the assistant has no explicit mode):
     #
     #   - legacy    → resolve unconditionally (time-based).
     #   - evaluated → ask the LLM whether the customer's need is complete;
     #                 complete → resolve, otherwise → hand off to a human.
-    #   - disabled  → no-op (the scheduler also filters these out).
+    #   - disabled  → no-op (the sweep job also filters these out).
     #
-    # The idle window is a fixed constant (default 60 min), overridable only
-    # via global config for ops tuning — it is not admin-configurable.
+    # The idle threshold comes from the assistant's `auto_resolve_after`
+    # config, falling back to the installation-level override, then the
+    # built-in default. The customer-facing resolution message is delegated to
+    # `Pilot::Conversations::ResolutionMessageService`.
     class AutoResolveService < BaseService
-      DEFAULT_IDLE_MINUTES = 60
+      DEFAULT_IDLE_MINUTES = ::Pilot::Assistant::DEFAULT_INACTIVITY_THRESHOLD_MINUTES
 
-      # Fixed idle window before an idle pending conversation is acted on.
+      # Installation-level idle window fallback (used when the assistant has
+      # no explicit threshold).
       def self.idle_minutes
-        GlobalConfigService.load('PILOT_AUTORESOLVE_IDLE_MINUTES', DEFAULT_IDLE_MINUTES).to_i.then do |v|
-          v.positive? ? v : DEFAULT_IDLE_MINUTES
-        end
+        ::Pilot::Assistant.default_inactivity_threshold_minutes
       end
 
       def self.idle_cutoff
@@ -33,7 +35,7 @@ module Custom
       end
 
       def perform
-        case account.pilot_auto_resolve_mode
+        case effective_mode
         when 'legacy'
           resolve!(reason: 'idle_timeout')
         when 'evaluated'
@@ -42,6 +44,10 @@ module Custom
       end
 
       private
+
+      def effective_mode
+        assistant&.auto_resolve_mode.presence || account.pilot_auto_resolve_mode
+      end
 
       def evaluate_and_act
         verdict = ::Custom::Pilot::ResolutionEvaluator.new(conversation: conversation, account: account).perform
@@ -64,34 +70,51 @@ module Custom
       end
 
       def still_eligible?
-        conversation.pending? && conversation.last_activity_at < self.class.idle_cutoff
+        conversation.pending? && conversation.last_activity_at < idle_cutoff
       end
 
+      def idle_cutoff
+        Time.now.utc - threshold_minutes.minutes
+      end
+
+      def threshold_minutes
+        assistant&.inactivity_threshold_minutes || self.class.idle_minutes
+      end
+
+      # Locked, idempotent transition: re-check inside a row lock that the
+      # conversation is still pending and still idle so a concurrent sweep run
+      # (or a human resolve) cannot double-post or resurrect the thread.
       def resolve!(reason:)
-        ::Custom::Pilot::ConversationResolver.resolve!(
-          conversation: conversation,
-          assistant: assistant,
-          reason: reason,
-          post_message: resolution_message
-        )
+        conversation.with_lock do
+          conversation.reload
+          return unless still_eligible?
+
+          ::Pilot::Conversations::ResolutionMessageService.call(conversation: conversation, assistant: assistant)
+          ::Custom::Pilot::ConversationResolver.resolve!(
+            conversation: conversation,
+            assistant: assistant,
+            reason: reason
+          )
+        end
       end
 
       # Reuses the inference handoff machinery. No fallback message — the
       # assistant's handoff copy is posted only when set (HandoffService skips
       # a blank message).
       def handoff!(reason:)
-        ::Custom::Pilot::HandoffService.call(
-          conversation: conversation,
-          assistant: assistant,
-          reason: reason,
-          source: 'inactivity',
-          reason_category: 'knowledge_gap',
-          message: assistant.handoff_message.presence
-        )
-      end
+        conversation.with_lock do
+          conversation.reload
+          return unless still_eligible?
 
-      def resolution_message
-        assistant.resolution_message.presence || I18n.t('conversations.pilot.resolution')
+          ::Custom::Pilot::HandoffService.call(
+            conversation: conversation,
+            assistant: assistant,
+            reason: reason,
+            source: 'inactivity',
+            reason_category: 'knowledge_gap',
+            message: assistant.handoff_message.presence
+          )
+        end
       end
     end
   end

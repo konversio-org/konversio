@@ -5,6 +5,8 @@ import { useMapGetter, useStore } from 'dashboard/composables/store';
 import { useAlert } from 'dashboard/composables';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Avatar from 'next/avatar/Avatar.vue';
+import AudienceBuilder from 'dashboard/components-next/pilot/assistant/AudienceBuilder.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
 import PilotAssistantsAPI from 'dashboard/api/pilot/assistants';
 
 const props = defineProps({
@@ -53,6 +55,59 @@ const temperature = ref(0.1);
 const reasoningEffort = ref('off');
 const maxTokens = ref(null);
 
+// Audience targeting
+const audienceMode = ref('everyone');
+const audienceTree = ref(null);
+const audienceError = ref('');
+
+// Response schedule
+const responseWindow = ref('always');
+
+// Inactivity lifecycle
+const autoResolveMode = ref('');
+const autoResolveAfter = ref(60);
+const sendInactivityResolutionMessage = ref(true);
+
+const accountDefaultAutoResolveMode = computed(
+  () => currentAccount.value?.settings?.pilot_auto_resolve_mode || 'legacy'
+);
+
+const responseWindowOptions = computed(() => [
+  {
+    value: 'always',
+    title: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.ALWAYS.TITLE'),
+    hint: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.ALWAYS.HINT'),
+  },
+  {
+    value: 'business_hours',
+    title: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.BUSINESS_HOURS.TITLE'),
+    hint: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.BUSINESS_HOURS.HINT'),
+  },
+  {
+    value: 'outside_business_hours',
+    title: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.OUTSIDE_BUSINESS_HOURS.TITLE'),
+    hint: t('PILOT.SETTINGS.SCHEDULE.OPTIONS.OUTSIDE_BUSINESS_HOURS.HINT'),
+  },
+]);
+
+const autoResolveModeOptions = computed(() => [
+  {
+    value: 'legacy',
+    title: t('PILOT.SETTINGS.INACTIVITY.MODES.LEGACY.TITLE'),
+    hint: t('PILOT.SETTINGS.INACTIVITY.MODES.LEGACY.HINT'),
+  },
+  {
+    value: 'evaluated',
+    title: t('PILOT.SETTINGS.INACTIVITY.MODES.EVALUATED.TITLE'),
+    hint: t('PILOT.SETTINGS.INACTIVITY.MODES.EVALUATED.HINT'),
+  },
+  {
+    value: 'disabled',
+    title: t('PILOT.SETTINGS.INACTIVITY.MODES.DISABLED.TITLE'),
+    hint: t('PILOT.SETTINGS.INACTIVITY.MODES.DISABLED.HINT'),
+  },
+]);
+
 // Avatar state (local preview + pending file for upload)
 const avatarFile = ref(null);
 const avatarPreview = ref('');
@@ -100,6 +155,17 @@ const loadAssistantData = () => {
     reasoningEffort.value = config.reasoning_effort || 'off';
     maxTokens.value =
       config.max_tokens != null ? Number(config.max_tokens) : null;
+    audienceMode.value = config.audience ? 'specific' : 'everyone';
+    audienceTree.value = config.audience || null;
+    audienceError.value = '';
+    responseWindow.value = config.response_window || 'always';
+    autoResolveMode.value = config.auto_resolve_mode || '';
+    autoResolveAfter.value =
+      config.auto_resolve_after != null
+        ? Number(config.auto_resolve_after)
+        : 60;
+    sendInactivityResolutionMessage.value =
+      config.send_inactivity_resolution_message !== false;
     selectedToolSlugs.value = Array.isArray(props.assistant.enabled_tool_slugs)
       ? [...props.assistant.enabled_tool_slugs]
       : [];
@@ -121,6 +187,13 @@ const loadAssistantData = () => {
     temperature.value = 0.1;
     reasoningEffort.value = 'off';
     maxTokens.value = null;
+    audienceMode.value = 'everyone';
+    audienceTree.value = null;
+    audienceError.value = '';
+    responseWindow.value = 'always';
+    autoResolveMode.value = '';
+    autoResolveAfter.value = 60;
+    sendInactivityResolutionMessage.value = true;
     selectedToolSlugs.value = [];
   }
 };
@@ -173,6 +246,18 @@ const submit = async () => {
     error.value = t('PILOT.SETTINGS.ERRORS.NAME_REQUIRED');
     return;
   }
+  if (audienceMode.value === 'specific') {
+    const leafCount = (audienceTree.value?.conditions || []).reduce(
+      (count, entry) =>
+        count + (Array.isArray(entry.conditions) ? entry.conditions.length : 1),
+      0
+    );
+    if (leafCount === 0) {
+      audienceError.value = t('PILOT.SETTINGS.AUDIENCE.EMPTY_ERROR');
+      return;
+    }
+  }
+  audienceError.value = '';
   error.value = '';
   isSubmitting.value = true;
 
@@ -203,6 +288,14 @@ const submit = async () => {
       temperature: Number(temperature.value),
       reasoning_effort: reasoningEffort.value,
       max_tokens: maxTokens.value ? Number(maxTokens.value) : null,
+      audience: audienceMode.value === 'specific' ? audienceTree.value : null,
+      response_window: responseWindow.value,
+      auto_resolve_mode: autoResolveMode.value || null,
+      auto_resolve_after:
+        autoResolveMode.value === 'disabled'
+          ? null
+          : Number(autoResolveAfter.value) || 60,
+      send_inactivity_resolution_message: sendInactivityResolutionMessage.value,
     },
   };
 
@@ -576,6 +669,204 @@ const submit = async () => {
           :placeholder="t('PILOT.SETTINGS.FORM.RESOLUTION_PLACEHOLDER')"
         />
       </div>
+    </div>
+
+    <!-- Audience Targeting -->
+    <div class="flex flex-col gap-4 border-t border-n-weak pt-4">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-md font-medium text-n-slate-12">
+          {{ t('PILOT.SETTINGS.AUDIENCE.SECTION_TITLE') }}
+        </h3>
+        <p class="text-sm text-n-slate-11">
+          {{ t('PILOT.SETTINGS.AUDIENCE.SECTION_DESC') }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <label
+          class="flex items-start gap-3 cursor-pointer rounded-lg border p-3"
+          :class="
+            audienceMode === 'everyone'
+              ? 'border-n-blue-9'
+              : 'border-n-container'
+          "
+        >
+          <input
+            v-model="audienceMode"
+            type="radio"
+            value="everyone"
+            class="mt-1 border-n-container text-n-blue-9 focus:ring-n-blue-9"
+          />
+          <span class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-slate-12">
+              {{ t('PILOT.SETTINGS.AUDIENCE.MODES.EVERYONE.TITLE') }}
+            </span>
+            <span class="text-xs text-n-slate-11">
+              {{ t('PILOT.SETTINGS.AUDIENCE.MODES.EVERYONE.HINT') }}
+            </span>
+          </span>
+        </label>
+
+        <label
+          class="flex items-start gap-3 cursor-pointer rounded-lg border p-3"
+          :class="
+            audienceMode === 'specific'
+              ? 'border-n-blue-9'
+              : 'border-n-container'
+          "
+        >
+          <input
+            v-model="audienceMode"
+            type="radio"
+            value="specific"
+            class="mt-1 border-n-container text-n-blue-9 focus:ring-n-blue-9"
+          />
+          <span class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-slate-12">
+              {{ t('PILOT.SETTINGS.AUDIENCE.MODES.SPECIFIC.TITLE') }}
+            </span>
+            <span class="text-xs text-n-slate-11">
+              {{ t('PILOT.SETTINGS.AUDIENCE.MODES.SPECIFIC.HINT') }}
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <AudienceBuilder
+        v-if="audienceMode === 'specific'"
+        v-model="audienceTree"
+      />
+      <p v-if="audienceError" class="text-sm text-n-ruby-11" role="alert">
+        {{ audienceError }}
+      </p>
+    </div>
+
+    <!-- Response Schedule -->
+    <div class="flex flex-col gap-4 border-t border-n-weak pt-4">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-md font-medium text-n-slate-12">
+          {{ t('PILOT.SETTINGS.SCHEDULE.SECTION_TITLE') }}
+        </h3>
+        <p class="text-sm text-n-slate-11">
+          {{ t('PILOT.SETTINGS.SCHEDULE.SECTION_DESC') }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <label
+          v-for="option in responseWindowOptions"
+          :key="option.value"
+          class="flex items-start gap-3 cursor-pointer rounded-lg border p-3"
+          :class="
+            responseWindow === option.value
+              ? 'border-n-blue-9'
+              : 'border-n-container'
+          "
+        >
+          <input
+            v-model="responseWindow"
+            type="radio"
+            :value="option.value"
+            class="mt-1 border-n-container text-n-blue-9 focus:ring-n-blue-9"
+          />
+          <span class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-slate-12">
+              {{ option.title }}
+            </span>
+            <span class="text-xs text-n-slate-11">
+              {{ option.hint }}
+            </span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Inactivity Handling -->
+    <div class="flex flex-col gap-4 border-t border-n-weak pt-4">
+      <div class="flex flex-col gap-1">
+        <h3 class="text-md font-medium text-n-slate-12">
+          {{ t('PILOT.SETTINGS.INACTIVITY.SECTION_TITLE') }}
+        </h3>
+        <p class="text-sm text-n-slate-11">
+          {{
+            t('PILOT.SETTINGS.INACTIVITY.SECTION_DESC', {
+              mode: t(
+                `PILOT.SETTINGS.INACTIVITY.MODES.${accountDefaultAutoResolveMode.toUpperCase()}.TITLE`
+              ),
+            })
+          }}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <label
+          v-for="option in autoResolveModeOptions"
+          :key="option.value"
+          class="flex items-start gap-3 cursor-pointer rounded-lg border p-3"
+          :class="
+            autoResolveMode === option.value
+              ? 'border-n-blue-9'
+              : 'border-n-container'
+          "
+        >
+          <input
+            v-model="autoResolveMode"
+            type="radio"
+            :value="option.value"
+            class="mt-1 border-n-container text-n-blue-9 focus:ring-n-blue-9"
+          />
+          <span class="flex flex-col gap-1">
+            <span class="text-sm font-medium text-n-slate-12">
+              {{ option.title }}
+            </span>
+            <span class="text-xs text-n-slate-11">
+              {{ option.hint }}
+            </span>
+          </span>
+        </label>
+      </div>
+
+      <div
+        v-if="autoResolveMode && autoResolveMode !== 'disabled'"
+        class="flex flex-col gap-1.5"
+      >
+        <label
+          for="assistant-auto-resolve-after"
+          class="text-sm font-medium text-n-slate-12"
+        >
+          {{ t('PILOT.SETTINGS.INACTIVITY.THRESHOLD_LABEL') }}
+        </label>
+        <input
+          id="assistant-auto-resolve-after"
+          v-model="autoResolveAfter"
+          type="number"
+          min="5"
+          max="1440"
+          step="5"
+          class="w-full max-w-48 h-10 px-3 rounded-lg border border-n-container bg-n-solid-1 text-sm text-n-slate-12 focus:outline-none focus:border-n-blue-9"
+        />
+        <span class="text-xs text-n-slate-11">
+          {{ t('PILOT.SETTINGS.INACTIVITY.THRESHOLD_HINT') }}
+        </span>
+      </div>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <Switch
+          :model-value="sendInactivityResolutionMessage"
+          class="mt-1"
+          @update:model-value="
+            sendInactivityResolutionMessage = !sendInactivityResolutionMessage
+          "
+        />
+        <span class="flex flex-col gap-1">
+          <span class="text-sm font-medium text-n-slate-12">
+            {{ t('PILOT.SETTINGS.INACTIVITY.SEND_MESSAGE_LABEL') }}
+          </span>
+          <span class="text-xs text-n-slate-11">
+            {{ t('PILOT.SETTINGS.INACTIVITY.SEND_MESSAGE_HINT') }}
+          </span>
+        </span>
+      </label>
     </div>
 
     <div

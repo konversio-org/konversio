@@ -77,8 +77,8 @@ class Conversation < ApplicationRecord
   enum status: { open: 0, resolved: 1, pending: 2, snoozed: 3 }
   enum priority: { low: 0, medium: 1, high: 2, urgent: 3 }
 
-  scope :unassigned, -> { where(assignee_id: nil) }
-  scope :assigned, -> { where.not(assignee_id: nil) }
+  scope :unassigned, -> { where(assignee_id: nil, assignee_agent_bot_id: nil) }
+  scope :assigned, -> { where.not(assignee_id: nil).or(where.not(assignee_agent_bot_id: nil)) }
   scope :assigned_to, ->(agent) { where(assignee_id: agent.id) }
   scope :unattended, -> { where(first_reply_created_at: nil).or(where.not(waiting_since: nil)) }
   scope :sort_on_unread, lambda { |_direction|
@@ -170,7 +170,9 @@ class Conversation < ApplicationRecord
   end
 
   def bot_handoff!
-    update(waiting_since: Time.current) if waiting_since.blank?
+    self.assignee_agent_bot_id = nil
+    self.ai_assignee_type = nil
+    self.waiting_since = Time.current if waiting_since.blank?
     open!
     dispatcher_dispatch(CONVERSATION_BOT_HANDOFF)
   end
@@ -221,14 +223,39 @@ class Conversation < ApplicationRecord
 
   # Virtual attribute till we switch completely to polymorphic assignee
   def assignee_type
-    return 'AgentBot' if assignee_agent_bot_id.present?
-    return 'User' if assignee_id.present?
+    if assignee_agent_bot_id.present?
+      ai_assignee_type.presence || 'AgentBot'
+    elsif assignee_id.present?
+      'User'
+    end
+  end
 
-    nil
+  # Polymorphic AI assignee over the shared `assignee_agent_bot_id` column,
+  # discriminated by `ai_assignee_type`. A NULL type with a present id reads
+  # as the legacy webhook `AgentBot` case.
+  def ai_assignee
+    return if assignee_agent_bot_id.blank?
+
+    if ai_assignee_type == 'Pilot::Assistant'
+      account&.pilot_assistants&.find_by(id: assignee_agent_bot_id)
+    else
+      assignee_agent_bot
+    end
+  end
+
+  def ai_assignee=(entity)
+    if entity.nil?
+      self.assignee_agent_bot_id = nil
+      self.ai_assignee_type = nil
+    else
+      self.assignee_id = nil
+      self.assignee_agent_bot_id = entity.id
+      self.ai_assignee_type = entity.is_a?(AgentBot) ? nil : entity.class.name
+    end
   end
 
   def assigned_entity
-    assignee_agent_bot || assignee
+    ai_assignee || assignee
   end
 
   def tweet?
@@ -305,6 +332,7 @@ class Conversation < ApplicationRecord
     return if assignee_id.blank?
 
     self.assignee_agent_bot_id = nil
+    self.ai_assignee_type = nil
   end
 
   def determine_conversation_status
@@ -312,8 +340,30 @@ class Conversation < ApplicationRecord
 
     return handle_campaign_status if campaign.present?
 
+    return gate_pilot_engagement if pilot_gates_engagement?
+
     # TODO: make this an inbox config instead of assuming bot conversations should start as pending
     self.status = :pending if inbox.active_bot?
+  end
+
+  # An inbox whose only bot is a Pilot assistant lets the assistant decide
+  # (audience + response window) whether it engages the conversation; with an
+  # external bot also active the legacy behavior wins.
+  def pilot_gates_engagement?
+    return false unless inbox.pilot_assistant_attached?
+    return false if inbox.agent_bot_inbox&.active?
+
+    inbox.hooks.where(app_id: %w[dialogflow], status: 'enabled').empty?
+  end
+
+  def gate_pilot_engagement
+    assistant = ::Pilot::Inbox.find_by(inbox_id: inbox.id)&.assistant
+    if assistant&.engages?(contact, self)
+      self.status = :pending
+      self.ai_assignee = assistant if assignee_id.blank?
+    else
+      self.status = :open
+    end
   end
 
   def handle_campaign_status
@@ -332,7 +382,7 @@ class Conversation < ApplicationRecord
   end
 
   def list_of_keys
-    %w[team_id assignee_id assignee_agent_bot_id status snoozed_until custom_attributes label_list waiting_since
+    %w[team_id assignee_id assignee_agent_bot_id ai_assignee_type status snoozed_until custom_attributes label_list waiting_since
        first_reply_created_at priority]
   end
 

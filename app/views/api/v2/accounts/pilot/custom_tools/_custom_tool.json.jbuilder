@@ -11,5 +11,6 @@ json.request_template custom_tool.request_template
 json.response_template custom_tool.response_template
 json.enabled custom_tool.enabled
 json.available_for_reply_drafting custom_tool.available_for_reply_drafting
+json.referencing_scenarios_count custom_tool.referencing_enabled_scenarios_count
 json.created_at custom_tool.created_at.to_i
 json.updated_at custom_tool.updated_at.to_i

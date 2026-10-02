@@ -9,22 +9,28 @@ module Pilot
     # threads instead.
     #
     # Eligibility: `pending` conversations in non-email inboxes that have a
-    # Pilot assistant, with a contact, idle past the fixed window, and not
+    # Pilot assistant whose auto-resolve mode is not `disabled`, with a
+    # contact, idle past the assistant's own inactivity threshold, and not
     # already routed to a human. Capped per run so a backlog drains over
-    # several cycles.
+    # several cycles. Each transition re-checks eligibility inside a row lock
+    # (see Custom::Pilot::AutoResolveService).
     class ResolutionJob < ApplicationJob
       queue_as :low
 
       def perform(account:)
         return unless eligible_account?(account)
 
-        conversation_scope(account).each { |conversation| process(conversation, account) }
+        assistants_by_inbox = assistants_by_inbox(account)
+        return if assistants_by_inbox.empty?
+
+        conversation_scope(account, assistants_by_inbox).each do |conversation|
+          process(conversation, account, assistants_by_inbox[conversation.inbox_id])
+        end
       end
 
       private
 
-      def process(conversation, account)
-        assistant = assistant_for(conversation.inbox)
+      def process(conversation, account, assistant)
         return if assistant.blank?
 
         ::Custom::Pilot::AutoResolveService.new(
@@ -32,6 +38,8 @@ module Pilot
           assistant: assistant,
           account: account
         ).perform
+      rescue ActiveRecord::RecordNotFound
+        # Deleted mid-sweep — skip silently and keep draining the backlog.
       rescue StandardError => e
         Rails.logger.error("[pilot.conversations.resolution_job] conv=#{conversation.id} failed: #{e.class}: #{e.message}")
       end
@@ -43,32 +51,38 @@ module Pilot
           !account.pilot_auto_resolve_disabled?
       end
 
-      def conversation_scope(account)
-        inbox_ids = pilot_inbox_ids(account)
-        return ::Conversation.none if inbox_ids.empty?
+      # Maps inbox_id → assistant for every Pilot inbox of the account whose
+      # assistant participates in the sweep (present and not mode `disabled`).
+      def assistants_by_inbox(account)
+        ::Pilot::Inbox
+          .joins(:inbox)
+          .includes(:assistant)
+          .where(inboxes: { account_id: account.id })
+          .where.not(inboxes: { channel_type: 'Channel::Email' })
+          .each_with_object({}) do |pilot_inbox, mapping|
+            assistant = pilot_inbox.assistant
+            next if assistant.blank? || assistant.auto_resolve_mode == 'disabled'
 
+            mapping[pilot_inbox.inbox_id] = assistant
+          end
+      end
+
+      def conversation_scope(account, assistants_by_inbox)
         account.conversations
                .pending
-               .where(inbox_id: inbox_ids)
+               .where(inbox_id: assistants_by_inbox.keys)
                .where.not(contact_id: nil)
-               .where('last_activity_at < ?', ::Custom::Pilot::AutoResolveService.idle_cutoff)
+               .where('last_activity_at < ?', earliest_cutoff(assistants_by_inbox.values))
                .where("COALESCE(additional_attributes -> 'pilot_handoff' ->> 'state', '') NOT IN (?)",
                       %w[handoff_requested offline_acknowledged])
                .limit(Limits::BULK_ACTIONS_LIMIT)
       end
 
-      def pilot_inbox_ids(account)
-        ::Pilot::Inbox
-          .joins(:inbox)
-          .where(inboxes: { account_id: account.id })
-          .where.not(inboxes: { channel_type: 'Channel::Email' })
-          .pluck(:inbox_id)
-      end
-
-      def assistant_for(inbox)
-        return nil if inbox.blank?
-
-        ::Pilot::Inbox.find_by(inbox_id: inbox.id)&.assistant
+      # SQL prefilter cutoff: the smallest per-assistant threshold, so every
+      # potentially eligible conversation is selected; the exact per-assistant
+      # threshold is re-checked inside the locked transition.
+      def earliest_cutoff(assistants)
+        Time.now.utc - assistants.map(&:inactivity_threshold_minutes).min.minutes
       end
     end
   end

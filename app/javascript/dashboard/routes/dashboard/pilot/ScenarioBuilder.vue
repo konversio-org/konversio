@@ -7,6 +7,7 @@ import { useAlert } from 'dashboard/composables';
 import AssistantPicker from 'dashboard/components-next/pilot/shared/AssistantPicker.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import Icon from 'dashboard/components-next/icon/Icon.vue';
+import Switch from 'dashboard/components-next/switch/Switch.vue';
 import PilotAssistantsAPI from 'dashboard/api/pilot/assistants';
 
 const { t } = useI18n();
@@ -115,6 +116,27 @@ const onDelete = async id => {
     useAlert(t('PILOT.SCENARIOS.TOAST.DELETED'));
   } catch (err) {
     useAlert(t('PILOT.SCENARIOS.TOAST.DELETE_FAILED'));
+  }
+};
+
+const togglingScenarioIds = ref([]);
+
+const onToggleEnabled = async scenario => {
+  if (togglingScenarioIds.value.includes(scenario.id)) return;
+  togglingScenarioIds.value = [...togglingScenarioIds.value, scenario.id];
+  try {
+    await store.dispatch('pilot/autopilot/updateScenario', {
+      assistantId: selectedAssistantId.value,
+      id: scenario.id,
+      scenario: { enabled: !scenario.enabled },
+    });
+    useAlert(t('PILOT.SCENARIOS.TOAST.TOGGLED'));
+  } catch (err) {
+    useAlert(t('PILOT.SCENARIOS.TOAST.TOGGLE_FAILED'));
+  } finally {
+    togglingScenarioIds.value = togglingScenarioIds.value.filter(
+      id => id !== scenario.id
+    );
   }
 };
 
@@ -416,6 +438,11 @@ const save = async () => {
               </div>
 
               <div class="flex items-center gap-2">
+                <Switch
+                  :model-value="scenario.enabled"
+                  :disabled="togglingScenarioIds.includes(scenario.id)"
+                  @update:model-value="onToggleEnabled(scenario)"
+                />
                 <Button
                   variant="ghost"
                   color="slate"

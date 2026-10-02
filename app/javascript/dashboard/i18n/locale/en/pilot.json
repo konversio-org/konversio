@@ -127,7 +127,8 @@
         "DELETE": "Delete",
         "DELETE_CONFIRM": "Are you sure you want to delete this tool? This cannot be undone.",
         "LAST_UPDATED": "Last updated {time}",
-        "AUTH_BADGE": "Auth: {type}"
+        "AUTH_BADGE": "Auth: {type}",
+        "DISABLE_REFERENCED_CONFIRM": "This tool is still used by %{count} enabled scenario(s). Disabling it will make those scenarios run without it. Disable anyway?"
       },
       "DIALOG": {
         "CREATE_TITLE": "Create new custom tool",
@@ -262,6 +263,73 @@
         "MAX_TOKENS_LABEL": "Max output tokens",
         "MAX_TOKENS_PLACEHOLDER": "Default (2048)"
       },
+      "AUDIENCE": {
+        "SECTION_TITLE": "Audience",
+        "SECTION_DESC": "Choose which conversations this assistant responds to. Changes apply to new conversations only.",
+        "MATCH_LABEL": "Contacts must match",
+        "COMBINATOR": {
+          "ALL": "ALL of the following",
+          "ANY": "ANY of the following"
+        },
+        "MODES": {
+          "EVERYONE": {
+            "TITLE": "Everyone",
+            "HINT": "The assistant engages every conversation on its inboxes."
+          },
+          "SPECIFIC": {
+            "TITLE": "Specific audience",
+            "HINT": "The assistant only engages conversations matching the conditions below."
+          }
+        },
+        "ADD_CONDITION": "Add condition",
+        "ADD_GROUP": "Add condition group",
+        "EMPTY_ERROR": "Add at least one condition, or switch back to everyone.",
+        "ATTRIBUTES": {
+          "IDENTITY_VERIFIED": "Identity verified",
+          "BROWSER_LANGUAGE": "Browser language",
+          "CONVERSATION_LANGUAGE": "Conversation language"
+        }
+      },
+      "SCHEDULE": {
+        "SECTION_TITLE": "Response schedule",
+        "SECTION_DESC": "Decide when this assistant responds, based on the working hours configured on each inbox.",
+        "OPTIONS": {
+          "ALWAYS": {
+            "TITLE": "Always",
+            "HINT": "Respond at any time."
+          },
+          "BUSINESS_HOURS": {
+            "TITLE": "During business hours",
+            "HINT": "Respond only while the inbox is inside its working hours."
+          },
+          "OUTSIDE_BUSINESS_HOURS": {
+            "TITLE": "Outside business hours",
+            "HINT": "Respond only while the inbox is outside its working hours."
+          }
+        }
+      },
+      "INACTIVITY": {
+        "SECTION_TITLE": "Inactivity handling",
+        "SECTION_DESC": "What happens when a conversation handled by this assistant goes idle. When no mode is chosen, the account default (%{mode}) applies.",
+        "MODES": {
+          "LEGACY": {
+            "TITLE": "Resolve after inactivity",
+            "HINT": "Automatically resolve idle conversations after the set time."
+          },
+          "EVALUATED": {
+            "TITLE": "Evaluate, then act",
+            "HINT": "Let the assistant decide whether an idle conversation is resolved or needs a human."
+          },
+          "DISABLED": {
+            "TITLE": "Disabled",
+            "HINT": "Never touch idle conversations automatically."
+          }
+        },
+        "THRESHOLD_LABEL": "Inactivity threshold (minutes)",
+        "THRESHOLD_HINT": "Between 5 minutes and 24 hours, in 5-minute steps.",
+        "SEND_MESSAGE_LABEL": "Send resolution message",
+        "SEND_MESSAGE_HINT": "Post the resolution message to the customer when an idle conversation is auto-resolved. When off, the conversation is resolved silently."
+      },
       "TABLE": {
         "NAME": "Name",
         "DESCRIPTION": "Description",
@@ -338,7 +406,9 @@
         "CREATED": "Scenario created successfully.",
         "UPDATED": "Scenario updated successfully.",
         "DELETED": "Scenario deleted successfully.",
-        "DELETE_FAILED": "Failed to delete scenario."
+        "DELETE_FAILED": "Failed to delete scenario.",
+        "TOGGLED": "Scenario updated",
+        "TOGGLE_FAILED": "Could not update the scenario. Please try again."
       },
       "CONFIRM_DELETE": "Are you sure you want to delete this scenario? This cannot be undone."
     },

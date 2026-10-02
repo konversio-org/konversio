@@ -38,6 +38,23 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CustomTools', type: :request do
         expect(response.parsed_body.length).to eq(2)
         expect(response.parsed_body.first.keys).to include('id', 'title', 'endpoint_url', 'slug')
       end
+
+      it 'exposes the count of enabled scenarios referencing each tool' do
+        tool = create(:pilot_custom_tool, account: account, title: 'Order lookup')
+        assistant = create(:pilot_assistant, account: account)
+        create(:pilot_scenario, assistant: assistant, account: account, enabled: true,
+                                instruction: "Use [orders](tool://#{tool.slug}) to check")
+        create(:pilot_scenario, assistant: assistant, account: account, enabled: true,
+                                instruction: "Also [orders again](tool://#{tool.slug}) here")
+        create(:pilot_scenario, assistant: assistant, account: account, enabled: false,
+                                instruction: "Disabled [orders ref](tool://#{tool.slug}) scenario")
+
+        get base_url, headers: admin.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:success)
+        entry = response.parsed_body.find { |item| item['slug'] == tool.slug }
+        expect(entry['referencing_scenarios_count']).to eq(2)
+      end
     end
 
     context 'when authenticated as agent' do
@@ -110,6 +127,16 @@ RSpec.describe 'Api::V2::Accounts::Pilot::CustomTools', type: :request do
 
       expect(response).to have_http_status(:success)
       expect(tool.reload.title).to eq('Updated Title')
+    end
+
+    it 'toggles the tool enabled flag' do
+      patch "#{base_url}/#{tool.id}",
+            params: { enabled: false },
+            headers: admin.create_new_auth_token,
+            as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(tool.reload.enabled).to be(false)
     end
 
     it 'returns 403 when an agent tries to update' do
