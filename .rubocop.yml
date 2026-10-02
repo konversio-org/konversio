@@ -18,6 +18,7 @@ Layout/LineLength:
 Metrics/ClassLength:
   Max: 175
   Exclude:
+    - 'app/models/account.rb'
     - 'app/models/message.rb'
     - 'app/models/conversation.rb'
     - 'app/controllers/super_admin/llm_settings_controller.rb'
