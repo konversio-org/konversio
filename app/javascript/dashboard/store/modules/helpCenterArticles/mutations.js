@@ -97,4 +97,51 @@ export const mutations = {
       id => id !== articleId
     );
   },
+  [types.REMOVE_MANY_ARTICLES]($state, articleIds) {
+    articleIds.forEach(id => {
+      delete $state.articles.byId[id];
+    });
+    $state.articles.allIds = $state.articles.allIds.filter(
+      id => !articleIds.includes(id)
+    );
+  },
+  [types.SET_ARTICLE_STATUS]($state, { articleIds, status, statusMap }) {
+    if (statusMap) {
+      Object.entries(statusMap).forEach(([id, oldStatus]) => {
+        if ($state.articles.byId[id]) {
+          $state.articles.byId[id] = {
+            ...$state.articles.byId[id],
+            status: oldStatus,
+          };
+        }
+      });
+      return;
+    }
+    articleIds.forEach(id => {
+      if ($state.articles.byId[id]) {
+        $state.articles.byId[id] = { ...$state.articles.byId[id], status };
+      }
+    });
+  },
+  [types.SET_ARTICLE_CATEGORY](
+    $state,
+    { articleIds, categoryId, categoryMap }
+  ) {
+    if (categoryMap) {
+      Object.entries(categoryMap).forEach(([id, oldCategoryId]) => {
+        if ($state.articles.byId[id]) {
+          $state.articles.byId[id] = {
+            ...$state.articles.byId[id],
+            categoryId: oldCategoryId,
+          };
+        }
+      });
+      return;
+    }
+    articleIds.forEach(id => {
+      if ($state.articles.byId[id]) {
+        $state.articles.byId[id] = { ...$state.articles.byId[id], categoryId };
+      }
+    });
+  },
 };

@@ -150,6 +150,101 @@ describe('#actions', () => {
     });
   });
 
+  describe('#publishDraft', () => {
+    const state = {
+      articles: {
+        byId: {
+          1: {
+            id: 1,
+            draftTitle: 'Draft title',
+            draftContent: 'Draft content',
+          },
+        },
+      },
+    };
+
+    it('dispatches update promoting the edited fields and clearing the draft', async () => {
+      await actions.publishDraft(
+        { dispatch, state },
+        { portalSlug: 'room-rental', articleId: 1 }
+      );
+      expect(dispatch).toHaveBeenCalledWith('update', {
+        portalSlug: 'room-rental',
+        articleId: 1,
+        status: undefined,
+        draft_title: null,
+        draft_content: null,
+        title: 'Draft title',
+        content: 'Draft content',
+      });
+    });
+
+    it('only sends the fields that were actually edited', async () => {
+      const partialState = {
+        articles: { byId: { 1: { id: 1, draftContent: 'Only content' } } },
+      };
+      await actions.publishDraft(
+        { dispatch, state: partialState },
+        { portalSlug: 'room-rental', articleId: 1 }
+      );
+      expect(dispatch).toHaveBeenCalledWith('update', {
+        portalSlug: 'room-rental',
+        articleId: 1,
+        status: undefined,
+        draft_title: null,
+        draft_content: null,
+        content: 'Only content',
+      });
+    });
+
+    it('forwards a status to change it in the same update', async () => {
+      await actions.publishDraft(
+        { dispatch, state },
+        { portalSlug: 'room-rental', articleId: 1, status: 'archived' }
+      );
+      expect(dispatch).toHaveBeenCalledWith(
+        'update',
+        expect.objectContaining({
+          status: 'archived',
+          title: 'Draft title',
+          content: 'Draft content',
+          draft_title: null,
+          draft_content: null,
+        })
+      );
+    });
+  });
+
+  describe('#discardDraft', () => {
+    it('dispatches update clearing the draft columns', async () => {
+      await actions.discardDraft(
+        { dispatch },
+        { portalSlug: 'room-rental', articleId: 1 }
+      );
+      expect(dispatch).toHaveBeenCalledWith('update', {
+        portalSlug: 'room-rental',
+        articleId: 1,
+        status: undefined,
+        draft_title: null,
+        draft_content: null,
+      });
+    });
+
+    it('forwards a status to change it in the same update', async () => {
+      await actions.discardDraft(
+        { dispatch },
+        { portalSlug: 'room-rental', articleId: 1, status: 'draft' }
+      );
+      expect(dispatch).toHaveBeenCalledWith('update', {
+        portalSlug: 'room-rental',
+        articleId: 1,
+        status: 'draft',
+        draft_title: null,
+        draft_content: null,
+      });
+    });
+  });
+
   describe('#updateArticleMeta', () => {
     it('sends correct actions if API is success', async () => {
       axios.get.mockResolvedValue({
@@ -232,13 +327,23 @@ describe('#actions', () => {
     it('should upload the file and return the fileUrl', async () => {
       const mockFile = new Blob(['test'], { type: 'image/png' });
       mockFile.name = 'test.png';
+      const onProgress = () => {};
+      const signal = new AbortController().signal;
 
       const mockFileUrl = 'https://test.com/test.png';
       uploadFile.mockResolvedValueOnce({ fileUrl: mockFileUrl });
 
-      const result = await actions.attachImage({}, { file: mockFile });
+      const result = await actions.attachImage(
+        {},
+        { file: mockFile, onProgress, signal }
+      );
 
-      expect(uploadFile).toHaveBeenCalledWith(mockFile);
+      expect(uploadFile).toHaveBeenCalledWith(
+        mockFile,
+        undefined,
+        onProgress,
+        signal
+      );
       expect(result).toBe(mockFileUrl);
     });
 
@@ -258,14 +363,22 @@ describe('#actions', () => {
   describe('uploadExternalImage', () => {
     it('should upload the image from external URL and return the fileUrl', async () => {
       const mockUrl = 'https://example.com/image.jpg';
+      const signal = new AbortController().signal;
       const mockFileUrl = 'https://uploaded.example.com/image.jpg';
       uploadExternalImage.mockResolvedValueOnce({ fileUrl: mockFileUrl });
 
       // When
-      const result = await actions.uploadExternalImage({}, { url: mockUrl });
+      const result = await actions.uploadExternalImage(
+        {},
+        { url: mockUrl, signal }
+      );
 
       // Then
-      expect(uploadExternalImage).toHaveBeenCalledWith(mockUrl);
+      expect(uploadExternalImage).toHaveBeenCalledWith(
+        mockUrl,
+        undefined,
+        signal
+      );
       expect(result).toBe(mockFileUrl);
     });
 
@@ -314,6 +427,25 @@ describe('#actions', () => {
       );
     });
 
+    it('adopts the backend re-spaced positions when the response returns them', async () => {
+      const serverPositions = { 1: 10, 2: 30, 3: 20 };
+      axios.post.mockResolvedValue({ data: { positions: serverPositions } });
+
+      await actions.reorder(
+        { commit, state },
+        {
+          portalSlug: 'test-portal',
+          categorySlug: 'test-category',
+          reorderedGroup: { 3: 25 },
+        }
+      );
+
+      expect(commit).toHaveBeenCalledWith(
+        types.default.SET_ARTICLE_POSITIONS,
+        serverPositions
+      );
+    });
+
     it('rolls back positions and throws when API call fails', async () => {
       axios.post.mockRejectedValue({ message: 'Network error' });
       const reorderedGroup = { 1: 1, 2: 2 };
@@ -336,6 +468,100 @@ describe('#actions', () => {
         1: 10,
         2: 20,
       });
+    });
+  });
+
+  describe('#bulkUpdateStatus', () => {
+    const state = { articles: { byId: { 1: { id: 1, status: 'draft' } } } };
+
+    it('optimistically updates the status and calls the API', async () => {
+      axios.patch.mockResolvedValue({ data: {} });
+
+      await actions.bulkUpdateStatus(
+        { commit, state },
+        { portalSlug: 'test-portal', articleIds: [1], status: 'published' }
+      );
+
+      expect(commit).toHaveBeenCalledWith(types.default.SET_ARTICLE_STATUS, {
+        articleIds: [1],
+        status: 'published',
+      });
+      expect(axios.patch).toHaveBeenCalledWith(
+        expect.stringContaining('/articles/bulk_actions/update_status'),
+        { ids: [1], status: 'published' }
+      );
+    });
+
+    it('rolls back the optimistic update on failure', async () => {
+      axios.patch.mockRejectedValue({ message: 'Network error' });
+
+      await expect(
+        actions.bulkUpdateStatus(
+          { commit, state },
+          { portalSlug: 'test-portal', articleIds: [1], status: 'published' }
+        )
+      ).rejects.toEqual({ message: 'Network error' });
+
+      expect(commit).toHaveBeenCalledWith(types.default.SET_ARTICLE_STATUS, {
+        statusMap: { 1: 'draft' },
+      });
+    });
+  });
+
+  describe('#bulkUpdateCategory', () => {
+    const state = { articles: { byId: { 1: { id: 1, categoryId: 5 } } } };
+
+    it('optimistically updates the category and calls the API', async () => {
+      axios.patch.mockResolvedValue({ data: {} });
+
+      await actions.bulkUpdateCategory(
+        { commit, state },
+        { portalSlug: 'test-portal', articleIds: [1], categoryId: 9 }
+      );
+
+      expect(commit).toHaveBeenCalledWith(types.default.SET_ARTICLE_CATEGORY, {
+        articleIds: [1],
+        categoryId: 9,
+      });
+      expect(axios.patch).toHaveBeenCalledWith(
+        expect.stringContaining('/articles/bulk_actions/update_category'),
+        { ids: [1], category_id: 9 }
+      );
+    });
+
+    it('rolls back the optimistic update on failure', async () => {
+      axios.patch.mockRejectedValue({ message: 'Network error' });
+
+      await expect(
+        actions.bulkUpdateCategory(
+          { commit, state },
+          { portalSlug: 'test-portal', articleIds: [1], categoryId: 9 }
+        )
+      ).rejects.toEqual({ message: 'Network error' });
+
+      expect(commit).toHaveBeenCalledWith(types.default.SET_ARTICLE_CATEGORY, {
+        categoryMap: { 1: 5 },
+      });
+    });
+  });
+
+  describe('#bulkDelete', () => {
+    it('deletes the articles and removes them from the store', async () => {
+      axios.delete.mockResolvedValue({ data: {} });
+
+      await actions.bulkDelete(
+        { commit },
+        { portalSlug: 'test-portal', articleIds: [1, 2] }
+      );
+
+      expect(axios.delete).toHaveBeenCalledWith(
+        expect.stringContaining('/articles/bulk_actions/delete_articles'),
+        { data: { ids: [1, 2] } }
+      );
+      expect(commit).toHaveBeenCalledWith(
+        types.default.REMOVE_MANY_ARTICLES,
+        [1, 2]
+      );
     });
   });
 });
