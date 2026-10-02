@@ -119,3 +119,4 @@ openspec/
 # Internal / sensitive docs — keep off public repo permanently
 docs/clean-room/
 docs/assistant-reasoning-tuning.md
+.husky/_
