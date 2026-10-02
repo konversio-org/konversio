@@ -32,14 +32,14 @@ Status: pending / written / validated / implemented
 | `platform-maintenance` | MIT | v4.17.0 Rails 7.2.3.1 (NOTE: Konversio already did its own Rails 7.2 migration — spec is reconcile/verify); v4.14.2 Puma/Vite/OAuth dependency updates; v4.16.0 Uzbek, v4.17.0 Slovenian, v4.18.0 Estonian widget locales; v4.17.1 SDK size reduction | implemented (merged to main @ 90673ffee) |
 | `super-admin-governance` | MIT | v4.16.2 Super Admin account suspension metadata, agent invitation limit; v4.16.1 agent quotas; v4.16.2 account limits | merged to main |
 | `audit-log-governance` | EE → requirements | v4.17.0 filter/search/sort audit logs; v4.18.0 message deletion audits, IP masking, location details | merged to main |
-| `pilot-conversation-outcomes` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain outcomes; episode-based outcome tracking, handoff reason categorization, lifecycle events | written+validated |
-| `pilot-agent-sessions-and-citations` | EE → requirements (CLEAN-ROOM) | v4.17.1 Captain reasoning/context; agent session records, citations in responses, trusted citation URLs | written+validated |
+| `pilot-conversation-outcomes` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain outcomes; episode-based outcome tracking, handoff reason categorization, lifecycle events | merged to main |
+| `pilot-agent-sessions-and-citations` | EE → requirements (CLEAN-ROOM) | v4.17.1 Captain reasoning/context; agent session records, citations in responses, trusted citation URLs | merged to main |
 | `pilot-faq-suggestions` | EE → requirements (CLEAN-ROOM) | v4.14.0 FAQ improvements; v4.16.2 FAQ suggestion review API and interface | written+validated |
 | `pilot-audiences-and-lifecycle` | EE → requirements (CLEAN-ROOM) | v4.17.0 Captain audiences, schedules, inactivity handling, knowledge usage; v4.18.0 assignment, scenario and tool controls | written+validated |
 | `pilot-assistant-analytics` | EE → requirements (CLEAN-ROOM) | v4.16.0 Captain assistant overview and drill-down analytics; v4.17.1 analytics improvements | written+validated |
-| `pilot-playground` | EE → requirements (CLEAN-ROOM) | v4.18.0 improved playground testing | written+validated |
-| `pilot-knowledge-auto-sync` | EE → requirements (CLEAN-ROOM) | v4.14.0 Captain document sync; document auto-sync service | written+validated |
-| `pilot-reply-suggestion` | EE → requirements (CLEAN-ROOM) | Copilot reply-suggestion mode (v4.16–4.17 era) | written+validated |
+| `pilot-playground` | EE → requirements (CLEAN-ROOM) | v4.18.0 improved playground testing | merged to main |
+| `pilot-knowledge-auto-sync` | EE → requirements (CLEAN-ROOM) | v4.14.0 Captain document sync; document auto-sync service | merged to main |
+| `pilot-reply-suggestion` | EE → requirements (CLEAN-ROOM) | Copilot reply-suggestion mode (v4.16–4.17 era) | merged to main |
 | `pilot-response-integrity` | EE → requirements (CLEAN-ROOM) | multi-part responses with citations, channel-aware length limits, handoff consent protocol, false-promise detection (v4.16–4.18) | written+validated |
 
 ## Exclusions (with reasons)
@@ -102,6 +102,18 @@ Coordinator verification on merged `main`: rubocop 375 files 0 offenses; eslint 
 - `audit-log-governance` (`feat/audit-log-governance`, EE → clean-room) — core `AuditLog` model, admin listing API, IP masking + GeoIP enrichment jobs, filterable settings UI. rspec 56/0 (+regressions), full vitest 3670/0. GeoIP best-effort (MaxMind DB not provisioned).
 - `onboarding-and-setup` (`feat/onboarding-and-setup`) — onboarding wizard, enrichment, OAuth return flows, WhatsApp manual setup, account health, clean-room `Pilot::` Help Center generation. rspec 467/0, full vitest 3708/0. Task 24 manual smoke skipped; scraper provider vendor-neutral via env config.
 
+### Phase 3 — clean-room `pilot-*` (wave 1 merged to `main`)
+
+Wave 1 (foundation + independent) merged. Conflicts resolved: `account.rb`/`handoff_service.rb` (unions), `document.rb` (store_accessor union + a single `customer_visible_source_url` combining the visibility flag, the file-backed gate and network URL validation), `routes.rb` (union), `schema.rb` (version), and a duplicate migration version (`20261003000002` used by both sessions and reply) renamed to `...000003`.
+
+Coordinator verification: rubocop 0 offenses; eslint 0 errors; rspec 251/0; full vitest 396 files / 3847 tests, 0 failures.
+
+- `pilot-conversation-outcomes` (`feat/pilot-conversation-outcomes`) — episode model + recorder + lifecycle event emission + outcome listener. Quota-handoff sub-path deferred (no quota enforcement exists in the fork).
+- `pilot-agent-sessions-and-citations` (`feat/pilot-agent-sessions-and-citations`) — agent session model, `lib/pilot/structured_reply.rb` (the sibling `pilot-response-integrity` contract), citation resolution, dashboard run-inspection UI. rspec 38/0, full vitest 3828/0.
+- `pilot-knowledge-auto-sync` (`feat/pilot-knowledge-auto-sync`) — markdown documents, citation URL validator, refresh service/job, cadence scheduler, sync UI. rspec 110/0, full vitest 3820/0.
+- `pilot-reply-suggestion` (`feat/pilot-reply-suggestion`) — copilot reply-draft backend + drawer UI, `reply_suggestion` flag. rspec 25/0, full vitest 3826/0.
+- `pilot-playground` (`feat/pilot-playground`) — session config/runner/run-report + playground UI. rspec 62/0, full vitest 3833/0.
+
 ### Not yet started
 
-- Phase 3: the nine clean-room `pilot-*` change dirs (conversation outcomes, agent sessions & citations, FAQ suggestions, audiences & lifecycle, assistant analytics, playground, knowledge auto-sync, reply suggestion, response integrity).
+- Phase 3 waves 2–3: `pilot-response-integrity`, `pilot-audiences-and-lifecycle`, `pilot-faq-suggestions` (wave 2, needs the merged `structured_reply` contract); `pilot-assistant-analytics` (wave 3, depends on `pilot-conversation-outcomes`).

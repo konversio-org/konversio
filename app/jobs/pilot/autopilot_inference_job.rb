@@ -5,6 +5,7 @@
 # The conversation stays `open` through the whole handoff wait so it sits
 # in agent queues and is eligible for Chatwoot's native auto-resolve;
 # there is no bot-resume timer.
+# rubocop:disable Metrics/ClassLength
 class Pilot::AutopilotInferenceJob < ApplicationJob
   include Events::Types
 
@@ -275,3 +276,4 @@ class Pilot::AutopilotInferenceJob < ApplicationJob
     handover.respond_to?(:reason) ? (handover.reason.presence || 'llm_requested') : 'llm_requested'
   end
 end
+# rubocop:enable Metrics/ClassLength
